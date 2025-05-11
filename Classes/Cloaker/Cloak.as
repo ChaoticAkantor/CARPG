@@ -214,13 +214,20 @@ class CloakData
             dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
             if(resources !is null)
             {
-                // Store current energy for damage scaling
                 float current = float(resources['current']);
                 m_flLastEnergyConsumed = current;
                 
-                // Consume all energy.
-                resources['current'] = 0;
-                DeactivateCloak(pPlayer);
+                // Reduce by fixed amount instead of zeroing
+                current -= flCloakEnergyCostPerShot;
+                
+                // Check if we've run out
+                if(current <= 0)
+                {
+                    current = 0;
+                    DeactivateCloak(pPlayer);
+                }
+                
+                resources['current'] = current;
             }
         }
     }
