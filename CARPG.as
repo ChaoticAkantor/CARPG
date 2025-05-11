@@ -1,0 +1,889 @@
+/*
+My personal crack at writing an RPG mod for Sven Co-op from the ground up, to replace the SCXPM style mods.
+This plugin uses a class based system with singular abilities and passives similar to killing floor.
+Attempts to strike a better balance than other RPG mods. Whilst featuring tons of classes each with a unique ability.
+In order to keep gameplay similar to vanilla Sven Co-op.
+
+All aspects of classes abilities and passives scale directly with class level.
+Classes XP/Level is saved independently, all classes must be leveled to the cap individually.
+
+Player damage dealt is reworked, some enemies are now more deadly.
+Players passively recover health and armor at a fixed rate after a delay, if damaged.
+Armor recovers much faster than health.
+
+Credit to Johnnboy his RPG mod as inspiration for learning and also some of his coding logic is used for PlayerData.
+
+Credit to Namira, Zebigdt and Mister Copper for testing, as well as class and ability ideas.
+
+Thanks for letting me annoy the shit out of you all by tweaking.
+
+This is our core file. Hooks, timers, initialisations of functions.
+*/
+
+
+// Includes now all in one file.
+#include "Includes"
+
+// Add near the top with other globals
+array<string> g_DevList = 
+{
+    "STEAM_0:1:21530096" // Unlike file structure, must use actual STEAM ID format.
+};
+
+Menu::DebugMenu g_DebugMenu;
+
+// Add this new function
+bool IsDev(const string& in steamID)
+{
+    for(uint i = 0; i < g_DevList.length(); i++)
+    {
+        if(steamID == g_DevList[i])
+            return true;
+    }
+    return false;
+}
+
+// Timers, precaches, and hook handling go here.
+void PluginInit()
+{
+    g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
+    g_Module.ScriptInfo.SetContactInfo("None");
+
+    // Clear all previous Timers on refresh.
+    g_Scheduler.ClearTimerList(); // Clear any currently running timers.
+
+    // Hooks.
+    g_Hooks.RegisterHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
+    g_Hooks.RegisterHook(Hooks::Weapon::WeaponPrimaryAttack, @OnWeaponPrimaryAttack);
+    g_Hooks.RegisterHook(Hooks::Weapon::WeaponSecondaryAttack, @OnWeaponSecondaryAttack);
+    g_Hooks.RegisterHook(Hooks::Weapon::WeaponTertiaryAttack, @OnWeaponTertiaryAttack);
+    g_Hooks.RegisterHook(Hooks::Player::ClientPutInServer, @OnClientPutInServer);
+    g_Hooks.RegisterHook(Hooks::Player::ClientDisconnect, @OnClientDisconnect);
+    g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
+    g_Hooks.RegisterHook(Hooks::Player::PlayerSpawn, @PlayerRespawn);
+    g_Hooks.RegisterHook(Hooks::Monster::MonsterTakeDamage, @MonsterTakeDamage);
+
+    // Force server settings.
+    // Disable Survival Mode.
+    g_EngineFuncs.ServerCommand("mp_survival_mode 0\n");
+    g_EngineFuncs.ServerCommand("mp_survival_voteallow 1\n");
+    g_EngineFuncs.ServerCommand("mp_survival_minplayers 1\n");
+
+    SetupTimers(); // For calling timer refresh/setup.
+    ClearMinions(); // Destroy all old minions if plugin is reloaded.
+    InitializeMapMultipliers();
+    UpdateMapMultiplier();
+    InitializeAmmoTypes();
+}
+
+void MapInit()
+{
+    PrecacheAll(); // Precache our models, sounds and sprites.
+    g_PlayerMinions.deleteAll(); // Clear Minion dictionary.
+    g_HealingAuras.deleteAll(); // Clear Heal Aura dictionary.
+    g_PlayerBarriers.deleteAll(); // Clear Barrier dictionary.
+    g_PlayerBloodlusts.deleteAll(); // Clear Bloodlusts dictionary.
+    g_PlayerCloaks.deleteAll(); // Clear Cloaks dictionary.
+    g_PlayerExplosiveRounds.deleteAll(); // Clear Explosive Rounds dictionary.
+    //g_PlayerMortarStrikes.deleteAll(); // Clear Mortar Strike dictionary - Unused.
+    g_PlayerClassResources.deleteAll(); // Clear Class Resource dictionary.
+}
+
+void MapStart()
+{
+    ApplyDifficultySettings(); // Difficulty forcing.
+    UpdateMapMultiplier();
+    InitializeAmmoTypes();
+}
+
+void SetupTimers()
+{
+    // Ammo Recovery System.
+    g_Scheduler.SetInterval("AmmoTimerTick", flAmmoTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Schedule timer for ammo recovery system.
+
+    // HP/AP Recovery System.
+    g_Scheduler.SetInterval("RegenTickHP", flRegenTickHP, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for HP regen.
+    g_Scheduler.SetInterval("RegenTickAP", flRegenTickAP, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for AP regen.
+    g_Scheduler.SetInterval("HurtDelayTick", flHurtDelayTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for hurt delay
+    g_Scheduler.SetInterval("UpdateHUDHurtDelay", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for HUD display.
+
+    // Resource System.
+    g_Scheduler.SetInterval("RegenClassResource", flClassResourceRegenDelay, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for class resource regen.
+    g_Scheduler.SetInterval("UpdateClassResource", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for class resource display.
+
+    // RPG/Class System.
+    g_Scheduler.SetInterval("UpdatePlayerHUDs", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating RPG HUD.
+    g_Scheduler.SetInterval("CheckAllPlayerScores", 0.5f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
+
+    // Medic.
+    g_Scheduler.SetInterval("CheckCanRevive", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking self-revive.
+    g_Scheduler.SetInterval("CheckHealAura", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking heal aura.
+
+    // Engineer.
+    g_Scheduler.SetInterval("CheckEngineerMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer Robogrunts.
+
+    // Defender.
+    g_Scheduler.SetInterval("CheckBarrier", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Barrier.
+
+    // Berserker.
+    g_Scheduler.SetInterval("UpdateBloodlusts", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
+
+    // Cloaker.
+    g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
+
+    // Difficulty.
+    g_Scheduler.SetTimeout("ApplyDifficultySettings", 1.0f); // Apply settings after 1 second (Incase plugin is reloaded).
+}
+
+void PrecacheAll()
+{
+    // CARPG Systems Precache.
+    g_SoundSystem.PrecacheSound(strLevelUpSound);
+    g_SoundSystem.PrecacheSound(strClassChangeSound);
+
+    // Medic Ability Precache.
+    g_SoundSystem.PrecacheSound(strReviveSound);
+    g_SoundSystem.PrecacheSound(strMedkitSound);
+    g_SoundSystem.PrecacheSound(strHealAuraToggleSound);
+    g_SoundSystem.PrecacheSound(strHealAuraActiveSound);
+    g_SoundSystem.PrecacheSound(strHealSound);
+
+    g_Game.PrecacheModel(strHealAuraSprite);
+    g_Game.PrecacheModel(strHealAuraEffectSprite);
+
+    // Shocktrooper Ability Precache.
+    g_SoundSystem.PrecacheSound(strShockrifleEquipSound);
+
+    // Berserker Ability Precache.
+    g_SoundSystem.PrecacheSound(strBloodlustStartSound);
+    g_SoundSystem.PrecacheSound(strBloodlustEndSound);
+    g_SoundSystem.PrecacheSound(strBloodlustActiveSound);
+    g_SoundSystem.PrecacheSound(strBloodlustHitSound);
+
+    // Defender Ability Precache.
+    g_SoundSystem.PrecacheSound(strBarrierToggleSound);
+    g_SoundSystem.PrecacheSound(strBarrierHitSound);
+    g_SoundSystem.PrecacheSound(strBarrierBreakSound);
+
+    // Cloaker Ability Precache.
+    g_SoundSystem.PrecacheSound(strCloakActivateSound);
+    g_SoundSystem.PrecacheSound(strCloakActiveSound);
+
+    // Minion Precache.
+    g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundDeath2);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundButton2);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundButton3);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundBeam);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundCreate);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundRepair);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundKick);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundMP5);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundM16);
+    g_SoundSystem.PrecacheSound(strRobogruntSoundReload);
+
+    g_Game.PrecacheModel(strRobogruntModel);
+    g_Game.PrecacheModel(strRobogruntModelF);
+    g_Game.PrecacheModel(strRobogruntRope);
+    g_Game.PrecacheModel(strRobogruntModelChromegibs);
+    g_Game.PrecacheModel(strRobogruntModelComputergibs);
+
+    // Demo Ability Precache.
+    // Mortar Strike.
+    //g_SoundSystem.PrecacheSound(strMortarStrikeLaunchSound);
+    //g_SoundSystem.PrecacheSound(strMortarStrikeAirSound);
+    //g_SoundSystem.PrecacheSound(strMortarStrikeSetSound);
+    //g_SoundSystem.PrecacheSound(strMortarStrikeChargeSound);
+    //g_SoundSystem.PrecacheSound(strMortarStrikeImpactSound);
+
+    //g_Game.PrecacheModel(strMortarStrikeTargetSprite);
+    //g_Game.PrecacheModel(strMortarStrikeImpactSprite);
+    //g_Game.PrecacheModel(strMortarStrikeSmokeSprite);
+    //g_Game.PrecacheModel(strMortarStrikeGlowSprite);
+
+    // Explosive Rounds.
+    g_SoundSystem.PrecacheSound(strExplosiveRoundsActivateSound);
+    g_Game.PrecacheModel(strExplosiveRoundsExplosionSprite);
+    
+}
+
+// Hook handler for Primary Attack.
+HookReturnCode OnWeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
+{
+    if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0) // Make sure clip is not empty.
+        return HOOK_CONTINUE;
+    
+    string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(g_PlayerExplosiveRounds.exists(steamId))
+    {
+        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamId]);
+        if(explosiveRounds !is null && explosiveRounds.HasRounds())
+        {
+            explosiveRounds.FireExplosiveRounds(pPlayer, pWeapon); // Consume rounds and fire explosive shots if active.
+        }
+    }
+    
+    return HOOK_CONTINUE;
+}
+
+// Hook handler for Secondary Attack.
+HookReturnCode OnWeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
+{
+    if(pWeapon is null || pPlayer is null || (pWeapon.m_iClip2 <= 0 && pWeapon.m_iClip2 != -1)) // Make sure clip2 is not empty and isn't infinite.
+        return HOOK_CONTINUE;
+
+    string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    string SecondaryWeaponName = pWeapon.pev.classname;
+    if(SecondaryWeaponName == "weapon_shotgun" || SecondaryWeaponName == "weapon_sawedoff")
+    {
+        if(g_PlayerExplosiveRounds.exists(steamId))
+        {
+            ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamId]);
+            if(explosiveRounds !is null && explosiveRounds.HasRounds())
+            {
+                explosiveRounds.FireExplosiveRounds(pPlayer, pWeapon); // Consume rounds and fire explosive shots if active.
+            }
+        }
+    }
+    
+    return HOOK_CONTINUE;
+}
+
+// Hook handler for Tertiary Attack.
+HookReturnCode OnWeaponTertiaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
+{
+    if (pPlayer is null || !pPlayer.IsConnected())
+        return HOOK_CONTINUE;
+        
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(g_PlayerRPGData.exists(steamID))
+    {
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
+        {
+            // Handle Engineer Ability.
+            if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
+            {
+                if(!g_PlayerMinions.exists(steamID))
+                {
+                    MinionData MinionData;
+                    @g_PlayerMinions[steamID] = MinionData;
+                }
+
+                MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+                if(Minion !is null)
+                {
+                    // Just spawn a Minion.
+                    Minion.SpawnMinion(pPlayer);
+                    return HOOK_HANDLED;
+                }
+            }
+
+            // Handle Medic Ability.
+            else if(data.GetCurrentClass() == PlayerClass::CLASS_MEDIC)
+            {
+                if(!g_HealingAuras.exists(steamID))
+                {
+                    HealingAura aura;
+                    @g_HealingAuras[steamID] = aura;
+                }
+
+                HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
+                if(aura !is null)
+                {
+                    aura.ToggleAura(pPlayer);
+                    return HOOK_HANDLED;
+                }
+            }
+            
+            // Handle Shocktrooper Ability.
+            else if(data.GetCurrentClass() == PlayerClass::CLASS_SHOCKTROOPER)
+            {
+                if(!g_ShockRifleData.exists(steamID))
+                {
+                    ShockRifleData shockRifle;
+                    @g_ShockRifleData[steamID] = shockRifle;
+                    shockRifle.Initialize(data.GetCurrentClassStats());
+                }
+
+                ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
+                if(shockRifle !is null)
+                {
+                    shockRifle.EquipShockRifle(pPlayer);
+                    return HOOK_HANDLED;
+                }
+            }
+            
+            // Handle Barrier Ability.
+            else if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER)
+            {
+                if(!g_PlayerBarriers.exists(steamID))
+                {
+                    BarrierData barrier;
+                    @g_PlayerBarriers[steamID] = barrier;
+                    barrier.Initialize(data.GetCurrentClassStats());
+                }
+
+                BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                if(barrier !is null)
+                {
+                    barrier.ToggleBarrier(pPlayer);
+                    return HOOK_HANDLED;
+                }
+            }
+
+            else if(data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
+            {
+                if(!g_PlayerBloodlusts.exists(steamID))
+                {
+                    BloodlustData bloodlust;
+                    @g_PlayerBloodlusts[steamID] = bloodlust;
+                    bloodlust.Initialize(data.GetCurrentClassStats());
+                }
+
+                BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                if(bloodlust !is null)
+                {
+                    bloodlust.ToggleBloodlust(pPlayer);
+                    return HOOK_HANDLED;
+                }
+            }
+
+            else if(data.GetCurrentClass() == PlayerClass::CLASS_CLOAKER)
+            {
+                if(!g_PlayerCloaks.exists(steamID))
+                {
+                    CloakData cloak;
+                    @g_PlayerCloaks[steamID] = cloak;
+                    cloak.Initialize(data.GetCurrentClassStats());
+                }
+
+                CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+                if(cloak !is null)
+                {
+                    cloak.ToggleCloak(pPlayer);
+                    return HOOK_HANDLED;
+                }
+            }
+
+            else if(data.GetCurrentClass() == PlayerClass::CLASS_DEMOLITIONIST)
+            {
+                if(!g_PlayerExplosiveRounds.exists(steamID))
+                {
+                    ExplosiveRoundsData explosiveRounds;
+                    @g_PlayerExplosiveRounds[steamID] = explosiveRounds;
+                    explosiveRounds.Initialize(data.GetCurrentClassStats());
+                }
+
+                ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
+                if(explosiveRounds !is null)
+                {
+                    explosiveRounds.ActivateExplosiveRounds(pPlayer);
+                    return HOOK_HANDLED;
+                }
+            }
+        }
+    }
+    return HOOK_CONTINUE;
+}
+
+HookReturnCode MonsterTakeDamage(DamageInfo@ info)
+{
+    if(info.pAttacker is null || !info.pAttacker.IsPlayer())
+        return HOOK_CONTINUE;
+        
+    CBasePlayer@ pAttacker = cast<CBasePlayer@>(info.pAttacker);
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pAttacker.edict());
+    
+    // Handle Cloak damage multiplier.
+    if(g_PlayerCloaks.exists(steamID))
+    {
+        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+        if(cloak !is null && cloak.IsActive())
+        {
+            float damageMultiplier = cloak.GetDamageMultiplier(pAttacker);
+            info.flDamage *= damageMultiplier;
+            
+            // Drain energy after dealing a multiplied damage shot.
+            cloak.DrainEnergyFromShot(pAttacker);
+        }
+    }
+
+    // Keep existing Bloodlust code
+    if(g_PlayerBloodlusts.exists(steamID))
+    {
+        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+        if(bloodlust !is null && bloodlust.IsActive())
+        {
+            CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pAttacker.m_hActiveItem.GetEntity());
+            bool isMelee = (pWeapon !is null && (
+                pWeapon.GetClassname() == "weapon_crowbar" || 
+                pWeapon.GetClassname() == "weapon_pipewrench" || 
+                pWeapon.GetClassname() == "weapon_grapple"
+            ));
+            
+            bloodlust.ProcessLifesteal(pAttacker, info.flDamage, isMelee); // Return damage dealt as health.
+        }
+    }
+    
+    return HOOK_CONTINUE;
+}
+
+HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
+{
+    CBasePlayer@ pPlayer = cast<CBasePlayer@>(pDamageInfo.pVictim);
+    if(pPlayer !is null && pDamageInfo.flDamage > 0)
+    {
+        StopPlayerRegen(pPlayer); // Stop regen temporarily when taking damage.
+        
+        // Handle Barrier damage reduction and energy drain from damage blocked.
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(g_PlayerBarriers.exists(steamID))
+        {
+            BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+            if(barrier !is null && barrier.IsActive())
+            {
+                float incomingDamage = pDamageInfo.flDamage;
+                float reduction = barrier.GetDamageReduction();
+                
+                // Calculate damage blocked
+                float blockedDamage = incomingDamage * reduction;
+
+                // Calculate final damage
+                pDamageInfo.flDamage = incomingDamage - blockedDamage;
+                
+                // Drain energy based on blocked damage
+                barrier.DrainEnergy(pPlayer, blockedDamage);
+                
+                // Play hit sound with random pitch
+                int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
+
+                // Add visual effect for damage blocked
+                Vector origin = pPlayer.pev.origin;
+                origin.z += 32; // Offset to center of entity
+
+                // Create spark shower effect
+                NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+                    msg.WriteByte(TE_SPARKS);
+                    msg.WriteCoord(origin.x);
+                    msg.WriteCoord(origin.y);
+                    msg.WriteCoord(origin.z);
+                msg.End();
+            }
+        }
+    }
+    
+    return HOOK_CONTINUE;
+}
+
+// Create or load data for the player when they join.
+HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
+{
+    if(pPlayer is null) return HOOK_CONTINUE;
+    
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(steamID.IsEmpty()) return HOOK_CONTINUE;
+    
+    PlayerData@ data;    
+    if(!g_PlayerRPGData.exists(steamID))
+    {
+        @data = PlayerData(steamID);
+        @g_PlayerRPGData[steamID] = @data;
+        g_Game.AlertMessage(at_console, "RPG: Created new data for " + steamID + "\n");
+    }
+    else
+    {
+        @data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+    }
+    
+    if(data !is null)
+    {
+        data.CalculateStats(pPlayer);
+        ResetPlayer(pPlayer);
+    }
+    
+    ShowHints();
+    return HOOK_CONTINUE;
+}
+
+HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
+{
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(g_PlayerRPGData.exists(steamID))
+    {
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
+        {
+            data.CalculateStats(pPlayer); // Re-calculate stats if we respawn.
+            ResetPlayer(pPlayer); // We respawned, so re-initialize defaults.
+
+            // Show class menu if no class selected.
+            if(data.GetCurrentClass() == PlayerClass::CLASS_NONE)
+            {
+                g_Scheduler.SetTimeout("ShowClassMenuDelayed", 0.1f, @pPlayer);
+            }
+        }
+    }
+
+    AdjustAmmoForClass(pPlayer);
+    return HOOK_CONTINUE;
+}
+
+// Save player data when they disconnect.
+HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
+{
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(g_PlayerRPGData.exists(steamID))
+    {
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
+        {
+            data.SaveToFile();
+        }
+    }
+    return HOOK_CONTINUE;
+}
+
+HookReturnCode ClientSay(SayParameters@ pParams)
+{
+    CBasePlayer@ pPlayer = pParams.GetPlayer();
+    const CCommand@ args = pParams.GetArguments();
+    
+    if(args.ArgC() > 0)
+    {
+        string command = args.Arg(0).ToLowercase();
+        if(command == "class")
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null)
+                {
+                    data.ShowClassMenu(pPlayer);
+                    pParams.ShouldHide = true;
+                    return HOOK_HANDLED;
+                }
+            }
+        }
+        else if(command == "stats")
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null && data.GetCurrentClass() != PlayerClass::CLASS_NONE)
+                {
+                    ShowClassStats(pPlayer);
+                    pParams.ShouldHide = true;
+                    return HOOK_HANDLED;
+                }
+            }
+        }
+        else if(command == "debug")
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(IsDev(steamID))
+            {
+                g_DebugMenu.ShowDebugMenu(pPlayer);
+                pParams.ShouldHide = true;
+                return HOOK_HANDLED;
+            }
+            else
+            {
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Only developers can access the debug menu.\n");
+                pParams.ShouldHide = true;
+                return HOOK_HANDLED;
+            }
+        }
+        else if(command == "help")
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(IsDev(steamID))
+            {
+                ShowHints();
+                pParams.ShouldHide = true;
+                return HOOK_HANDLED;
+            }
+        }
+    }
+    
+    return HOOK_CONTINUE;
+}
+
+// Check and update all player scores for XP system
+void CheckAllPlayerScores() 
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i) 
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer is null || !pPlayer.IsConnected()) 
+            continue;
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(steamID.IsEmpty())
+            continue;
+
+        if(!g_PlayerRPGData.exists(steamID))
+        {
+            // Create new player data and store it by reference
+            PlayerData@ data = PlayerData(steamID);
+            @g_PlayerRPGData[steamID] = @data;
+        }
+
+        // Get existing data by reference
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
+        {
+            data.CheckScoreChange(pPlayer);
+        }
+    }
+}
+
+void UpdateAllPlayerStats()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null)
+                {
+                    data.CalculateStats(pPlayer);
+                }
+            }
+        }
+    }
+}
+
+void UpdatePlayerHUDs()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(!steamID.IsEmpty() && g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null)
+                {
+                    data.UpdateRPGHUD(pPlayer);
+                }
+            }
+        }
+    }
+}
+
+void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
+{
+    if (pPlayer is null)
+        return;
+        
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    
+    // Reset Heal Aura.
+    if (g_HealingAuras.exists(steamID))
+    {
+        HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
+        if (aura !is null)
+        {
+            aura.ResetAura(pPlayer);
+        }
+    }
+
+    // Reset Barrier.
+    if (g_PlayerBarriers.exists(steamID))
+    {
+        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+        if (barrier !is null)
+        {
+            barrier.DeactivateBarrier(pPlayer);
+        }
+    }
+
+    // Reset Shock Rifle.
+    if (g_ShockRifleData.exists(steamID))
+    {
+        ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
+        if (shockRifle !is null)
+        {
+            shockRifle.RemoveShockRifle(pPlayer);
+        }
+    }
+
+   
+    // Reset Bloodlust.
+    if (g_PlayerBloodlusts.exists(steamID))
+    {
+        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+        if (bloodlust !is null)
+        {
+            bloodlust.DeactivateBloodlust(pPlayer);
+        }
+    }
+
+    // Reset Cloak.
+    if (g_PlayerCloaks.exists(steamID))
+    {
+        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+        if (cloak !is null)
+        {
+            cloak.DeactivateCloak(pPlayer);
+        }
+    }
+
+    // Reset Explosive Rounds.
+    if(g_PlayerExplosiveRounds.exists(steamID))
+    {
+        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
+        if(explosiveRounds !is null)
+        {
+            explosiveRounds.ResetRounds();
+        }
+    }
+
+    // Set max health/armor based on class stats
+    if (g_PlayerRPGData.exists(steamID))
+    {
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if (data !is null)
+        {
+            data.CalculateStats(pPlayer);
+
+            // Refill HP/AP.
+            //pPlayer.pev.health = pPlayer.pev.max_health;
+            //pPlayer.pev.armorvalue = pPlayer.pev.armortype;
+        }
+    }
+}
+
+void ShowClassMenuDelayed(CBasePlayer@ pPlayer)
+{
+    if(pPlayer is null || !pPlayer.IsConnected())
+        return;
+
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(g_PlayerRPGData.exists(steamID))
+    {
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
+        {
+            data.ShowClassMenu(pPlayer);
+        }
+    }
+}
+
+void CheckBarrier()
+{
+    array<string>@ barrierKeys = g_PlayerBarriers.getKeys();
+    for(uint i = 0; i < barrierKeys.length(); i++)
+    {
+        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[barrierKeys[i]]);
+        if(barrier !is null)
+        {
+            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i + 1);
+            if(pPlayer !is null)
+            {
+                barrier.Update(pPlayer);
+            }
+        }
+    }
+}
+
+void UpdateBloodlusts()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerBloodlusts.exists(steamID))
+            {
+                BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                if(bloodlust !is null)
+                {
+                    bloodlust.Update(pPlayer);
+                }
+            }
+        }
+    }
+}
+
+void UpdateCloaks()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerCloaks.exists(steamID))
+            {
+                CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+                if(cloak !is null)
+                {
+                    cloak.Update(pPlayer);
+                }
+            }
+        }
+    }
+}
+
+void ClearMinions()
+{
+    array<string>@ minionKeys = g_PlayerMinions.getKeys();
+    for(uint i = 0; i < minionKeys.length(); i++)
+    {
+        MinionData@ minion = cast<MinionData@>(g_PlayerMinions[minionKeys[i]]);
+        if(minion !is null)
+        {
+            // Find the owning player if possible
+            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i + 1);
+            if(pPlayer is null)
+            {
+                // If owner not found, use first valid player as killer
+                for(int j = 1; j <= g_Engine.maxClients; j++)
+                {
+                    @pPlayer = g_PlayerFuncs.FindPlayerByIndex(j);
+                    if(pPlayer !is null)
+                        break;
+                }
+            }
+            minion.DestroyAllMinions(pPlayer);
+        }
+    }
+}
+
+void AdjustAmmoForClass(CBasePlayer@ pPlayer)
+{
+    // Create temporary copies of ammo types for this player
+    array<AmmoType@> playerAmmoTypes;
+    for (uint i = 0; i < g_AmmoTypes.length(); i++) 
+    {
+        AmmoType@ original = g_AmmoTypes[i];
+        AmmoType@ copy = AmmoType(original.name, original.delay, original.amount, original.maxAmount, 
+                                 original.hasThreshold, original.threshold);
+        playerAmmoTypes.insertLast(copy);
+    }
+    
+    // Call the existing function with the player's ammo types
+    AdjustAmmoForPlayerClass(pPlayer, playerAmmoTypes);
+}
+
+void ShowHints()
+{
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Welcome to CARPG! Type 'class' to select your class. Press (Tertiary Fire) to use your Class Ability.\n");
+}
