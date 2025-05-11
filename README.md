@@ -5,7 +5,7 @@
  This mod takes the basic principals of SCXPM but in an attempt to simplify features and ensure balance and has many more ingrained features and alterations.
 
 # Classes?!
-Rather than having lots of skills, most of the old SCXPM skills were coalested into auto-increasing stats on level up and regen was merged into it's own recovery system, so technically you start stronger but progress more steadily with a lower-ceiling for power through being unkillable.
+Rather than having lots of skills, most of the old SCXPM skills were coalested into auto-increasing stats on level up and regen was merged into it's own recovery system, so technically you start stronger but progress more steadily with a lower-ceiling for power instead of everyone ending up immortal.
 
 1 Frag/score = 1 XP, no nonsence calculations and bloated numbers.
 All XP is shared between players! And minion classes share XP with their master. No more hogging.
