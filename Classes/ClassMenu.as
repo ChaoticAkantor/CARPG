@@ -53,8 +53,18 @@ namespace Menu
                 m_pOwner.SetClass(newClass); // Set class.
                 m_pOwner.CalculateStats(pPlayer); // Recalculate stats.
                 ResetPlayer(pPlayer); // Reset player.
-
                 
+                // Reset resources when changing class, so it can't be exploited.
+                string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+                if(g_PlayerClassResources.exists(steamID))
+                {
+                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                    if(resources !is null)
+                    {
+                        resources['current'] = 0; // Reset current energy to 0.
+                    }
+                }
+
                 PlayClassChangeEffects(pPlayer);
                 
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, 

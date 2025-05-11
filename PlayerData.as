@@ -101,7 +101,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     def.healthPerLevel = 1.0f;
                     def.armorPerLevel = 5.0f;
                     def.energyPerLevel = 1.0f;
-                    def.energyRegenPerLevel = 2.0f;
+                    def.energyRegenPerLevel = 0.2f;
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
@@ -136,7 +136,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     def.healthPerLevel = 2.0f;
                     def.armorPerLevel = 4.0f;
                     def.energyPerLevel = 10.0f;
-                    def.energyRegenPerLevel = 0.06f;
+                    def.energyRegenPerLevel = 0.08f;
                     break;
             }
             
@@ -502,9 +502,7 @@ class PlayerData
 
                 // Check and cap energy if it exceeds max.
                 if(resources !is null)
-                {
-                    resources['current'] = 0; // Reset current energy to 0 if we switch classes.
-                    
+                {   
                     // Cap current energy if it exceeds maximum.
                     float currentEnergy = float(resources['current']);
                     float maxEnergy = float(resources['max']);

@@ -93,6 +93,33 @@ void RegenClassResource()
                         }
                     }
 
+                    // Engineer Minion Reserve Pool
+                    if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
+                    {
+                        if(g_PlayerMinions.exists(steamID))
+                        {
+                            MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+                            if(minion !is null)
+                            {
+                                float current = float(resources['current']);
+                                float regen = float(resources['regen']);
+                                
+                                // Calculate available max to regen to using reserve.
+                                flMinionMaxReservePool = float(resources['max']) - flMinionReservePool;
+                                
+                                // Only regenerate if we have remaining reserve.
+                                if(flMinionMaxReservePool > 0 && current < flMinionMaxReservePool)
+                                {
+                                    current += regen;
+                                    if(current > flMinionMaxReservePool)
+                                        current = flMinionMaxReservePool;
+                                    resources['current'] = current;
+                                }
+                                continue; // Skip normal regen logic
+                            }
+                        }
+                    }
+
                     // Skip regen if any ability is active.
                     if(isAuraActive || isBarrierActive || hasActiveMinions || 
                        hasShockRifleEquipped || isBloodlustActive || isCloakActive)
@@ -204,9 +231,7 @@ void UpdateClassResource()
                 }
             }
 
-            //string resourceInfo = "[" + resourceName + ": (" + int(current) + "/" + int(maximum) + ")] \n";
             string resourceInfo = "" + resourceName + ": (" + int(current) + "/" + int(maximum) +  ") - " + GetResourceBar(current, maximum) + "\n";
-            //string resourceInfo = "" + resourceName + ": " + GetResourceBar(current, maximum) + " - (" + int(current) + "/" + int(maximum) + ")\n"; // Original.
 
             if(g_PlayerRPGData.exists(steamID))
             {
@@ -237,7 +262,6 @@ void UpdateClassResource()
                                             {
                                                 float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
                                                 resourceInfo += "[" + int(healthPercent) + "%] ";
-                                                //resourceInfo += "[" + (minionIndex + 1) + ": " + int(healthPercent) + "%] "; // Original.
                                             }
                                         }
                                     }
@@ -291,7 +315,7 @@ void UpdateClassResource()
                             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
                             int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
                             
-                            resourceInfo += "[Shock Rifle: " + (hasShockRifleEquipped ? "EQUIPPED" : "STOWED") + "] "; // Shockrifle battery is energy so it's displayed differently.
+                            resourceInfo += "[Shock Rifle: " + (hasShockRifleEquipped ? "EQUIPPED" : "STOWED") + "] "; // Shockrifle battery.
                             break;
                         }
 

@@ -32,14 +32,17 @@ string strRobogruntSoundReload = "hgrunt/gr_reload1.wav";
 string strRobogruntSoundKick = "zombie/claw_miss2.wav";
 
 // Flags
-const int SF_MONSTER_START_ACTIVE = 32;  // Start active without trigger.
+const int SF_MONSTER_START_ACTIVE = 32;  // Start active without trigger
 
 // Made all these global for use in stats menu.
-float g_flBaseMinionHP = 100.0; // Base health of Minion.
+float g_flBaseMinionHP = 200.0; // Base health of Minion.
 float g_flMinionHPBonus = 0.0; // Health % scaling per level.
 float g_flBaseMinionDMG = 28.0; // Don't think damage scaling works. Think it uses fixed weapon damage SK values.
 float g_flMinionDMGBonus = 0.0; // Ditto.
 int g_iMinionResourceCost = 1; // Cost to summon minion.
+
+float flMinionReservePool = 0.0; // Reserve pool.
+float flMinionMaxReservePool = 0.0; // Max reserve pool.
 
 dictionary g_PlayerMinions;
 
@@ -50,11 +53,11 @@ enum MinionType
     MINION_M16 = 4
 }
 
-// Reorder arrays to match enum order and progression.
+// Reorder arrays to match enum order and progression
 const array<string> MINION_NAMES = {
-    "MP5 Robogrunt",      // Keyvalue weapons(0).
-    "Shotgun Robogrunt",  // Keyvalue weapons(8).
-    "M16 Robogrunt"       // Keyvalue weapons(4).
+    "MP5 Robogrunt",      // Keyvalue weapons(0)
+    "Shotgun Robogrunt",  // Keyvalue weapons(8)
+    "M16 Robogrunt"       // Keyvalue weapons(4)
 };
 
 const array<int> MINION_COSTS = {
@@ -66,19 +69,33 @@ const array<int> MINION_COSTS = {
 class MinionData
 {
     private MinionMenu@ m_pMenu;
-    private array<EHandle> m_hMinions; // Changed to array for multiple Minions.
+    private array<EHandle> m_hMinions; // Changed to array for multiple Minions
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseMinionHP;
     private float m_flBaseDamage = g_flBaseMinionDMG;
-    private float m_flHealthScale = 0.25; // Health % scaling per level.
-    private float m_flDamageScale = 0.25; // Damage % scaling per level. Potentially non-functional.
+    private float m_flHealthScale = 0.15; // Health % scaling per level.
+    private float m_flDamageScale = 0.15; // Damage % scaling per level. Potentially non-functional.
     private int m_iMinionResourceCost = g_iMinionResourceCost; // Cost to summon 1 minion.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
     private ClassStats@ m_pStats = null;
 
-    bool IsActive() { return m_bActive; }
+    bool IsActive() 
+    { 
+        string steamID = g_EngineFuncs.GetPlayerAuthId(g_EntityFuncs.Instance(0).edict());
+        if(g_PlayerClassResources.exists(steamID))
+        {
+            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+            if(resources !is null)
+            {
+                flMinionMaxReservePool = float(resources['max']) - flMinionReservePool; // Calculate available reserve.
+
+                return flMinionMaxReservePool <= 0; // Block regen if we've used all our reserve.
+            }
+        }
+        return false;
+    }
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
@@ -101,7 +118,8 @@ class MinionData
         if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
             return;
 
-        m_pMenu.ShowRobotMinionMenu(pPlayer); // Show menu instead of directly spawning.
+        // Show menu instead of directly spawning
+        m_pMenu.ShowRobotMinionMenu(pPlayer);
     }
 
     void SpawnSpecificMinion(CBasePlayer@ pPlayer, int minionType)
@@ -116,7 +134,7 @@ class MinionData
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
         int current = int(resources['current']);
 
-        // Check resources for spawning new minion
+        // Check resources for spawning new minion.
         if(current < MINION_COSTS[minionType])
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough energy for " + MINION_NAMES[minionType] + "!\n");
@@ -170,7 +188,9 @@ class MinionData
             m_hMinions.insertLast(EHandle(pNewMinion));
             m_bActive = true;
 
-            current -= MINION_COSTS[minionType];
+            flMinionReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
+            
+            current -= MINION_COSTS[minionType]; // Subtract from current resources.
             resources['current'] = current;
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strRobogruntSoundCreate, 1.0f, ATTN_NORM);
@@ -195,25 +215,45 @@ class MinionData
         if(!m_bActive || pPlayer is null)
             return;
 
-        for(int i = m_hMinions.length() - 1; i >= 0; i--) // Remove invalid Minions and check frags.
+        // Remove invalid Minions and check frags.
+        for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
+            
+            // First get the name while minion still exists
+            string name = pExistingMinion !is null ? string(pExistingMinion.pev.targetname) : "";
+            
+            // Then check if it's dead or invalid
             if(pExistingMinion is null || !pExistingMinion.IsAlive())
             {
+                // Find minion type and reduce pool before removing from array
+                for(uint j = 0; j < MINION_NAMES.length(); j++)
+                {
+                    if(name.Find(MINION_NAMES[j]) >= 0)
+                    {
+                        flMinionReservePool -= MINION_COSTS[j];
+                        break;
+                    }
+                }
+                
                 m_hMinions.removeAt(i);
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robot was destroyed!\n");
                 continue;
             }
 
-            if(pExistingMinion.pev.frags > 0) // Check if minion has gained a frag.
+            // Check if minion has gained a frag.
+            if(pExistingMinion.pev.frags > 0)
             {
-                pPlayer.pev.frags += 1; // Add frag to player.
-                pExistingMinion.pev.frags = 0; // Reset minion's frag counter.
+                // Add frag to player.
+                pPlayer.pev.frags += 1;
+                // Reset minion's frag counter.
+                pExistingMinion.pev.frags = 0;
             }
         }
 
         m_bActive = (m_hMinions.length() > 0);
 
+        // Update stats reference for stat menu.
         if(m_pStats is null)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -240,18 +280,21 @@ class MinionData
             return;
         }
 
-        // Destroy all Minions from last to first.
+        // Destroy all Minions from last to first
         for(int i = MinionCount - 1; i >= 0; i--)
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
             if(pExistingMinion !is null)
             {
-                // Use Killed to destroy active minions naturally, so they play death animations.
+                // Use Killed to destroy active minions naturally.
                 pExistingMinion.Killed(pPlayer.pev, GIB_NORMAL);
                 m_hMinions.removeAt(i);
             }
         }
 
+        // Reset reserve pool after destroying all minions
+        flMinionReservePool = 0.0;
+        
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
         m_bActive = false;
     }
@@ -297,10 +340,6 @@ class MinionData
             CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
             if(pMinion !is null)
             {
-                // Update minion stats again.
-                UpdateMinionStats(pMinion);
-                
-                // Teleport minions to the owner.
                 float angle = angleStep * i;
                 g_EngineFuncs.AngleVectors(Vector(0, angle, 0), spawnForward, spawnRight, spawnUp);
                 Vector offset = spawnForward * radius;
@@ -310,7 +349,7 @@ class MinionData
         }
 
         g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strRobogruntSoundBeam, 1.0f, ATTN_NORM);
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robots teleported!\n");
+    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robots teleported!\n");
     }
 }
 
@@ -331,14 +370,16 @@ class MinionMenu
         @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
         m_pMenu.SetTitle("Robot Control Menu\n");
         
+        // Always show spawn options since limit is now resource-based.
         for(uint i = 0; i < MINION_NAMES.length(); i++) 
         {
             m_pMenu.AddItem("Deploy " + MINION_NAMES[i] + " (Cost: " + MINION_COSTS[i] + ")\n", any(i));
         }
         
-        
-        if(m_pOwner.GetMinionCount() > 0) // Add management options if we have minions
+        // Add management options if we have minions
+        if(m_pOwner.GetMinionCount() > 0) 
         {
+            //m_pMenu.AddItem("Manage Robots:", any(-1)); // Separator
             m_pMenu.AddItem("Teleport Robots to you\n", any(98));
             m_pMenu.AddItem("Destroy All Robots\n", any(99));
         }
@@ -356,15 +397,18 @@ class MinionMenu
             
             if(choice == 99) 
             {
-                m_pOwner.DestroyAllMinions(pPlayer); // Destroy all minions.
+                // Destroy all minions
+                m_pOwner.DestroyAllMinions(pPlayer);
             }
             else if(choice == 98)
             {
-                m_pOwner.TeleportMinions(pPlayer); // Teleport existing minions.
+                // Teleport existing minions
+                m_pOwner.TeleportMinions(pPlayer);
             }
             else if(choice >= 0 && uint(choice) < MINION_NAMES.length())
             {
-                m_pOwner.SpawnSpecificMinion(pPlayer, choice); // Spawn new minion with selected weapon.
+                // Spawn new minion with selected weapon
+                m_pOwner.SpawnSpecificMinion(pPlayer, choice);
             }
         }
     }
@@ -380,7 +424,8 @@ void CheckEngineerMinions()
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             
-            if(!g_PlayerMinions.exists(steamID)) // Initialize MinionData if it doesn't exist.
+            // Initialize MinionData if it doesn't exist
+            if(!g_PlayerMinions.exists(steamID))
             {
                 MinionData data;
                 @g_PlayerMinions[steamID] = data;
@@ -389,30 +434,35 @@ void CheckEngineerMinions()
             MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
             if(Minion !is null)
             {
-                if(g_PlayerRPGData.exists(steamID)) // Check if player switched away from Engineer.
+                // Check if player switched away from Engineer
+                if(g_PlayerRPGData.exists(steamID))
                 {
                     PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                     if(data !is null)
                     {
                         if(data.GetCurrentClass() != PlayerClass::CLASS_ENGINEER)
                         {
-                            if(Minion.IsActive()) // Destroy active minions if we switch classes.
+                            // Player is not Engineer, destroy active minions.
+                            if(Minion.IsActive())
                             {
                                 Minion.DestroyAllMinions(pPlayer);
-                                continue;  // Skip rest of updates.
+                                continue;  // Skip rest of updates
                             }
                         }
                         else if(!Minion.HasStats())
                         {
-                            Minion.Initialize(data.GetCurrentClassStats()); // Update stats for Engineer.
+                            // Update stats for Engineer
+                            Minion.Initialize(data.GetCurrentClassStats());
                         }
                     }
                 }
 
-                Minion.GetScaledHealth(); // Always update scaling values for stats menu.
-                Minion.GetScaledDamage(); // Damage is unused for now - Always update scaling values for stats menu.
+                // Always update scaling values for stats menu
+                Minion.GetScaledHealth();
+                Minion.GetScaledDamage();
 
-                Minion.Update(pPlayer); // Normal update for active minions.
+                // Normal update for active minions
+                Minion.Update(pPlayer);
             }
         }
     }

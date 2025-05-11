@@ -189,7 +189,7 @@ final class ForceDifficulty
 		150.0, // sk_zombie_soldier_health
 		30.0, // sk_zombie_soldier_dmg_one_slash - Default 10
 		60.0, // sk_zombie_soldier_dmg_both_slash - Default 20
-		200.0, // sk_gonome_health
+		250.0, // sk_gonome_health - Default 200.0
 		15.0, // sk_gonome_dmg_one_slash - Default 5
 		25.0, // sk_gonome_dmg_guts - Default 5
 		20.0, // sk_gonome_dmg_one_bite - Default 5
@@ -213,7 +213,7 @@ final class ForceDifficulty
 		125.0, // sk_stukabat
 		20.0, // sk_stukabat_dmg_bite
 		50.0, // sk_sqknest_health
-		450.0, // sk_kingpin_health
+		500.0, // sk_kingpin_health - Default 450.0
 		20.0, // sk_kingpin_lightning
 		15.0, // sk_kingpin_tele_blast
 		50.0, // sk_kingpin_plasma_blast

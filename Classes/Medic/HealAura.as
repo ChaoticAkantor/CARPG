@@ -5,11 +5,15 @@ string strHealAuraSprite = "sprites/zbeam2.spr"; // Aura sprite.
 string strHealAuraEffectSprite = "sprites/cnt1.spr"; // Aura healing sprite.
 
 // Defines for stat menu.
-float g_flHealAuraBase = 1.0f; // Base heal amount.
-float g_flHealAuraBonus = 1.0f; // Bonus per level, variable only used for calculation.
+float g_flHealAuraBase = 10.0f; // Base heal amount.
+float g_flHealAuraBonus = 0.5f; // Bonus per level, variable only used for calculation.
 float g_flHealAuraRadius = 800.0f; // Radius of the aura, does not scale currently.
 int g_iHealAuraDrain = 5; // Energy drain per interval.
 float g_flHealAuraInterval = 1.0f; // Time between heals.
+
+// For stat menu.
+float flHealAuraHealBase = g_flHealAuraBase;
+float flHealAuraHealBonus = 0.0f;
 
 dictionary g_HealingAuras;
 
@@ -246,7 +250,7 @@ class HealingAura
             if(pEntity.pev.health < pEntity.pev.max_health)
             {
                 pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
-                pPlayer.pev.frags += 1; // Award frag for successful heal.
+                pPlayer.pev.frags += 2; // Award 2 frags for successful heal.
                 
                 ApplyHealEffect(pEntity);
                 g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
@@ -261,6 +265,7 @@ class HealingAura
             
         int level = m_pStats.GetLevel();
         g_flHealAuraBonus = m_flBaseHealAmount * (float(level) * m_flHealScaling);
+        flHealAuraHealBonus = m_flBaseHealAmount * (float(level) * m_flHealScaling) - flHealAuraHealBase; // For stat menu.
         return m_flBaseHealAmount + g_flHealAuraBonus;
     }
 

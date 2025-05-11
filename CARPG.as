@@ -80,6 +80,7 @@ void MapInit()
 {
     PrecacheAll(); // Precache our models, sounds and sprites.
     g_PlayerMinions.deleteAll(); // Clear Minion dictionary.
+        flMinionReservePool = 0.0; // Reset reserve pool.
     g_HealingAuras.deleteAll(); // Clear Heal Aura dictionary.
     g_PlayerBarriers.deleteAll(); // Clear Barrier dictionary.
     g_PlayerBloodlusts.deleteAll(); // Clear Bloodlusts dictionary.
@@ -132,7 +133,10 @@ void SetupTimers()
     g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
 
     // Difficulty.
-    g_Scheduler.SetTimeout("ApplyDifficultySettings", 1.0f); // Apply settings after 1 second (Incase plugin is reloaded).
+    g_Scheduler.SetTimeout("ApplyDifficultySettings", 1.0f); // Apply settings after X second (Incase plugin is reloaded).
+
+    // Hints.
+    g_Scheduler.SetTimeout("ShowHints", 30.0f); // Show hints every X seconds.
 }
 
 void PrecacheAll()
@@ -503,7 +507,12 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
         ResetPlayer(pPlayer);
     }
     
-    ShowHints();
+    // Show class menu if no class selected.
+    if(data.GetCurrentClass() == PlayerClass::CLASS_NONE)
+    {
+        g_Scheduler.SetTimeout("ShowClassMenuDelayed", 0.1f, @pPlayer);
+    }
+
     return HOOK_CONTINUE;
 }
 
@@ -749,6 +758,17 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         if(explosiveRounds !is null)
         {
             explosiveRounds.ResetRounds();
+        }
+    }
+
+    // Reset Engineer Minions and pools
+    if(g_PlayerMinions.exists(steamID))
+    {
+        MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+        if(minion !is null)
+        {
+            minion.DestroyAllMinions(pPlayer);
+            flMinionReservePool = 0.0;  // Reset reserve.
         }
     }
 
