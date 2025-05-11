@@ -1,21 +1,21 @@
 string strBloodlustStartSound = "garg/gar_pain1.wav";
 string strBloodlustEndSound = "player/breathe2.wav";
 string strBloodlustHitSound = "debris/bustflesh1.wav";
-string strBloodlustActiveSound = "player/heartbeat1.wav"; // Continuous blood rage sound
+string strBloodlustActiveSound = "player/heartbeat1.wav";
 
-float flBloodlustEnergyCost = 2.0f; // Energy drain per 0.5s
+float flBloodlustEnergyCost = 2.0f; // Energy drain per 0.5s.
 float flBaseArmorConversion = 1.0f; // Base armor to health conversion whilst bloodlust is active.
 float flArmorConversionPerLevel = 0.05f; // bonus conversion per level.
 float flBaseDamageLifesteal = 0.30f; // % base damage dealt returned as health.
 float flLifestealPerLevel = 0.005f; // % bonus lifesteal per level.
 float flMeleeLifestealMult = flBaseDamageLifesteal * 2; // Double lifesteal whilst holding melee weapons.
-const float flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles
+const float flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
 
 // For stats menu.
 float flBloodlustOverhealBase = flBaseArmorConversion;
 float flBloodlustOverhealBonus = 0.0f;
 
-const Vector BLOODLUST_COLOR = Vector(255, 0, 0); // Red glow
+const Vector BLOODLUST_COLOR = Vector(255, 0, 0); // Red glow.
 
 dictionary g_PlayerBloodlusts;
 
@@ -99,7 +99,6 @@ class BloodlustData
             return;
         }
 
-        // Add stats initialization check like HealAura
         if(m_pStats is null)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -217,7 +216,7 @@ class BloodlustData
         // Apply glow shell
         target.pev.renderfx = kRenderFxGlowShell;
         target.pev.rendermode = kRenderNormal;
-        target.pev.renderamt = 4; // Keep low for thin shell
+        target.pev.renderamt = 4; // Shell thickness.
         target.pev.rendercolor = BLOODLUST_COLOR;
 
         // Add dynamic light
@@ -226,12 +225,12 @@ class BloodlustData
             msg.WriteCoord(target.pev.origin.x);
             msg.WriteCoord(target.pev.origin.y);
             msg.WriteCoord(target.pev.origin.z);
-            msg.WriteByte(15); // Radius
+            msg.WriteByte(15); // Radius.
             msg.WriteByte(int(BLOODLUST_COLOR.x));
             msg.WriteByte(int(BLOODLUST_COLOR.y));
             msg.WriteByte(int(BLOODLUST_COLOR.z));
-            msg.WriteByte(1); // Life in 0.1s
-            msg.WriteByte(0); // Decay rate
+            msg.WriteByte(1); // Life in 0.1s.
+            msg.WriteByte(0); // Decay rate.
         msg.End();
     }
 
@@ -244,24 +243,4 @@ class BloodlustData
         target.pev.rendermode = kRenderNormal;
         target.pev.rendercolor = Vector(0, 0, 0);
     }
-
-    //void DrainEnergy(CBasePlayer@ pPlayer, float amount)
-    //{
-    //    if(pPlayer is null)
-    //        return;
-    //
-    //    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    //    if(!g_PlayerClassResources.exists(steamID))
-    //        return;
-    //
-    //    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-    //    float currentEnergy = float(resources['current']);
-    //    
-    //    // Drain energy based on damage dealt (at half rate)
-    //    resources['current'] = Math.max(0, currentEnergy - (amount * 0.5f));
-    //
-        // Deactivate if out of energy
-    //    if(float(resources['current']) <= 0)
-    //        DeactivateBloodlust(pPlayer);
-    //}
 }

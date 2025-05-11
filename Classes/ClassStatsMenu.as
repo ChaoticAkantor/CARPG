@@ -73,6 +73,13 @@ namespace Menu
                     m_pMenu.AddItem("Barrier Cost: " + flBarrierDamageToEnergyMult * 100 + "% of damage taken\n", null);
                     break;
                 }
+                case PlayerClass::CLASS_CLOAKER:
+                {
+                    m_pMenu.AddItem("=== Cloaker: ===", null);
+                    m_pMenu.AddItem("Cloak Damage Bonus: WIP" + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n", null);
+                    m_pMenu.AddItem("Cloak Cost: WIP" + flBarrierDamageToEnergyMult * 100 + "% of damage taken\n", null);
+                    break;
+                }
                 case PlayerClass::CLASS_DEMOLITIONIST:
                 {
                     m_pMenu.AddItem("=== Demolitionist: ===", null);
@@ -82,19 +89,19 @@ namespace Menu
                 }
             }
 
-            // Universal ammo regeneration stats
+            // Universal ammo regeneration stats.
             m_pMenu.AddItem("=== Ammo Regeneration ===", null);
             
-            // Use the new data-oriented structure to display ammo stats
+            // Use the new data-oriented structure to display ammo stats.
             for (uint i = 0; i < g_AmmoTypes.length(); i++) 
             {
                 AmmoType@ ammoType = g_AmmoTypes[i];
                 
-                // Skip special ammo types that belong in the explosives category
+                // Skip special ammo types that belong in the explosives category.
                 if (ammoType.hasThreshold && ammoType.name != "health") 
                     continue;
                     
-                // Format: "9mm: 1 per 1s (max: 300)"
+                // Format: "9mm: 1 per 1s (max: 300)".
                 string ammoInfo = ammoType.name + ": " + ammoType.amount + " per " + 
                                  (ammoType.delay * flAmmoTick) + "s" + 
                                  " (max: " + ammoType.maxAmount + ")";
@@ -103,12 +110,12 @@ namespace Menu
             
             m_pMenu.AddItem("\n=== Explosives Regeneration ===", null);
             
-            // Display threshold-based ammo types
+            // Display threshold-based ammo types.
             for (uint i = 0; i < g_AmmoTypes.length(); i++) 
             {
                 AmmoType@ ammoType = g_AmmoTypes[i];
                 
-                // Only show items with threshold
+                // Only show items with threshold.
                 if (!ammoType.hasThreshold)
                     continue;
 
@@ -133,7 +140,7 @@ namespace Menu
         
         private void MenuCallback(CTextMenu@ menu, CBasePlayer@ pPlayer, int page, const CTextMenuItem@ item)
         {
-            // Menu closes automatically when no selection is made
+            // Menu closes automatically when no selection is made.
         }
     }
 }

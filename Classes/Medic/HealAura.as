@@ -50,7 +50,7 @@ class HealingAura
 
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = m_flHealInterval;
-    private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing
+    private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
 
     private float m_flGlowDuration = 0.25f;
     private Vector m_vGlowColor = Vector(0, 255, 0);
@@ -172,16 +172,16 @@ class HealingAura
             msg.WriteCoord(origin.y);
             msg.WriteCoord(origin.z + m_flRadius);
             msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
-            msg.WriteByte(0); // Starting frame
-            msg.WriteByte(0); // Frame rate
-            msg.WriteByte(10); // Life
-            msg.WriteByte(32); // Width
-            msg.WriteByte(0); // Noise
-            msg.WriteByte(uint8(m_vAuraColor.x)); // Red
-            msg.WriteByte(uint8(m_vAuraColor.y)); // Green
-            msg.WriteByte(uint8(m_vAuraColor.z)); // Blue
-            msg.WriteByte(128); // Brightness
-            msg.WriteByte(0); // Speed
+            msg.WriteByte(0); // Starting frame.
+            msg.WriteByte(0); // Frame rate.
+            msg.WriteByte(10); // Life.
+            msg.WriteByte(32); // Width.
+            msg.WriteByte(0); // Noise.
+            msg.WriteByte(uint8(m_vAuraColor.x)); // Red.
+            msg.WriteByte(uint8(m_vAuraColor.y)); // Green.
+            msg.WriteByte(uint8(m_vAuraColor.z)); // Blue.
+            msg.WriteByte(128); // Brightness.
+            msg.WriteByte(0); // Speed.
         msg.End();
     }
 
@@ -216,21 +216,21 @@ class HealingAura
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flRadius, "*", "classname")) !is null)
         {
-            // Skip if dead or at full health
+            // Skip if dead or at full health.
             if(!pEntity.IsAlive() || pEntity.pev.health >= pEntity.pev.max_health)
                 continue;
 
-            // Check if target is friendly
+            // Check if target is friendly.
             if(pEntity.IsPlayer())
             {
-                // Always heal other players
+                // Always heal other players.
                 CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
                 if(pTarget is null)
                     continue;
             }
             else
             {
-                // Only heal friendly NPCs
+                // Only heal friendly NPCs.
                 CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                 if(pMonster is null || !pMonster.IsPlayerAlly())
                     continue;
@@ -238,7 +238,7 @@ class HealingAura
 
             float healAmount = GetScaledHealAmount();
             
-            // NPC's get healing modifier
+            // NPC's get healing modifier.
             if(!pEntity.IsPlayer())
                 healAmount *= 3.0f;
 
@@ -248,7 +248,7 @@ class HealingAura
                 pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
                 pPlayer.pev.frags += 1; // Award frag for successful heal.
                 
-                ApplyHealEffect(pEntity); // Replace ApplyHealGlow with new effect
+                ApplyHealEffect(pEntity);
                 g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
             }
         }
@@ -270,10 +270,10 @@ class HealingAura
             return;
 
         Vector origin = target.pev.origin;
-        origin.z += 32; // Offset to center of entity
+        origin.z += 32; // Offset to center of entity.
         
         Vector endPoint = origin;
-        endPoint.z += 10; // Trail moves upward
+        endPoint.z += 10; // Trail moves upward.
 
         // Create sprite trail effect
         NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
@@ -285,7 +285,7 @@ class HealingAura
             msg.WriteCoord(endPoint.y);
             msg.WriteCoord(endPoint.z);
             msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-            msg.WriteByte(8);  // Count
+            msg.WriteByte(8);  // Count.
             msg.WriteByte(3);  // Life in 0.1's.
             msg.WriteByte(1);  // Scale in 0.1's.
             msg.WriteByte(15); // Velocity along vector in 10's.
@@ -298,7 +298,7 @@ class HealingAura
         if(pPlayer is null)
             return;
             
-        // Apply glow shell
+        // Apply glow shell.
         pPlayer.pev.renderfx = kRenderFxGlowShell;
         pPlayer.pev.rendermode = kRenderNormal;
         pPlayer.pev.renderamt = 4; // Shell thickness.
@@ -310,12 +310,12 @@ class HealingAura
             msg.WriteCoord(pPlayer.pev.origin.x);
             msg.WriteCoord(pPlayer.pev.origin.y);
             msg.WriteCoord(pPlayer.pev.origin.z);
-            msg.WriteByte(15); // Radius
+            msg.WriteByte(15); // Radius.
             msg.WriteByte(int(m_vAuraColor.x));
             msg.WriteByte(int(m_vAuraColor.y));
             msg.WriteByte(int(m_vAuraColor.z));
-            msg.WriteByte(1); // Life in 0.1s
-            msg.WriteByte(0); // Decay rate
+            msg.WriteByte(1); // Life in 0.1s.
+            msg.WriteByte(0); // Decay rate.
         msg.End();
     }
 

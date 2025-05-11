@@ -1,5 +1,5 @@
 const string strShockrifleEquipSound = "weapons/shock_draw.wav";
-const int g_iResourceCostShockRifle = 31; // Need at least 1 energy to equip.
+const int g_iResourceCostShockRifle = 31; // Need at least 31 energy to equip, other wise it will begin to overload.
 
 dictionary g_ShockRifleData;
 
@@ -28,18 +28,18 @@ class ShockRifleData
         float flCurrentTime = g_Engine.time;
         float timeSinceLastUse = flCurrentTime - m_flLastUseTime;
         
-        // Fix cooldown timer if it somehow exceeds our limit
+        // Fix cooldown timer if it somehow exceeds our limit.
         if(timeSinceLastUse > m_flCooldown)
             timeSinceLastUse = m_flCooldown;
             
-        // Check if player already has shock rifle
+        // Check if player already has shock rifle.
         CBasePlayerItem@ pItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
         CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pItem);
         
-        // If player has shock rifle and is holding it, handle stowing it
+        // If player has shock rifle and is holding it, handle stowing it.
         if(pWeapon !is null && pPlayer.m_hActiveItem.GetEntity() is pWeapon)
         {
-            // Check cooldown only when attempting to stow
+            // Check cooldown only when attempting to stow.
             if(timeSinceLastUse < m_flCooldown)
             {
                 float remainingCooldown = m_flCooldown - timeSinceLastUse;
@@ -47,11 +47,11 @@ class ShockRifleData
                 return;
             }
             
-            // Return all remaining ammo as energy
+            // Return all remaining ammo as energy.
             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
             int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
             
-            // Update player's energy with remaining ammo
+            // Update player's energy with remaining ammo.
             float currentEnergy = float(resources['current']);
             float maxEnergy = float(resources['max']);
             currentEnergy = Math.min(currentEnergy + currentAmmo, maxEnergy);
@@ -66,14 +66,14 @@ class ShockRifleData
             m_flLastUseTime = flCurrentTime;
             return;
         }
-        // If player has shock rifle but isn't holding it, do nothing
+        // If player has shock rifle but isn't holding it, do nothing.
         else if(pWeapon !is null)
         {
             //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "You must be holding a Shock Rifle to stow it.\n");
             return;
         }
 
-        // Create new shock rifle - first check energy
+        // Create new shock rifle - first check energy.
         float currentEnergy = float(resources['current']);
         if(currentEnergy < g_iResourceCostShockRifle)
         {
@@ -81,7 +81,7 @@ class ShockRifleData
             return;
         }
         
-        // Now check cooldown since we have enough energy
+        // Now check cooldown since we have enough energy.
         if(timeSinceLastUse < m_flCooldown)
         {
             float remainingCooldown = m_flCooldown - timeSinceLastUse;
@@ -131,7 +131,7 @@ void CheckWeaponsShockRifle()
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(data !is null && data.GetCurrentClass() != PlayerClass::CLASS_SHOCKTROOPER)
                 {
-                    // Remove shock rifle if player switches class
+                    // Remove shock rifle if player switches class.
                     CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pPlayer.HasNamedPlayerItem("weapon_shockrifle"));
                     if(pWeapon !is null)
                         g_EntityFuncs.Remove(pWeapon);

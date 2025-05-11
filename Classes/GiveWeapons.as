@@ -3,16 +3,13 @@ must be careful with what weapons are given, as not only can it break map balanc
 some weapon models/sounds/sprites might not be precached for that map or globaly.
 */
 
-// Define weapon lists per class
+// Define weapon lists per class. Class will instantly receive these weapons when they change to it.
 dictionary g_ClassWeapons = {
     {PlayerClass::CLASS_MEDIC, array<string> = {
         "weapon_medkit",
     }},
     {PlayerClass::CLASS_ENGINEER, array<string> = {
         "weapon_pipewrench",
-    }},
-    {PlayerClass::CLASS_SHOCKTROOPER, array<string> = {
-
     }},
     {PlayerClass::CLASS_DEMOLITIONIST, array<string> = {
         "weapon_satchel",

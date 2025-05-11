@@ -2,7 +2,7 @@
 This file handles class specific resource, recovery and hud.
 */
 
-dictionary g_PlayerClassResources; // Store resources per player
+dictionary g_PlayerClassResources; // Store resources per player.
 
 // Base values for stat menu.
 const float flBaseResource = 0.0;
@@ -17,12 +17,11 @@ void RegenClassResource()
     for(int i = 1; i <= iMaxPlayers; ++i)
     {
         CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        // Check if player exists, is connected AND is alive
-        if(pPlayer !is null && pPlayer.IsConnected() && pPlayer.IsAlive())
+        if(pPlayer !is null && pPlayer.IsConnected() && pPlayer.IsAlive()) // Check if player exists, is connected AND is alive.
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             
-            // Initialize resource if not exists
+            // Initialize resource if it doesn't exist.
             if(!g_PlayerClassResources.exists(steamID))
             {
                 dictionary resources = {
@@ -40,7 +39,7 @@ void RegenClassResource()
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(data !is null)
                 {
-                    // Check for active abilities that prevent regen
+                    // Check for active abilities and prevent energy regen.
                     bool isAuraActive = false;
                     bool isBarrierActive = false;
                     bool hasActiveMinions = false;
@@ -117,8 +116,7 @@ void RegenClassResource()
     }
 }
 
-// Add this helper function near the top of the file
-string GetResourceBar(float current, float maximum, int barLength = 20)
+string GetResourceBar(float current, float maximum, int barLength = 20) // Ability bar.
 {
     float ratio = current / maximum;
     float realpos = ratio * barLength;
@@ -172,7 +170,7 @@ void UpdateClassResource()
             params.g2 = 255;
             params.b2 = 255;
 
-            string resourceName = "Energy"; // Rename energy to class specific resource name.
+            string resourceName = "Energy"; // Rename our energy to class specific resource name.
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -210,7 +208,6 @@ void UpdateClassResource()
             string resourceInfo = "" + resourceName + ": (" + int(current) + "/" + int(maximum) +  ") - " + GetResourceBar(current, maximum) + "\n";
             //string resourceInfo = "" + resourceName + ": " + GetResourceBar(current, maximum) + " - (" + int(current) + "/" + int(maximum) + ")\n"; // Original.
 
-            // Add additional class-specific info here later
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -225,10 +222,10 @@ void UpdateClassResource()
                                 MinionData@ minionData = cast<MinionData@>(g_PlayerMinions[steamID]);
                                 if(minionData !is null)
                                 {
-                                    // Show just the count without max
+                                    // Show the robot count.
                                     resourceInfo += "[Robots: " + minionData.GetMinionCount() + "]";
                                     
-                                    // Add individual minion health info
+                                    // Add individual minion health info.
                                     array<EHandle>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
@@ -257,11 +254,11 @@ void UpdateClassResource()
                                     bool isActive = barrierData.IsActive();
                                     resourceInfo += "[" + (isActive ? "ON" : "OFF") + "] ";
                                     
-                                    //if(isActive)
-                                    //{
+                                    if(isActive)
+                                    {
                                         float reduction = barrierData.GetDamageReduction() * 100;
                                         resourceInfo += "[DR: " + int(reduction) + "%]";
-                                    //}
+                                    }
                                 }
                             }
                             break;
@@ -281,7 +278,7 @@ void UpdateClassResource()
 
                         case PlayerClass::CLASS_SHOCKTROOPER:
                         {
-                            // Check for shock rifle
+                            // Check for shock rifle, doing this one differently incase we pick up a shock roach in the world.
                             bool hasShockRifleEquipped = false;
                             CBasePlayerItem@ currentItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
                             
@@ -290,15 +287,11 @@ void UpdateClassResource()
                                 hasShockRifleEquipped = true;
                             }
                             
-                            // We can also lookup ammo count for additional info
+                            // Grab ammo.
                             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
                             int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
                             
-                            resourceInfo += "[Shock Rifle: " + (hasShockRifleEquipped ? "EQUIPPED" : "STOWED") + "] ";
-                            if(hasShockRifleEquipped)
-                            {
-                                //resourceInfo += "[Charges: " + currentAmmo + "]";
-                            }
+                            resourceInfo += "[Shock Rifle: " + (hasShockRifleEquipped ? "EQUIPPED" : "STOWED") + "] "; // Shockrifle battery is energy so it's displayed differently.
                             break;
                         }
 

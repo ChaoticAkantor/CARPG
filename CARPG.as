@@ -24,7 +24,7 @@ This is our core file. Hooks, timers, initialisations of functions.
 // Includes now all in one file.
 #include "Includes"
 
-// Add near the top with other globals
+// Add near the top with other globals.
 array<string> g_DevList = 
 {
     "STEAM_0:1:21530096" // Unlike file structure, must use actual STEAM ID format.
@@ -104,7 +104,7 @@ void SetupTimers()
     // HP/AP Recovery System.
     g_Scheduler.SetInterval("RegenTickHP", flRegenTickHP, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for HP regen.
     g_Scheduler.SetInterval("RegenTickAP", flRegenTickAP, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for AP regen.
-    g_Scheduler.SetInterval("HurtDelayTick", flHurtDelayTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for hurt delay
+    g_Scheduler.SetInterval("HurtDelayTick", flHurtDelayTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for hurt delay.
     g_Scheduler.SetInterval("UpdateHUDHurtDelay", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for HUD display.
 
     // Resource System.
@@ -446,22 +446,22 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
                 float incomingDamage = pDamageInfo.flDamage;
                 float reduction = barrier.GetDamageReduction();
                 
-                // Calculate damage blocked
+                // Calculate damage blocked.
                 float blockedDamage = incomingDamage * reduction;
 
-                // Calculate final damage
+                // Calculate final damage.
                 pDamageInfo.flDamage = incomingDamage - blockedDamage;
                 
-                // Drain energy based on blocked damage
+                // Drain energy based on blocked damage.
                 barrier.DrainEnergy(pPlayer, blockedDamage);
                 
-                // Play hit sound with random pitch
+                // Play hit sound with random pitch.
                 int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
                 g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
 
-                // Add visual effect for damage blocked
+                // Add visual effect for damage blocked.
                 Vector origin = pPlayer.pev.origin;
-                origin.z += 32; // Offset to center of entity
+                origin.z += 32; // Offset to center of entity.
 
                 // Create spark shower effect
                 NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
@@ -612,7 +612,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
     return HOOK_CONTINUE;
 }
 
-// Check and update all player scores for XP system
+// Check and update all player scores for XP system.
 void CheckAllPlayerScores() 
 {
     const int iMaxPlayers = g_Engine.maxClients;
@@ -628,12 +628,12 @@ void CheckAllPlayerScores()
 
         if(!g_PlayerRPGData.exists(steamID))
         {
-            // Create new player data and store it by reference
+            // Create new player data and store it by reference.
             PlayerData@ data = PlayerData(steamID);
             @g_PlayerRPGData[steamID] = @data;
         }
 
-        // Get existing data by reference
+        // Get existing data by reference.
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null)
         {
@@ -850,11 +850,11 @@ void ClearMinions()
         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[minionKeys[i]]);
         if(minion !is null)
         {
-            // Find the owning player if possible
+            // Find the owning player if possible.
             CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i + 1);
             if(pPlayer is null)
             {
-                // If owner not found, use first valid player as killer
+                // If owner not found, use first valid player as killer.
                 for(int j = 1; j <= g_Engine.maxClients; j++)
                 {
                     @pPlayer = g_PlayerFuncs.FindPlayerByIndex(j);
@@ -869,7 +869,7 @@ void ClearMinions()
 
 void AdjustAmmoForClass(CBasePlayer@ pPlayer)
 {
-    // Create temporary copies of ammo types for this player
+    // Create temporary copies of ammo types for this player.
     array<AmmoType@> playerAmmoTypes;
     for (uint i = 0; i < g_AmmoTypes.length(); i++) 
     {
@@ -879,7 +879,7 @@ void AdjustAmmoForClass(CBasePlayer@ pPlayer)
         playerAmmoTypes.insertLast(copy);
     }
     
-    // Call the existing function with the player's ammo types
+    // Call the existing function with the player's ammo types.
     AdjustAmmoForPlayerClass(pPlayer, playerAmmoTypes);
 }
 

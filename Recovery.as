@@ -10,7 +10,6 @@ class RecoveryData
     float lastHurtTime = 0.0f;
 }
 
-// Global settings
 const float flRegenTickHP = 1.0f;
 const float flRegenTickAP = 0.1f;
 const float flHurtDelayTick = 0.5f;
@@ -22,7 +21,7 @@ const bool bAllowAPRegen = true;
 const string strMedkitSound = "items/weapondrop1.wav";
 const string strHurtDelaySprite = "tfchud06.spr";
 
-void RegenTickHP()
+void RegenTickHP() // Regen HP.
 {   
     const int iMaxPlayers = g_Engine.maxClients;
     for (int i = 1; i <= iMaxPlayers; ++i)
@@ -52,7 +51,7 @@ void RegenTickHP()
     }
 }
 
-void RegenTickAP()
+void RegenTickAP() // Regen AP.
 {   
     const int iMaxPlayers = g_Engine.maxClients;
     for (int i = 1; i <= iMaxPlayers; ++i)
@@ -82,7 +81,7 @@ void RegenTickAP()
     }
 }
 
-void HurtDelayTick()
+void HurtDelayTick() // Think.
 {
     const int iMaxPlayers = g_Engine.maxClients;
     for (int i = 1; i <= iMaxPlayers; ++i)
@@ -108,7 +107,7 @@ void HurtDelayTick()
     }
 }
 
-void UpdateHUDHurtDelay()
+void UpdateHUDHurtDelay() // Update HUD for hurt delay sprite.
 {
     const int iMaxPlayers = g_Engine.maxClients;
     for (int i = 1; i <= iMaxPlayers; ++i)
@@ -148,7 +147,7 @@ void UpdateHUDHurtDelay()
     }
 }
 
-void StopPlayerRegen(CBasePlayer@ pPlayer)
+void StopPlayerRegen(CBasePlayer@ pPlayer) // Stop Player Regen when hurt, called in OnTakeDamage Hook.
 {
     if(pPlayer is null)
         return;

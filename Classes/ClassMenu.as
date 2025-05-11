@@ -66,14 +66,12 @@ namespace Menu
         {
             if(pPlayer is null) return;
 
-            // Play class change sound
-            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strClassChangeSound, VOL_NORM, ATTN_NORM);
+            
+            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strClassChangeSound, VOL_NORM, ATTN_NORM); // Play class change sound.
 
-            // Create effects at player position
-            Vector pos = pPlayer.pev.origin;
-            //pos.z += 32.0f; // Raise effect above player's feet
+            Vector pos = pPlayer.pev.origin; // Create effects at player position.
 
-            // Primary effect - Teleport Splash (Quake-style)
+            // Primary effect - Teleport Splash (Quake-style).
             NetworkMessage teleport(MSG_ALL, NetworkMessages::SVC_TEMPENTITY);
             teleport.WriteByte(TE_TELEPORT);
             teleport.WriteCoord(pos.x);

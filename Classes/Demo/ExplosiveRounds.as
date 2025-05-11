@@ -20,8 +20,7 @@ const float flRoundsGivenPerActivation = 1.0f; // Fixed rounds given per activat
 const string strExplosiveRoundsActivateSound = "weapons/reload3.wav";
 const string strExplosiveRoundsExplosionSprite = "sprites/eexplo.spr";
 
-// Replace the fixed index dictionary with string-based one
-dictionary g_AmmoTypeDamageMultipliers = 
+dictionary g_AmmoTypeDamageMultipliers = // Our multipliers for explosive damage based on ammo type.
 {
     {"9mm", 1.0f},
     {"357", 1.0f},
@@ -100,11 +99,9 @@ class ExplosiveRoundsData
             return;
         }
 
-        // Add fixed number of rounds
-        m_flRoundsInPool = Math.min(m_flRoundsInPool + flRoundsGivenPerActivation, float(GetMaxRounds()));
+        m_flRoundsInPool = Math.min(m_flRoundsInPool + flRoundsGivenPerActivation, float(GetMaxRounds())); // Add fixed number of rounds.
 
-        // Deduct fixed energy cost
-        resources['current'] = Math.max(0, current - flEnergyCostPerActivation);
+        resources['current'] = Math.max(0, current - flEnergyCostPerActivation); // Deduct fixed energy cost.
 
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strExplosiveRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + int(flRoundsGivenPerActivation) + " Explosive Rounds\n");
@@ -112,13 +109,12 @@ class ExplosiveRoundsData
         m_flLastToggleTime = currentTime;
     }
 
-    // Then modify FireExplosiveRounds to use ammo names
     void FireExplosiveRounds(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon)
     {
         if(pPlayer is null || pWeapon is null || !HasRounds())
             return;
             
-        int ammoType = -1; // Initialize with invalid index
+        int ammoType = -1; // Initialize with invalid index.
         if(pWeapon !is null)
         {
             ammoType = pWeapon.PrimaryAmmoIndex();
@@ -129,15 +125,14 @@ class ExplosiveRoundsData
 
         string ammoName = GetAmmoName(ammoType);
         string weaponName = pWeapon.GetClassname();
-        float damageMultiplier = 1.0f; // Default multiplier
+        float damageMultiplier = 1.0f; // Default multiplier, incase ammo type is invalid or unasigned in array.
         
         if(g_AmmoTypeDamageMultipliers.exists(ammoName))
         {
             damageMultiplier = float(g_AmmoTypeDamageMultipliers[ammoName]);
         }
 
-        // Special handling for specific ammo types
-        if(ammoName == "buckshot")
+        if(ammoName == "buckshot") // Special handling for specific ammo types.
         {
             const int SHOTGUN_PELLETS = 6;
             
@@ -159,27 +154,27 @@ class ExplosiveRoundsData
                 TraceResult tr;
                 g_Utility.TraceLine(vecSrc, vecEnd, dont_ignore_monsters, pPlayer.edict(), tr);
 
-                // Create visual explosion
+                // Create visual explosion.
                 NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, tr.vecEndPos);
                 msg.WriteByte(TE_EXPLOSION);
                 msg.WriteCoord(tr.vecEndPos.x);
                 msg.WriteCoord(tr.vecEndPos.y);
                 msg.WriteCoord(tr.vecEndPos.z);
                 msg.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
-                msg.WriteByte(10); // Scale
-                msg.WriteByte(15); // Framerate
-                msg.WriteByte(0); // Flags
+                msg.WriteByte(10); // Scale.
+                msg.WriteByte(15); // Framerate.
+                msg.WriteByte(0); // Flags.
                 msg.End();
 
-                // Apply damage at same position
+                // Apply damage at same position.
                 g_WeaponFuncs.RadiusDamage(
                     tr.vecEndPos,
                     pPlayer.pev,
                     pPlayer.pev,
                     GetScaledDamage() * damageMultiplier,
                     GetRadius(),
-                    CLASS_PLAYER_ALLY,
-                    DMG_BLAST | DMG_ALWAYSGIB
+                    CLASS_PLAYER_ALLY, // Will not damage allies of player.
+                    DMG_BLAST | DMG_ALWAYSGIB // Damage type and flags/
                 );
             }
 
@@ -209,9 +204,9 @@ class ExplosiveRoundsData
                 msg.WriteCoord(tr.vecEndPos.y);
                 msg.WriteCoord(tr.vecEndPos.z);
                 msg.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
-                msg.WriteByte(8); // Slightly smaller scale for burst
-                msg.WriteByte(15); // Framerate
-                msg.WriteByte(0); // Flags
+                msg.WriteByte(8); // Slightly smaller scale for burst.
+                msg.WriteByte(15); // Framerate.
+                msg.WriteByte(0); // Flags.
                 msg.End();
 
                 g_WeaponFuncs.RadiusDamage(
@@ -229,8 +224,7 @@ class ExplosiveRoundsData
         }
         else
         {
-            // Normal weapon handling
-            Vector vecSrc = pPlayer.GetGunPosition();
+            Vector vecSrc = pPlayer.GetGunPosition(); // Get player's gun position.
 
             // Get player's view angles and convert to aim vector
             Vector angles = pPlayer.pev.v_angle;
@@ -249,9 +243,9 @@ class ExplosiveRoundsData
             msg.WriteCoord(tr.vecEndPos.y);
             msg.WriteCoord(tr.vecEndPos.z);
             msg.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
-            msg.WriteByte(15); // Scale
-            msg.WriteByte(15); // Framerate
-            msg.WriteByte(0); // Flags
+            msg.WriteByte(15); // Scale.
+            msg.WriteByte(15); // Framerate.
+            msg.WriteByte(0); // Flags.
             msg.End();
 
             g_WeaponFuncs.RadiusDamage(
@@ -260,7 +254,7 @@ class ExplosiveRoundsData
                 pPlayer.pev,
                 GetScaledDamage() * damageMultiplier,
                 GetRadius(),
-                CLASS_PLAYER_ALLY,
+                CLASS_PLAYER_ALLY, // Make sure we always use this flag to stop greifing!
                 DMG_BLAST | DMG_ALWAYSGIB
             );
             
@@ -269,7 +263,7 @@ class ExplosiveRoundsData
     }
 }
 
-// Helper function to get ammo name from index
+// Helper function to get ammo name from index.
 string GetAmmoName(int ammoType)
 {
     if(ammoType == g_PlayerFuncs.GetAmmoIndex("9mm")) return "9mm";

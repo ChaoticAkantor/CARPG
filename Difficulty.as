@@ -36,16 +36,16 @@ void DisableAmmoRespawns() // Force norespawn flag on all ammo entities in the m
                 if (flDistance <= flExcludeRadius)
                 {
                     bExclude = true;
-                    break; // No need to check further players
+                    break; // No need to check further players.
                 }
             }
         }
 
-        // Skip this entity if it's within the exclusion radius of a player
+        // Skip this entity if it's within the exclusion radius of a player.
         if (bExclude)
             continue;
 
-        // Remove respawn flag if it exists
+        // Remove respawn flag if it exists.
         if (ent.pev.spawnflags & SF_NORESPAWN == 0)
         {
             ent.pev.spawnflags |= SF_NORESPAWN;

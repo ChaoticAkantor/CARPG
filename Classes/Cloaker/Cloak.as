@@ -34,7 +34,7 @@ class CloakData
         if(!m_bActive || m_flLastEnergyConsumed <= 0)
             return 1.0f;
                 
-        // Get total potential damage bonus based on level
+        // Get total potential damage bonus based on level.
         float totalPossibleBonus = flBaseDamageBonus;
         if(m_pStats !is null)
         {
@@ -90,7 +90,7 @@ class CloakData
                     m_bActive = true;
                     m_flLastDrainTime = currentTime;
                     
-                    // Set initial energy value for damage calculation
+                    // Set initial energy value for damage calculation.
                     m_flLastEnergyConsumed = float(resources['current']);
                     
                     // Visual effects
@@ -104,15 +104,15 @@ class CloakData
                         message.WriteCoord(pPlayer.pev.origin.x);
                         message.WriteCoord(pPlayer.pev.origin.y);
                         message.WriteCoord(pPlayer.pev.origin.z);
-                        message.WriteShort(50);  // radius
-                        message.WriteByte(1);   // particle color
-                        message.WriteByte(3);    // duration (in 0.1 sec)
+                        message.WriteShort(50);  // radius.
+                        message.WriteByte(1);   // particle color.
+                        message.WriteByte(3);    // duration (in 0.1 sec).
                     message.End();
                     
-                    // AI targeting
+                    // AI targeting.
                     pPlayer.pev.flags |= FL_NOTARGET;
                     
-                    // Sounds - activation and loop
+                    // Sounds - activation and loop.
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Enabled!\n");
@@ -140,10 +140,10 @@ class CloakData
         pPlayer.pev.renderfx = kRenderFxNone;
         pPlayer.pev.renderamt = 255;  // Fully visible.
         
-        // Reset AI targeting
+        // Reset AI targeting.
         pPlayer.pev.flags &= ~FL_NOTARGET;
         
-        // Stop looping sound and play deactivation sound
+        // Stop looping sound and play deactivation sound.
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.0f, ATTN_NORM, SND_STOP);
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);    
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Disabled!\n");
@@ -217,10 +217,9 @@ class CloakData
                 float current = float(resources['current']);
                 m_flLastEnergyConsumed = current;
                 
-                // Reduce by fixed amount instead of zeroing
-                current -= flCloakEnergyCostPerShot;
+                current -= flCloakEnergyCostPerShot; // Reduce energy when shooting.
                 
-                // Check if we've run out
+                // End cloak if energy runs out.
                 if(current <= 0)
                 {
                     current = 0;

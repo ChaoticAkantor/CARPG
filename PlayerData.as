@@ -23,7 +23,6 @@ float g_flMedkitCapacityBonus = 0.0f;
 // Used for debug menu.
 int g_iMaxLevel = 50;
 
-// When adding new classes, add from second to last.
 dictionary g_ClassNames = 
 {
     {PlayerClass::CLASS_NONE, "None"},
@@ -36,7 +35,6 @@ dictionary g_ClassNames =
     {PlayerClass::CLASS_DEMOLITIONIST, "Demolitionist"}
 };
 
-// When adding new classes, add from second to last.
 array<PlayerClass> g_ClassList = 
 {
     PlayerClass::CLASS_MEDIC,
@@ -48,7 +46,6 @@ array<PlayerClass> g_ClassList =
     PlayerClass::CLASS_DEMOLITIONIST
 };
 
-// When adding new classes, add from second to last.
 enum PlayerClass 
 {
     CLASS_NONE = 0,
@@ -61,7 +58,6 @@ enum PlayerClass
     CLASS_DEMOLITIONIST
 }
 
-// Class definition data structure
 class ClassDefinition 
 {
     string name;
@@ -70,15 +66,15 @@ class ClassDefinition
     float energyPerLevel = 2.0f; // Default energy per level.
     float energyRegenPerLevel = 0.1f; // Default energy regen per level.
     
-    ClassDefinition(string _name) {
+    ClassDefinition(string _name) 
+    {
         name = _name;
     }
 }
 
 dictionary g_ClassDefinitions;
 
-// Initialize class definitions
-void InitializeClassDefinitions()
+void InitializeClassDefinitions() // Initialize class definitions.
 {
     // Clear existing definitions
     if(g_ClassDefinitions !is null)
@@ -91,7 +87,7 @@ void InitializeClassDefinitions()
         {
             ClassDefinition@ def = ClassDefinition(string(g_ClassNames[pClass]));
             
-            // Set class-specific parameters
+            // Set class-specific parameters.
             switch(pClass) // Balancing - Classes get a total of 6.0f spread between health and armor. Energy max and rate is determined by ability.
             {
                 case PlayerClass::CLASS_MEDIC:
@@ -157,7 +153,7 @@ class ClassStats
     private int XP_BASE = 20;          // Base XP for level 1.
     private int XP_MULTIPLIER = 3;     // Exponential growth factor.
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
-    private string m_szSteamID; // Add this to store player's SteamID
+    private string m_szSteamID; // Store player's SteamID.
     
     int GetLevel() { return m_iLevel; }
     int GetXP() { return m_iXP; }
@@ -199,14 +195,14 @@ class ClassStats
     { 
         m_iXP = xp;
         
-        // Handle max level case
+        // Handle max level case.
         if(IsMaxLevel())
         {
             m_iXP = GetTotalXPForLevel(MAX_LEVEL);
             m_iCurrentLevelXP = 0;
         }
         
-        // Calculate new level and show effects if player provided
+        // Calculate new level and show effects.
         while(!IsMaxLevel())
         {
             int neededForNext = GetXPForLevel(m_iLevel);
@@ -227,9 +223,9 @@ class ClassStats
                     message.WriteCoord(pPlayer.pev.origin.x);
                     message.WriteCoord(pPlayer.pev.origin.y);
                     message.WriteCoord(pPlayer.pev.origin.z);
-                    message.WriteShort(80);  // Radius
-                    message.WriteByte(255);  // Particle color
-                    message.WriteByte(5);    // Duration (in 0.1s)
+                    message.WriteShort(80);  // Radius.
+                    message.WriteByte(255);  // Particle color.
+                    message.WriteByte(5);    // Duration (in 0.1s).
                     message.End();
 
                     playerData.CalculateStats(pPlayer);
@@ -271,15 +267,15 @@ class ClassStats
                         " (" + className + ") has reached Level " + m_iLevel + "!\n");
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
-                    // Level up effect
+                    // Level up effect.
                     NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
                     message.WriteByte(TE_PARTICLEBURST);
                     message.WriteCoord(pPlayer.pev.origin.x);
                     message.WriteCoord(pPlayer.pev.origin.y);
                     message.WriteCoord(pPlayer.pev.origin.z);
-                    message.WriteShort(80);  // Radius
-                    message.WriteByte(255);  // Particle color - 255 is confetti-like
-                    message.WriteByte(5);    // Duration (in 0.1s)
+                    message.WriteShort(80);  // Radius.
+                    message.WriteByte(255);  // Particle color - 255 is confetti-like.
+                    message.WriteByte(5);    // Duration (in 0.1s).
                     message.End();
 
                     playerData.CalculateStats(pPlayer);
@@ -293,20 +289,19 @@ class ClassStats
         UpdateCurrentLevelXP();
     }
 
-    // Add setter for SteamID
     void SetSteamID(string steamID) { m_szSteamID = steamID; }
 }
 
 class PlayerData
 {
-    // Player identification
+    // Player identification.
     private string m_szSteamID;
     
-    // Class system
+    // Class system.
     private PlayerClass m_CurrentClass = PlayerClass::CLASS_NONE;
     private dictionary m_ClassData;
     
-    // Score tracking
+    // Score tracking.
     private int m_iScore = 0;
     private int m_iLastScore = 0;
 
@@ -327,14 +322,14 @@ class PlayerData
         m_ClassMenu.Show(pPlayer);
     }
     
-    // Constructor
+    // Constructor.
     PlayerData(string steamID)
     {
         m_szSteamID = steamID;
         InitializeClasses();
         InitializeClassDefinitions();
         
-        // Initialize last score properly by checking current score before loading from file
+        // Initialize last score properly by checking current score before loading from file.
         const int iMaxPlayers = g_Engine.maxClients;
         for(int i = 1; i <= iMaxPlayers; ++i)
         {
@@ -346,8 +341,7 @@ class PlayerData
             }
         }
         
-        // Now load from file after setting last score
-        LoadFromFile();
+        LoadFromFile(); // Now load from file after setting last score.
     }
     
     private void InitializeClasses()
@@ -365,14 +359,14 @@ class PlayerData
         
         m_CurrentClass = newClass;
         
-        // Find the player and update their stats
+        // Find the player and update their stats.
         const int iMaxPlayers = g_Engine.maxClients;
         for(int i = 1; i <= iMaxPlayers; ++i)
         {
             CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
             if(pPlayer !is null && g_EngineFuncs.GetPlayerAuthId(pPlayer.edict()) == m_szSteamID)
             {
-                // Initialize resources first
+                // Initialize resources first.
                 string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
                 if(!g_PlayerClassResources.exists(steamID))
                 {
@@ -380,7 +374,7 @@ class PlayerData
                     @g_PlayerClassResources[steamID] = resources;
                 }
 
-                // Initialize class-specific data
+                // Initialize class-specific data.
                 switch(newClass)
                 {
                     case PlayerClass::CLASS_MEDIC:
@@ -390,7 +384,6 @@ class PlayerData
                             data.Initialize(GetCurrentClassStats());
                             g_HealingAuras[steamID] = data;
                             
-                            // Initialize resources
                             dictionary resources = 
                             {
                                 {'current', flBaseResource},
@@ -503,17 +496,18 @@ class PlayerData
                         break;
                 }
                 
-                // Calculate and update all stats
-                CalculateStats(pPlayer);
+                CalculateStats(pPlayer); // Calculate and update all stats
 
-                // Check and cap energy if it exceeds max
                 dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+
+                // Check and cap energy if it exceeds max.
                 if(resources !is null)
                 {
+                    resources['current'] = 0; // Reset current energy to 0 if we switch classes.
+                    
+                    // Cap current energy if it exceeds maximum.
                     float currentEnergy = float(resources['current']);
                     float maxEnergy = float(resources['max']);
-                    
-                    // Cap current energy if it exceeds maximum
                     if(currentEnergy > maxEnergy)
                     {
                         resources['current'] = maxEnergy;
@@ -581,7 +575,7 @@ class PlayerData
             if(pPlayer.pev.armorvalue > maxArmor)
                 pPlayer.pev.armorvalue = maxArmor;
                 
-            // Update menu display values
+            // Update menu display values.
             g_flHPBonus = maxHealth - g_flBaseMaxHP;
             g_flAPBonus = maxArmor - g_flBaseMaxAP;
             g_flResourceBonus = maxResource - g_flBaseMaxResource;
@@ -624,7 +618,7 @@ class PlayerData
         }
     }
     
-    // Score tracking
+    // Score tracking.
     void CheckScoreChange(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null) return;
@@ -637,7 +631,7 @@ class PlayerData
             {
                 m_iScore += scoreDiff;
                 
-                // Share XP with all players
+                // Share XP with all players.
                 const int iMaxPlayers = g_Engine.maxClients;
                 for(int i = 1; i <= iMaxPlayers; i++)
                 {
@@ -686,10 +680,10 @@ class PlayerData
         File@ file = g_FileSystem.OpenFile(filePath, OpenFile::WRITE);
         if(file !is null && file.IsOpen())
         {
-            // Save last selected class
+            // Save last selected class.
             file.Write(string(int(m_CurrentClass)) + "\n");
             
-            // Save each class's stats separately
+            // Save each class's stats separately.
             for(uint i = 1; i <= PlayerClass::CLASS_DEMOLITIONIST; i++)
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
@@ -702,8 +696,7 @@ class PlayerData
             
             file.Close();
 
-            // Debug output
-            //g_Game.AlertMessage(at_console, "RPG: Successfully saved to " + filePath + "\n"); // Disabled for now.
+            //g_Game.AlertMessage(at_console, "RPG: Successfully saved to " + filePath + "\n"); // Debug.
         }
         else
         {
@@ -719,12 +712,12 @@ class PlayerData
         {
             string line;
             
-            // Load last selected class
+            // Load last selected class.
             file.ReadLine(line);
             m_CurrentClass = PlayerClass(atoi(line));
             g_Game.AlertMessage(at_console, "CARPG: Loaded class: " + GetClassName(m_CurrentClass) + "\n");
             
-            // Load each class's stats separately
+            // Load each class's stats separately.
             for(uint i = 1; i <= PlayerClass::CLASS_DEMOLITIONIST; i++)
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
@@ -772,7 +765,7 @@ class PlayerData
                     float resourceRegen = g_flBaseResourceRegen + (level * def.energyRegenPerLevel);
                     
                     resources['max'] = resourceMax;
-                    resources['current'] = resourceMax; // Start with full energy
+                    //resources['current'] = resourceMax; // Start with full energy.
                     resources['regen'] = resourceRegen;
                 }
             }
