@@ -46,24 +46,25 @@ float flMinionMaxReservePool = 0.0; // Max reserve pool.
 
 dictionary g_PlayerMinions;
 
-enum MinionType 
+enum MinionType // Minion gun type. Not all are supported.
 {
     MINION_MP5 = 0,
     MINION_SHOTGUN = 10,
     MINION_M16 = 4
 }
 
-// Reorder arrays to match enum order and progression
-const array<string> MINION_NAMES = {
+const array<string> MINION_NAMES = 
+{
     "MP5 Robogrunt",      // Keyvalue weapons(0)
     "Shotgun Robogrunt",  // Keyvalue weapons(8)
     "M16 Robogrunt"       // Keyvalue weapons(4)
 };
 
-const array<int> MINION_COSTS = {
+const array<int> MINION_COSTS = 
+{
     25,  // MP5
-    50,  // Shotgun
-    75   // M16
+    25,  // Shotgun
+    50   // M16
 };
 
 class MinionData
