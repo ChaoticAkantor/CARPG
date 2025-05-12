@@ -23,8 +23,8 @@ class AmmoType
     AmmoType(string ammoName, int baseDelay, int regenAmount, int maxAmmo, bool useThreshold = false, int thresholdValue = 0) 
     {
         name = ammoName;
-        counter = int(baseDelay * g_CurrentMapMultiplier);
-        delay = int(baseDelay * g_CurrentMapMultiplier);
+        counter = int(baseDelay * g_CurrentMapMultiplier); // Multiply the max by the map multiplier.
+        delay = int(baseDelay * g_CurrentMapMultiplier); // Multiply the delay by the map multiplier.
         amount = regenAmount;
         baseAmount = regenAmount;
         maxAmount = maxAmmo;
@@ -201,7 +201,7 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
                 rocketAmmo.threshold = 2 + (classLevel / 10);
             }
 
-            // Use helper for all delay adjustments
+            // Use helper for all delay adjustments.
             AdjustAmmoDelay(playerAmmoTypes, "hand grenade", 30, classLevel, 0.25f);
             AdjustAmmoDelay(playerAmmoTypes, "satchel charge", 60, classLevel, 0.5f);
             AdjustAmmoDelay(playerAmmoTypes, "rockets", 60, classLevel, 0.5f);
@@ -252,9 +252,9 @@ void InitializeMapMultipliers()
 {
     // Balance ammo regeneration seperately for different map series by mulitplying the timer values.
     g_MapPrefixMultipliers["sc_"] = 1.0f;    // Sven Co-op.
-    g_MapPrefixMultipliers["th_"] = 3.0f;    // They Hunger Ep1-3.
-    g_MapPrefixMultipliers["aom_"] = 3.0f;   // Afraid of Monsters Classic.
-    g_MapPrefixMultipliers["aomdc_"] = 3.0f; // Afraid of Monsters Directors-Cut.
+    g_MapPrefixMultipliers["th_"] = 4.0f;    // They Hunger Ep1-3.
+    g_MapPrefixMultipliers["aom_"] = 4.0f;   // Afraid of Monsters Classic.
+    g_MapPrefixMultipliers["aomdc_"] = 4.0f; // Afraid of Monsters Directors-Cut.
     g_MapPrefixMultipliers["hl_"] = 2.0f;    // Half-Life Campaign.
     g_MapPrefixMultipliers["of"] = 2.0f;    // Opposing-Force Campaign.
     g_MapPrefixMultipliers["bs"] = 2.0f;    // Blue-Shift Campaign.
@@ -272,7 +272,7 @@ void UpdateMapMultiplier()
     for(uint i = 0; i < prefixKeys.length(); i++)
     {
         string prefix = prefixKeys[i].ToLowercase();
-        if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix) // Check if map name starts with this prefix
+        if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix) // Check if map name starts with this prefix.
         {
             g_CurrentMapMultiplier = float(prefixes[prefixKeys[i]]);
             g_Game.AlertMessage(at_console, "CARPG: Map prefix - " + prefixKeys[i] + " detected. Ammo regen multiplier set to " + g_CurrentMapMultiplier + "\n");
