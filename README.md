@@ -21,8 +21,14 @@ Toggles a bloodlust rage state, a scaling % of your AP is converted into bonus t
 Any overhealed health will slowly drain back to your default whilst inactive.
 
 # Engineer - Minions
-can summon friendly robots based on maximum energy pool. Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. Always gets a pipewrench, can hit them with the wrench to heal them. Teleporting them also heals them but does not give you XP.
-Any XP they gain is sent to you instead.
+Can summon friendly robots based on maximum reserve power via a menu. 
+Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. 
+They can be also be killed or teleported from the menu. 
+Teleporting pulls them around you in a circle and updates their HP from any gained levels. 
+Manually killing them from the menu refunds their full cost. 
+Their health and damage scales with level.
+Any XP (frags/score) they gain is sent to you instead.
+Always gets a pipewrench, can hit them with the wrench to heal them.
 
 # Defender - DR Tank
 Has a toggleable barrier that layers over health and armor that has it's own health pool. Whilst active, further reduces damage you take. Starts at 75% damage reduction and scales up to 100% as you level.
