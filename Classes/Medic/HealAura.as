@@ -7,7 +7,7 @@ string strHealAuraEffectSprite = "sprites/cnt1.spr"; // Aura healing sprite.
 // Defines for stat menu.
 float g_flHealAuraBase = 10.0f; // Base heal amount.
 float g_flHealAuraBonus = 0.5f; // Bonus per level, variable only used for calculation.
-float g_flHealAuraRadius = 800.0f; // Radius of the aura, does not scale currently.
+float g_flHealAuraRadius = 640.0f; // Radius of the aura, does not scale currently.
 int g_iHealAuraDrain = 5; // Energy drain per interval.
 float g_flHealAuraInterval = 1.0f; // Time between heals.
 
@@ -46,6 +46,7 @@ class HealingAura
     private float m_flRadius = g_flHealAuraRadius; // Radius of the aura.
     private float m_flBaseHealAmount = g_flHealAuraBase; // Derived from a global variable, so that we can use it in the stat menu.
     private float m_flHealScaling = g_flHealAuraBonus; // % per level scaling.
+    private float m_flHeal = 0.0f; // Total Heal amount.
     private int m_iDrainAmount = g_iHealAuraDrain;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
@@ -176,15 +177,15 @@ class HealingAura
             msg.WriteCoord(origin.y);
             msg.WriteCoord(origin.z + m_flRadius);
             msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
-            msg.WriteByte(0); // Starting frame.
-            msg.WriteByte(0); // Frame rate.
+            msg.WriteByte(0); // Starting frame of sprite.
+            msg.WriteByte(0); // Frame rate - Has no effect.
             msg.WriteByte(10); // Life.
-            msg.WriteByte(32); // Width.
-            msg.WriteByte(0); // Noise.
+            msg.WriteByte(30); // Width.
+            msg.WriteByte(0); // Noise - Has no effect.
             msg.WriteByte(uint8(m_vAuraColor.x)); // Red.
             msg.WriteByte(uint8(m_vAuraColor.y)); // Green.
             msg.WriteByte(uint8(m_vAuraColor.z)); // Blue.
-            msg.WriteByte(128); // Brightness.
+            msg.WriteByte(150); // Alpha.
             msg.WriteByte(0); // Speed.
         msg.End();
     }
@@ -216,10 +217,62 @@ class HealingAura
 
         m_flLastHealTime = currentTime;
 
+        // Check if we have enough energy for potential revival
+        int reviveCost = m_iDrainAmount * 2;
+        
         Vector playerOrigin = pPlayer.pev.origin;
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flRadius, "*", "classname")) !is null)
         {
+            // Check for dead players first
+            if(!pEntity.IsAlive())
+            {
+                // Only attempt revival if we have enough energy
+                if(current >= reviveCost)
+                {
+                    bool canRevive = false;
+                    if(pEntity.IsPlayer())
+                    {
+                        canRevive = true;  // Always try to revive players
+                    }
+                    else
+                    {
+                        // Check if monster is friendly before attempting revival
+                        CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
+                        canRevive = (pMonster !is null && pMonster.IsPlayerAlly());
+                    }
+
+                    if(canRevive)
+                    {
+                        if(pEntity.IsPlayer())
+                        {
+                            CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
+                            if(pTarget !is null)
+                                pTarget.Revive();
+                        }
+                        else
+                        {
+                            // Manual revival for NPCs
+                            CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
+                            if(pMonster !is null)
+                            {
+                                pMonster.Revive(); // Use built-in monster revival
+                                pMonster.pev.health = pMonster.pev.max_health * 0.5; // Set health to 50%.
+                            }
+                        }
+                        
+                        current -= reviveCost; // Revival cost.
+                        resources['current'] = current;
+                        
+                        pPlayer.pev.frags += 5; // Award frags for reviving.
+                        ApplyHealEffect(pEntity);
+                        g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, pEntity.IsPlayer() ? "Revived " + pEntity.pev.netname + "!\n" : "Revived " + pEntity.pev.classname + "!\n");
+                        continue;
+                    }
+                }
+            }
+
             // Skip if dead or at full health.
             if(!pEntity.IsAlive() || pEntity.pev.health >= pEntity.pev.max_health)
                 continue;
@@ -242,15 +295,14 @@ class HealingAura
 
             float healAmount = GetScaledHealAmount();
             
-            // NPC's get healing modifier.
             if(!pEntity.IsPlayer())
-                healAmount *= 3.0f;
+                healAmount *= 2.0f; // NPC's get healing modifier.
 
-            // Award frag if target actually needed healing.
+            // Process healing, effects and sounds.
             if(pEntity.pev.health < pEntity.pev.max_health)
             {
                 pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
-                pPlayer.pev.frags += 2; // Award 2 frags for successful heal.
+                pPlayer.pev.frags += 2; // Award frags for healing.
                 
                 ApplyHealEffect(pEntity);
                 g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
@@ -264,9 +316,9 @@ class HealingAura
             return m_flBaseHealAmount;
             
         int level = m_pStats.GetLevel();
-        g_flHealAuraBonus = m_flBaseHealAmount * (float(level) * m_flHealScaling);
-        flHealAuraHealBonus = m_flBaseHealAmount * (float(level) * m_flHealScaling) - flHealAuraHealBase; // For stat menu.
-        return m_flBaseHealAmount + g_flHealAuraBonus;
+        m_flHeal = m_flBaseHealAmount + (float(level) * m_flHealScaling);
+        flHealAuraHealBonus = m_flBaseHealAmount + (float(level) * m_flHealScaling) - flHealAuraHealBase; // For stat menu.
+        return m_flHeal;
     }
 
     private void ApplyHealEffect(CBaseEntity@ target)
@@ -306,7 +358,7 @@ class HealingAura
         // Apply glow shell.
         pPlayer.pev.renderfx = kRenderFxGlowShell;
         pPlayer.pev.rendermode = kRenderNormal;
-        pPlayer.pev.renderamt = 4; // Shell thickness.
+        pPlayer.pev.renderamt = 3; // Shell thickness.
         pPlayer.pev.rendercolor = m_vAuraColor;
 
         // Add dynamic light
