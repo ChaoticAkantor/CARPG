@@ -393,6 +393,34 @@ HookReturnCode OnWeaponTertiaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ p
 
 HookReturnCode MonsterTakeDamage(DamageInfo@ info)
 {
+    if(info.pVictim is null || info.pAttacker is null)
+        return HOOK_CONTINUE;
+
+    // RobotMinion Damage Scaling.
+    // Check if attacker is a minion.
+    CBaseEntity@ attacker = info.pAttacker;
+    string targetname = string(attacker.pev.targetname);
+    if(targetname.StartsWith("_minion_"))
+    {
+        // Find owner's MinionData by the index in targetname.
+        string ownerIndex = targetname.SubString(8); // Skip "_minion_"
+        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
+        if(pOwner !is null)
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+            if(g_PlayerMinions.exists(steamID))
+            {
+                MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+                if(minion !is null)
+                {
+                    // Apply the damage multiplier.
+                    float damageMultiplier = 1.0f + minion.GetScaledDamage();
+                    info.flDamage *= damageMultiplier;
+                }
+            }
+        }
+    }
+
     if(info.pAttacker is null || !info.pAttacker.IsPlayer())
         return HOOK_CONTINUE;
         

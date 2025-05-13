@@ -37,7 +37,6 @@ const int SF_MONSTER_START_ACTIVE = 32;  // Start active without trigger
 // Made all these global for use in stats menu.
 float g_flBaseMinionHP = 200.0; // Base health of Minion.
 float g_flMinionHPBonus = 0.0; // Health % scaling per level.
-float g_flBaseMinionDMG = 28.0; // Don't think damage scaling works. Think it uses fixed weapon damage SK values.
 float g_flMinionDMGBonus = 0.0; // Ditto.
 int g_iMinionResourceCost = 1; // Cost to summon minion.
 
@@ -73,9 +72,8 @@ class MinionData
     private array<EHandle> m_hMinions; // Changed to array for multiple Minions
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseMinionHP;
-    private float m_flBaseDamage = g_flBaseMinionDMG;
-    private float m_flHealthScale = 0.15; // Health % scaling per level.
-    private float m_flDamageScale = 0.15; // Damage % scaling per level. Potentially non-functional.
+    private float m_flHealthScale = 0.1; // Health % scaling per level.
+    private float m_flDamageScale = 0.02; // Damage % scaling per level.
     private int m_iMinionResourceCost = g_iMinionResourceCost; // Cost to summon 1 minion.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
@@ -174,8 +172,7 @@ class MinionData
                                minionType == 1 ? MINION_SHOTGUN : 
                                MINION_M16);
         keys["health"] = string(scaledHealth);
-        keys["dmg"] = string(scaledDamage);
-        keys["dmg_multiplier"] = "10.0";
+        keys["dmg"] = string(scaledDamage); // This method doesn't seem to work. Could be logic error.
         keys["scale"] = "1.0";
         keys["friendly"] = "1";
         keys["spawnflag"] = "32";
@@ -300,24 +297,24 @@ class MinionData
         m_bActive = false;
     }
 
-    float GetScaledHealth()
+    float GetScaledHealth() // Health scaling for minions.
     {
         if(m_pStats is null)
             return m_flBaseHealth;
 
         float level = m_pStats.GetLevel();
         g_flMinionHPBonus = m_flBaseHealth * (float(level) * m_flHealthScale);
-        return m_flBaseHealth + g_flMinionHPBonus;
+        return g_flMinionHPBonus;
     }
 
-    float GetScaledDamage()
+    float GetScaledDamage() // Damage scaling works a little differently, as it detect it through MonsterTakeDamage.
     {
         if(m_pStats is null)
-            return m_flBaseDamage;
+            return 0.0f; // Technically should never be zero, but is always null when we have no minions.
 
         float level = m_pStats.GetLevel();
-        g_flMinionDMGBonus = m_flBaseDamage * (float(level) * m_flDamageScale);
-        return m_flBaseDamage + g_flMinionDMGBonus;
+        g_flMinionDMGBonus = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
+        return g_flMinionDMGBonus;
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)
