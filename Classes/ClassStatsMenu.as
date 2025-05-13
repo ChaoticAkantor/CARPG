@@ -38,7 +38,7 @@ namespace Menu
                 {
                     m_pMenu.AddItem("=== Medic: ===", null);
                     m_pMenu.AddItem("Heal Aura Healing: " + flHealAuraHealBase + "HP/s + " + flHealAuraHealBonus + "HP/s [" + (flHealAuraHealBase + flHealAuraHealBonus) + " HP/s]", null);
-                    m_pMenu.AddItem("Heal Aura Cost: " + g_iHealAuraDrain + " /sec", null);
+                    m_pMenu.AddItem("Heal Aura Cost: " + g_iHealAuraDrain + "/s", null);
                     m_pMenu.AddItem("Medkit Capacity: " + g_flMedkitCapacity + " + " + g_flMedkitCapacityBonus + " [" + (g_flMedkitCapacity + g_flMedkitCapacityBonus) + "]", null);
                     m_pMenu.AddItem("Medkit Recharge: " + g_flMedkitRecharge + " + " + g_flMedkitRechargeBonus + " [" + (g_flMedkitRecharge + g_flMedkitRechargeBonus) + " HP/sec]", null);
                     // Need to add other scaling stats here.
