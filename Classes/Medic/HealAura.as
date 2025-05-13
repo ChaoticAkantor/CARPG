@@ -217,27 +217,27 @@ class HealingAura
 
         m_flLastHealTime = currentTime;
 
-        // Check if we have enough energy for potential revival
+        // Check if we have enough energy for potential revival.
         int reviveCost = m_iDrainAmount * 2;
         
         Vector playerOrigin = pPlayer.pev.origin;
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flRadius, "*", "classname")) !is null)
         {
-            // Check for dead players first
+            // Check for dead players first.
             if(!pEntity.IsAlive())
             {
-                // Only attempt revival if we have enough energy
+                // Only attempt revival if we have enough energy.
                 if(current >= reviveCost)
                 {
                     bool canRevive = false;
                     if(pEntity.IsPlayer())
                     {
-                        canRevive = true;  // Always try to revive players
+                        canRevive = true;  // Always try to revive players.
                     }
                     else
                     {
-                        // Check if monster is friendly before attempting revival
+                        // Check if monster is friendly before attempting revival.
                         CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                         canRevive = (pMonster !is null && pMonster.IsPlayerAlly());
                     }
@@ -252,11 +252,11 @@ class HealingAura
                         }
                         else
                         {
-                            // Manual revival for NPCs
+                            // Revival for NPCs.
                             CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                             if(pMonster !is null)
                             {
-                                pMonster.Revive(); // Use built-in monster revival
+                                pMonster.Revive(); // Cbasemonster revival.
                                 pMonster.pev.health = pMonster.pev.max_health * 0.5; // Set health to 50%.
                             }
                         }
