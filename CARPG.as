@@ -493,15 +493,35 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
 
                 // Add visual effect for damage blocked.
                 Vector origin = pPlayer.pev.origin;
-                origin.z += 32; // Offset to center of entity.
+                //origin.z += 32; // Offset to center of entity
 
-                // Create spark shower effect
-                NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-                    msg.WriteByte(TE_SPARKS);
-                    msg.WriteCoord(origin.x);
-                    msg.WriteCoord(origin.y);
-                    msg.WriteCoord(origin.z);
-                msg.End();
+                // Create ricochet effect.
+                NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+                    ricMsg.WriteByte(TE_ARMOR_RICOCHET);
+                    ricMsg.WriteCoord(origin.x);
+                    ricMsg.WriteCoord(origin.y);
+                    ricMsg.WriteCoord(origin.z);
+                    ricMsg.WriteByte(1); // Scale.
+                ricMsg.End();
+
+                // Add effect to chip off metal chunks as barrier takes damage.
+                NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+                    breakMsg.WriteByte(TE_BREAKMODEL);
+                    breakMsg.WriteCoord(origin.x);
+                    breakMsg.WriteCoord(origin.y);
+                    breakMsg.WriteCoord(origin.z);
+                    breakMsg.WriteCoord(16);
+                    breakMsg.WriteCoord(16);
+                    breakMsg.WriteCoord(16);
+                    breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+                    breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+                    breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
+                    breakMsg.WriteByte(20); // Gib random speed and direction.
+                    breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+                    breakMsg.WriteByte(2); // Count.
+                    breakMsg.WriteByte(10); // Lifetime.
+                    breakMsg.WriteByte(2); // Sound Flags.
+                breakMsg.End();
             }
         }
     }
