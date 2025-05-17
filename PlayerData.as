@@ -29,6 +29,7 @@ dictionary g_ClassNames =
     {PlayerClass::CLASS_MEDIC, "Medic"},
     {PlayerClass::CLASS_BERSERKER, "Berserker"},
     {PlayerClass::CLASS_ENGINEER, "Engineer"},
+    {PlayerClass::CLASS_XENOLOGIST, "Xenologist"},
     {PlayerClass::CLASS_DEFENDER, "Defender"},
     {PlayerClass::CLASS_SHOCKTROOPER, "Shocktrooper"},
     {PlayerClass::CLASS_CLOAKER, "Cloaker"},
@@ -40,6 +41,7 @@ array<PlayerClass> g_ClassList =
     PlayerClass::CLASS_MEDIC,
     PlayerClass::CLASS_BERSERKER,
     PlayerClass::CLASS_ENGINEER,
+    PlayerClass::CLASS_XENOLOGIST,
     PlayerClass::CLASS_DEFENDER,
     PlayerClass::CLASS_SHOCKTROOPER,
     PlayerClass::CLASS_CLOAKER,
@@ -52,6 +54,7 @@ enum PlayerClass
     CLASS_MEDIC,
     CLASS_BERSERKER,
     CLASS_ENGINEER,
+    CLASS_XENOLOGIST,
     CLASS_DEFENDER,
     CLASS_SHOCKTROOPER,
     CLASS_CLOAKER,
@@ -98,6 +101,13 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
+                    def.healthPerLevel = 1.0f;
+                    def.armorPerLevel = 5.0f;
+                    def.energyPerLevel = 1.0f;
+                    def.energyRegenPerLevel = 0.2f;
+                    break;
+
+                case PlayerClass::CLASS_XENOLOGIST:
                     def.healthPerLevel = 1.0f;
                     def.armorPerLevel = 5.0f;
                     def.energyPerLevel = 1.0f;
