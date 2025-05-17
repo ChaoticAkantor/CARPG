@@ -187,8 +187,15 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
             {
                 sniperAmmo.amount += 1;
             }
+
+            AmmoType@ tripmineAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "trip mine");
+            if(tripmineAmmo !is null) 
+            {
+                tripmineAmmo.threshold = 10;
+            }
             
             AdjustAmmoDelay(playerAmmoTypes, "m40a1", 20, classLevel, 0.2f);
+            AdjustAmmoDelay(playerAmmoTypes, "trip mine", 60, classLevel, 0.5f);
 
             break;
         }

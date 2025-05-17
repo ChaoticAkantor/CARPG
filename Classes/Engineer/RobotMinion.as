@@ -304,7 +304,7 @@ class MinionData
 
         float level = m_pStats.GetLevel();
         g_flMinionHPBonus = m_flBaseHealth * (float(level) * m_flHealthScale);
-        return g_flMinionHPBonus;
+        return g_flMinionHPBonus + m_flBaseHealth; // Return base health + bonus.
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, as it detect it through MonsterTakeDamage.

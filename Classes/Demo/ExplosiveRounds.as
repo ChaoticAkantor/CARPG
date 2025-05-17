@@ -23,13 +23,13 @@ const string strExplosiveRoundsExplosionSprite = "sprites/eexplo.spr";
 dictionary g_AmmoTypeDamageMultipliers = // Our multipliers for explosive damage based on ammo type.
 {
     {"9mm", 1.0f},
-    {"357", 1.0f},
-    {"buckshot", 0.5f},
+    {"357", 1.5f},
+    {"buckshot", 0.6f},
     {"bolts", 1.5f},
     {"556", 1.0f},
-    {"762", 1.5f},
+    {"762", 2.0f},
     {"uranium", 1.5f},
-    {"m40a1", 1.5f}
+    {"m40a1", 2.0f}
 };
 
 dictionary g_PlayerExplosiveRounds;

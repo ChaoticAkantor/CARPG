@@ -5,9 +5,9 @@ string strBloodlustActiveSound = "player/heartbeat1.wav";
 string strBloodlustSprite = "sprites/blood_chnk.spr";
 
 float flBloodlustEnergyCost = 2.0f; // Energy drain per 0.5s.
-float flBaseHPBonus = 0.5f; // Base health bonus whilst bloodlust is active.
-float flHPBonusPerLevel = 0.2f; // bonus health per level.
-float flBaseDamageLifesteal = 0.30f; // % base damage dealt returned as health. Doubled when bloodlust is active.
+float flBaseHPBonus = 0.50f; // Base health bonus whilst bloodlust is active.
+float flHPBonusPerLevel = 0.20f; // bonus health per level.
+float flBaseDamageLifesteal = 0.35f; // % base damage dealt returned as health. Doubled when bloodlust is active.
 float flLifestealPerLevel = 0.01f; // % bonus lifesteal per level. Doubled when bloodlust is active.
 float flMeleeLifestealMult = flBaseDamageLifesteal * 2; // Double lifesteal whilst holding melee weapons.
 const float flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
