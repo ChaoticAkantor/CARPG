@@ -35,7 +35,7 @@ string strRobogruntSoundKick = "zombie/claw_miss2.wav";
 const int SF_MONSTER_START_ACTIVE = 32;  // Start active without trigger
 
 // Made all these global for use in stats menu.
-float g_flBaseMinionHP = 200.0; // Base health of Minion.
+float g_flBaseMinionHP = 100.0; // Base health of Minion.
 float g_flMinionHPBonus = 0.0; // Health % scaling per level.
 float g_flMinionDMGBonus = 0.0; // Ditto.
 int g_iMinionResourceCost = 1; // Cost to summon minion.
@@ -72,8 +72,8 @@ class MinionData
     private array<EHandle> m_hMinions; // Changed to array for multiple Minions
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseMinionHP;
-    private float m_flHealthScale = 0.1; // Health % scaling per level.
-    private float m_flDamageScale = 0.02; // Damage % scaling per level.
+    private float m_flHealthScale = 0.25; // Health % scaling per level.
+    private float m_flDamageScale = 0.15; // Damage % scaling per level.
     private int m_iMinionResourceCost = g_iMinionResourceCost; // Cost to summon 1 minion.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
@@ -89,7 +89,6 @@ class MinionData
             if(resources !is null)
             {
                 flMinionMaxReservePool = float(resources['max']) - flMinionReservePool; // Calculate available reserve.
-
                 return flMinionMaxReservePool <= 0; // Block regen if we've used all our reserve.
             }
         }
@@ -117,8 +116,7 @@ class MinionData
         if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
             return;
 
-        // Show menu instead of directly spawning
-        m_pMenu.ShowRobotMinionMenu(pPlayer);
+        m_pMenu.ShowRobotMinionMenu(pPlayer); // Show menu.
     }
 
     void SpawnSpecificMinion(CBasePlayer@ pPlayer, int minionType)
@@ -187,7 +185,6 @@ class MinionData
             m_bActive = true;
 
             flMinionReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
-            
             current -= MINION_COSTS[minionType]; // Subtract from current resources.
             resources['current'] = current;
 
@@ -224,7 +221,7 @@ class MinionData
             // Then check if it's dead or invalid
             if(pExistingMinion is null || !pExistingMinion.IsAlive())
             {
-                // Find minion type and reduce pool before removing from array
+                // Find minion type and reduce pool before removing from array.
                 for(uint j = 0; j < MINION_NAMES.length(); j++)
                 {
                     if(name.Find(MINION_NAMES[j]) >= 0)
@@ -307,7 +304,7 @@ class MinionData
         return g_flMinionHPBonus + m_flBaseHealth; // Return base health + bonus.
     }
 
-    float GetScaledDamage() // Damage scaling works a little differently, as it detect it through MonsterTakeDamage.
+    float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
     {
         if(m_pStats is null)
             return 0.0f; // Technically should never be zero, but is always null when we have no minions.
