@@ -13,8 +13,9 @@ All XP is shared between players! And minion classes share XP with their master.
 
 # Current Classes
 # Medic - Healer
-Toggles a healing aura with a very large radius, can heal yourself as well as friendly players and friendly NPC's.
-NPC healing is 3x stronger.
+Toggles a healing aura with a very large radius, can heal yourself as well as friendly players and friendly NPC's. The minion class' best friend!
+Can also revive players and NPC's at double the normal drain rate when triggered.
+NPC healing is 2x stronger.
 
 # Berserker - HP/Lifesteal Tank
 Toggles a bloodlust rage state, a scaling % of your AP is converted into bonus temporary HP and will allow you to overheal, you also gain lifesteal for a % of damage dealt, doubled if holding a melee weapon.
@@ -28,7 +29,7 @@ Teleporting pulls them around you in a circle and updates their HP from any gain
 Manually killing them from the menu refunds their full cost. 
 Their health and damage scales with level. Robots have thick armor and are resistant to bullets.
 Any XP (frags/score) they gain is sent to you instead.
-Always gets a pipewrench, can hit them with the wrench to heal them. Can NOT be revived.
+Always gets a pipewrench, can hit them with the wrench to heal them. Can potentially be revived, but triggers detonation sequence on death!
 
 # Xenologist - Xen Minions
 Can summon friendly Xen Creatures based on maximum bio reserve via a menu. 
@@ -38,7 +39,7 @@ Teleporting pulls them around you in a circle and updates their HP from any gain
 Manually killing them from the menu refunds their full cost.
 Their health and damage scales with level.
 Any XP (frags/score) they gain is sent to you instead.
-Can be healed with medkit. Can NOT be revived.
+Can be healed with medkit. Can be revived.
 
 # Defender - DR Tank
 Has a toggleable barrier that layers over health and armor that has it's own health pool. Whilst active, further reduces damage you take. Starts at 75% damage reduction and scales up to 100% as you level.
