@@ -20,15 +20,25 @@ NPC healing is 3x stronger.
 Toggles a bloodlust rage state, a scaling % of your AP is converted into bonus temporary HP and will allow you to overheal, you also gain lifesteal for a % of damage dealt, doubled if holding a melee weapon.
 Any overhealed health will slowly drain back to your default whilst inactive.
 
-# Engineer - Minions
-Can summon friendly robots based on maximum reserve power via a menu. 
+# Engineer - Robot Minions
+Can summon friendly robots based on maximum reserve power via a menu.
 Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. 
 They can be also be killed or teleported from the menu. 
 Teleporting pulls them around you in a circle and updates their HP from any gained levels. 
 Manually killing them from the menu refunds their full cost. 
+Their health and damage scales with level. Robots have thick armor and are resistant to bullets.
+Any XP (frags/score) they gain is sent to you instead.
+Always gets a pipewrench, can hit them with the wrench to heal them. Can NOT be revived.
+
+# Xenologist - Xen Minions
+Can summon friendly Xen Creatures based on maximum bio reserve via a menu. 
+Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. 
+They can be also be killed or teleported from the menu. 
+Teleporting pulls them around you in a circle and updates their HP from any gained levels. 
+Manually killing them from the menu refunds their full cost.
 Their health and damage scales with level.
 Any XP (frags/score) they gain is sent to you instead.
-Always gets a pipewrench, can hit them with the wrench to heal them.
+Can be healed with medkit. Can NOT be revived.
 
 # Defender - DR Tank
 Has a toggleable barrier that layers over health and armor that has it's own health pool. Whilst active, further reduces damage you take. Starts at 75% damage reduction and scales up to 100% as you level.
