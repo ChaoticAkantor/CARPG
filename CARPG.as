@@ -70,7 +70,6 @@ void PluginInit()
     g_EngineFuncs.ServerCommand("mp_survival_minplayers 1\n");
 
     SetupTimers(); // For calling timer refresh/setup.
-    ClearMinions(); // Destroy all old minions if plugin is reloaded.
     InitializeMapMultipliers();
     UpdateMapMultiplier();
     InitializeAmmoTypes();
@@ -81,6 +80,8 @@ void MapInit()
     PrecacheAll(); // Precache our models, sounds and sprites.
     g_PlayerMinions.deleteAll(); // Clear Minion dictionary.
         flMinionReservePool = 0.0; // Reset reserve pool.
+    g_XenologistMinions.deleteAll(); // Clear Xenologist Minion dictionary.
+        flXenReservePool = 0.0; // Reset reserve pool.
     g_HealingAuras.deleteAll(); // Clear Heal Aura dictionary.
     g_PlayerBarriers.deleteAll(); // Clear Barrier dictionary.
     g_PlayerBloodlusts.deleteAll(); // Clear Bloodlusts dictionary.
@@ -93,8 +94,9 @@ void MapInit()
 void MapStart()
 {
     ApplyDifficultySettings(); // Difficulty forcing.
-    UpdateMapMultiplier();
-    InitializeAmmoTypes();
+    UpdateMapMultiplier(); // Ammo regen map multiplier.
+    InitializeAmmoTypes(); // Initialize ammo types for max ammo.
+    g_Game.AlertMessage(at_console, "CARPG Enabled!\n");
 }
 
 void SetupTimers()
@@ -122,6 +124,9 @@ void SetupTimers()
 
     // Engineer.
     g_Scheduler.SetInterval("CheckEngineerMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer Robogrunts.
+
+    // Xenologist.
+    g_Scheduler.SetInterval("CheckXenologistMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
 
     // Defender.
     g_Scheduler.SetInterval("CheckBarrier", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Barrier.
@@ -175,7 +180,7 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strCloakActivateSound);
     g_SoundSystem.PrecacheSound(strCloakActiveSound);
 
-    // Minion Precache.
+    // Minion Precache for any/all minion classes.
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath2);
     g_SoundSystem.PrecacheSound(strRobogruntSoundButton2);
@@ -193,6 +198,10 @@ void PrecacheAll()
     g_Game.PrecacheModel(strRobogruntRope);
     g_Game.PrecacheModel(strRobogruntModelChromegibs);
     g_Game.PrecacheModel(strRobogruntModelComputergibs);
+
+    g_Game.PrecacheModel(strPitdroneModel);
+    g_Game.PrecacheModel(strAlienGruntModel);
+    g_Game.PrecacheModel(strGonomeModel);
 
     // Demo Ability Precache.
     // Mortar Strike.
@@ -279,7 +288,6 @@ HookReturnCode OnWeaponTertiaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ p
                 MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
                 if(Minion !is null)
                 {
-                    // Just spawn a Minion.
                     Minion.SpawnMinion(pPlayer);
                     return HOOK_HANDLED;
                 }
@@ -338,6 +346,7 @@ HookReturnCode OnWeaponTertiaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ p
                 }
             }
 
+            // Handle Bloodlust Ability.
             else if(data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
             {
                 if(!g_PlayerBloodlusts.exists(steamID))
@@ -355,6 +364,7 @@ HookReturnCode OnWeaponTertiaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ p
                 }
             }
 
+            // Handle Cloak Ability.
             else if(data.GetCurrentClass() == PlayerClass::CLASS_CLOAKER)
             {
                 if(!g_PlayerCloaks.exists(steamID))
@@ -372,6 +382,7 @@ HookReturnCode OnWeaponTertiaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ p
                 }
             }
 
+            // Handle Demolitionist Ability.
             else if(data.GetCurrentClass() == PlayerClass::CLASS_DEMOLITIONIST)
             {
                 if(!g_PlayerExplosiveRounds.exists(steamID))
@@ -385,6 +396,23 @@ HookReturnCode OnWeaponTertiaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ p
                 if(explosiveRounds !is null)
                 {
                     explosiveRounds.ActivateExplosiveRounds(pPlayer);
+                    return HOOK_HANDLED;
+                }
+            }
+
+            // Handle Xenologist Ability.
+            else if(data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST)
+            {
+                if(!g_XenologistMinions.exists(steamID))
+                {
+                    XenMinionData xenData;
+                    @g_XenologistMinions[steamID] = xenData;
+                }
+
+                XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                if(xenMinion !is null)
+                {
+                    xenMinion.SpawnXenMinion(pPlayer);
                     return HOOK_HANDLED;
                 }
             }
@@ -402,10 +430,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
     // Check if attacker is a minion.
     CBaseEntity@ attacker = info.pAttacker;
     string targetname = string(attacker.pev.targetname);
+
+
     if(targetname.StartsWith("_minion_"))
     {
         // Find owner's MinionData by the index in targetname.
-        string ownerIndex = targetname.SubString(8); // Skip "_minion_"
+        string ownerIndex = targetname.SubString(8); // Look specifically for only targetnames with indexes added.
         CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
         if(pOwner !is null)
         {
@@ -416,8 +446,35 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
                 if(minion !is null)
                 {
                     // Apply the damage multiplier.
-                    float damageMultiplier = 1.0f + minion.GetScaledDamage();
-                    info.flDamage *= damageMultiplier;
+                    float damageRoboMultiplier = 1.0f + minion.GetScaledDamage();
+                    info.flDamage *= damageRoboMultiplier;
+
+                    //g_Game.AlertMessage(at_console, "Damage: " + info.flDamage + "\n"); // Debug.
+                }
+            }
+        }
+    }
+
+    // Xenologist Minion Damage Scaling.
+    // Check if attacker is a Xen minion.
+    else if(targetname.StartsWith("_xenminion_"))
+    {
+        // Find owner's XenMinionData by the index in targetname
+        string ownerIndex = targetname.SubString(11); // Look specifically for only targetnames with indexes added.
+        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
+        if(pOwner !is null)
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+            if(g_XenologistMinions.exists(steamID))
+            {
+                XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                if(xenMinion !is null)
+                {
+                    // Apply the damage multiplier
+                    float damageXenMultiplier = 1.0f + xenMinion.GetScaledDamage();
+                    info.flDamage *= damageXenMultiplier;
+
+                    //g_Game.AlertMessage(at_console, "Damage: " + info.flDamage + "\n"); // Debug.
                 }
             }
         }
@@ -435,8 +492,8 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
         if(cloak !is null && cloak.IsActive())
         {
-            float damageMultiplier = cloak.GetDamageMultiplier(pAttacker);
-            info.flDamage *= damageMultiplier;
+            float damageCloakMultiplier = cloak.GetDamageMultiplier(pAttacker);
+            info.flDamage *= damageCloakMultiplier;
             
             // Drain energy after dealing a multiplied damage shot.
             cloak.DrainEnergyFromShot(pAttacker);
@@ -857,6 +914,17 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
 
+    // Reset Xenologist Minions and pools
+    if(g_XenologistMinions.exists(steamID))
+    {
+        XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+        if(xenMinion !is null)
+        {
+            xenMinion.DestroyAllMinions(pPlayer);
+            flXenReservePool = 0.0;  // Reset reserve
+        }
+    }
+
     // Set max health/armor based on class stats
     if (g_PlayerRPGData.exists(steamID))
     {
@@ -968,6 +1036,27 @@ void ClearMinions()
                 }
             }
             minion.DestroyAllMinions(pPlayer);
+        }
+    }
+
+    // Clear Xenologist minions too.
+    array<string>@ xenKeys = g_XenologistMinions.getKeys();
+    for(uint i = 0; i < xenKeys.length(); i++)
+    {
+        XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[xenKeys[i]]);
+        if(xenMinion !is null)
+        {
+            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i + 1);
+            if(pPlayer is null)
+            {
+                for(int j = 1; j <= g_Engine.maxClients; j++)
+                {
+                    @pPlayer = g_PlayerFuncs.FindPlayerByIndex(j);
+                    if(pPlayer !is null)
+                        break;
+                }
+            }
+            xenMinion.DestroyAllMinions(pPlayer);
         }
     }
 }
