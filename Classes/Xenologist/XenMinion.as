@@ -1,7 +1,29 @@
 string strXenMinionSoundCreate = "debris/beamstart7.wav";
 string strXenMinionSoundTeleport = "houndeye/he_blast1.wav";
 
-string strPitdroneModel = "models/pitdrone.mdl";
+string strPitdroneModel = "models/pit_drone.mdl";
+string strPitdroneModelGibs = "models/pit_drone_gibs.mdl";
+string strPitdroneModelSpike = "models/pit_drone_spike.mdl";
+string strPitdroneSpikeTrail = "sprites/spike_trail.spr";
+string strPitdroneSoundAttackSpike1 = "pitdrone/pit_drone_attack_spike1.wav";
+string strPitdroneSoundAlert1 = "pitdrone/pit_drone_alert1.wav";
+string strPitdroneSoundAlert2 = "pitdrone/pit_drone_alert2.wav"; 
+string strPitdroneSoundAlert3 = "pitdrone/pit_drone_alert3.wav"; 
+string strPitdroneSoundIdle1 = "pitdrone/pit_drone_idle1.wav";
+string strPitdroneSoundIdle2 = "pitdrone/pit_drone_idle2.wav";
+string strPitdroneSoundIdle3 = "pitdrone/pit_drone_idle3.wav";
+string strPitdroneSoundDie1 = "pitdrone/pit_drone_die1.wav";
+string strPitdroneSoundDie2 = "pitdrone/pit_drone_die2.wav";
+string strPitdroneSoundDie3 = "pitdrone/pit_drone_die3.wav";
+string strPitdroneSoundBite2 = "bullchicken/bc_bite2.wav";
+string strPitdroneSoundPain1 = "pitdrone/pit_drone_pain1.wav";
+string strPitdroneSoundPain2 = "pitdrone/pit_drone_pain2.wav";
+string strPitdroneSoundPain3 = "pitdrone/pit_drone_pain3.wav";
+string strPitdroneSoundPain4 = "pitdrone/pit_drone_pain4.wav";
+string strPitdroneSoundMelee1 = "pitdrone/pit_drone_melee_attack1.wav";
+string strPitdroneSoundMelee2 = "pitdrone/pit_drone_melee_attack2.wav";
+string strPitdroneSoundEat = "pitdrone/pit_drone_eat.wav";
+
 string strHoundeyeModel = "models/houndeye.mdl";
 string strAlienGruntModel = "models/agruntf.mdl";
 

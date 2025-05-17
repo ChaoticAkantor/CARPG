@@ -180,7 +180,7 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strCloakActivateSound);
     g_SoundSystem.PrecacheSound(strCloakActiveSound);
 
-    // Minion Precache for any/all minion classes.
+    // Minion Precache for any/all minion class monsters.
     // Robogrunt.
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath2);
@@ -205,13 +205,35 @@ void PrecacheAll()
 
     // Pitdrone.
     g_Game.PrecacheModel(strPitdroneModel);
+    g_Game.PrecacheModel(strPitdroneModelGibs);
+    g_Game.PrecacheModel(strPitdroneModelSpike);
+    g_Game.PrecacheModel(strPitdroneSpikeTrail);
+
+    g_SoundSystem.PrecacheSound(strPitdroneSoundAttackSpike1);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundAlert1);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundAlert2);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundAlert3);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundIdle1);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundIdle2);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundIdle3);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundDie1);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundDie2);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundDie3);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundBite2);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundPain1);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundPain2);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundPain3);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundPain4);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundMelee1);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundMelee2);
+    g_SoundSystem.PrecacheSound(strPitdroneSoundEat);
 
     // Houndeye.
     g_Game.PrecacheModel(strHoundeyeModel);
 
     // Alient Grunt.
     g_Game.PrecacheModel(strAlienGruntModel);
-    
+
 
     // Demo Ability Precache.
     // Mortar Strike.
