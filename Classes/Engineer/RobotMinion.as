@@ -231,7 +231,7 @@ class MinionData
                 }
                 
                 m_hMinions.removeAt(i);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robot was destroyed!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robot destroyed!\n");
                 continue;
             }
 

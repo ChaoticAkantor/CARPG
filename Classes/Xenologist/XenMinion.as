@@ -1,6 +1,7 @@
 string strXenMinionSoundCreate = "debris/beamstart7.wav";
 string strXenMinionSoundTeleport = "houndeye/he_blast1.wav";
 
+// models, sounds, and sprites for Xen creatures. (Yawn)
 string strPitdroneModel = "models/pit_drone.mdl";
 string strPitdroneModelGibs = "models/pit_drone_gibs.mdl";
 string strPitdroneModelSpike = "models/pit_drone_spike.mdl";
@@ -25,6 +26,28 @@ string strPitdroneSoundMelee2 = "pitdrone/pit_drone_melee_attack2.wav";
 string strPitdroneSoundEat = "pitdrone/pit_drone_eat.wav";
 
 string strHoundeyeModel = "models/houndeye.mdl";
+string strHoundeyeShockwave = "sprites/shockwave.spr";
+string strHoundeyeSoundAlert1 = "houndeye/he_alert1.wav";
+string strHoundeyeSoundAlert2 = "houndeye/he_alert2.wav";
+string strHoundeyeSoundAlert3 = "houndeye/he_alert3.wav";
+string strHoundeyeSoundDie1 = "houndeye/he_die1.wav";
+string strHoundeyeSoundDie2 = "houndeye/he_die2.wav";
+string strHoundeyeSoundDie3 = "houndeye/he_die3.wav";
+string strHoundeyeSoundIdle1 = "houndeye/he_idle1.wav";
+string strHoundeyeSoundIdle2 = "houndeye/he_idle2.wav";
+string strHoundeyeSoundIdle3 = "houndeye/he_idle3.wav";
+string strHoundeyeSoundHunt1 = "houndeye/he_hunt1.wav";
+string strHoundeyeSoundHunt2 = "houndeye/he_hunt2.wav";
+string strHoundeyeSoundHunt3 = "houndeye/he_hunt3.wav";
+string strHoundeyeSoundPain1 = "houndeye/he_pain1.wav";
+string strHoundeyeSoundPain3 = "houndeye/he_pain3.wav";
+string strHoundeyeSoundPain4 = "houndeye/he_pain4.wav";
+string strHoundeyeSoundPain5 = "houndeye/he_pain5.wav";
+string strHoundeyeSoundAttack1 = "houndeye/he_attack1.wav";
+string strHoundeyeSoundAttack3 = "houndeye/he_attack3.wav";
+string strHoundeyeSoundBlast2 = "houndeye/he_blast2.wav";
+string strHoundeyeSoundBlast3 = "houndeye/he_blast3.wav";
+
 string strAlienGruntModel = "models/agruntf.mdl";
 
 float flXenReservePool = 0.0f;     // Current reserve used by Xen creatures.
@@ -180,7 +203,7 @@ class XenMinionData
         keys["dmg"] = string(scaledDamage);
         keys["scale"] = "1.0";
         keys["friendly"] = "1";
-        keys["spawnflag"] = "32"; // Add SF_MONSTER_NO_REVIVE (16384) along with SF_MONSTER_FRIENDLY (32)
+        keys["spawnflag"] = "32"; // SF_MONSTER_FRIENDLY (32)
         keys["is_player_ally"] = "1";
 
         CBaseEntity@ pNewMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
@@ -228,7 +251,7 @@ class XenMinionData
                 flXenReservePool -= XEN_COSTS[m_CreatureTypes[i]];
                 m_hMinions.removeAt(i);
                 m_CreatureTypes.removeAt(i);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creature lost!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creature bled out!\n");
                 continue;
             }
 

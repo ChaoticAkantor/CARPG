@@ -230,6 +230,28 @@ void PrecacheAll()
 
     // Houndeye.
     g_Game.PrecacheModel(strHoundeyeModel);
+    g_Game.PrecacheModel(strHoundeyeShockwave);
+
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert1);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert2);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert3);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundDie1);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundDie2);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundDie3);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle1);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle2);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle3);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt1);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt2);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt3);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundPain1);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundPain3);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundPain4);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundPain5);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundAttack1);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundAttack3);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundBlast2);
+    g_SoundSystem.PrecacheSound(strHoundeyeSoundBlast3);
 
     // Alient Grunt.
     g_Game.PrecacheModel(strAlienGruntModel);

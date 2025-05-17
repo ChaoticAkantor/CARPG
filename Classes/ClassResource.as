@@ -234,28 +234,28 @@ void UpdateClassResource()
                     switch(currentClass)
                     {
                         case PlayerClass::CLASS_ENGINEER:
-                            resourceName = "Power Reserve";
+                            resourceName = "Power-Reserve";
                             break;
                         case PlayerClass::CLASS_DEFENDER:
                             resourceName = "Barrier";
                             break;
                         case PlayerClass::CLASS_MEDIC:
-                            resourceName = "Healing Aura";
+                            resourceName = "Bio-Energy";
                             break;
                         case PlayerClass::CLASS_SHOCKTROOPER:
-                            resourceName = "Shock Charges";
+                            resourceName = "Shockrifle Battery";
                             break;
                         case PlayerClass::CLASS_BERSERKER:
-                            resourceName = "Bloodlust";
+                            resourceName = "Blood";
                             break;
                         case PlayerClass::CLASS_CLOAKER:
-                            resourceName = "Cloak";
+                            resourceName = "Cloak Battery";
                             break;
                         case PlayerClass::CLASS_DEMOLITIONIST:
-                            resourceName = "Ordnance";
+                            resourceName = "H.E. Backpack";
                             break;
                         case PlayerClass::CLASS_XENOLOGIST:
-                            resourceName = "Bio Reserve";
+                            resourceName = "Bio-Reserve";
                             break;
                     }
                 }
