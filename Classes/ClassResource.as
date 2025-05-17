@@ -237,7 +237,7 @@ void UpdateClassResource()
                             resourceName = "Power-Reserve";
                             break;
                         case PlayerClass::CLASS_DEFENDER:
-                            resourceName = "Barrier";
+                            resourceName = "Ice Shield";
                             break;
                         case PlayerClass::CLASS_MEDIC:
                             resourceName = "Bio-Energy";

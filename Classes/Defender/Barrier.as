@@ -1,15 +1,14 @@
-string strBarrierToggleSound = "debris/metal1.wav";
-string strBarrierHitSound = "debris/metal6.wav";
-string strBarrierBreakSound = "debris/metal3.wav";
+string strBarrierToggleSound = "debris/glass2.wav";
+string strBarrierHitSound = "debris/glass1.wav";
+string strBarrierBreakSound = "debris/impact_glass.wav";
 
 // Defines for stat menu
-const float flBaseDamageReduction = 1.00f; // Base damage reduction whilst barrier is active. Now always 100%.
+const float flBaseDamageReduction = 1.00f; // Base damage reduction.
 const float flEnergyDrainPerSecond = 0.0f; // Energy drain per second while active.
 const float flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
 const float flBarrierDamageToEnergyMult = 0.25f; // Damage taken to energy drain scale factor.
-float g_flDamageReductionBonus = 0.0f; // Used for stat menu.
 
-const Vector BARRIER_COLOR = Vector(150, 150, 150); // R G B
+const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B
 
 dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
 
@@ -53,9 +52,9 @@ class BarrierData
         if(!m_bActive)
         {
             // Check energy.
-            if(float(resources['current']) < flEnergyDrainPerSecond)
+            if(float(resources['current']) < 5)
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier has Broken!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield too weak!\n");
                 return;
             }
 
@@ -64,7 +63,7 @@ class BarrierData
             m_flLastDrainTime = currentTime;
             ApplyGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier Activated!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield!\n");
         }
         else
         {
@@ -72,7 +71,7 @@ class BarrierData
             m_bActive = false;
             RemoveGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier Deactivated!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield dissipates!\n");
         }
 
         m_flLastToggleTime = currentTime;
@@ -82,8 +81,8 @@ class BarrierData
     {
         if(m_pStats is null)
             return 0.0f;
-
-        return flBaseDamageReduction; // Now always has 100% DR.
+            
+        return flBaseDamageReduction; // Now always 100% damage reduction.
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -145,8 +144,7 @@ class BarrierData
         if(current <= 0)
         {
             current = 0;
-            ToggleBarrier(pPlayer);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier Destroyed!\n");
+            DeactivateBarrier(pPlayer);
         }
         
         resources['current'] = current;
@@ -158,7 +156,30 @@ class BarrierData
         {
             m_bActive = false;
             RemoveGlow(pPlayer);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Broken!\n");
+
+            // Add visual effect for barrier break.
+            Vector origin = pPlayer.pev.origin;
+
+            // Add effect to chip off metal chunks as barrier takes damage.
+            NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+                breakMsg.WriteByte(TE_BREAKMODEL);
+                breakMsg.WriteCoord(origin.x);
+                breakMsg.WriteCoord(origin.y);
+                breakMsg.WriteCoord(origin.z);
+                breakMsg.WriteCoord(5); // Size.
+                breakMsg.WriteCoord(5); // Size.
+                breakMsg.WriteCoord(5); // Size.
+                breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+                breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+                breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
+                breakMsg.WriteByte(25); // Gib random speed and direction.
+                breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+                breakMsg.WriteByte(15); // Count.
+                breakMsg.WriteByte(10); // Lifetime.
+                breakMsg.WriteByte(1); // Sound Flags.
+                breakMsg.End();
         }
     }
 

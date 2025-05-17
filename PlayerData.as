@@ -30,7 +30,7 @@ dictionary g_ClassNames =
     {PlayerClass::CLASS_BERSERKER, "Berserker"},
     {PlayerClass::CLASS_ENGINEER, "Engineer"},
     {PlayerClass::CLASS_XENOLOGIST, "Xenologist"},
-    {PlayerClass::CLASS_DEFENDER, "Defender"},
+    {PlayerClass::CLASS_DEFENDER, "Warden"},
     {PlayerClass::CLASS_SHOCKTROOPER, "Shocktrooper"},
     {PlayerClass::CLASS_CLOAKER, "Cloaker"},
     {PlayerClass::CLASS_DEMOLITIONIST, "Demolitionist"}

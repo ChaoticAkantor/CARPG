@@ -46,7 +46,7 @@ namespace Menu
                 }
                 case PlayerClass::CLASS_BERSERKER:
                 {
-                    m_pMenu.AddItem("=== Berskerker Stats: ===" + "\n" + 
+                    m_pMenu.AddItem("=== Berserker Stats: ===" + "\n" + 
                     "Bloodlust Life Steal: " + g_flBaseMaxResource + "% + " + g_flResourceBonus + "% [" + (g_flBaseMaxResource + g_flResourceBonus) + "%]\n" + 
                     "Bloodlust HP Buff: " + flBloodlustOverhealBase * 100 + "% + " + flBloodlustOverhealBonus * 100 + "% [" + ((flBloodlustOverhealBase * 100) + (flBloodlustOverhealBonus * 100)) + "%]\n" + 
                     "Bloodlust Cost: " + flBloodlustEnergyCost + " per 0.5s\n\n", null);
@@ -74,9 +74,9 @@ namespace Menu
                 }
                 case PlayerClass::CLASS_DEFENDER:
                 {
-                    m_pMenu.AddItem("=== Defender Stats: ===" + "\n" + 
-                    "Barrier Damage Reduction: " + flBaseDamageReduction * 100 + "%\n" + 
-                    "Barrier Cost: " + int(flBarrierDamageToEnergyMult * 100) + "% of Damage Received\n\n", null);
+                    m_pMenu.AddItem("=== Warden Stats: ===" + "\n" + 
+                    "Ice Shield Damage Reduction: " + flBaseDamageReduction * 100 + "%\n" + 
+                    "Ice Shield Cost: " + int(flBarrierDamageToEnergyMult * 100) + "% of Damage Received\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_CLOAKER:

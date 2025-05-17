@@ -661,9 +661,9 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
                     breakMsg.WriteCoord(origin.x);
                     breakMsg.WriteCoord(origin.y);
                     breakMsg.WriteCoord(origin.z);
-                    breakMsg.WriteCoord(16);
-                    breakMsg.WriteCoord(16);
-                    breakMsg.WriteCoord(16);
+                    breakMsg.WriteCoord(3); // Size.
+                    breakMsg.WriteCoord(3); // Size.
+                    breakMsg.WriteCoord(3); // Size.
                     breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
                     breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
                     breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
@@ -671,7 +671,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
                     breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
                     breakMsg.WriteByte(2); // Count.
                     breakMsg.WriteByte(10); // Lifetime.
-                    breakMsg.WriteByte(2); // Sound Flags.
+                    breakMsg.WriteByte(1); // Sound Flags.
                 breakMsg.End();
             }
         }

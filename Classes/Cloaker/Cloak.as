@@ -81,9 +81,9 @@ class CloakData
                 if(!m_bActive)
                 {
                     // Activate
-                    if(float(resources['current']) <= 0)
+                    if(float(resources['current']) < 5)
                     {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Energy too low!\n");
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Battery too low!\n");
                         return;
                     }
 
