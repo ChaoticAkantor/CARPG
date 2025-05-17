@@ -249,23 +249,19 @@ class HealingAura
             // Check for dead players first.
             if(!pEntity.IsAlive())
             {
-                // Only attempt revival if we have enough energy
+                // Only attempt revival if we have enough energy.
                 if(current >= reviveCost)
                 {
                     bool canRevive = false;
                     if(pEntity.IsPlayer())
                     {
-                        canRevive = true;  // Always try to revive players
+                        canRevive = true;  // Always try to revive players.
                     }
                     else
                     {
-                        // Check if monster is friendly and not a minion
+                        // Only check if monster is friendly, allow minion revival.
                         CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                        string targetname = string(pEntity.pev.targetname);
-                        canRevive = (pMonster !is null && 
-                                    pMonster.IsPlayerAlly() && 
-                                    !targetname.StartsWith("_minion_") && 
-                                    !targetname.StartsWith("_xenminion_"));
+                        canRevive = (pMonster !is null && pMonster.IsPlayerAlly());
                     }
 
                     if(canRevive)

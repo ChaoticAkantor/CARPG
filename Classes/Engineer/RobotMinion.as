@@ -215,11 +215,10 @@ class MinionData
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
             
-            // First get the name while minion still exists
+            // First get the name while minion still exists.
             string name = pExistingMinion !is null ? string(pExistingMinion.pev.targetname) : "";
             
-            // Then check if it's dead or invalid
-            if(pExistingMinion is null || !pExistingMinion.IsAlive())
+            if(pExistingMinion is null) // Only count them if truly dead and not in revivable state.
             {
                 // Find minion type and reduce pool before removing from array.
                 for(uint j = 0; j < MINION_NAMES.length(); j++)
@@ -275,14 +274,14 @@ class MinionData
             return;
         }
 
-        // Destroy all Minions from last to first
+        // Destroy all Minions from last to first.
         for(int i = MinionCount - 1; i >= 0; i--)
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
             if(pExistingMinion !is null)
             {
                 // Use Killed to destroy active minions naturally.
-                pExistingMinion.Killed(pPlayer.pev, GIB_NORMAL);
+                pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing, incase they are in dying state and revivable.
                 m_hMinions.removeAt(i);
             }
         }

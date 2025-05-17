@@ -180,7 +180,7 @@ class XenMinionData
         keys["dmg"] = string(scaledDamage);
         keys["scale"] = "1.0";
         keys["friendly"] = "1";
-        keys["spawnflag"] = "32";
+        keys["spawnflag"] = "32"; // Add SF_MONSTER_NO_REVIVE (16384) along with SF_MONSTER_FRIENDLY (32)
         keys["is_player_ally"] = "1";
 
         CBaseEntity@ pNewMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
@@ -217,19 +217,18 @@ class XenMinionData
         if(!m_bActive || pPlayer is null)
             return;
 
-        // Remove invalid Minions and check frags
+        // Remove invalid Minions and check frags.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
             
-            // Check if minion is dead or invalid
-            if(pExistingMinion is null || !pExistingMinion.IsAlive())
+            if(pExistingMinion is null) // // Only count them if truly dead and not in revivable state.
             {
-                // Use stored type index to reduce pool
+                // Use stored type index to reduce pool.
                 flXenReservePool -= XEN_COSTS[m_CreatureTypes[i]];
                 m_hMinions.removeAt(i);
                 m_CreatureTypes.removeAt(i);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creature was killed!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creature lost!\n");
                 continue;
             }
 
@@ -277,7 +276,7 @@ class XenMinionData
             if(pExistingMinion !is null)
             {
                 // Use Killed to destroy active minions naturally.
-                pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS);
+                pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing, incase they are in dying state and revivable.
                 m_hMinions.removeAt(i);
                 m_CreatureTypes.removeAt(i);
             }
