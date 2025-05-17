@@ -181,6 +181,7 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strCloakActiveSound);
 
     // Minion Precache for any/all minion classes.
+    // Robogrunt.
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath2);
     g_SoundSystem.PrecacheSound(strRobogruntSoundButton2);
@@ -193,15 +194,24 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strRobogruntSoundM16);
     g_SoundSystem.PrecacheSound(strRobogruntSoundReload);
 
+    g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
+    g_SoundSystem.PrecacheSound(strXenMinionSoundTeleport);
+
     g_Game.PrecacheModel(strRobogruntModel);
     g_Game.PrecacheModel(strRobogruntModelF);
     g_Game.PrecacheModel(strRobogruntRope);
     g_Game.PrecacheModel(strRobogruntModelChromegibs);
     g_Game.PrecacheModel(strRobogruntModelComputergibs);
 
+    // Pitdrone.
     g_Game.PrecacheModel(strPitdroneModel);
+
+    // Houndeye.
+    g_Game.PrecacheModel(strHoundeyeModel);
+
+    // Alient Grunt.
     g_Game.PrecacheModel(strAlienGruntModel);
-    g_Game.PrecacheModel(strGonomeModel);
+    
 
     // Demo Ability Precache.
     // Mortar Strike.

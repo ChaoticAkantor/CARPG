@@ -1,9 +1,9 @@
-string strXenSpawnSound = "debris/beamstart7.wav";
-string strXenTeleportSound = "houndeye/he_blast1.wav";
+string strXenMinionSoundCreate = "debris/beamstart7.wav";
+string strXenMinionSoundTeleport = "houndeye/he_blast1.wav";
 
 string strPitdroneModel = "models/pitdrone.mdl";
+string strHoundeyeModel = "models/houndeye.mdl";
 string strAlienGruntModel = "models/agruntf.mdl";
-string strGonomeModel = "models/gonome.mdl";
 
 float flXenReservePool = 0.0f;     // Current reserve used by Xen creatures.
 float flXenMaxReservePool = 0.0f;  // Max reserve for Xen creatures.
@@ -173,7 +173,7 @@ class XenMinionData
             current -= XEN_COSTS[minionType];
             resources['current'] = current;
 
-            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strXenSpawnSound, 1.0f, ATTN_NORM);
+            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, XEN_NAMES[minionType] + " summoned!\n");
         }
     }
@@ -317,7 +317,7 @@ class XenMinionData
             }
         }
 
-        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strXenTeleportSound, 1.0f, ATTN_NORM);
+        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strXenMinionSoundTeleport, 1.0f, ATTN_NORM);
     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creatures teleported!\n");
     }
 }
