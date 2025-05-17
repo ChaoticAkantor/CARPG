@@ -17,8 +17,11 @@
 #include "Classes/Medic/SelfRevive"
 #include "Classes/Medic/MedkitHealing" // Currently not implemented.
 
-//Engineer.
+// Engineer.
 #include "Classes/Engineer/RobotMinion"
+
+// Xenologist.
+#include "Classes/Xenologist/XenMinion"
 
 // Defender
 #include "Classes/Defender/Barrier"
