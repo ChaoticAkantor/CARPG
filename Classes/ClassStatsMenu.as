@@ -37,27 +37,26 @@ namespace Menu
             {
                 case PlayerClass::CLASS_MEDIC:
                 {
-                    m_pMenu.AddItem("=== Medic Stats: ===", null);
-                    m_pMenu.AddItem("Heal Aura Healing: " + flHealAuraHealBase + "HP/s + " + flHealAuraHealBonus + "HP/s [" + (flHealAuraHealBase + flHealAuraHealBonus) + " HP/s]", null);
-                    m_pMenu.AddItem("Heal Aura Cost: " + g_iHealAuraDrain + "/s", null);
-                    m_pMenu.AddItem("Medkit Capacity: " + g_flMedkitCapacity + " + " + g_flMedkitCapacityBonus + " [" + (g_flMedkitCapacity + g_flMedkitCapacityBonus) + "]", null);
-                    m_pMenu.AddItem("Medkit Recharge: " + g_flMedkitRecharge + " + " + g_flMedkitRechargeBonus + " [" + (g_flMedkitRecharge + g_flMedkitRechargeBonus) + " HP/sec]", null);
-                    // Need to add other scaling stats here.
+                    m_pMenu.AddItem("=== Medic Stats: ===" + "\n" + 
+                    "Heal Aura Healing: " + flHealAuraHealBase + "HP/s + " + flHealAuraHealBonus + "HP/s [" + (flHealAuraHealBase + flHealAuraHealBonus) + " HP/s]\n" + 
+                    "Heal Aura Cost: " + g_iHealAuraDrain + "/s" + 
+                    "Medkit Capacity: " + g_flMedkitCapacity + " + " + g_flMedkitCapacityBonus + " [" + (g_flMedkitCapacity + g_flMedkitCapacityBonus) + "]\n" + 
+                    "Medkit Recharge: " + g_flMedkitRecharge + " + " + g_flMedkitRechargeBonus + " [" + (g_flMedkitRecharge + g_flMedkitRechargeBonus) + " HP/sec]\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_BERSERKER:
                 {
-                    m_pMenu.AddItem("=== Berskerker Stats: ===", null);
-                    m_pMenu.AddItem("Bloodlust Life Steal: " + g_flBaseMaxResource + "% + " + g_flResourceBonus + "% [" + (g_flBaseMaxResource + g_flResourceBonus) + "%]", null);
-                    m_pMenu.AddItem("Bloodlust Add AP as Temporary HP whilst active: " + flBloodlustOverhealBase * 100 + "% + " + flBloodlustOverhealBonus * 100 + "% [" + ((flBloodlustOverhealBase * 100) + (flBloodlustOverhealBonus * 100)) + "%]\n", null);
-                    m_pMenu.AddItem("Bloodlust Cost: " + flBloodlustEnergyCost + " per 0.5s", null);
+                    m_pMenu.AddItem("=== Berskerker Stats: ===" + "\n" + 
+                    "Bloodlust Life Steal: " + g_flBaseMaxResource + "% + " + g_flResourceBonus + "% [" + (g_flBaseMaxResource + g_flResourceBonus) + "%]\n" + 
+                    "Bloodlust HP Buff: " + flBloodlustOverhealBase * 100 + "% + " + flBloodlustOverhealBonus * 100 + "% [" + ((flBloodlustOverhealBase * 100) + (flBloodlustOverhealBonus * 100)) + "%]\n" + 
+                    "Bloodlust Cost: " + flBloodlustEnergyCost + " per 0.5s\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_ENGINEER:
                 {
                     m_pMenu.AddItem("=== Engineer Stats: ===" + "\n" + 
                     "Robot Minions Health: " + g_flBaseMinionHP + " + " + int(g_flMinionHPBonus) + " [" + int((g_flBaseMinionHP + g_flMinionHPBonus)) + "]\n" + 
-                    "Robot Minions Damage: +" + g_flMinionDMGBonus * 100 + "%", null);
+                    "Robot Minions Damage: +" + g_flMinionDMGBonus * 100 + "%\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_XENOLOGIST:
@@ -69,30 +68,29 @@ namespace Menu
                 }
                 case PlayerClass::CLASS_SHOCKTROOPER:
                 {
-                    m_pMenu.AddItem("=== Shocktrooper Stats: ===", null);
-                    m_pMenu.AddItem("Shock Rifle Recharger Max Capacity: " + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n", null);
+                    m_pMenu.AddItem("=== Shocktrooper Stats: ===" + "\n" + 
+                    "Shock Rifle Recharger Max Capacity: " + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_DEFENDER:
                 {
-                    m_pMenu.AddItem("=== Defender Stats: ===", null);
-                    m_pMenu.AddItem("Barrier Damage Reduction: " + flBaseDamageReduction * 100 + "% + " + g_flDamageReductionBonus * 100 + "% [" + ((flBaseDamageReduction * 100) + (g_flDamageReductionBonus * 100)) + "%]\n", null);
-                    m_pMenu.AddItem("Barrier Health: " + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n", null);
-                    m_pMenu.AddItem("Barrier Cost: " + flBarrierDamageToEnergyMult * 100 + "% of damage taken\n", null);
+                    m_pMenu.AddItem("=== Defender Stats: ===" + "\n" + 
+                    "Barrier Damage Reduction: " + flBaseDamageReduction * 100 + "% + " + g_flDamageReductionBonus * 100 + "% [" + ((flBaseDamageReduction * 100) + (g_flDamageReductionBonus * 100)) + "%]\n" + 
+                    "Barrier Cost: " + int(flBarrierDamageToEnergyMult * 100) + "% of damage taken.\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_CLOAKER:
                 {
-                    m_pMenu.AddItem("=== Cloaker Stats: ===", null);
-                    m_pMenu.AddItem("Cloak Damage Bonus: WIP" + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n", null);
-                    m_pMenu.AddItem("Cloak Cost: WIP" + flBarrierDamageToEnergyMult * 100 + "% of damage taken\n", null);
+                    m_pMenu.AddItem("=== Cloaker Stats: ===" + "\n" + 
+                    "Cloak Damage Bonus: WIP" + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n" + 
+                    "Cloak Cost: WIP" + flBarrierDamageToEnergyMult * 100 + "% of damage taken\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_DEMOLITIONIST:
                 {
-                    m_pMenu.AddItem("=== Demolitionist Stats: ===", null);
-                    m_pMenu.AddItem("Explosive Rounds Damage: " + flExplosiveRoundsDamageBase + " + " + flExplosiveRoundsDamageBonus + " [" + (flExplosiveRoundsDamage + flExplosiveRoundsDamageBonus) + "]\n", null);
-                    m_pMenu.AddItem("Explosive Rounds Capacity: " + flExplosiveRoundsPoolBase + " + " + flExplosiveRoundsPoolBonus + " [" + (flExplosiveRoundsPoolBase + flExplosiveRoundsPoolBonus) + "]\n", null);
+                    m_pMenu.AddItem("=== Demolitionist Stats: ===" + "\n" + 
+                    "Explosive Rounds Damage Bonus: " + flExplosiveRoundsDamageBase + " + " + flExplosiveRoundsDamageBonus + " [" + (flExplosiveRoundsDamage + flExplosiveRoundsDamageBonus) + "]\n" + 
+                    "Explosive Rounds Capacity: " + flExplosiveRoundsPoolBase + " + " + flExplosiveRoundsPoolBonus + " [" + (flExplosiveRoundsPoolBase + flExplosiveRoundsPoolBonus) + "]\n\n", null);
                     break;
                 }
             }

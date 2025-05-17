@@ -957,7 +957,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
 
-    // Reset Engineer Minions and pools
+    // Reset Engineer Minions and pools.
     if(g_PlayerMinions.exists(steamID))
     {
         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
@@ -968,7 +968,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
 
-    // Reset Xenologist Minions and pools
+    // Reset Xenologist Minions and pools.
     if(g_XenologistMinions.exists(steamID))
     {
         XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
