@@ -39,13 +39,13 @@ array<AmmoType@> g_AmmoTypes; // Store all ammo types in an array.
 void InitializeAmmoTypes() // Initialize all ammo types at startup.
 {
     // Regular ammo types.
-    g_AmmoTypes.insertLast(AmmoType("health", 1, 1, 100, true, 100));
+    g_AmmoTypes.insertLast(AmmoType("health", 1, 5, 100, true, 100));
     g_AmmoTypes.insertLast(AmmoType("9mm", 2, 1, 300));
-    g_AmmoTypes.insertLast(AmmoType("buckshot", 16, 1, 125));
-    g_AmmoTypes.insertLast(AmmoType("357", 20, 1, 36));
+    g_AmmoTypes.insertLast(AmmoType("buckshot", 15, 1, 125));
+    g_AmmoTypes.insertLast(AmmoType("357", 18, 1, 36));
     g_AmmoTypes.insertLast(AmmoType("556", 3, 1, 600));
     g_AmmoTypes.insertLast(AmmoType("m40a1", 20, 1, 25));
-    g_AmmoTypes.insertLast(AmmoType("bolts", 20, 1, 30));
+    g_AmmoTypes.insertLast(AmmoType("bolts", 25, 1, 30));
     g_AmmoTypes.insertLast(AmmoType("sporeclip", 30, 1, 20));
     g_AmmoTypes.insertLast(AmmoType("hornets", 2, 1, 100));
     g_AmmoTypes.insertLast(AmmoType("shock charges", 2, 1, 100));
@@ -57,10 +57,10 @@ void InitializeAmmoTypes() // Initialize all ammo types at startup.
     g_AmmoTypes.insertLast(AmmoType("satchel charge", 60, 1, 10, true, 1));
     g_AmmoTypes.insertLast(AmmoType("trip mine", 60, 1, 10, true, 1));
     g_AmmoTypes.insertLast(AmmoType("rockets", 60, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("snarks", 3, 1, 1, false, 0));
+    g_AmmoTypes.insertLast(AmmoType("snarks", 15, 1, 15, true, 1));
 }
 
-void AmmoTimerTick() // Think.
+void AmmoTimerTick() // Do ammo regen.
 {
     const int iMaxPlayers = g_Engine.maxClients;
     for (int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex) 
@@ -271,11 +271,11 @@ void AdjustAmmoDelay(array<AmmoType@>@ playerAmmoTypes, string ammoName, int bas
 void InitializeMapMultipliers()
 {
     // Balance ammo regeneration seperately for different map series by mulitplying the timer values.
-    g_MapPrefixMultipliers["sc_"] = 1.0f;    // Sven Co-op.
-    g_MapPrefixMultipliers["th_"] = 4.0f;    // They Hunger Ep1-3.
-    g_MapPrefixMultipliers["aom_"] = 4.0f;   // Afraid of Monsters Classic.
-    g_MapPrefixMultipliers["aomdc_"] = 4.0f; // Afraid of Monsters Directors-Cut.
-    g_MapPrefixMultipliers["hl_"] = 2.0f;    // Half-Life Campaign.
+    g_MapPrefixMultipliers["sc"] = 1.0f;    // Sven Co-op maps.
+    g_MapPrefixMultipliers["th"] = 4.0f;    // They Hunger.
+    g_MapPrefixMultipliers["aom"] = 4.0f;   // Afraid of Monsters Classic.
+    g_MapPrefixMultipliers["aomdc"] = 4.0f; // Afraid of Monsters Directors-Cut.
+    g_MapPrefixMultipliers["hl"] = 2.0f;    // Half-Life Campaign.
     g_MapPrefixMultipliers["of"] = 2.0f;    // Opposing-Force Campaign.
     g_MapPrefixMultipliers["bs"] = 2.0f;    // Blue-Shift Campaign.
     // Add more prefixes as needed
@@ -295,7 +295,7 @@ void UpdateMapMultiplier()
         if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix) // Check if map name starts with this prefix.
         {
             g_CurrentMapMultiplier = float(prefixes[prefixKeys[i]]);
-            g_Game.AlertMessage(at_console, "CARPG: Map prefix - " + prefixKeys[i] + " detected. Ammo regen multiplier set to " + g_CurrentMapMultiplier + "\n");
+            g_Game.AlertMessage(at_console, "=== CARPG: ===\n Map prefix - '" + prefixKeys[i] + "' detected. Ammo regen multiplier set to " + g_CurrentMapMultiplier + "x.\n=== CARPG ===\n");
             break;
         }
     }
