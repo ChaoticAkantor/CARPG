@@ -326,12 +326,12 @@ void UpdateClassResource()
                                 if(bloodlust !is null)
                                 {
                                     bool isActive = bloodlust.IsActive();
-                                    resourceInfo += "[" + (isActive ? "ON" : "OFF") + "] ";
+                                    float lifesteal = bloodlust.GetLifestealAmount(false) * 100;
+                                    resourceInfo += "[" + (isActive ? "ON" : "OFF") + " | Lifesteal: " + int(lifesteal) + "%] " ;
                                     
                                     if(isActive)
                                     {
-                                        float lifesteal = bloodlust.GetLifestealAmount(false) * 100;
-                                        resourceInfo += "[Lifesteal: " + int(lifesteal) + "% + " + ((flBloodlustOverhealBase * 100) + (flBloodlustOverhealBonus * 100)) + "% AP to HP]";
+                                        resourceInfo += "[+" + int((flBloodlustOverhealBase + flBloodlustOverhealBonus) * 100) + "% HP]";
                                     }
                                 }
                             }

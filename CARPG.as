@@ -164,6 +164,8 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strBloodlustActiveSound);
     g_SoundSystem.PrecacheSound(strBloodlustHitSound);
 
+    g_Game.PrecacheModel(strBloodlustSprite);
+
     // Defender Ability Precache.
     g_SoundSystem.PrecacheSound(strBarrierToggleSound);
     g_SoundSystem.PrecacheSound(strBarrierHitSound);
@@ -441,20 +443,57 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         }
     }
 
-    // Keep existing Bloodlust code
-    if(g_PlayerBloodlusts.exists(steamID))
+    // Handle Bloodlust lifesteal for Berserkers.
+    if(g_PlayerRPGData.exists(steamID))
     {
-        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
-        if(bloodlust !is null && bloodlust.IsActive())
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
         {
-            CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pAttacker.m_hActiveItem.GetEntity());
-            bool isMelee = (pWeapon !is null && (
-                pWeapon.GetClassname() == "weapon_crowbar" || 
-                pWeapon.GetClassname() == "weapon_pipewrench" || 
-                pWeapon.GetClassname() == "weapon_grapple"
-            ));
-            
-            bloodlust.ProcessLifesteal(pAttacker, info.flDamage, isMelee); // Return damage dealt as health.
+            BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+            if(bloodlust !is null)
+            {
+                CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pAttacker.m_hActiveItem.GetEntity());
+                bool isMelee = (pWeapon !is null && (
+                    pWeapon.GetClassname() == "weapon_crowbar" || 
+                    pWeapon.GetClassname() == "weapon_pipewrench" || 
+                    pWeapon.GetClassname() == "weapon_grapple"
+                ));
+                
+                bloodlust.ProcessLifesteal(pAttacker, info.flDamage, isMelee);
+
+                // Add rising blood particles.
+                Vector pos = pAttacker.pev.origin;
+                Vector mins = pos - Vector(16, 16, 0);
+                Vector maxs = pos + Vector(16, 16, 64);
+
+                NetworkMessage bubbleMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY);
+                    bubbleMsg.WriteByte(TE_BUBBLES);
+                    bubbleMsg.WriteCoord(mins.x);
+                    bubbleMsg.WriteCoord(mins.y);
+                    bubbleMsg.WriteCoord(mins.z);
+                    bubbleMsg.WriteCoord(maxs.x);
+                    bubbleMsg.WriteCoord(maxs.y);
+                    bubbleMsg.WriteCoord(maxs.z);
+                    bubbleMsg.WriteCoord(112.0f);
+                    bubbleMsg.WriteShort(g_EngineFuncs.ModelIndex(strBloodlustSprite));
+                    bubbleMsg.WriteByte(10);
+                    bubbleMsg.WriteCoord(2.0f);
+                bubbleMsg.End();
+
+                // Add dynamic light
+                NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                    msg.WriteByte(TE_DLIGHT);
+                    msg.WriteCoord(pAttacker.pev.origin.x);
+                    msg.WriteCoord(pAttacker.pev.origin.y);
+                    msg.WriteCoord(pAttacker.pev.origin.z);
+                    msg.WriteByte(15); // Radius.
+                    msg.WriteByte(int(BLOODLUST_COLOR.x));
+                    msg.WriteByte(int(BLOODLUST_COLOR.y));
+                    msg.WriteByte(int(BLOODLUST_COLOR.z));
+                    msg.WriteByte(2); // Life in 0.1s.
+                    msg.WriteByte(1); // Decay rate.
+                msg.End();
+            }
         }
     }
     
@@ -529,7 +568,6 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     return HOOK_CONTINUE;
 }
 
-// Create or load data for the player when they join.
 HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
 {
     if(pPlayer is null) return HOOK_CONTINUE;
@@ -538,7 +576,7 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
     if(steamID.IsEmpty()) return HOOK_CONTINUE;
     
     PlayerData@ data;    
-    if(!g_PlayerRPGData.exists(steamID))
+    if(!g_PlayerRPGData.exists(steamID)) // Create or load data for the player when they join.
     {
         @data = PlayerData(steamID);
         @g_PlayerRPGData[steamID] = @data;
@@ -587,7 +625,6 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
     return HOOK_CONTINUE;
 }
 
-// Save player data when they disconnect.
 HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
 {
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -596,7 +633,7 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null)
         {
-            data.SaveToFile();
+            data.SaveToFile(); // Save player data when they disconnect.
         }
     }
     return HOOK_CONTINUE;

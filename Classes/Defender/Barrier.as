@@ -56,7 +56,7 @@ class BarrierData
             // Check energy.
             if(float(resources['current']) < flEnergyDrainPerSecond)
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier is Broken!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier has Broken!\n");
                 return;
             }
 

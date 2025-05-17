@@ -64,9 +64,6 @@ class HealingAura
 
     private Vector m_vHealColor = Vector(0, 255, 0);
 
-    private float m_flNextGlowUpdate = 0.0f;
-    private float m_flGlowUpdateInterval = 0.1f;
-
     bool IsActive() { return m_bIsActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     
@@ -78,6 +75,24 @@ class HealingAura
         float currentTime = g_Engine.time;
         if (currentTime - m_flLastToggleTime < m_flToggleCooldown)
             return;
+
+        if (!m_bIsActive)
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if (!g_PlayerClassResources.exists(steamID))
+                return;
+                
+            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+            if (resources is null)
+                return;
+
+            int current = int(resources['current']);
+            if (current < m_iDrainAmount) // Check energy before activation.
+            {
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Energy too low!\n");
+                return;
+            }
+        }
 
         m_bIsActive = !m_bIsActive;
         string message = m_bIsActive ? "Healing Aura Activated!\n" : "Healing Aura Deactivated!\n";
@@ -121,6 +136,7 @@ class HealingAura
                 UpdateVisualEffect(pPlayer);
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Deactivated!\n");
                 g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
+                RemoveAuraGlow(pPlayer);
             }
             return;
         }
@@ -138,21 +154,13 @@ class HealingAura
             }
         }
 
-        // Update healing bonus for stats menu
+        // Update healing bonus for stats menu.
         GetScaledHealAmount();
 
         if (m_bIsActive) 
         {
             ProcessHealing(pPlayer);
             UpdateVisualEffect(pPlayer);
-            
-            // Update activator's glow effect
-            float currentTime = g_Engine.time;
-            if (currentTime >= m_flNextGlowUpdate)
-            {
-                ApplyGlow(pPlayer);
-                m_flNextGlowUpdate = currentTime + m_flGlowUpdateInterval;
-            }
         }
     }
 
@@ -168,26 +176,40 @@ class HealingAura
         m_flNextVisualUpdate = currentTime + m_flVisualUpdateInterval;
         
         Vector origin = pPlayer.pev.origin;
-        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-            msg.WriteByte(TE_BEAMCYLINDER);
-            msg.WriteCoord(origin.x);
-            msg.WriteCoord(origin.y);
-            msg.WriteCoord(origin.z);
-            msg.WriteCoord(origin.x);
-            msg.WriteCoord(origin.y);
-            msg.WriteCoord(origin.z + m_flRadius);
-            msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
-            msg.WriteByte(0); // Starting frame of sprite.
-            msg.WriteByte(0); // Frame rate - Has no effect.
-            msg.WriteByte(10); // Life.
-            msg.WriteByte(30); // Width.
-            msg.WriteByte(0); // Noise - Has no effect.
-            msg.WriteByte(uint8(m_vAuraColor.x)); // Red.
-            msg.WriteByte(uint8(m_vAuraColor.y)); // Green.
-            msg.WriteByte(uint8(m_vAuraColor.z)); // Blue.
-            msg.WriteByte(150); // Alpha.
-            msg.WriteByte(0); // Speed.
-        msg.End();
+        NetworkMessage auramsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+            auramsg.WriteByte(TE_BEAMCYLINDER);
+            auramsg.WriteCoord(origin.x);
+            auramsg.WriteCoord(origin.y);
+            auramsg.WriteCoord(origin.z);
+            auramsg.WriteCoord(origin.x);
+            auramsg.WriteCoord(origin.y);
+            auramsg.WriteCoord(origin.z + m_flRadius);
+            auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
+            auramsg.WriteByte(0); // Starting frame of sprite.
+            auramsg.WriteByte(0); // Frame rate - Has no effect.
+            auramsg.WriteByte(10); // Life.
+            auramsg.WriteByte(30); // Width.
+            auramsg.WriteByte(0); // Noise - Has no effect.
+            auramsg.WriteByte(uint8(m_vAuraColor.x)); // Red.
+            auramsg.WriteByte(uint8(m_vAuraColor.y)); // Green.
+            auramsg.WriteByte(uint8(m_vAuraColor.z)); // Blue.
+            auramsg.WriteByte(150); // Alpha.
+            auramsg.WriteByte(0); // Speed.
+        auramsg.End();
+
+        // Add dynamic light
+        NetworkMessage auradynlightmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            auradynlightmsg.WriteByte(TE_DLIGHT);
+            auradynlightmsg.WriteCoord(pPlayer.pev.origin.x);
+            auradynlightmsg.WriteCoord(pPlayer.pev.origin.y);
+            auradynlightmsg.WriteCoord(pPlayer.pev.origin.z);
+            auradynlightmsg.WriteByte(15); // Radius.
+            auradynlightmsg.WriteByte(int(m_vAuraColor.x));
+            auradynlightmsg.WriteByte(int(m_vAuraColor.y));
+            auradynlightmsg.WriteByte(int(m_vAuraColor.z));
+            auradynlightmsg.WriteByte(1); // Life in 0.1s.
+            auradynlightmsg.WriteByte(0); // Decay rate.
+        auradynlightmsg.End();
     }
 
     private void ProcessHealing(CBasePlayer@ pPlayer) 
@@ -360,20 +382,6 @@ class HealingAura
         pPlayer.pev.rendermode = kRenderNormal;
         pPlayer.pev.renderamt = 3; // Shell thickness.
         pPlayer.pev.rendercolor = m_vAuraColor;
-
-        // Add dynamic light
-        NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
-            msg.WriteByte(TE_DLIGHT);
-            msg.WriteCoord(pPlayer.pev.origin.x);
-            msg.WriteCoord(pPlayer.pev.origin.y);
-            msg.WriteCoord(pPlayer.pev.origin.z);
-            msg.WriteByte(15); // Radius.
-            msg.WriteByte(int(m_vAuraColor.x));
-            msg.WriteByte(int(m_vAuraColor.y));
-            msg.WriteByte(int(m_vAuraColor.z));
-            msg.WriteByte(1); // Life in 0.1s.
-            msg.WriteByte(0); // Decay rate.
-        msg.End();
     }
 
     private void RemoveAuraGlow(CBasePlayer@ pPlayer)

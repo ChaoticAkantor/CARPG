@@ -108,7 +108,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     def.healthPerLevel = 5.0f;
                     def.armorPerLevel = 1.0f;
                     def.energyPerLevel = 3.0f;
-                    def.energyRegenPerLevel = 0.2f;
+                    def.energyRegenPerLevel = 0.3f;
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
@@ -128,15 +128,15 @@ void InitializeClassDefinitions() // Initialize class definitions.
                 case PlayerClass::CLASS_CLOAKER:
                     def.healthPerLevel = 1.0f;
                     def.armorPerLevel = 5.0f;
-                    def.energyPerLevel = 2.0f;
-                    def.energyRegenPerLevel = 0.2f;
+                    def.energyPerLevel = 3.0f;
+                    def.energyRegenPerLevel = 0.3f;
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
                     def.healthPerLevel = 2.0f;
                     def.armorPerLevel = 4.0f;
                     def.energyPerLevel = 10.0f;
-                    def.energyRegenPerLevel = 0.08f;
+                    def.energyRegenPerLevel = 0.1f;
                     break;
             }
             
