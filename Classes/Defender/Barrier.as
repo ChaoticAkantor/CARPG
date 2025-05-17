@@ -3,11 +3,10 @@ string strBarrierHitSound = "debris/metal6.wav";
 string strBarrierBreakSound = "debris/metal3.wav";
 
 // Defines for stat menu
-const float flBaseDamageReduction = 0.75f; // Base damage reduction.
-const float flDamageReductionPerLevel = 0.005f; // Damage reduction scaling per level.
+const float flBaseDamageReduction = 1.00f; // Base damage reduction whilst barrier is active. Now always 100%.
 const float flEnergyDrainPerSecond = 0.0f; // Energy drain per second while active.
 const float flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
-const float flBarrierDamageToEnergyMult = 0.15f; // Damage taken to energy drain scale factor.
+const float flBarrierDamageToEnergyMult = 0.25f; // Damage taken to energy drain scale factor.
 float g_flDamageReductionBonus = 0.0f; // Used for stat menu.
 
 const Vector BARRIER_COLOR = Vector(150, 150, 150); // R G B
@@ -83,11 +82,8 @@ class BarrierData
     {
         if(m_pStats is null)
             return 0.0f;
-            
-        int level = m_pStats.GetLevel();
-        g_flDamageReductionBonus = (level * flDamageReductionPerLevel); // Get damage reduction bonus for stat menu.
 
-        return flBaseDamageReduction + (level * flDamageReductionPerLevel);
+        return flBaseDamageReduction; // Now always has 100% DR.
     }
 
     void Update(CBasePlayer@ pPlayer)

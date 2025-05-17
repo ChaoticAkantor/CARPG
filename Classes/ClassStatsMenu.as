@@ -69,14 +69,14 @@ namespace Menu
                 case PlayerClass::CLASS_SHOCKTROOPER:
                 {
                     m_pMenu.AddItem("=== Shocktrooper Stats: ===" + "\n" + 
-                    "Shock Rifle Recharger Max Capacity: " + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n\n", null);
+                    "Shock Rifle Battery Max Capacity: " + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_DEFENDER:
                 {
                     m_pMenu.AddItem("=== Defender Stats: ===" + "\n" + 
-                    "Barrier Damage Reduction: " + flBaseDamageReduction * 100 + "% + " + g_flDamageReductionBonus * 100 + "% [" + ((flBaseDamageReduction * 100) + (g_flDamageReductionBonus * 100)) + "%]\n" + 
-                    "Barrier Cost: " + int(flBarrierDamageToEnergyMult * 100) + "% of damage taken.\n\n", null);
+                    "Barrier Damage Reduction: " + flBaseDamageReduction * 100 + "%\n" + 
+                    "Barrier Cost: " + int(flBarrierDamageToEnergyMult * 100) + "% of Damage Received\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_CLOAKER:

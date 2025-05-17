@@ -32,7 +32,7 @@ array<string> g_DevList =
 
 Menu::DebugMenu g_DebugMenu;
 
-// Add this new function
+// Check Devs list.
 bool IsDev(const string& in steamID)
 {
     for(uint i = 0; i < g_DevList.length(); i++)
@@ -49,10 +49,9 @@ void PluginInit()
     g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
     g_Module.ScriptInfo.SetContactInfo("None");
 
-    // Clear all previous Timers on refresh.
-    g_Scheduler.ClearTimerList(); // Clear any currently running timers.
+    g_Scheduler.ClearTimerList(); // Clear any currently running timers first.
 
-    // Hooks.
+    // Register Hooks.
     g_Hooks.RegisterHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
     g_Hooks.RegisterHook(Hooks::Weapon::WeaponPrimaryAttack, @OnWeaponPrimaryAttack);
     g_Hooks.RegisterHook(Hooks::Weapon::WeaponSecondaryAttack, @OnWeaponSecondaryAttack);
@@ -63,16 +62,11 @@ void PluginInit()
     g_Hooks.RegisterHook(Hooks::Player::PlayerSpawn, @PlayerRespawn);
     g_Hooks.RegisterHook(Hooks::Monster::MonsterTakeDamage, @MonsterTakeDamage);
 
-    // Force server settings.
-    // Disable Survival Mode.
-    g_EngineFuncs.ServerCommand("mp_survival_mode 0\n");
-    g_EngineFuncs.ServerCommand("mp_survival_voteallow 1\n");
-    g_EngineFuncs.ServerCommand("mp_survival_minplayers 1\n");
-
     SetupTimers(); // For calling timer refresh/setup.
-    InitializeMapMultipliers();
-    UpdateMapMultiplier();
-    InitializeAmmoTypes();
+    InitializeMapMultipliers(); // Calling here first incase plugin is refreshed.
+    UpdateMapMultiplier(); // Calling here first incase plugin is refreshed.
+    InitializeAmmoTypes(); // Calling here first incase plugin is refreshed.
+    ApplyDifficultySettings(); // Difficulty forcing.
 }
 
 void MapInit()
@@ -93,10 +87,18 @@ void MapInit()
 
 void MapStart()
 {
-    ApplyDifficultySettings(); // Difficulty forcing.
-    UpdateMapMultiplier(); // Ammo regen map multiplier.
-    InitializeAmmoTypes(); // Initialize ammo types for max ammo.
+    //ApplyDifficultySettings(); // Difficulty forcing.
+    //UpdateMapMultiplier(); // Ammo regen map multiplier.
+    //InitializeAmmoTypes(); // Initialize ammo types for max ammo.
     g_Game.AlertMessage(at_console, "CARPG Enabled!\n");
+
+    // Force any server related settings.
+    
+    //g_EngineFuncs.ServerCommand("mp_survival_mode 0\n"); // Disable Survival Mode.
+    g_EngineFuncs.ServerCommand("mp_survival_voteallow 1\n"); // Enable Survival Mode voting.
+    //g_EngineFuncs.ServerCommand("mp_survival_minplayers 1\n"); // Survival Mode will turn on even if there is only 1 player.
+
+    ApplyDifficultySettings(); // Difficulty forcing.
 }
 
 void SetupTimers()
@@ -255,7 +257,6 @@ void PrecacheAll()
 
     // Alient Grunt.
     g_Game.PrecacheModel(strAlienGruntModel);
-
 
     // Demo Ability Precache.
     // Mortar Strike.

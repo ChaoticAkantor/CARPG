@@ -6,7 +6,7 @@ const float flMovementDrainMultiplier = 3.0f; // How much more it drains when mo
 const float flMaxMovementSpeed = 320.0f; // Maximum movement speed to scale drain against.
 
 const float flBaseDamageBonus = 0.50f;      // Base % damage increase.
-const float flDamageBonusPerLevel = 0.02f;   // Bonus % per level.
+const float flDamageBonusPerLevel = 0.05f;   // Bonus % per level.
 
 float g_flDamageBonusBase = flBaseDamageBonus * 100.0f;  // For stats menu.
 float g_flDamageBonus = 0.0f;               // For stats menu.
