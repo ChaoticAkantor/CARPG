@@ -93,9 +93,9 @@ const array<float> XEN_HEALTH_MODS =
     2.0f     // Alien Grunt.
 };
 
-float g_flBaseXenHP = 100.0;
-float g_flXenHPBonus = 0.0;
-float g_flXenDMGBonus = 0.0;
+float g_flBaseXenMinionHP = 100.0;
+float g_flXenMinionHPBonus = 0.0;
+float g_flXenMinionDMGBonus = 0.0;
 int g_iXenResourceCost = 1;
 
 class XenMinionData
@@ -104,9 +104,9 @@ class XenMinionData
     private array<EHandle> m_hMinions;
     private array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
-    private float m_flBaseHealth = g_flBaseXenHP;
+    private float m_flBaseHealth = g_flBaseXenMinionHP;
     private float m_flHealthScale = 0.33; // Health % scaling per level. Higher for Xenologist.
-    private float m_flDamageScale = 0.25; // Damage % scaling per level. Lower for Xenologist.
+    private float m_flDamageScale = 0.20; // Damage % scaling per level. Lower for Xenologist.
     private int m_iMinionResourceCost = g_iXenResourceCost; // Cost to summon specific minion.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
@@ -200,7 +200,6 @@ class XenMinionData
         keys["targetname"] = "_xenminion_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s " + XEN_NAMES[minionType];
         keys["health"] = string(scaledHealth);
-        keys["dmg"] = string(scaledDamage);
         keys["scale"] = "1.0";
         keys["friendly"] = "1";
         keys["spawnflag"] = "32"; // SF_MONSTER_FRIENDLY (32)
@@ -232,7 +231,6 @@ class XenMinionData
         float scaledDamage = GetScaledDamage();
 
         pMinion.pev.max_health = scaledHealth;
-        pMinion.pev.dmg = scaledDamage;
     }
 
     void XenUpdate(CBasePlayer@ pPlayer)
@@ -318,8 +316,8 @@ class XenMinionData
             return m_flBaseHealth * XEN_HEALTH_MODS[creatureType];
 
         float level = m_pStats.GetLevel();
-        g_flXenHPBonus = m_flBaseHealth * (float(level) * m_flHealthScale);
-        return (g_flXenHPBonus + m_flBaseHealth) * XEN_HEALTH_MODS[creatureType];
+        g_flXenMinionHPBonus = m_flBaseHealth * (float(level) * m_flHealthScale);
+        return (g_flXenMinionHPBonus + m_flBaseHealth) * XEN_HEALTH_MODS[creatureType];
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
@@ -328,8 +326,8 @@ class XenMinionData
             return 0.0f; // Technically should never be zero, but is always null when we have no minions.
 
         float level = m_pStats.GetLevel();
-        g_flXenDMGBonus = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
-        return g_flXenDMGBonus;
+        g_flXenMinionDMGBonus = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
+        return g_flXenMinionDMGBonus;
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)
@@ -441,8 +439,8 @@ void CheckXenologistMinions()
                 @g_XenologistMinions[steamID] = data;
             }
 
-            XenMinionData@ Minion = cast<XenMinionData@>(g_XenologistMinions[steamID]); // Changed cast type
-            if(Minion !is null)
+            XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]); // Changed cast type
+            if(xenMinion !is null)
             {
                 // Check if player switched class.
                 if(g_PlayerRPGData.exists(steamID))
@@ -453,26 +451,26 @@ void CheckXenologistMinions()
                         if(data.GetCurrentClass() != PlayerClass::CLASS_XENOLOGIST)
                         {
                             // Player is no longer this class, destroy active minions.
-                            if(Minion.IsActive())
+                            if(xenMinion.IsActive())
                             {
-                                Minion.DestroyAllMinions(pPlayer);
+                                xenMinion.DestroyAllMinions(pPlayer);
                                 continue;  // Skip rest of updates.
                             }
                         }
-                        else if(!Minion.HasStats())
+                        else if(!xenMinion.HasStats())
                         {
                             // Update stats.
-                            Minion.Initialize(data.GetCurrentClassStats());
+                            xenMinion.Initialize(data.GetCurrentClassStats());
                         }
                     }
                 }
 
                 // Always update scaling values for stats menu.
-                Minion.GetScaledHealth();
-                Minion.GetScaledDamage();
+                xenMinion.GetScaledHealth();
+                xenMinion.GetScaledDamage();
 
                 // Normal update for active minions.
-                Minion.XenUpdate(pPlayer);
+                xenMinion.XenUpdate(pPlayer);
             }
         }
     }

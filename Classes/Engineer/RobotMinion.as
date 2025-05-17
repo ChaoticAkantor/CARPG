@@ -37,7 +37,7 @@ const int SF_MONSTER_START_ACTIVE = 32;  // Start active without trigger
 // Made all these global for use in stats menu.
 float g_flBaseMinionHP = 100.0; // Base health of Minion.
 float g_flMinionHPBonus = 0.0; // Health % scaling per level.
-float g_flMinionDMGBonus = 0.0; // Ditto.
+float g_flMinionDMGBonus = 0.0; // Damage bonus for stat menu.
 int g_iMinionResourceCost = 1; // Cost to summon minion.
 
 float flMinionReservePool = 0.0; // Reserve pool.
@@ -73,7 +73,7 @@ class MinionData
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseMinionHP;
     private float m_flHealthScale = 0.25; // Health % scaling per level.
-    private float m_flDamageScale = 0.15; // Damage % scaling per level.
+    private float m_flDamageScale = 0.10; // Damage % scaling per level.
     private int m_iMinionResourceCost = g_iMinionResourceCost; // Cost to summon 1 minion.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
@@ -202,7 +202,6 @@ class MinionData
         float scaledDamage = GetScaledDamage();
 
         pMinion.pev.max_health = scaledHealth;
-        pMinion.pev.dmg = scaledDamage;
     }
 
     void Update(CBasePlayer@ pPlayer)
