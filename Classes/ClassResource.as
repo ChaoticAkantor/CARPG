@@ -115,7 +115,34 @@ void RegenClassResource()
                                         current = flMinionMaxReservePool;
                                     resources['current'] = current;
                                 }
-                                continue; // Skip normal regen logic
+                                continue; // Skip normal regen logic.
+                            }
+                        }
+                    }
+
+                    // Xenologist Minion Reserve Pool
+                    if(data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST)
+                    {
+                        if(g_XenologistMinions.exists(steamID))
+                        {
+                            XenMinionData@ minion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                            if(minion !is null)
+                            {
+                                float current = float(resources['current']);
+                                float regen = float(resources['regen']);
+                                
+                                // Calculate available max to regen to using reserve.
+                                flXenMaxReservePool = float(resources['max']) - flXenReservePool;
+                                
+                                // Only regenerate if we have remaining reserve.
+                                if(flXenMaxReservePool > 0 && current < flXenMaxReservePool)
+                                {
+                                    current += regen;
+                                    if(current > flXenMaxReservePool)
+                                        current = flXenMaxReservePool;
+                                    resources['current'] = current;
+                                }
+                                continue; // Skip normal regen logic.
                             }
                         }
                     }
@@ -227,6 +254,9 @@ void UpdateClassResource()
                         case PlayerClass::CLASS_DEMOLITIONIST:
                             resourceName = "Ordnance";
                             break;
+                        case PlayerClass::CLASS_XENOLOGIST:
+                            resourceName = "Bio Reserve";
+                            break;
                     }
                 }
             }
@@ -248,7 +278,7 @@ void UpdateClassResource()
                                 if(minionData !is null)
                                 {
                                     // Show the robot count.
-                                    resourceInfo += "[Robots: " + minionData.GetMinionCount() + "]";
+                                    resourceInfo += "[Robogrunts: " + minionData.GetMinionCount() + "]";
                                     
                                     // Add individual minion health info.
                                     array<EHandle>@ minions = minionData.GetMinions();
@@ -369,6 +399,32 @@ void UpdateClassResource()
                                     {
                                         float damageBonus = (cloak.GetDamageMultiplier(pPlayer) - 1.0f) * 100;
                                         resourceInfo += "[Damage Bonus: +" + int(damageBonus) + "%]";
+                                    }
+                                }
+                            }
+                            break;
+                            
+                        case PlayerClass::CLASS_XENOLOGIST:
+                            if(g_XenologistMinions.exists(steamID))
+                            {
+                                XenMinionData@ minionData = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                                if(minionData !is null)
+                                {
+                                    resourceInfo += "[Creatures: " + minionData.GetMinionCount() + "]";
+                                    
+                                    array<EHandle>@ minions = minionData.GetMinions();
+                                    if(minions !is null && minions.length() > 0)
+                                    {
+                                        resourceInfo += "\n";
+                                        for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
+                                        {
+                                            CBaseEntity@ pMinion = minions[minionIndex].GetEntity();
+                                            if(pMinion !is null)
+                                            {
+                                                float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
+                                                resourceInfo += "[" + int(healthPercent) + "%] ";
+                                            }
+                                        }
                                     }
                                 }
                             }
