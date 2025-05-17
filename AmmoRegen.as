@@ -179,6 +179,19 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
             }
             break;
         }
+
+        case PlayerClass::CLASS_CLOAKER:
+        {
+            AmmoType@ sniperAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "m40a1");
+            if(sniperAmmo !is null) 
+            {
+                sniperAmmo.amount += 1;
+            }
+            
+            AdjustAmmoDelay(playerAmmoTypes, "m40a1", 20, classLevel, 0.2f);
+
+            break;
+        }
             
         case PlayerClass::CLASS_DEMOLITIONIST:
         {
@@ -186,19 +199,19 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
             AmmoType@ grenadeAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "hand grenade");
             if(grenadeAmmo !is null) 
             {
-                grenadeAmmo.threshold = 3 + (classLevel / 10);
+                grenadeAmmo.threshold = 15;
             }
             
             AmmoType@ satchelAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "satchel charge");
             if(satchelAmmo !is null) 
             {
-                satchelAmmo.threshold = 1 + (classLevel / 10);
+                satchelAmmo.threshold = 7;
             }
             
             AmmoType@ rocketAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "rockets");
             if(rocketAmmo !is null) 
             {
-                rocketAmmo.threshold = 2 + (classLevel / 10);
+                rocketAmmo.threshold = 15;
             }
 
             // Use helper for all delay adjustments.
