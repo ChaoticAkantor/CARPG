@@ -307,12 +307,6 @@ void UpdateClassResource()
                                 {
                                     bool isActive = barrierData.IsActive();
                                     resourceInfo += "[" + (isActive ? "ON" : "OFF") + "] ";
-                                    
-                                    if(isActive)
-                                    {
-                                        float reduction = barrierData.GetDamageReduction() * 100;
-                                        resourceInfo += "[DR: " + int(reduction) + "%]";
-                                    }
                                 }
                             }
                             break;
