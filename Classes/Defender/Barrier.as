@@ -52,9 +52,9 @@ class BarrierData
         if(!m_bActive)
         {
             // Check energy.
-            if(float(resources['current']) < 5)
+            if(float(resources['current']) < float(resources['max']) / 2) // Only allow Barrier to be activated if it's at least half full.
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield too weak!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield must be 50%%!\n");
                 return;
             }
 
@@ -63,7 +63,7 @@ class BarrierData
             m_flLastDrainTime = currentTime;
             ApplyGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield On!\n");
         }
         else
         {
@@ -71,7 +71,8 @@ class BarrierData
             m_bActive = false;
             RemoveGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield dissipates!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Off!\n");
+            EffectBarrierToggle(pPlayer.pev.origin);
         }
 
         m_flLastToggleTime = currentTime;
@@ -157,29 +158,8 @@ class BarrierData
             m_bActive = false;
             RemoveGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Broken!\n");
-
-            // Add visual effect for barrier break.
-            Vector origin = pPlayer.pev.origin;
-
-            // Add effect to chip off metal chunks as barrier takes damage.
-            NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
-                breakMsg.WriteByte(TE_BREAKMODEL);
-                breakMsg.WriteCoord(origin.x);
-                breakMsg.WriteCoord(origin.y);
-                breakMsg.WriteCoord(origin.z);
-                breakMsg.WriteCoord(5); // Size.
-                breakMsg.WriteCoord(5); // Size.
-                breakMsg.WriteCoord(5); // Size.
-                breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
-                breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
-                breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
-                breakMsg.WriteByte(25); // Gib random speed and direction.
-                breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-                breakMsg.WriteByte(15); // Count.
-                breakMsg.WriteByte(10); // Lifetime.
-                breakMsg.WriteByte(1); // Sound Flags.
-                breakMsg.End();
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n");
+            EffectBarrierShatter(pPlayer.pev.origin);
         }
     }
 
@@ -203,7 +183,7 @@ class BarrierData
         target.pev.renderfx = kRenderFxGlowShell;
         target.pev.rendermode = kRenderNormal;
         target.pev.rendercolor = BARRIER_COLOR;
-        target.pev.renderamt = 4;
+        target.pev.renderamt = 5; // Thickness.
 
         // Add dynamic light
         NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
@@ -211,7 +191,7 @@ class BarrierData
             msg.WriteCoord(target.pev.origin.x);
             msg.WriteCoord(target.pev.origin.y);
             msg.WriteCoord(target.pev.origin.z);
-            msg.WriteByte(15); // Radius
+            msg.WriteByte(10); // Radius
             msg.WriteByte(int(BARRIER_COLOR.x));
             msg.WriteByte(int(BARRIER_COLOR.y));
             msg.WriteByte(int(BARRIER_COLOR.z));
@@ -245,4 +225,47 @@ class BarrierData
             g_BarrierGlowData.delete(targetId);
         }
     }
+
+    private void EffectBarrierShatter(Vector origin)
+    {
+        NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+            breakMsg.WriteByte(TE_BREAKMODEL);
+            breakMsg.WriteCoord(origin.x);
+            breakMsg.WriteCoord(origin.y);
+            breakMsg.WriteCoord(origin.z);
+            breakMsg.WriteCoord(5); // Size
+            breakMsg.WriteCoord(5); // Size
+            breakMsg.WriteCoord(5); // Size
+            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back
+            breakMsg.WriteCoord(0); // Gib vel pos Left/Right
+            breakMsg.WriteCoord(5); // Gib vel pos Up/Down
+            breakMsg.WriteByte(25); // Gib random speed and direction
+            breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+            breakMsg.WriteByte(15); // Count
+            breakMsg.WriteByte(10); // Lifetime
+            breakMsg.WriteByte(1); // Sound Flags
+            breakMsg.End();
+    }
+
+    private void EffectBarrierToggle(Vector origin)
+    {
+        NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+            breakMsg.WriteByte(TE_BREAKMODEL);
+            breakMsg.WriteCoord(origin.x);
+            breakMsg.WriteCoord(origin.y);
+            breakMsg.WriteCoord(origin.z);
+            breakMsg.WriteCoord(3); // Size
+            breakMsg.WriteCoord(3); // Size
+            breakMsg.WriteCoord(3); // Size
+            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back
+            breakMsg.WriteCoord(0); // Gib vel pos Left/Right
+            breakMsg.WriteCoord(0); // Gib vel pos Up/Down
+            breakMsg.WriteByte(10); // Gib random speed and direction
+            breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+            breakMsg.WriteByte(3); // Count
+            breakMsg.WriteByte(10); // Lifetime
+            breakMsg.WriteByte(1); // Sound Flags
+            breakMsg.End();
+    }
+
 }
