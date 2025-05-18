@@ -259,7 +259,7 @@ class HealingAura
                     }
                     else
                     {
-                        // Only check if monster is friendly, allow minion revival.
+                        // Make sure monster is an ally before reviving.
                         CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                         canRevive = (pMonster !is null && pMonster.IsPlayerAlly());
                     }
@@ -276,10 +276,10 @@ class HealingAura
                         {
                             // Revival for NPCs.
                             CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                            if(pMonster !is null)
+                            if(pMonster !is null && pMonster.IsPlayerAlly()) // Failsafe check that it's an ally.
                             {
-                                pMonster.Revive(); // Cbasemonster revival.
-                                pMonster.pev.health = pMonster.pev.max_health * 0.5; // Set health to 50%.
+                                pMonster.Revive();
+                                pMonster.pev.health = pMonster.pev.max_health * 0.5;
                             }
                         }
                         
@@ -318,7 +318,7 @@ class HealingAura
             float healAmount = GetScaledHealAmount();
             
             if(!pEntity.IsPlayer())
-                healAmount *= 2.0f; // NPC's get healing modifier.
+                healAmount *= 1.5f; // NPC's get healing modifier.
 
             // Process healing, effects and sounds.
             if(pEntity.pev.health < pEntity.pev.max_health)

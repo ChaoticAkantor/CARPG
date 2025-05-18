@@ -91,7 +91,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
             ClassDefinition@ def = ClassDefinition(string(g_ClassNames[pClass]));
             
             // Set class-specific parameters.
-            switch(pClass) // Balancing - Classes get a total of 6.0f spread between health and armor. Energy max and rate is determined by ability.
+            switch(pClass)
             {
                 case PlayerClass::CLASS_MEDIC:
                     def.healthPerLevel = 3.0f;
@@ -101,50 +101,50 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
-                    def.healthPerLevel = 1.0f;
-                    def.armorPerLevel = 5.0f;
+                    def.healthPerLevel = 2.0f;
+                    def.armorPerLevel = 3.0f;
                     def.energyPerLevel = 1.0f;
                     def.energyRegenPerLevel = 0.08f;
                     break;
 
                 case PlayerClass::CLASS_XENOLOGIST:
-                    def.healthPerLevel = 1.0f;
-                    def.armorPerLevel = 5.0f;
+                    def.healthPerLevel = 2.0f;
+                    def.armorPerLevel = 3.0f;
                     def.energyPerLevel = 1.0f;
                     def.energyRegenPerLevel = 0.08f;
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
                     def.healthPerLevel = 5.0f;
-                    def.armorPerLevel = 1.0f;
+                    def.armorPerLevel = 3.0f;
                     def.energyPerLevel = 8.0f;
                     def.energyRegenPerLevel = 0.18f;
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
-                    def.healthPerLevel = 3.0f;
-                    def.armorPerLevel = 3.0f;
+                    def.healthPerLevel = 4.0f;
+                    def.armorPerLevel = 4.0f;
                     def.energyPerLevel = 10.0f;
                     def.energyRegenPerLevel = 0.28f;
                     break;
 
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.healthPerLevel = 2.0f;
-                    def.armorPerLevel = 4.0f;
+                    def.armorPerLevel = 3.0f;
                     def.energyPerLevel = 10.0f;
                     def.energyRegenPerLevel = 0.08f;
                     break;
 
                 case PlayerClass::CLASS_CLOAKER:
-                    def.healthPerLevel = 1.0f;
-                    def.armorPerLevel = 5.0f;
+                    def.healthPerLevel = 2.0f;
+                    def.armorPerLevel = 3.0f;
                     def.energyPerLevel = 5.0f;
                     def.energyRegenPerLevel = 0.28f;
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
                     def.healthPerLevel = 2.0f;
-                    def.armorPerLevel = 4.0f;
+                    def.armorPerLevel = 3.0f;
                     def.energyPerLevel = 10.0f;
                     def.energyRegenPerLevel = 0.08f;
                     break;
@@ -368,23 +368,29 @@ class PlayerData
         if(m_CurrentClass == newClass) return;
         
         m_CurrentClass = newClass;
-        
-        // Find the player and update their stats.
+    
+        // Find the player and update their stats
         const int iMaxPlayers = g_Engine.maxClients;
         for(int i = 1; i <= iMaxPlayers; ++i)
         {
             CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
             if(pPlayer !is null && g_EngineFuncs.GetPlayerAuthId(pPlayer.edict()) == m_szSteamID)
             {
-                // Initialize resources first.
                 string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+                
+                // Initialize base resources once
                 if(!g_PlayerClassResources.exists(steamID))
                 {
-                    dictionary resources;
+                    dictionary resources = 
+                    {
+                        {'current', flBaseResource},
+                        {'max', flBaseResourceMax},
+                        {'regen', flBaseResourceRegen}
+                    };
                     @g_PlayerClassResources[steamID] = resources;
                 }
 
-                // Initialize class-specific data.
+                // Initialize class-specific data
                 switch(newClass)
                 {
                     case PlayerClass::CLASS_MEDIC:
@@ -393,65 +399,42 @@ class PlayerData
                             HealingAura data;
                             data.Initialize(GetCurrentClassStats());
                             g_HealingAuras[steamID] = data;
-                            
-                            dictionary resources = 
-                            {
-                                {'current', flBaseResource},
-                                {'max', flBaseResourceMax},
-                                {'regen', flBaseResourceRegen}
-                            };
-                            @g_PlayerClassResources[steamID] = resources;
                         }
                         break;
-
+                        
                     case PlayerClass::CLASS_DEFENDER:
                         if(!g_PlayerBarriers.exists(steamID))
                         {
                             BarrierData data;
                             data.Initialize(GetCurrentClassStats());
                             g_PlayerBarriers[steamID] = data;
-                            
-                            dictionary resources = 
-                            {
-                                {'current', flBaseResource},
-                                {'max', flBaseResourceMax},
-                                {'regen', flBaseResourceRegen}
-                            };
-                            @g_PlayerClassResources[steamID] = resources;
                         }
                         break;
-
+                    
                     case PlayerClass::CLASS_ENGINEER:
                         if(!g_PlayerMinions.exists(steamID))
                         {
                             MinionData data;
                             data.Initialize(GetCurrentClassStats());
                             g_PlayerMinions[steamID] = data;
-                            
-                            dictionary resources = 
-                            {
-                                {'current', flBaseResource},
-                                {'max', flBaseResourceMax},
-                                {'regen', flBaseResourceRegen}
-                            };
-                            @g_PlayerClassResources[steamID] = resources;
                         }
                         break;
 
+                        case PlayerClass::CLASS_XENOLOGIST:
+                        if(!g_XenologistMinions.exists(steamID))
+                        {
+                            XenMinionData data;
+                            data.Initialize(GetCurrentClassStats());
+                            g_XenologistMinions[steamID] = data;
+                        }
+                        break;
+                        
                     case PlayerClass::CLASS_SHOCKTROOPER:
                         if(!g_ShockRifleData.exists(steamID))
                         {
                             ShockRifleData data;
                             data.Initialize(GetCurrentClassStats());
                             g_ShockRifleData[steamID] = data;
-                            
-                            dictionary resources = 
-                            {
-                                {'current', flBaseResource},
-                                {'max', flBaseResourceMax},
-                                {'regen', flBaseResourceRegen}
-                            };
-                            @g_PlayerClassResources[steamID] = resources;
                         }
                         break;
                         
@@ -461,13 +444,6 @@ class PlayerData
                             BloodlustData data;
                             data.Initialize(GetCurrentClassStats());
                             @g_PlayerBloodlusts[steamID] = data;
-
-                            dictionary resources = {
-                                {'current', flBaseResource},
-                                {'max', flBaseResourceMax},
-                                {'regen', flBaseResourceRegen}
-                            };
-                            @g_PlayerClassResources[steamID] = resources;
                         }
                         break;
 
@@ -477,14 +453,6 @@ class PlayerData
                             CloakData data;
                             data.Initialize(GetCurrentClassStats());
                             g_PlayerCloaks[steamID] = data;
-                            
-                            dictionary resources = 
-                            {
-                                {'current', flBaseResource},
-                                {'max', flBaseResourceMax},
-                                {'regen', flBaseResourceRegen}
-                            };
-                            @g_PlayerClassResources[steamID] = resources;
                         }
                         break;
 
@@ -494,35 +462,22 @@ class PlayerData
                             ExplosiveRoundsData data;
                             data.Initialize(GetCurrentClassStats());
                             g_PlayerExplosiveRounds[steamID] = data;
-                            
-                            dictionary resources = 
-                            {
-                                {'current', flBaseResource},
-                                {'max', flBaseResourceMax},
-                                {'regen', flBaseResourceRegen}
-                            };
-                            @g_PlayerClassResources[steamID] = resources;
                         }
                         break;
                 }
                 
-                CalculateStats(pPlayer); // Calculate and update all stats
-
+                CalculateStats(pPlayer);
+                
+                // Update resource caps after stats calculation
                 dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-
-                // Check and cap energy if it exceeds max.
                 if(resources !is null)
                 {   
-                    // Cap current energy if it exceeds maximum.
                     float currentEnergy = float(resources['current']);
                     float maxEnergy = float(resources['max']);
                     if(currentEnergy > maxEnergy)
-                    {
                         resources['current'] = maxEnergy;
-                    }
                 }
 
-                g_Game.AlertMessage(at_console, "CARPG: Set class to " + GetClassName(m_CurrentClass) + "\n");
                 break;
             }
         }

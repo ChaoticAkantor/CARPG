@@ -2,7 +2,7 @@
 const float flCloakEnergyCostPerShot = 25.0f; // Energy drain per shot.
 const float flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
 const float flBaseDrainRate = 1.0f; // Base drain rate when standing still.
-const float flMovementDrainMultiplier = 3.0f; // How much more it drains when moving at max speed.
+const float flMovementDrainMultiplier = 2.0f; // How much more it drains when moving at max speed.
 const float flMaxMovementSpeed = 320.0f; // Maximum movement speed to scale drain against.
 
 const float flBaseDamageBonus = 0.50f;      // Base % damage increase.

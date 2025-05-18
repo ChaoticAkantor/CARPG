@@ -1,5 +1,4 @@
 string strXenMinionSoundCreate = "debris/beamstart7.wav";
-string strXenMinionSoundTeleport = "houndeye/he_blast1.wav";
 
 // models, sounds, and sprites for Xen creatures. (Yawn)
 string strPitdroneModel = "models/pit_drone.mdl";
@@ -25,30 +24,44 @@ string strPitdroneSoundMelee1 = "pitdrone/pit_drone_melee_attack1.wav";
 string strPitdroneSoundMelee2 = "pitdrone/pit_drone_melee_attack2.wav";
 string strPitdroneSoundEat = "pitdrone/pit_drone_eat.wav";
 
-string strHoundeyeModel = "models/houndeye.mdl";
-string strHoundeyeShockwave = "sprites/shockwave.spr";
-string strHoundeyeSoundAlert1 = "houndeye/he_alert1.wav";
-string strHoundeyeSoundAlert2 = "houndeye/he_alert2.wav";
-string strHoundeyeSoundAlert3 = "houndeye/he_alert3.wav";
-string strHoundeyeSoundDie1 = "houndeye/he_die1.wav";
-string strHoundeyeSoundDie2 = "houndeye/he_die2.wav";
-string strHoundeyeSoundDie3 = "houndeye/he_die3.wav";
-string strHoundeyeSoundIdle1 = "houndeye/he_idle1.wav";
-string strHoundeyeSoundIdle2 = "houndeye/he_idle2.wav";
-string strHoundeyeSoundIdle3 = "houndeye/he_idle3.wav";
-string strHoundeyeSoundHunt1 = "houndeye/he_hunt1.wav";
-string strHoundeyeSoundHunt2 = "houndeye/he_hunt2.wav";
-string strHoundeyeSoundHunt3 = "houndeye/he_hunt3.wav";
-string strHoundeyeSoundPain1 = "houndeye/he_pain1.wav";
-string strHoundeyeSoundPain3 = "houndeye/he_pain3.wav";
-string strHoundeyeSoundPain4 = "houndeye/he_pain4.wav";
-string strHoundeyeSoundPain5 = "houndeye/he_pain5.wav";
-string strHoundeyeSoundAttack1 = "houndeye/he_attack1.wav";
-string strHoundeyeSoundAttack3 = "houndeye/he_attack3.wav";
-string strHoundeyeSoundBlast2 = "houndeye/he_blast2.wav";
-string strHoundeyeSoundBlast3 = "houndeye/he_blast3.wav";
+string strGonomeModel = "models/gonome.mdl";
+string strGonomeSoundSpit1 = "bullchicken/bc_spihit1.wav";
+string strGonomeSoundDeath2 = "gonome/gonome_death2.wav";
+string strGonomeSoundDeath3 = "gonome/gonome_death3.wav";
+string strGonomeSoundDeath4 = "gonome/gonome_death4.wav";
+string strGonomeSoundIdle1 = "gonome/gonome_idle1.wav";
+string strGonomeSoundIdle2 = "gonome/gonome_idle2.wav";
+string strGonomeSoundIdle3 = "gonome/gonome_idle3.wav";
+string strGonomeSoundPain1 = "gonome/gonome_pain1.wav";
+string strGonomeSoundPain2 = "gonome/gonome_pain2.wav";
+string strGonomeSoundPain3 = "gonome/gonome_pain3.wav";
+string strGonomeSoundPain4 = "gonome/gonome_pain4.wav";
+string strGonomeSoundMelee1 = "gonome/gonome_melee1.wav";
+string strGonomeSoundMelee2 = "gonome/gonome_melee2.wav";
+string strGonomeSoundRun = "gonome/gonome_run.wav";
+string strGonomeSoundEat = "gonome/gonome_eat.wav";
 
 string strAlienGruntModel = "models/agruntf.mdl";
+string strAlienGruntMuzzleFlash = "sprites/muz4.spr";
+string strAlienGruntSoundIdle1 = "agrunt/ag_idle1.wav";
+string strAlienGruntSoundIdle2 = "agrunt/ag_idle2.wav";
+string strAlienGruntSoundIdle3 = "agrunt/ag_idle3.wav";
+string strAlienGruntSoundIdle4 = "agrunt/ag_idle4.wav";
+string strAlienGruntSoundDie1 = "agrunt/ag_die1.wav";
+string strAlienGruntSoundDie4 = "agrunt/ag_die4.wav";
+string strAlienGruntSoundDie5 = "agrunt/ag_die5.wav";
+string strAlienGruntSoundPain1 = "agrunt/ag_pain1.wav";
+string strAlienGruntSoundPain2 = "agrunt/ag_pain2.wav";
+string strAlienGruntSoundPain3 = "agrunt/ag_pain3.wav";
+string strAlienGruntSoundPain4 = "agrunt/ag_pain4.wav";
+string strAlienGruntSoundPain5 = "agrunt/ag_pain5.wav";
+string strAlienGruntSoundAttack1 = "agrunt/ag_attack1.wav";
+string strAlienGruntSoundAttack2 = "agrunt/ag_attack2.wav";
+string strAlienGruntSoundAttack3 = "agrunt/ag_attack3.wav";
+string strAlienGruntSoundAlert1 = "agrunt/ag_alert1.wav";
+string strAlienGruntSoundAlert3 = "agrunt/ag_alert3.wav";
+string strAlienGruntSoundAlert4 = "agrunt/ag_alert4.wav";
+string strAlienGruntSoundAlert5 = "agrunt/ag_alert5.wav";
 
 float flXenReservePool = 0.0f;     // Current reserve used by Xen creatures.
 float flXenMaxReservePool = 0.0f;  // Max reserve for Xen creatures.
@@ -58,14 +71,14 @@ dictionary g_XenologistMinions;
 enum XenType
 {
     XEN_PITDRONE = 0,
-    XEN_HOUNDEYE = 1,
+    XEN_GONOME = 1,
     XEN_ALIENGRUNT = 2
 }
 
 const array<string> XEN_NAMES = 
 {
     "Pit Drone",
-    "Houndeye",
+    "Gonome",
     "Alien Grunt"
     
 };
@@ -73,7 +86,7 @@ const array<string> XEN_NAMES =
 const array<string> XEN_ENTITIES = 
 {
     "monster_pitdrone",
-    "monster_houndeye",
+    "monster_gonome",
     "monster_alien_grunt"
     
 };
@@ -81,7 +94,7 @@ const array<string> XEN_ENTITIES =
 const array<int> XEN_COSTS = 
 {
     25,  // Pitdrone.
-    50,  // Houndeye.
+    50,  // Gonome.
     75   // Alien Grunt.
 };
 
@@ -89,7 +102,7 @@ const array<int> XEN_COSTS =
 const array<float> XEN_HEALTH_MODS = 
 {
     1.0f,    // Pitdrone.
-    1.0f,    // Houndeye.
+    1.5f,    // Gonome.
     2.0f     // Alien Grunt.
 };
 
@@ -105,7 +118,7 @@ class XenMinionData
     private array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseXenMinionHP;
-    private float m_flHealthScale = 0.33; // Health % scaling per level. Higher for Xenologist.
+    private float m_flHealthScale = 0.50; // Health % scaling per level. Higher for Xenologist.
     private float m_flDamageScale = 0.20; // Damage % scaling per level. Lower for Xenologist.
     private int m_iMinionResourceCost = g_iXenResourceCost; // Cost to summon specific minion.
     private float m_flLastToggleTime = 0.0f;
@@ -359,7 +372,7 @@ class XenMinionData
             }
         }
 
-        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strXenMinionSoundTeleport, 1.0f, ATTN_NORM);
+    g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creatures teleported!\n");
     }
 }

@@ -36,7 +36,7 @@ class AmmoType
 
 array<AmmoType@> g_AmmoTypes; // Store all ammo types in an array.
 
-void InitializeAmmoTypes() // Initialize all ammo types at startup.
+void InitializeAmmoRegen() // Initialize all ammo types at startup.
 {
     // Regular ammo types.
     g_AmmoTypes.insertLast(AmmoType("health", 1, 5, 100, true, 100));

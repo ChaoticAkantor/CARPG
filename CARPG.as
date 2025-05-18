@@ -49,9 +49,61 @@ void PluginInit()
     g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
     g_Module.ScriptInfo.SetContactInfo("None");
 
-    g_Scheduler.ClearTimerList(); // Clear any currently running timers first.
+    RemoveHooks(); // Remove Hooks.
+    RegisterHooks(); // Re-register Hooks.
+    PluginReset(); // Call a full reset whenever plugin is initialised or reloaded.
+}
 
-    // Register Hooks.
+void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
+{
+    PrecacheAll(); // Precache our models, sounds and sprites.
+    PluginReset(); // Reset all plugin data when a new map is loaded.
+}
+
+void MapActivate() // Like MapInit, only called after all mapper placed entities have been activated and the sound list has been written.
+{
+
+}
+
+void MapStart() // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
+{
+    g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n");
+    // Force any server related settings.
+    //g_EngineFuncs.ServerCommand("mp_survival_mode 0\n"); // Disable Survival Mode.
+    g_EngineFuncs.ServerCommand("mp_survival_voteallow 1\n"); // Enable Survival Mode voting.
+    //g_EngineFuncs.ServerCommand("mp_survival_minplayers 1\n"); // Survival Mode will turn on even if there is only 1 player.
+
+    // Hints to play on map load.
+    g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
+}
+
+void PluginReset() // Used to reset anything important to the plugin on reload.
+{
+    // Clear all dictionaries.
+    g_PlayerRPGData.deleteAll();
+    g_PlayerMinions.deleteAll(); // Clear Minion dictionary.
+        flMinionReservePool = 0.0; // Reset reserve pool.
+    g_XenologistMinions.deleteAll(); // Clear Xenologist Minion dictionary.
+        flXenReservePool = 0.0; // Reset reserve pool.
+    g_HealingAuras.deleteAll();
+    g_PlayerBarriers.deleteAll();
+    g_PlayerBloodlusts.deleteAll();
+    g_PlayerCloaks.deleteAll();
+    g_PlayerExplosiveRounds.deleteAll();
+    g_ShockRifleData.deleteAll();
+    g_PlayerClassResources.deleteAll();
+    
+
+    ClearMinions(); // Clear all minions from the map.
+    SetupTimers(); // For calling timer refresh.
+    InitializeMapMultipliers(); // Map multipliers for ammo recovery.
+    UpdateMapMultiplier(); // Map multipliers for ammo recovery update.
+    InitializeAmmoRegen(); // Ammo types for ammo recovery.
+    ApplyDifficultySettings(); // Difficulty forcing.
+}
+
+void RegisterHooks()
+{
     g_Hooks.RegisterHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
     g_Hooks.RegisterHook(Hooks::Weapon::WeaponPrimaryAttack, @OnWeaponPrimaryAttack);
     g_Hooks.RegisterHook(Hooks::Weapon::WeaponSecondaryAttack, @OnWeaponSecondaryAttack);
@@ -61,48 +113,25 @@ void PluginInit()
     g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
     g_Hooks.RegisterHook(Hooks::Player::PlayerSpawn, @PlayerRespawn);
     g_Hooks.RegisterHook(Hooks::Monster::MonsterTakeDamage, @MonsterTakeDamage);
-
-    SetupTimers(); // For calling timer refresh/setup.
-    InitializeMapMultipliers(); // Calling here first incase plugin is refreshed.
-    UpdateMapMultiplier(); // Calling here first incase plugin is refreshed.
-    InitializeAmmoTypes(); // Calling here first incase plugin is refreshed.
-    ApplyDifficultySettings(); // Difficulty forcing.
 }
 
-void MapInit()
+void RemoveHooks()
 {
-    PrecacheAll(); // Precache our models, sounds and sprites.
-    g_PlayerMinions.deleteAll(); // Clear Minion dictionary.
-        flMinionReservePool = 0.0; // Reset reserve pool.
-    g_XenologistMinions.deleteAll(); // Clear Xenologist Minion dictionary.
-        flXenReservePool = 0.0; // Reset reserve pool.
-    g_HealingAuras.deleteAll(); // Clear Heal Aura dictionary.
-    g_PlayerBarriers.deleteAll(); // Clear Barrier dictionary.
-    g_PlayerBloodlusts.deleteAll(); // Clear Bloodlusts dictionary.
-    g_PlayerCloaks.deleteAll(); // Clear Cloaks dictionary.
-    g_PlayerExplosiveRounds.deleteAll(); // Clear Explosive Rounds dictionary.
-    //g_PlayerMortarStrikes.deleteAll(); // Clear Mortar Strike dictionary - Unused.
-    g_PlayerClassResources.deleteAll(); // Clear Class Resource dictionary.
-}
-
-void MapStart()
-{
-    //ApplyDifficultySettings(); // Difficulty forcing.
-    //UpdateMapMultiplier(); // Ammo regen map multiplier.
-    //InitializeAmmoTypes(); // Initialize ammo types for max ammo.
-    g_Game.AlertMessage(at_console, "CARPG Enabled!\n");
-
-    // Force any server related settings.
-    
-    //g_EngineFuncs.ServerCommand("mp_survival_mode 0\n"); // Disable Survival Mode.
-    g_EngineFuncs.ServerCommand("mp_survival_voteallow 1\n"); // Enable Survival Mode voting.
-    //g_EngineFuncs.ServerCommand("mp_survival_minplayers 1\n"); // Survival Mode will turn on even if there is only 1 player.
-
-    ApplyDifficultySettings(); // Difficulty forcing.
+    g_Hooks.RemoveHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
+    g_Hooks.RemoveHook(Hooks::Weapon::WeaponPrimaryAttack, @OnWeaponPrimaryAttack);
+    g_Hooks.RemoveHook(Hooks::Weapon::WeaponSecondaryAttack, @OnWeaponSecondaryAttack);
+    g_Hooks.RemoveHook(Hooks::Weapon::WeaponTertiaryAttack, @OnWeaponTertiaryAttack);
+    g_Hooks.RemoveHook(Hooks::Player::ClientPutInServer, @OnClientPutInServer);
+    g_Hooks.RemoveHook(Hooks::Player::ClientDisconnect, @OnClientDisconnect);
+    g_Hooks.RemoveHook(Hooks::Player::ClientSay, @ClientSay);
+    g_Hooks.RemoveHook(Hooks::Player::PlayerSpawn, @PlayerRespawn);
+    g_Hooks.RemoveHook(Hooks::Monster::MonsterTakeDamage, @MonsterTakeDamage);
 }
 
 void SetupTimers()
 {
+    g_Scheduler.ClearTimerList(); // Always clear timers first before setting them up again.
+
     // Ammo Recovery System.
     g_Scheduler.SetInterval("AmmoTimerTick", flAmmoTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Schedule timer for ammo recovery system.
 
@@ -138,12 +167,6 @@ void SetupTimers()
 
     // Cloaker.
     g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
-
-    // Difficulty.
-    g_Scheduler.SetTimeout("ApplyDifficultySettings", 1.0f); // Apply settings after X second (Incase plugin is reloaded).
-
-    // Hints.
-    g_Scheduler.SetTimeout("ShowHints", 30.0f); // Show hints every X seconds.
 }
 
 void PrecacheAll()
@@ -183,6 +206,7 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strCloakActiveSound);
 
     // Minion Precache for any/all minion class monsters.
+
     // Robogrunt.
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath2);
@@ -196,14 +220,13 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strRobogruntSoundM16);
     g_SoundSystem.PrecacheSound(strRobogruntSoundReload);
 
-    g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
-    g_SoundSystem.PrecacheSound(strXenMinionSoundTeleport);
-
     g_Game.PrecacheModel(strRobogruntModel);
     g_Game.PrecacheModel(strRobogruntModelF);
     g_Game.PrecacheModel(strRobogruntRope);
     g_Game.PrecacheModel(strRobogruntModelChromegibs);
     g_Game.PrecacheModel(strRobogruntModelComputergibs);
+
+    g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
 
     // Pitdrone.
     g_Game.PrecacheModel(strPitdroneModel);
@@ -230,33 +253,47 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strPitdroneSoundMelee2);
     g_SoundSystem.PrecacheSound(strPitdroneSoundEat);
 
-    // Houndeye.
-    g_Game.PrecacheModel(strHoundeyeModel);
-    g_Game.PrecacheModel(strHoundeyeShockwave);
+    // Gonome.
+    g_Game.PrecacheModel(strGonomeModel);
 
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert1);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert2);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert3);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundDie1);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundDie2);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundDie3);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle1);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle2);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle3);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt1);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt2);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt3);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundPain1);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundPain3);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundPain4);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundPain5);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundAttack1);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundAttack3);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundBlast2);
-    g_SoundSystem.PrecacheSound(strHoundeyeSoundBlast3);
+    g_SoundSystem.PrecacheSound(strGonomeSoundSpit1);
+    g_SoundSystem.PrecacheSound(strGonomeSoundDeath2);
+    g_SoundSystem.PrecacheSound(strGonomeSoundDeath3);
+    g_SoundSystem.PrecacheSound(strGonomeSoundDeath4);
+    g_SoundSystem.PrecacheSound(strGonomeSoundIdle1);
+    g_SoundSystem.PrecacheSound(strGonomeSoundIdle2);
+    g_SoundSystem.PrecacheSound(strGonomeSoundIdle3);
+    g_SoundSystem.PrecacheSound(strGonomeSoundPain1);
+    g_SoundSystem.PrecacheSound(strGonomeSoundPain3);
+    g_SoundSystem.PrecacheSound(strGonomeSoundPain4);
+    g_SoundSystem.PrecacheSound(strGonomeSoundMelee1);
+    g_SoundSystem.PrecacheSound(strGonomeSoundMelee2);
+    g_SoundSystem.PrecacheSound(strGonomeSoundRun);
+    g_SoundSystem.PrecacheSound(strGonomeSoundEat);
 
     // Alient Grunt.
     g_Game.PrecacheModel(strAlienGruntModel);
+    g_Game.PrecacheModel(strAlienGruntMuzzleFlash);
+
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle1);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle2);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle3);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle4);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundDie1);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundDie4);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundDie5);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain1);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain2);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain3);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain4);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain5);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack1);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack2);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack3);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert1);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert3);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert4);
+    g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert5);
 
     // Demo Ability Precache.
     // Mortar Strike.
@@ -748,6 +785,7 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
             data.SaveToFile(); // Save player data when they disconnect.
         }
     }
+        ClearMinions();
     return HOOK_CONTINUE;
 }
 

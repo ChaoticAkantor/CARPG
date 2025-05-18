@@ -69,7 +69,7 @@ const array<int> MINION_COSTS =
 class MinionData
 {
     private MinionMenu@ m_pMenu;
-    private array<EHandle> m_hMinions; // Changed to array for multiple Minions
+    private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseMinionHP;
     private float m_flHealthScale = 0.25; // Health % scaling per level.
@@ -341,7 +341,7 @@ class MinionData
             }
         }
 
-        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strRobogruntSoundBeam, 1.0f, ATTN_NORM);
+    g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundBeam, 1.0f, ATTN_NORM);
     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robots teleported!\n");
     }
 }

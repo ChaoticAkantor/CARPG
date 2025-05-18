@@ -58,8 +58,8 @@ final class ForceDifficulty
 	private array<float> weapon_damage_values = 
 	{
 		10.0, //Medkit - Default 10.
-		30.0, //Crowbar - Default 15.
-		42.0, //Wrench - Default 22.
+		25.0, //Crowbar - Default 15.
+		40.0, //Wrench - Default 22.
 		80.0, //Grapple (Barnacle) - Default 40.
 		20.0, //Handgun (9mm Handgun) - Default 12.
 		132.0, //357 (Deagle is 2/3 of this) - Default 66.
