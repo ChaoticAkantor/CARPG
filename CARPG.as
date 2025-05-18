@@ -578,7 +578,52 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
     CBasePlayer@ pAttacker = cast<CBasePlayer@>(info.pAttacker);
     string steamID = g_EngineFuncs.GetPlayerAuthId(pAttacker.edict());
     
-    // Handle Cloak damage multiplier.
+    // Handle all class-specific damage conversions
+    if(g_PlayerRPGData.exists(steamID))
+    {
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
+        {
+            switch(data.GetCurrentClass())
+            {
+                case PlayerClass::CLASS_SHOCKTROOPER:
+                {
+                    info.bitsDamageType = DMG_SHOCK | DMG_SHOCK_GLOW; 
+                    break;
+                }
+                case PlayerClass::CLASS_BERSERKER:
+                {
+                    CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pAttacker.m_hActiveItem.GetEntity());
+                    if(pWeapon !is null && (
+                        pWeapon.GetClassname() == "weapon_crowbar" || 
+                        pWeapon.GetClassname() == "weapon_pipewrench" || 
+                        pWeapon.GetClassname() == "weapon_grapple"
+                    ))
+                    {
+                        info.bitsDamageType |= DMG_SLOWBURN; // Add Burning effect.
+                    }
+                    break;
+                }
+                case PlayerClass::CLASS_DEMOLITIONIST:
+                {
+                    info.bitsDamageType |= DMG_SLOWBURN; // Add Burning effect.
+                    break;
+                }
+                case PlayerClass::CLASS_XENOLOGIST:
+                {
+                    info.bitsDamageType |= DMG_POISON; // Add Poison effect.
+                    break;
+                }
+                case PlayerClass::CLASS_DEFENDER:
+                {
+                    info.bitsDamageType |= DMG_SLOWFREEZE | DMG_PARALYZE; // Add Freeze effect and paralyze.
+                    break;
+                }
+            }
+        }
+    }
+
+    // Handle Cloak damage multiplier (existing code)
     if(g_PlayerCloaks.exists(steamID))
     {
         CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
@@ -586,13 +631,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         {
             float damageCloakMultiplier = cloak.GetDamageMultiplier(pAttacker);
             info.flDamage *= damageCloakMultiplier;
-            
-            // Drain energy after dealing a multiplied damage shot.
+            info.bitsDamageType = DMG_POISON | DMG_ALWAYSGIB;
             cloak.DrainEnergyFromShot(pAttacker);
         }
     }
 
-    // Handle Bloodlust lifesteal for Berserkers.
+    // Handle lifesteal and bloodlust bonus lifesteal for Berserkers.
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);

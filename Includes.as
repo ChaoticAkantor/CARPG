@@ -15,7 +15,6 @@
 // Medic.
 #include "Classes/Medic/HealAura"
 #include "Classes/Medic/SelfRevive"
-#include "Classes/Medic/MedkitHealing" // Currently not implemented.
 
 // Engineer.
 #include "Classes/Engineer/RobotMinion"
