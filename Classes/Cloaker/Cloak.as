@@ -81,9 +81,9 @@ class CloakData
                 if(!m_bActive)
                 {
                     // Activate
-                    if(float(resources['current']) < 5)
+                    if(float(resources['current']) < float(resources['max']) / 2) // Cloak needs at least 50% energy.
                     {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Battery too low!\n");
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Battery must be 50%%!\n");
                         return;
                     }
 
@@ -115,7 +115,7 @@ class CloakData
                     // Sounds - activation and loop.
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Enabled!\n");
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak On!\n");
                 }
                 else
                 {
@@ -146,7 +146,7 @@ class CloakData
         // Stop looping sound and play deactivation sound.
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.0f, ATTN_NORM, SND_STOP);
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);    
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Disabled!\n");
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Off!\n");
         
         m_flLastEnergyConsumed = 0.0f;
     }
