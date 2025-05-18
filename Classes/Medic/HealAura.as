@@ -2,7 +2,7 @@ string strHealAuraToggleSound = "tfc/items/protect3.wav"; // Aura on/off sound.
 string strHealAuraActiveSound = "ambience/alien_beacon.wav"; // Aura active looping sound.
 string strHealSound = "player/heartbeat1.wav"; // Aura heal hit sound.
 string strHealAuraSprite = "sprites/zbeam6.spr"; // Aura sprite.
-string strHealAuraEffectSprite = "sprites/cnt1.spr"; // Aura healing sprite.
+string strHealAuraEffectSprite = "sprites/saveme.spr"; // Aura healing sprite.
 
 // Defines for stat menu.
 float g_flHealAuraBase = 10.0f; // Base heal amount.
@@ -65,7 +65,7 @@ class HealingAura
     private float m_flHealInterval = 1.0f;
 
     private float m_flNextVisualUpdate = 0.0f;
-    private float m_flVisualUpdateInterval = m_flHealInterval;
+    private float m_flVisualUpdateInterval = g_flHealAuraInterval; // Time between visual updates.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
 
     private float m_flGlowDuration = 0.25f;
@@ -185,43 +185,47 @@ class HealingAura
             return;
         
         m_flNextVisualUpdate = currentTime + m_flVisualUpdateInterval;
-        
-        Vector origin = pPlayer.pev.origin;
-        origin.z -= 32; // Offset to feet/floor.
-        NetworkMessage auramsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
-            auramsg.WriteByte(TE_BEAMDISK);
-            auramsg.WriteCoord(origin.x);
-            auramsg.WriteCoord(origin.y);
-            auramsg.WriteCoord(origin.z);
-            auramsg.WriteCoord(origin.x);
-            auramsg.WriteCoord(origin.y);
-            auramsg.WriteCoord(origin.z + m_flRadius);
-            auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
-            auramsg.WriteByte(0); // Starting frame of sprite.
-            auramsg.WriteByte(0); // Frame rate - no effect.
-            auramsg.WriteByte(10); // Life.
-            auramsg.WriteByte(1); // Width - no effect.
-            auramsg.WriteByte(0); // Noise - no effect.
-            auramsg.WriteByte(uint8(m_vAuraColor.x)); // Red.
-            auramsg.WriteByte(uint8(m_vAuraColor.y)); // Green.
-            auramsg.WriteByte(uint8(m_vAuraColor.z)); // Blue.
-            auramsg.WriteByte(200); // Alpha.
-            auramsg.WriteByte(0); // Speed.
-        auramsg.End();
 
-        // Add dynamic light
-        NetworkMessage auradynlightmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
-            auradynlightmsg.WriteByte(TE_DLIGHT);
-            auradynlightmsg.WriteCoord(pPlayer.pev.origin.x);
-            auradynlightmsg.WriteCoord(pPlayer.pev.origin.y);
-            auradynlightmsg.WriteCoord(pPlayer.pev.origin.z);
-            auradynlightmsg.WriteByte(15); // Radius.
-            auradynlightmsg.WriteByte(int(m_vAuraColor.x));
-            auradynlightmsg.WriteByte(int(m_vAuraColor.y));
-            auradynlightmsg.WriteByte(int(m_vAuraColor.z));
-            auradynlightmsg.WriteByte(1); // Life in 0.1s.
-            auradynlightmsg.WriteByte(0); // Decay rate.
-        auradynlightmsg.End();
+        Vector pos = pPlayer.pev.origin;
+        Vector mins = pos - Vector(16, 16, 0);
+        Vector maxs = pos + Vector(16, 16, 64);
+        
+        // Beam cylinder effect.
+        NetworkMessage auramsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, pos);
+            auramsg.WriteByte(TE_BEAMCYLINDER);
+            auramsg.WriteCoord(pos.x);
+            auramsg.WriteCoord(pos.y);
+            auramsg.WriteCoord(pos.z);
+            auramsg.WriteCoord(pos.x);
+            auramsg.WriteCoord(pos.y);
+            auramsg.WriteCoord(pos.z + m_flRadius); // Height
+            auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
+            auramsg.WriteByte(0); // Starting frame.
+            auramsg.WriteByte(16); // Frame rate.
+            auramsg.WriteByte(5); // Life.
+            auramsg.WriteByte(32); // Width.
+            auramsg.WriteByte(0); // Noise.
+            auramsg.WriteByte(int(m_vAuraColor.x));
+            auramsg.WriteByte(int(m_vAuraColor.y));
+            auramsg.WriteByte(int(m_vAuraColor.z));
+            auramsg.WriteByte(128); // Brightness.
+            auramsg.WriteByte(0); // Scroll speed.
+            auramsg.End();
+
+        //Bubbles Effect.
+        NetworkMessage aura2msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            aura2msg.WriteByte(TE_BUBBLES);
+            aura2msg.WriteCoord(mins.x);
+            aura2msg.WriteCoord(mins.y);
+            aura2msg.WriteCoord(mins.z);
+            aura2msg.WriteCoord(maxs.x);
+            aura2msg.WriteCoord(maxs.y);
+            aura2msg.WriteCoord(maxs.z);
+            aura2msg.WriteCoord(80.0f); // Height of the bubble effect.
+            aura2msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            aura2msg.WriteByte(18); // Count.
+            aura2msg.WriteCoord(6.0f); // Speed.
+            aura2msg.End();
     }
 
     private void ProcessHealing(CBasePlayer@ pPlayer) 
@@ -284,6 +288,10 @@ class HealingAura
                         CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                         if(pMonster !is null)
                         {
+                            // Always skip squadmakers.
+                            if(pMonster.GetClassname() == "squadmaker")
+                                continue;
+                                
                             // Only check blacklist if the monster IsPlayerAlly. As their relationships are reversed.
                             if(pMonster.IsPlayerAlly())
                             {
@@ -388,9 +396,9 @@ class HealingAura
             msg.WriteCoord(endPoint.y);
             msg.WriteCoord(endPoint.z);
             msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-            msg.WriteByte(8);  // Count.
-            msg.WriteByte(3);  // Life in 0.1's.
-            msg.WriteByte(1);  // Scale in 0.1's.
+            msg.WriteByte(10);  // Count.
+            msg.WriteByte(2);  // Life in 0.1's.
+            msg.WriteByte(5);  // Scale in 0.1's.
             msg.WriteByte(15); // Velocity along vector in 10's.
             msg.WriteByte(5);  // Random velocity in 10's.
         msg.End();
