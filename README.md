@@ -26,7 +26,7 @@ Can summon friendly robots based on maximum reserve power via a menu.
 Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. 
 They can be also be killed or teleported from the menu. 
 Teleporting pulls them around you in a circle and updates their HP from any gained levels. 
-Manually killing them from the menu refunds their full cost. 
+Manually killing them does not refund any cost, only reserve. 
 Their health and damage scales with level. Robots have thick armor and are resistant to bullets.
 Any XP (frags/score) they gain is sent to you instead.
 Always gets a pipewrench, can hit them with the wrench to heal them. Can potentially be revived, but triggers detonation sequence on death!
@@ -36,7 +36,8 @@ Can summon friendly Xen Creatures based on maximum bio reserve via a menu.
 Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. 
 They can be also be killed or teleported from the menu. 
 Teleporting pulls them around you in a circle and updates their HP from any gained levels. 
-Manually killing them from the menu refunds their full cost.
+Manually killing them does not refund any cost, only reserve.
+All three minion types should attempt to eat other dead creatures to regain their lost health.
 Their health and damage scales with level.
 Any XP (frags/score) they gain is sent to you instead.
 Can be healed with medkit. Can be revived.
