@@ -47,9 +47,9 @@ dictionary g_PlayerMinions;
 
 enum MinionType // Minion gun type. Not all are supported.
 {
-    MINION_MP5 = 0,
-    MINION_SHOTGUN = 10,
-    MINION_M16 = 4
+    MINION_MP5 = 3, // MP5 + HG
+    MINION_SHOTGUN = 10, // Shotgun + HG
+    MINION_M16 = 5 // M16 + GL
 }
 
 const array<string> MINION_NAMES = 
@@ -62,8 +62,8 @@ const array<string> MINION_NAMES =
 const array<int> MINION_COSTS = 
 {
     25,  // MP5
-    25,  // Shotgun
-    50   // M16
+    50,  // Shotgun
+    75   // M16
 };
 
 class MinionData
@@ -72,8 +72,8 @@ class MinionData
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseMinionHP;
-    private float m_flHealthScale = 0.25; // Health % scaling per level.
-    private float m_flDamageScale = 0.10; // Damage % scaling per level.
+    private float m_flHealthScale = 0.30; // Health % scaling per level.
+    private float m_flDamageScale = 0.15; // Damage % scaling per level.
     private int m_iMinionResourceCost = g_iMinionResourceCost; // Cost to summon 1 minion.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
