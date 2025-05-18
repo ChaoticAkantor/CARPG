@@ -71,10 +71,9 @@ class BloodlustData
             if(resources is null)
                 return;
 
-            float current = float(resources['current']);
-            if(current < flBloodlustEnergyCost) // Check energy before activation.
+            if(float(resources['current']) < float(resources['max']) / 2) // Check energy before activation.
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Energy too low!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust needs 50%%!\n");
                 return;
             }
         }
@@ -95,7 +94,7 @@ class BloodlustData
             ApplyGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustStartSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Activated!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust On!\n");
         }
         else
         {
@@ -216,7 +215,7 @@ class BloodlustData
                     data.CalculateStats(pPlayer);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.0f, ATTN_NORM, SND_STOP);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustEndSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_LOW);
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Deactivated!\n");
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Off!\n");
                 }
             }
         }
@@ -230,7 +229,7 @@ class BloodlustData
         // Apply glow shell
         pPlayer.pev.renderfx = kRenderFxGlowShell;
         pPlayer.pev.rendermode = kRenderNormal;
-        pPlayer.pev.renderamt = 3; // Shell thickness.
+        pPlayer.pev.renderamt = 5; // Shell thickness.
         pPlayer.pev.rendercolor = BLOODLUST_COLOR;
     }
 
