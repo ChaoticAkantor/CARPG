@@ -2,7 +2,7 @@
 // Self-Revive Ability.
 
 string strReviveSound = "items/medshot4.wav"; // Self revive sound.
-const int REVIVE_COST = 100; // Energy cost to revive
+const int REVIVE_COST = 50; // Energy cost to revive
 
 void HUDCanRevive()
 {
@@ -19,7 +19,7 @@ void HUDCanRevive()
     reviveParams.holdTime = 10;
     reviveParams.channel = 2;
     
-    g_PlayerFuncs.HudMessage(null, reviveParams, "Press RELOAD to use Energy to Self-Revive (Cost: " + REVIVE_COST + ")\n");
+    g_PlayerFuncs.HudMessage(null, reviveParams, "Press RELOAD Self-Revive (" + REVIVE_COST + ")\n");
 }
 
 void CheckCanRevive()
@@ -56,12 +56,12 @@ void CheckCanRevive()
                     {
                         current -= REVIVE_COST;
                         resources['current'] = current;
-                        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strReviveSound, 1.0, ATTN_NORM, 0, PITCH_NORM);
+                        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strReviveSound, 1.0, ATTN_NORM, 0, PITCH_NORM);
                         pPlayer.Revive();
                     }
                     else
                     {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Insufficient Energy to Self-Revive! (Cost: " + REVIVE_COST + ")\n");
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need (" + REVIVE_COST + ") to self-revive!\n");
                     }
                 }
             }

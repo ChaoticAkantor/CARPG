@@ -14,7 +14,6 @@
 
 // Medic.
 #include "Classes/Medic/HealAura"
-#include "Classes/Medic/SelfRevive"
 
 // Engineer.
 #include "Classes/Engineer/RobotMinion"
