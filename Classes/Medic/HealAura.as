@@ -1,14 +1,14 @@
 string strHealAuraToggleSound = "tfc/items/protect3.wav"; // Aura on/off sound.
 string strHealAuraActiveSound = "ambience/alien_beacon.wav"; // Aura active looping sound.
 string strHealSound = "player/heartbeat1.wav"; // Aura heal hit sound.
-string strHealAuraSprite = "sprites/zbeam2.spr"; // Aura sprite.
+string strHealAuraSprite = "sprites/zbeam6.spr"; // Aura sprite.
 string strHealAuraEffectSprite = "sprites/cnt1.spr"; // Aura healing sprite.
 
 // Defines for stat menu.
 float g_flHealAuraBase = 10.0f; // Base heal amount.
 float g_flHealAuraBonus = 0.5f; // Bonus per level, variable only used for calculation.
 float g_flHealAuraRadius = 640.0f; // Radius of the aura, does not scale currently.
-int g_iHealAuraDrain = 5; // Energy drain per interval.
+int g_iHealAuraDrain = 2; // Energy drain per interval.
 float g_flHealAuraInterval = 1.0f; // Time between heals.
 
 // For stat menu.
@@ -16,6 +16,17 @@ float flHealAuraHealBase = g_flHealAuraBase;
 float flHealAuraHealBonus = 0.0f;
 
 dictionary g_HealingAuras;
+
+array<string> ISPLAYERALLY_EXCLUSION = 
+{
+    "monster_human_grunt_ally",  // These NPCs have their relationships flipped when set as IsPlayerAlly.
+    "monster_human_medic_ally",  
+    "monster_human_torch_ally",  
+    "monster_otis",             
+    "monster_barney",           
+    "monster_scientist",
+    "monster_cleansuit_scientist"
+};
 
 void CheckHealAura() 
 {
@@ -89,13 +100,13 @@ class HealingAura
             int current = int(resources['current']);
             if (current < m_iDrainAmount) // Check energy before activation.
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Energy too low!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura needs 2 Bio-energy!\n");
                 return;
             }
         }
 
         m_bIsActive = !m_bIsActive;
-        string message = m_bIsActive ? "Healing Aura Activated!\n" : "Healing Aura Deactivated!\n";
+        string message = m_bIsActive ? "Healing Aura On!\n" : "Healing Aura Off!\n";
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, message);
 
         if (m_bIsActive) 
@@ -134,7 +145,7 @@ class HealingAura
             {
                 m_bIsActive = false;
                 UpdateVisualEffect(pPlayer);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Deactivated!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Off!\n");
                 g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
                 RemoveAuraGlow(pPlayer);
             }
@@ -176,8 +187,9 @@ class HealingAura
         m_flNextVisualUpdate = currentTime + m_flVisualUpdateInterval;
         
         Vector origin = pPlayer.pev.origin;
-        NetworkMessage auramsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-            auramsg.WriteByte(TE_BEAMCYLINDER);
+        origin.z -= 32; // Offset to feet/floor.
+        NetworkMessage auramsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+            auramsg.WriteByte(TE_BEAMDISK);
             auramsg.WriteCoord(origin.x);
             auramsg.WriteCoord(origin.y);
             auramsg.WriteCoord(origin.z);
@@ -186,14 +198,14 @@ class HealingAura
             auramsg.WriteCoord(origin.z + m_flRadius);
             auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame of sprite.
-            auramsg.WriteByte(0); // Frame rate - Has no effect.
+            auramsg.WriteByte(0); // Frame rate - no effect.
             auramsg.WriteByte(10); // Life.
-            auramsg.WriteByte(30); // Width.
-            auramsg.WriteByte(0); // Noise - Has no effect.
+            auramsg.WriteByte(1); // Width - no effect.
+            auramsg.WriteByte(0); // Noise - no effect.
             auramsg.WriteByte(uint8(m_vAuraColor.x)); // Red.
             auramsg.WriteByte(uint8(m_vAuraColor.y)); // Green.
             auramsg.WriteByte(uint8(m_vAuraColor.z)); // Blue.
-            auramsg.WriteByte(150); // Alpha.
+            auramsg.WriteByte(200); // Alpha.
             auramsg.WriteByte(0); // Speed.
         auramsg.End();
 
@@ -228,7 +240,7 @@ class HealingAura
         if(current < m_iDrainAmount)
         {
             m_bIsActive = false;
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Deactivated!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Off!\n");
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             RemoveAuraGlow(pPlayer);
             return;
@@ -240,7 +252,7 @@ class HealingAura
         m_flLastHealTime = currentTime;
 
         // Check if we have enough energy for potential revival.
-        int reviveCost = m_iDrainAmount * 2;
+        int reviveCost = m_iDrainAmount * 5; // 5x the drain cost for revival.
         
         Vector playerOrigin = pPlayer.pev.origin;
         CBaseEntity@ pEntity = null;
@@ -249,49 +261,61 @@ class HealingAura
             // Check for dead players first.
             if(!pEntity.IsAlive())
             {
-                // Only attempt revival if we have enough energy.
+                // Only attempt revival if we have enough energy
                 if(current >= reviveCost)
                 {
-                    bool canRevive = false;
                     if(pEntity.IsPlayer())
                     {
-                        canRevive = true;  // Always try to revive players.
+                        CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
+                        if(pTarget !is null)
+                        {
+                            pTarget.Revive(); // Do Player specific revival.
+                            pTarget.pev.health = pTarget.pev.max_health * 0.5; // Revive at 50% of max health.
+                            current -= reviveCost;
+                            resources['current'] = current;
+                            pPlayer.pev.frags += 5; // Award frags for reviving.
+                            ApplyHealEffect(pEntity);
+                            g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pEntity.pev.netname + "!\n");
+                        }
                     }
                     else
                     {
-                        // Make sure monster is an ally before reviving.
                         CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                        canRevive = (pMonster !is null && pMonster.IsPlayerAlly());
-                    }
-
-                    if(canRevive)
-                    {
-                        if(pEntity.IsPlayer())
+                        if(pMonster !is null)
                         {
-                            CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
-                            if(pTarget !is null)
-                                pTarget.Revive();
-                        }
-                        else
-                        {
-                            // Revival for NPCs.
-                            CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                            if(pMonster !is null && pMonster.IsPlayerAlly()) // Failsafe check that it's an ally.
+                            // Only check blacklist if the monster IsPlayerAlly. As their relationships are reversed.
+                            if(pMonster.IsPlayerAlly())
                             {
-                                pMonster.Revive();
-                                pMonster.pev.health = pMonster.pev.max_health * 0.5;
+                                string classname = pMonster.GetClassname();
+                                bool isAllyFlipped = false;
+                                
+                                // Check list only for allies.
+                                for(uint i = 0; i < ISPLAYERALLY_EXCLUSION.length(); i++)
+                                {
+                                    if(classname == ISPLAYERALLY_EXCLUSION[i])
+                                    {
+                                        isAllyFlipped = true;
+                                        break;
+                                    }
+                                }
+                                
+                                // Only revive if not blacklisted
+                                if(!isAllyFlipped)
+                                {
+                                    pMonster.Revive();
+                                    pMonster.pev.health = pMonster.pev.max_health * 0.5;
+                                    current -= reviveCost;
+                                    resources['current'] = current;
+                                    pPlayer.pev.frags += 5;
+                                    ApplyHealEffect(pEntity);
+                                    g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
+                                }
                             }
                         }
-                        
-                        current -= reviveCost; // Revival cost.
-                        resources['current'] = current;
-                        
-                        pPlayer.pev.frags += 5; // Award frags for reviving.
-                        ApplyHealEffect(pEntity);
-                        g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, pEntity.IsPlayer() ? "Revived " + pEntity.pev.netname + "!\n" : "Revived " + pEntity.pev.classname + "!\n");
-                        continue;
                     }
+                    continue;
                 }
             }
 
