@@ -64,10 +64,10 @@ enum PlayerClass
 class ClassDefinition 
 {
     string name;
-    float healthPerLevel = 3.0f; // Default health per level.
-    float armorPerLevel = 3.0f; // Default armor per level.
-    float energyPerLevel = 2.0f; // Default energy per level.
-    float energyRegenPerLevel = 0.1f; // Default energy regen per level.
+    float healthPerLevel = 5.0f; // Default health per level. Every class should have the same.
+    float armorPerLevel = 5.0f; // Default armor per level. Every class should have the same.
+    float energyPerLevel = 2.0f; // Default energy per level. Varies per class.
+    float energyRegenPerLevel = 0.1f; // Default energy regen per level. Varies per class.
     
     ClassDefinition(string _name) 
     {
@@ -94,58 +94,42 @@ void InitializeClassDefinitions() // Initialize class definitions.
             switch(pClass)
             {
                 case PlayerClass::CLASS_MEDIC:
-                    def.healthPerLevel = 3.0f;
-                    def.armorPerLevel = 3.0f;
-                    def.energyPerLevel = 5.0f;
-                    def.energyRegenPerLevel = 0.18f;
+                    def.energyPerLevel = 2.0f; // Requires base cost for activation.
+                    def.energyRegenPerLevel = 0.06f;
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
-                    def.healthPerLevel = 2.0f;
-                    def.armorPerLevel = 3.0f;
-                    def.energyPerLevel = 1.0f;
-                    def.energyRegenPerLevel = 0.08f;
+                    def.energyPerLevel = 1.0f; // Minion class, low energy.
+                    def.energyRegenPerLevel = 0.04f; // Minion class, slow regen.
                     break;
 
                 case PlayerClass::CLASS_XENOLOGIST:
-                    def.healthPerLevel = 2.0f;
-                    def.armorPerLevel = 3.0f;
-                    def.energyPerLevel = 1.0f;
-                    def.energyRegenPerLevel = 0.08f;
+                    def.energyPerLevel = 1.0f; // Minion class, low energy.
+                    def.energyRegenPerLevel = 0.04f; // Minion class, slow regen.
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
-                    def.healthPerLevel = 5.0f;
-                    def.armorPerLevel = 3.0f;
-                    def.energyPerLevel = 8.0f;
+                    def.energyPerLevel = 8.0f; // Requires 50% for activation.
                     def.energyRegenPerLevel = 0.18f;
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
-                    def.healthPerLevel = 4.0f;
-                    def.armorPerLevel = 4.0f;
-                    def.energyPerLevel = 10.0f;
+                    def.energyPerLevel = 10.0f; // Requires 50% total for activation.
                     def.energyRegenPerLevel = 0.28f;
                     break;
 
                 case PlayerClass::CLASS_SHOCKTROOPER:
-                    def.healthPerLevel = 2.0f;
-                    def.armorPerLevel = 3.0f;
-                    def.energyPerLevel = 10.0f;
+                    def.energyPerLevel = 10.0f; // Requires 31 for activation, specific case.
                     def.energyRegenPerLevel = 0.08f;
                     break;
 
                 case PlayerClass::CLASS_CLOAKER:
-                    def.healthPerLevel = 2.0f;
-                    def.armorPerLevel = 3.0f;
-                    def.energyPerLevel = 5.0f;
-                    def.energyRegenPerLevel = 0.28f;
+                    def.energyPerLevel = 5.0f; // Requires 50% total for activation.
+                    def.energyRegenPerLevel = 0.18f;
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
-                    def.healthPerLevel = 2.0f;
-                    def.armorPerLevel = 3.0f;
-                    def.energyPerLevel = 10.0f;
+                    def.energyPerLevel = 10.0f; // Requires base cost for activation.
                     def.energyRegenPerLevel = 0.08f;
                     break;
             }
