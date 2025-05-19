@@ -58,31 +58,31 @@ final class ForceDifficulty
 	private array<float> weapon_damage_values = 
 	{
 		10.0, //Medkit - Default 10.
-		25.0, //Crowbar - Default 15.
-		40.0, //Wrench - Default 22.
-		80.0, //Grapple (Barnacle) - Default 40.
-		20.0, //Handgun (9mm Handgun) - Default 12.
-		132.0, //357 (Deagle is 2/3 of this) - Default 66.
-		16.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
-		16.0, //MP5 (9mm AR) - Default 8.
-		16.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
-		130.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
-		30.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
-		200.0, //M203 (ARgrenades) - Default 100.
-		300.0, //RPG - Default 150.
-		40.0, //Gauss (No charge) - Default 19.
-		400.0, //Secondary Guass (Max Charge) - Default 190.
-		25.0, //Gluon (Egon) Gun - Default 12.
-		30.0, //Hornet Gun - Default 12.
-		200.0, //Hand Grenade - Default 100.
-		300.0, //Satchel - Default 160.
-		300.0, //Tripmine - Default 150.
-		220.0, //762 (Sniper Rifle) - Default 110.
+		20.0, //Crowbar - Default 15.
+		30.0, //Wrench - Default 22.
+		60.0, //Grapple (Barnacle) - Default 40.
+		15.0, //Handgun (9mm Handgun) - Default 12.
+		75.0, //357 (Deagle is 2/3 of this) - Default 66.
+		13.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
+		14.0, //MP5 (9mm AR) - Default 8.
+		12.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
+		75.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
+		20.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
+		150.0, //M203 (ARgrenades) - Default 100.
+		200.0, //RPG - Default 150.
+		25.0, //Gauss (No charge) - Default 19.
+		250.0, //Secondary Guass (Max Charge) - Default 190.
+		15.0, //Gluon (Egon) Gun - Default 12.
+		20.0, //Hornet Gun - Default 12.
+		150.0, //Hand Grenade - Default 100.
+		180.0, //Satchel - Default 160.
+		200.0, //Tripmine - Default 150.
+		150.0, //762 (Sniper Rifle) - Default 110.
 		120.0, //Spore Launcher - Default 100.
-		500.0, //Displacer (Primary) - Default 250.
+		300.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
-		40.0, //Shockrifle (Primary) - Default 15.
-		13.0, //Shockrifle (Beam) - Default 2 (x3? I think it does this damage per beam that connects).
+		30.0, //Shockrifle (Primary) - Default 15.
+		9.0, //Shockrifle (Beam) - Default 2 (x3? I think it does this damage per beam that connects).
 		350.0, //Shockrifle Touch damage (on self on detonate?) - Default 350.
 		150.0 //Shockroach Splash damage (on self when detonate?) - Default 150.
 	};
@@ -124,54 +124,54 @@ final class ForceDifficulty
 	private array<float> monster_damage_values = 
 	{
 		150.0, // sk_agrunt_health
-		30.0, // sk_agrunt_dmg_punch - Default 15
+		15.0, // sk_agrunt_dmg_punch - Default 15
 		256.0, // sk_agrunt_melee_engage_distance
-		40.0, // sk_agrunt_berserker_dmg_punch - Default 20
+		20.0, // sk_agrunt_berserker_dmg_punch - Default 20
 		500.0, // sk_apache_health
 		50.0, // sk_barnacle_health
-		25.0, // sk_barnacle_bite - Default 15
+		15.0, // sk_barnacle_bite - Default 15
 		65.0, // sk_barney_health
 		120.0, // sk_bullsquid_health - Default 110
-		30.0, // sk_bullsquid_dmg_bite - Default 10
-		50.0, // sk_bullsquid_dmg_whip - Default 25
-		30.0, // sk_bullsquid_dmg_spit - Default 10
+		15.0, // sk_bullsquid_dmg_bite - Default 10
+		30.0, // sk_bullsquid_dmg_whip - Default 25
+		12.0, // sk_bullsquid_dmg_spit - Default 10
 		1.0, // sk_bigmomma_health_factor
-		50.0, // sk_bigmomma_dmg_slash
-		100.0, // sk_bigmomma_dmg_blast
+		50.0, // sk_bigmomma_dmg_slash - Default 50
+		100.0, // sk_bigmomma_dmg_blast - Default 100
 		260.0, // sk_bigmomma_radius_blast
 		1000.0, // sk_gargantua_health
-		30.0, // sk_gargantua_dmg_slash
-		8.0, // sk_gargantua_dmg_fire
-		100.0, // sk_gargantua_dmg_stomp
+		30.0, // sk_gargantua_dmg_slash - Default 30
+		8.0, // sk_gargantua_dmg_fire - Default 4
+		100.0, // sk_gargantua_dmg_stomp - Default 100
 		50.0, // sk_hassassin_health
 		20.0, // sk_headcrab_health - Default 20
-		40.0, // sk_headcrab_dmg_bite - Default 10
+		30.0, // sk_headcrab_dmg_bite - Default 10
 		100.0, // sk_hgrunt_health
-		40.0, // sk_hgrunt_kick - Default 15?
+		20.0, // sk_hgrunt_kick - Default 15?
 		500.0, // sk_hgrunt_gspeed
 		80.0, // sk_houndeye_health - Default 50
-		30.0, // sk_houndeye_dmg_blast - Default 10
+		12.0, // sk_houndeye_dmg_blast - Default 10
 		80.0, // sk_islave_health
-		30.0, // sk_islave_dmg_claw - Default 10
-		25.0, // sk_islave_dmg_clawrake - Default 10
-		30.0, // sk_islave_dmg_zap - Default 10
+		15.0, // sk_islave_dmg_claw - Default 10
+		15.0, // sk_islave_dmg_clawrake - Default 10
+		12.0, // sk_islave_dmg_zap - Default 10
 		350.0, // sk_ichthyosaur_health
 		30.0, // sk_ichthyosaur_shake
 		3.0, // sk_leech_health
 		5.0, // sk_leech_dmg_bite
 		90.0, // sk_controller_health
-		20.0, // sk_controller_dmgzap - Default 5
+		6.0, // sk_controller_dmgzap - Default 5
 		900.0, // sk_controller_speedball
-		10.0, // sk_controller_dmgball - Default 5
+		6.0, // sk_controller_dmgball - Default 5
 		900.0, // sk_nihilanth_health
 		30.0, // sk_nihilanth_zap
 		50.0, // sk_scientist_health
 		2.0, // sk_snark_health
-		15.0, // sk_snark_dmg_bite - Default 5 or 10?
-		10.0, // sk_snark_dmg_pop - Default 5?
-		100.0, // sk_zombie_health
-		30.0, // sk_zombie_dmg_one_slash - Default 10
-		60.0, // sk_zombie_dmg_both_slash - Default 20
+		6.0, // sk_snark_dmg_bite - Default 5 or 10?
+		6.0, // sk_snark_dmg_pop - Default 5?
+		120.0, // sk_zombie_health
+		15.0, // sk_zombie_dmg_one_slash - Default 10
+		25.0, // sk_zombie_dmg_both_slash - Default 20
 		200.0, // sk_turret_health
 		80.0, // sk_miniturret_health
 		80.0, // sk_sentry_health
@@ -183,29 +183,29 @@ final class ForceDifficulty
 		100.0, // sk_rgrunt_explode
 		50.0, // sk_massassin_sniper
 		65.0, // sk_otis_health
-		110.0, // sk_zombie_barney_health
-		30.0, // sk_zombie_barney_dmg_one_slash - Default 10
-		60.0, // sk_zombie_barney_dmg_both_slash - Default 20
+		130.0, // sk_zombie_barney_health
+		15.0, // sk_zombie_barney_dmg_one_slash - Default 10
+		25.0, // sk_zombie_barney_dmg_both_slash - Default 20
 		150.0, // sk_zombie_soldier_health
-		40.0, // sk_zombie_soldier_dmg_one_slash - Default 10
-		80.0, // sk_zombie_soldier_dmg_both_slash - Default 20
+		20.0, // sk_zombie_soldier_dmg_one_slash - Default 10
+		30.0, // sk_zombie_soldier_dmg_both_slash - Default 20
 		250.0, // sk_gonome_health - Default 200.0
-		30.0, // sk_gonome_dmg_one_slash - Default 5
-		30.0, // sk_gonome_dmg_guts - Default 5
-		25.0, // sk_gonome_dmg_one_bite - Default 5
+		10.0, // sk_gonome_dmg_one_slash - Default 5
+		15.0, // sk_gonome_dmg_guts - Default 5
+		10.0, // sk_gonome_dmg_one_bite - Default 5
 		80.0, // sk_pitdrone_health - Default 50
-		30.0, // sk_pitdrone_dmg_bite - Default 10
-		40.0, // sk_pitdrone_dmg_whip - Default 10
-		30.0, // sk_pitdrone_dmg_spit - Default 10
+		15.0, // sk_pitdrone_dmg_bite - Default 10
+		15.0, // sk_pitdrone_dmg_whip - Default 10
+		12.0, // sk_pitdrone_dmg_spit - Default 10
 		200.0, // sk_shocktrooper_health
-		40.0, // sk_shocktrooper_kick
+		15.0, // sk_shocktrooper_kick - Default 12
 		12.0, // sk_shocktrooper_maxcharge
 		800.0, // sk_tor_health
 		30.0, // sk_tor_punch
 		3.0, // sk_tor_energybeam
 		15.0, // sk_tor_sonicblast
 		350.0, // sk_voltigore_health
-		40.0, // sk_voltigore_dmg_punch - Default 30.
+		30.0, // sk_voltigore_dmg_punch - Default 30.
 		50.0, // sk_voltigore_dmg_beam
 		750.0, // sk_tentacle
 		600.0, // sk_blkopsosprey
@@ -324,13 +324,13 @@ final class ForceDifficulty
 
 
 	private array<float> monster_damage_values_bullet = {
-		16, // sk_12mm_bullet - Default 8
-		12, // sk_9mmAR_bullet - Default 3
-		10, // sk_9mm_bullet - Default 3
-		20, // sk_hornet_dmg - Default 8
-		36, // sk_otis_bullet - Default 34
-		12, // sk_grunt_buckshot - Default 3
-		30 // sk_556_bullet - Default 12
+		8, // sk_12mm_bullet - Default 8
+		4, // sk_9mmAR_bullet - Default 3
+		4, // sk_9mm_bullet - Default 3
+		8, // sk_hornet_dmg - Default 8
+		34, // sk_otis_bullet - Default 34
+		4, // sk_grunt_buckshot - Default 3
+		20 // sk_556_bullet - Default 12
 	};
 
 

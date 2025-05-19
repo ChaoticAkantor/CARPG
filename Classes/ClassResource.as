@@ -170,19 +170,30 @@ void RegenClassResource()
     }
 }
 
-string GetResourceBar(float current, float maximum, int barLength = 20) // Ability bar.
+string GetResourceBar(float current, float maximum, int barLength = 20)
 {
     float ratio = current / maximum;
-    float realpos = ratio * barLength;
+    float segmentSize = 1.0f / barLength;
     string output = "[";
     
-    // Our progress
+    // Calculate filled segments more accurately.
     for(int i = 0; i < barLength; i++)
     {
-        if(i <= realpos)
-            output += "|";
+        float segmentThreshold = segmentSize * (i + 1);
+        
+        if(ratio >= segmentThreshold)
+            output += "|"; // Fully filled segment.
+        else if(ratio > segmentSize * i && ratio < segmentThreshold)
+        {
+            // Partially filled segment.
+            float partialFill = (ratio - (segmentSize * i)) / segmentSize;
+            if(partialFill > 0.5f)
+                output += ":"; // 50% segment.
+            else
+                output += "."; // 25% segment.
+        }
         else
-            output += "-";
+            output += " "; // Empty segment.
     }
     
     output += "]";

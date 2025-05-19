@@ -28,20 +28,20 @@ namespace Menu
             m_pMenu.SetTitle(title);
             
             m_pMenu.AddItem("=== Basic Stats: ===" + "\n" +
-            "Health: " + g_flBaseMaxHP + " + " + g_flHPBonus + " [" + (g_flBaseMaxHP + g_flHPBonus) + "]\n" + 
-            "Armor: " + g_flBaseMaxAP + " + " + g_flAPBonus + " [" + (g_flBaseMaxAP + g_flAPBonus) + "]\n" + 
-            "Energy: " + g_flBaseMaxResource + " + " + g_flResourceBonus + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n" + 
-            "Energy Regen: " + g_flBaseResourceRegen + " + " + g_flResourceRegenBonus + " [" + (g_flBaseResourceRegen + g_flResourceRegenBonus) + "/sec]\n", null);
+            "Health: " + g_flBaseMaxHP + " + " + int(g_flHPBonus) + " [" + (g_flBaseMaxHP + g_flHPBonus) + "]\n" + 
+            "Armor: " + g_flBaseMaxAP + " + " + int(g_flAPBonus) + " [" + (g_flBaseMaxAP + g_flAPBonus) + "]\n" + 
+            "Energy: " + g_flBaseMaxResource + " + " + int(g_flResourceBonus) + " [" + (g_flBaseMaxResource + g_flResourceBonus) + "]\n" + 
+            "Energy Regen: " + g_flBaseResourceRegen + " + " + int(g_flResourceRegenBonus) + " [" + (g_flBaseResourceRegen + g_flResourceRegenBonus) + "/sec]\n", null);
             
             switch(m_pOwner.GetCurrentClass())
             {
                 case PlayerClass::CLASS_MEDIC:
                 {
                     m_pMenu.AddItem("=== Medic Stats: ===" + "\n" + 
-                    "Heal Aura Healing: " + flHealAuraHealBase + "HP/s + " + flHealAuraHealBonus + "HP/s [" + (flHealAuraHealBase + flHealAuraHealBonus) + " HP/s]\n" + 
+                    "Heal Aura Healing: " + flHealAuraHealBase + " HP/s + " + flHealAuraHealBonus + " HP/s [" + (flHealAuraHealBase + flHealAuraHealBonus) + " HP/s]\n" + 
                     "Heal Aura Cost: " + g_iHealAuraDrain + "/s" + 
                     "Medkit Capacity: " + g_flMedkitCapacity + " + " + g_flMedkitCapacityBonus + " [" + (g_flMedkitCapacity + g_flMedkitCapacityBonus) + "]\n" + 
-                    "Medkit Recharge: " + g_flMedkitRecharge + " + " + g_flMedkitRechargeBonus + " [" + (g_flMedkitRecharge + g_flMedkitRechargeBonus) + " HP/sec]\n\n", null);
+                    "Medkit Recharge: " + g_flMedkitRecharge + " + " + g_flMedkitRechargeBonus + " [" + (g_flMedkitRecharge + g_flMedkitRechargeBonus) + " HP/s]\n\n", null);
                     break;
                 }
                 case PlayerClass::CLASS_BERSERKER:

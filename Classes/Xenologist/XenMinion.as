@@ -25,6 +25,7 @@ string strPitdroneSoundMelee2 = "pitdrone/pit_drone_melee_attack2.wav";
 string strPitdroneSoundEat = "pitdrone/pit_drone_eat.wav";
 
 string strGonomeModel = "models/gonome.mdl";
+string strGonomeSpriteSpit = "sprites/blood_chnk.spr";
 string strGonomeSoundSpit1 = "bullchicken/bc_spihit1.wav";
 string strGonomeSoundDeath2 = "gonome/gonome_death2.wav";
 string strGonomeSoundDeath3 = "gonome/gonome_death3.wav";
@@ -42,6 +43,7 @@ string strGonomeSoundRun = "gonome/gonome_run.wav";
 string strGonomeSoundEat = "gonome/gonome_eat.wav";
 
 string strAlienGruntModel = "models/agruntf.mdl";
+string strAlienGruntModelGibs = "models/fleshgibs.mdl";
 string strAlienGruntMuzzleFlash = "sprites/muz4.spr";
 string strAlienGruntSoundIdle1 = "agrunt/ag_idle1.wav";
 string strAlienGruntSoundIdle2 = "agrunt/ag_idle2.wav";
@@ -102,8 +104,8 @@ const array<int> XEN_COSTS =
 const array<float> XEN_HEALTH_MODS = 
 {
     1.0f,    // Pitdrone.
-    1.5f,    // Gonome.
-    2.0f     // Alien Grunt.
+    1.25f,    // Gonome.
+    1.5f     // Alien Grunt.
 };
 
 float g_flBaseXenMinionHP = 100.0;
@@ -118,8 +120,8 @@ class XenMinionData
     private array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseXenMinionHP;
-    private float m_flHealthScale = 0.50; // Health % scaling per level. Higher for Xenologist.
-    private float m_flDamageScale = 0.20; // Damage % scaling per level. Lower for Xenologist.
+    private float m_flHealthScale = 0.12; // Health % scaling per level. Higher for Xenologist.
+    private float m_flDamageScale = 0.03; // Damage % scaling per level. Lower for Xenologist.
     private int m_iMinionResourceCost = g_iXenResourceCost; // Cost to summon specific minion.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
@@ -329,8 +331,8 @@ class XenMinionData
             return m_flBaseHealth * XEN_HEALTH_MODS[creatureType];
 
         float level = m_pStats.GetLevel();
-        g_flXenMinionHPBonus = m_flBaseHealth * (float(level) * m_flHealthScale);
-        return (g_flXenMinionHPBonus + m_flBaseHealth) * XEN_HEALTH_MODS[creatureType];
+        g_flXenMinionHPBonus = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
+        return (g_flXenMinionHPBonus) * XEN_HEALTH_MODS[creatureType] + m_flBaseHealth;
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.

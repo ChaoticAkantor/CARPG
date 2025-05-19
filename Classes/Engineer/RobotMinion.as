@@ -72,8 +72,8 @@ class MinionData
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = g_flBaseMinionHP;
-    private float m_flHealthScale = 0.30; // Health % scaling per level.
-    private float m_flDamageScale = 0.15; // Damage % scaling per level.
+    private float m_flHealthScale = 0.12; // Health % scaling per level. Less than Xeno as they have armor.
+    private float m_flDamageScale = 0.03; // Damage % scaling per level. Less than Xeno as they are purely ranged and much more effective.
     private int m_iMinionResourceCost = g_iMinionResourceCost; // Cost to summon 1 minion.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
@@ -298,8 +298,8 @@ class MinionData
             return m_flBaseHealth;
 
         float level = m_pStats.GetLevel();
-        g_flMinionHPBonus = m_flBaseHealth * (float(level) * m_flHealthScale);
-        return g_flMinionHPBonus + m_flBaseHealth; // Return base health + bonus.
+        g_flMinionHPBonus = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
+        return g_flMinionHPBonus + m_flBaseHealth;
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.

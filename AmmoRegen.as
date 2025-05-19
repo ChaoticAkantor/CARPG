@@ -42,22 +42,22 @@ void InitializeAmmoRegen() // Initialize all ammo types at startup.
     g_AmmoTypes.insertLast(AmmoType("health", 1, 5, 100, true, 100));
     g_AmmoTypes.insertLast(AmmoType("9mm", 2, 1, 300));
     g_AmmoTypes.insertLast(AmmoType("buckshot", 15, 1, 125));
-    g_AmmoTypes.insertLast(AmmoType("357", 18, 1, 36));
+    g_AmmoTypes.insertLast(AmmoType("357", 20, 1, 36));
     g_AmmoTypes.insertLast(AmmoType("556", 3, 1, 600));
-    g_AmmoTypes.insertLast(AmmoType("m40a1", 20, 1, 25));
-    g_AmmoTypes.insertLast(AmmoType("bolts", 25, 1, 30));
+    g_AmmoTypes.insertLast(AmmoType("m40a1", 25, 1, 25));
+    g_AmmoTypes.insertLast(AmmoType("bolts", 30, 1, 30));
     g_AmmoTypes.insertLast(AmmoType("sporeclip", 30, 1, 20));
-    g_AmmoTypes.insertLast(AmmoType("hornets", 2, 1, 100));
-    g_AmmoTypes.insertLast(AmmoType("shock charges", 2, 1, 100));
+    g_AmmoTypes.insertLast(AmmoType("hornets", 3, 1, 100));
+    g_AmmoTypes.insertLast(AmmoType("shock charges", 5, 1, 100));
     g_AmmoTypes.insertLast(AmmoType("uranium", 12, 1, 100));
     
     // Threshold-based ammo types (explosives, etc).
-    g_AmmoTypes.insertLast(AmmoType("hand grenade", 30, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 30, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("satchel charge", 60, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("trip mine", 60, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("rockets", 60, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("snarks", 15, 1, 15, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("hand grenade", 60, 1, 10, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 60, 1, 10, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("satchel charge", 120, 1, 10, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("trip mine", 120, 1, 10, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("rockets", 90, 1, 10, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("snarks", 30, 1, 15, true, 1));
 }
 
 void AmmoTimerTick() // Do ammo regen.
@@ -194,8 +194,8 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
                 tripmineAmmo.threshold = 10;
             }
             
-            AdjustAmmoDelay(playerAmmoTypes, "m40a1", 20, classLevel, 0.2f);
-            AdjustAmmoDelay(playerAmmoTypes, "trip mine", 60, classLevel, 0.5f);
+            AdjustAmmoDelay(playerAmmoTypes, "m40a1", 25, classLevel, 0.2f);
+            AdjustAmmoDelay(playerAmmoTypes, "trip mine", 120, classLevel, 0.5f);
 
             break;
         }
@@ -222,9 +222,9 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
             }
 
             // Use helper for all delay adjustments.
-            AdjustAmmoDelay(playerAmmoTypes, "hand grenade", 30, classLevel, 0.25f);
-            AdjustAmmoDelay(playerAmmoTypes, "satchel charge", 60, classLevel, 0.5f);
-            AdjustAmmoDelay(playerAmmoTypes, "rockets", 60, classLevel, 0.5f);
+            AdjustAmmoDelay(playerAmmoTypes, "hand grenade", 60, classLevel, 0.3f);
+            AdjustAmmoDelay(playerAmmoTypes, "satchel charge", 120, classLevel, 0.5f);
+            AdjustAmmoDelay(playerAmmoTypes, "rockets", 90, classLevel, 0.5f);
             break;
         }
     }

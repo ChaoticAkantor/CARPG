@@ -1,9 +1,10 @@
 # CARPG
  Class-based RPG Mod for Sven Co-op by Chaotic Akantor. Many features are still a work in progress and may be subject to change, especially class balancing. Discord can be found here, if you have any feedback or suggestions.
+
  https://discord.gg/JN6umuAt7H
 
 # What is it?
- This mod takes the basic principals of SCXPM but in an attempt to simplify features and ensure balance and has many more ingrained features and alterations.
+ This plugin takes the basic principals of SCXPM but in an attempt to simplify features and ensure balance and has many more ingrained features and alterations.
 
 # Classes?!
 Rather than having lots of skills, most of the old SCXPM skills were coalested into auto-increasing stats on level up and regen was merged into it's own recovery system, so technically you start stronger but progress more steadily with a lower-ceiling for power instead of everyone ending up immortal.
@@ -11,15 +12,22 @@ Rather than having lots of skills, most of the old SCXPM skills were coalested i
 1 Frag/score = 1 XP, no nonsence calculations and bloated numbers.
 All XP is shared between players! And minion classes share XP with their master. No more hogging.
 
+# How do I use Skills?
+ Pressing Tertiary Fire (M3 by default) will activate your class ability. 
+ 
+ Most if not all abilities are togglable and will drain class resource (default is called Energy) in some way. But some can only be activated whilst energy is full.
+
 # Current Classes
 # Medic - Healer
 Toggles a healing aura with a very large radius, can heal yourself as well as friendly players and friendly NPC's. The minion class' best friend!
 Can also revive players and NPC's at double the normal drain rate when triggered.
-NPC healing is 2x stronger.
+NPC healing is 50% stronger.
 
 # Berserker - HP/Lifesteal Tank
-Toggles a bloodlust rage state, a scaling % of your AP is converted into bonus temporary HP and will allow you to overheal, you also gain lifesteal for a % of damage dealt, doubled if holding a melee weapon.
+Gain lifesteal.
+Toggles a bloodlust rage state, giving % bonus HP, allowing you to overheal. Whilst bloodlust is active you gain double lifesteal, doubled again if holding a melee weapon.
 Any overhealed health will slowly drain back to your default whilst inactive.
+Has to fully recover between uses, but can be deactivated early to refund remaining cost.
 
 # Engineer - Robot Minions
 Can summon friendly robots based on maximum reserve power via a menu.
@@ -42,21 +50,18 @@ Their health and damage scales with level.
 Any XP (frags/score) they gain is sent to you instead.
 Can be healed with medkit. Can be revived.
 
-# Defender - DR Tank
-Has a toggleable barrier that layers over health and armor that has it's own health pool. Whilst active, further reduces damage you take. Starts at 75% damage reduction and scales up to 100% as you level.
+# Warden - Ice Tank
+Has a toggleable Ice Shield that layers over health and armor that has it's own health pool. Whilst active, absorbing all damage till it shatters. 
+Has to fully recover between uses, but can be shattered early to refund remaining cost.
 
 # Shocktrooper - Power Weapon Damage Dealer
 Always has a Shockrifle available, can stow it to recharge Shock Charges (shockrifle ammo) using it's shockroach battery at an increased rate and max capacity. Can also stow picked up shock roaches in order to restore a large chunk of battery.
 
 # Cloaker - Stealthy Damage Dealer 
-Invisiblity cloak that gains a damage bonus based on the amount of energy you have, but drains a signifiant amount of energy per shot. Becomes completely invisible to AI for the duration. Cloak drains faster whilst moving at max speed, crouching significantly reduces drain.
-
-# No Skills?
- Rather than skill points and a skill menu, the mod has classes. Each class has a single unique ability.
-
- Pressing Tertiary Fire (M3 by default) will activate your class ability. 
- 
- Most if not all abilities are togglable and will drain class resource (default is called Energy) in some way.
+Invisiblity cloak that gains a damage bonus based on the amount of energy you have, but drains a signifiant amount of energy per shot. 
+Becomes completely invisible to AI for the duration. 
+Cloak drains twice as fast whilst moving at max speed, crouching significantly reduces drain.
+Has to fully recover between uses, but can be deactivated early to refund remaining cost.
 
 # Stat Scaling/Leveling
  Max HP/AP/Energy and certain ability features will scale with your level. Max level is 50.
@@ -76,16 +81,14 @@ Invisiblity cloak that gains a damage bonus based on the amount of energy you ha
 
 # Recovery
  The mod also features it's own recovery system, regeneration will halt for a delay after taking damage.
- HP restores 1% /1s.
- AP restores 1% /0.1s.
+ HP restores 1% per 1.0s. Meaning recovery will scale with max HP.
+ AP restores 1% per 2.0s. Meaning recovery will scale with max AP.
 
 # Difficulty
  The mod also features it's own difficulty system. 
- Damage dealt is significantly increased, making combat much faster and feel more visceral.
- Damage taken is also reworked depending on enemy types. 
- Hostile Xen wildlife and Zombies are now a threat. Weaker guns hit harder, melee attacks from lower-tier and human enemies now pack a punch.
- 
- Players generally have full armor between encounters, which tends to make them much tougher.
+ Damage dealt is slightly increased.
+ Damage taken is also increasesd depending on enemy, mostly melee attacks. 
+ Zombies and headcrabs specifically are more dangerous.
 
 # Installation instructions:
 

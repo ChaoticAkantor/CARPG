@@ -2,13 +2,13 @@ string strBloodlustStartSound = "garg/gar_pain1.wav";
 string strBloodlustEndSound = "player/breathe2.wav";
 string strBloodlustHitSound = "debris/bustflesh1.wav";
 string strBloodlustActiveSound = "player/heartbeat1.wav";
-string strBloodlustSprite = "sprites/blood_chnk.spr";
+string strBloodlustSprite = "sprites/saveme.spr";
 
-float flBloodlustEnergyCost = 2.0f; // Energy drain per 0.5s.
+float flBloodlustEnergyCost = 1.0f; // Energy drain per 0.5s.
 float flBaseHPBonus = 0.50f; // Base health bonus whilst bloodlust is active.
-float flHPBonusPerLevel = 0.20f; // bonus health per level.
-float flBaseDamageLifesteal = 0.35f; // % base damage dealt returned as health. Doubled when bloodlust is active.
-float flLifestealPerLevel = 0.01f; // % bonus lifesteal per level. Doubled when bloodlust is active.
+float flHPBonusPerLevel = 0.02f; // bonus health per level.
+float flBaseDamageLifesteal = 0.10f; // % base damage dealt returned as health. Doubled when bloodlust is active.
+float flLifestealPerLevel = 0.02f; // % bonus lifesteal per level. Doubled when bloodlust is active.
 float flMeleeLifestealMult = flBaseDamageLifesteal * 2; // Double lifesteal whilst holding melee weapons.
 const float flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
 
@@ -39,7 +39,7 @@ class BloodlustData
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            bonus += (level * flHPBonusPerLevel);
+            bonus *= ( 1.0f + (level * flHPBonusPerLevel));
         }
 
         return bonus;
@@ -71,9 +71,9 @@ class BloodlustData
             if(resources is null)
                 return;
 
-            if(float(resources['current']) < float(resources['max']) / 2) // Check energy before activation.
+            if(float(resources['current']) < float(resources['max'])) // Check energy before activation.
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust needs 50%%!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust recharging...\n");
                 return;
             }
         }
@@ -162,7 +162,7 @@ class BloodlustData
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            baseAmount += (level * flLifestealPerLevel);
+            baseAmount *= (1.0f + (level * flLifestealPerLevel));
         }
 
         // Apply melee multiplier first if using melee weapon.

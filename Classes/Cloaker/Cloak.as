@@ -1,12 +1,12 @@
 // Constants for the ability
-const float flCloakEnergyCostPerShot = 25.0f; // Energy drain per shot.
+const float flCloakEnergyCostPerShot = 100.0f; // Energy drain per shot.
 const float flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
 const float flBaseDrainRate = 1.0f; // Base drain rate when standing still.
 const float flMovementDrainMultiplier = 2.0f; // How much more it drains when moving at max speed.
 const float flMaxMovementSpeed = 320.0f; // Maximum movement speed to scale drain against.
 
-const float flBaseDamageBonus = 0.50f;      // Base % damage increase.
-const float flDamageBonusPerLevel = 0.05f;   // Bonus % per level.
+const float flBaseDamageBonus = 1.0f;      // Base % damage increase.
+const float flDamageBonusPerLevel = 0.02f;   // Bonus % per level.
 
 float g_flDamageBonusBase = flBaseDamageBonus * 100.0f;  // For stats menu.
 float g_flDamageBonus = 0.0f;               // For stats menu.
@@ -35,11 +35,11 @@ class CloakData
             return 1.0f;
                 
         // Get total potential damage bonus based on level.
-        float totalPossibleBonus = flBaseDamageBonus;
+        float totalPossibleBonus = flBaseDamageBonus; // First set it to base.
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            totalPossibleBonus += (level * flDamageBonusPerLevel);
+            totalPossibleBonus *= (1.0f + (level * flDamageBonusPerLevel)); // Now multiply by level bonus.
         }
         
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -81,9 +81,9 @@ class CloakData
                 if(!m_bActive)
                 {
                     // Activate
-                    if(float(resources['current']) < float(resources['max']) / 2) // Cloak needs at least 50% energy.
+                    if(float(resources['current']) < (float(resources['max']))) // Cloak needs to be fully charged between uses.
                     {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Battery must be 50%%!\n");
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak recharging...\n");
                         return;
                     }
 

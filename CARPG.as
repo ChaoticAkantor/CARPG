@@ -176,8 +176,6 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strClassChangeSound);
 
     // Medic Ability Precache.
-    g_SoundSystem.PrecacheSound(strReviveSound);
-    g_SoundSystem.PrecacheSound(strMedkitSound);
     g_SoundSystem.PrecacheSound(strHealAuraToggleSound);
     g_SoundSystem.PrecacheSound(strHealAuraActiveSound);
     g_SoundSystem.PrecacheSound(strHealSound);
@@ -255,6 +253,7 @@ void PrecacheAll()
 
     // Gonome.
     g_Game.PrecacheModel(strGonomeModel);
+    g_Game.PrecacheModel(strGonomeSpriteSpit);
 
     g_SoundSystem.PrecacheSound(strGonomeSoundSpit1);
     g_SoundSystem.PrecacheSound(strGonomeSoundDeath2);
@@ -273,6 +272,7 @@ void PrecacheAll()
 
     // Alient Grunt.
     g_Game.PrecacheModel(strAlienGruntModel);
+    g_Game.PrecacheModel(strAlienGruntModelGibs);
     g_Game.PrecacheModel(strAlienGruntMuzzleFlash);
 
     g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle1);
@@ -631,7 +631,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         {
             float damageCloakMultiplier = cloak.GetDamageMultiplier(pAttacker);
             info.flDamage *= damageCloakMultiplier;
-            info.bitsDamageType = DMG_POISON | DMG_ALWAYSGIB;
+            info.bitsDamageType |= DMG_ALWAYSGIB;
             cloak.DrainEnergyFromShot(pAttacker);
         }
     }

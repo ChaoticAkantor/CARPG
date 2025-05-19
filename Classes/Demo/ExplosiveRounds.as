@@ -2,7 +2,7 @@
 float flExplosiveRoundsDamage = 10.0f;
 float flExplosiveRoundsDamageScaling = 0.1f; // % Damage increase per level.
 float flExplosiveRoundsPoolScaling = 0.1f; // % Pool size increase per level.
-float flExplosiveRoundsRadius = 64.0f; // Radius of explosion.
+float flExplosiveRoundsRadius = 96.0f; // Radius of explosion.
 int iBaseExplosiveRounds = 15; // Base max rounds in pool.
 
 // Stats menu values.
@@ -23,13 +23,13 @@ const string strExplosiveRoundsExplosionSprite = "sprites/eexplo.spr";
 dictionary g_AmmoTypeDamageMultipliers = // Our multipliers for explosive damage based on ammo type.
 {
     {"9mm", 1.0f},
-    {"357", 1.5f},
-    {"buckshot", 0.6f},
-    {"bolts", 1.5f},
+    {"357", 1.0f},
+    {"buckshot", 0.5f},
+    {"bolts", 1.0f},
     {"556", 1.0f},
-    {"762", 2.0f},
-    {"uranium", 1.5f},
-    {"m40a1", 2.0f}
+    {"762", 1.0f},
+    {"uranium", 1.0f},
+    {"m40a1", 1.0f}
 };
 
 dictionary g_PlayerExplosiveRounds;
@@ -104,7 +104,7 @@ class ExplosiveRoundsData
         resources['current'] = Math.max(0, current - flEnergyCostPerActivation); // Deduct fixed energy cost.
 
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strExplosiveRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + int(flRoundsGivenPerActivation) + " Explosive Rounds\n");
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + int(flRoundsGivenPerActivation) + " Explosive Round\n");
 
         m_flLastToggleTime = currentTime;
     }

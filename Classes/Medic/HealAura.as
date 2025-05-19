@@ -6,9 +6,10 @@ string strHealAuraEffectSprite = "sprites/saveme.spr"; // Aura healing sprite.
 
 // Defines for stat menu.
 float g_flHealAuraBase = 10.0f; // Base heal amount.
-float g_flHealAuraBonus = 0.5f; // Bonus per level, variable only used for calculation.
+float g_flHealAuraBonus = 0.04f; // % Bonus per level.
 float g_flHealAuraRadius = 640.0f; // Radius of the aura, does not scale currently.
 int g_iHealAuraDrain = 2; // Energy drain per interval.
+int g_iHealAuraDrainRevive = g_iHealAuraDrain * 10; // Energy drain per revival.
 float g_flHealAuraInterval = 1.0f; // Time between heals.
 
 // For stat menu.
@@ -256,7 +257,7 @@ class HealingAura
         m_flLastHealTime = currentTime;
 
         // Check if we have enough energy for potential revival.
-        int reviveCost = m_iDrainAmount * 5; // 5x the drain cost for revival.
+        int reviveCost = g_iHealAuraDrainRevive; // Drain more for revival.
         
         Vector playerOrigin = pPlayer.pev.origin;
         CBaseEntity@ pEntity = null;
@@ -265,7 +266,7 @@ class HealingAura
             // Check for dead players first.
             if(!pEntity.IsAlive())
             {
-                // Only attempt revival if we have enough energy
+                // Only attempt revival if we have enough energy.
                 if(current >= reviveCost)
                 {
                     if(pEntity.IsPlayer())
@@ -370,8 +371,8 @@ class HealingAura
             return m_flBaseHealAmount;
             
         int level = m_pStats.GetLevel();
-        m_flHeal = m_flBaseHealAmount + (float(level) * m_flHealScaling);
-        flHealAuraHealBonus = m_flBaseHealAmount + (float(level) * m_flHealScaling) - flHealAuraHealBase; // For stat menu.
+        m_flHeal = m_flBaseHealAmount * (1.0f + (float(level) * m_flHealScaling));
+        flHealAuraHealBonus = m_flBaseHealAmount * (1.0f + (float(level) * m_flHealScaling)) - flHealAuraHealBase; // For stat menu.
         return m_flHeal;
     }
 

@@ -10,12 +10,12 @@ class RecoveryData
     float lastHurtTime = 0.0f;
 }
 
-const float flRegenTickHP = 1.0f;
-const float flRegenTickAP = 0.1f;
-const float flHurtDelayTick = 0.5f;
-const float flHurtDelay = 3.0f;
-const float flPercentHPRegen = 1.0f;
-const float flPercentAPRegen = 1.0f;
+const float flRegenTickHP = 1.0f; // Time between HP regen ticks.
+const float flRegenTickAP = 2.0f; // Time between AP regen ticks.
+const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks.
+const float flHurtDelay = 3.0f; // Total time to stay "hurt" before regen starts.
+const float flPercentHPRegen = 1.0f; // % of HP to regen per tick.
+const float flPercentAPRegen = 1.0f; // % of AP to regen per tick.
 const bool bAllowHPRegen = true;
 const bool bAllowAPRegen = true;
 const string strMedkitSound = "items/weapondrop1.wav";
@@ -124,7 +124,7 @@ void UpdateHUDHurtDelay() // Update HUD for hurt delay sprite.
             {
                 HUDNumDisplayParams numParams;
                 numParams.channel = 6;
-                numParams.x = 0.15;
+                numParams.x = 0.05;
                 numParams.y = 10;
                 numParams.fadeinTime = 0;
                 numParams.fadeoutTime = 0;
