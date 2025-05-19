@@ -27,7 +27,7 @@ NPC healing is 50% stronger.
 Gain lifesteal.
 Toggles a bloodlust rage state, giving % bonus HP, allowing you to overheal. Whilst bloodlust is active you gain double lifesteal, doubled again if holding a melee weapon.
 Any overhealed health will slowly drain back to your default whilst inactive.
-Has to fully recover between uses, but can be deactivated early to refund remaining cost.
+Has to fully recover between uses, but can be deactivated early to start recovering.
 
 # Engineer - Robot Minions
 Can summon friendly robots based on maximum reserve power via a menu.
@@ -51,8 +51,9 @@ Any XP (frags/score) they gain is sent to you instead.
 Can be healed with medkit. Can be revived.
 
 # Warden - Ice Tank
-Has a toggleable Ice Shield that layers over health and armor that has it's own health pool. Whilst active, absorbing all damage till it shatters. 
-Has to fully recover between uses, but can be shattered early to refund remaining cost.
+Has a toggleable Ice Shield that layers over health and armor that has it's own health pool. 
+Whilst active it absorbs all incoming damage until it shatters. 
+Has to fully recover between uses, but can be shattered early to start recovering.
 
 # Shocktrooper - Power Weapon Damage Dealer
 Always has a Shockrifle available, can stow it to recharge Shock Charges (shockrifle ammo) using it's shockroach battery at an increased rate and max capacity. Can also stow picked up shock roaches in order to restore a large chunk of battery.
@@ -61,7 +62,7 @@ Always has a Shockrifle available, can stow it to recharge Shock Charges (shockr
 Invisiblity cloak that gains a damage bonus based on the amount of energy you have, but drains a signifiant amount of energy per shot. 
 Becomes completely invisible to AI for the duration. 
 Cloak drains twice as fast whilst moving at max speed, crouching significantly reduces drain.
-Has to fully recover between uses, but can be deactivated early to refund remaining cost.
+Has to fully recover between uses, but can be deactivated early to start recharging.
 
 # Stat Scaling/Leveling
  Max HP/AP/Energy and certain ability features will scale with your level. Max level is 50.
