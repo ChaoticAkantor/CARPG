@@ -1,22 +1,4 @@
-// Base stats and scaling
-float flExplosiveRoundsDamage = 10.0f;
-float flExplosiveRoundsDamageScaling = 0.1f; // % Damage increase per level.
-float flExplosiveRoundsPoolScaling = 0.1f; // % Pool size increase per level.
-float flExplosiveRoundsRadius = 96.0f; // Radius of explosion.
-int iBaseExplosiveRounds = 15; // Base max rounds in pool.
-
-// Stats menu values.
-float flExplosiveRoundsDamageBase = flExplosiveRoundsDamage; // used for stats menu.
-float flExplosiveRoundsDamageBonus = 0.0f; // used for stats menu.
-float flExplosiveRoundsPoolBase = iBaseExplosiveRounds; // used for stats menu.
-float flExplosiveRoundsPoolBonus = 0.0f; // used for stats menu.
-
-
-// Energy and rounds settings
-const float flEnergyCostPerActivation = 10.0f; // Fixed energy cost.
-const float flRoundsGivenPerActivation = 1.0f; // Fixed rounds given per activation.
-
-// Sounds and models
+// Sounds and sprites.
 const string strExplosiveRoundsActivateSound = "weapons/reload3.wav";
 const string strExplosiveRoundsExplosionSprite = "sprites/eexplo.spr";
 
@@ -36,6 +18,13 @@ dictionary g_PlayerExplosiveRounds;
 
 class ExplosiveRoundsData
 {
+    private float m_flExplosiveRoundsDamage = 10.0f;
+    private float m_flExplosiveRoundsDamageScaling = 0.1f; // % Damage increase per level.
+    private float m_flExplosiveRoundsPoolScaling = 0.1f; // % Pool size increase per level.
+    private float m_flExplosiveRoundsRadius = 96.0f; // Radius of explosion.
+    private int m_iExplosiveRoundsPoolBase = 15;
+    private float m_flEnergyCostPerActivation = 10.0f;
+    private float m_flRoundsGivenPerActivation = 1.0f;
     private float m_flRoundsInPool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.10f;
@@ -50,13 +39,13 @@ class ExplosiveRoundsData
     float GetScaledDamage()
     {
         if(m_pStats is null)
-            return flExplosiveRoundsDamage;
-            flExplosiveRoundsDamageBonus = flExplosiveRoundsDamage * (1.0f + (m_pStats.GetLevel() * flExplosiveRoundsDamageScaling)) - flExplosiveRoundsDamageBase; // For stats menu.
-        return flExplosiveRoundsDamage * (1.0f + (m_pStats.GetLevel() * flExplosiveRoundsDamageScaling));
+            return m_flExplosiveRoundsDamage;
+
+        return m_flExplosiveRoundsDamage * (1.0f + (m_pStats.GetLevel() * m_flExplosiveRoundsDamageScaling));
 
     }
 
-    float GetRadius() { return flExplosiveRoundsRadius; }
+    float GetRadius() { return m_flExplosiveRoundsRadius; }
 
     void ConsumeRound() 
     { 
@@ -66,9 +55,9 @@ class ExplosiveRoundsData
     int GetMaxRounds()
     {
         if(m_pStats is null)
-            return iBaseExplosiveRounds;
-            flExplosiveRoundsPoolBonus = int(iBaseExplosiveRounds * (1.0f + (m_pStats.GetLevel() * flExplosiveRoundsPoolScaling))) - flExplosiveRoundsPoolBase; // For stats menu.
-        return int(iBaseExplosiveRounds * (1.0f + (m_pStats.GetLevel() * flExplosiveRoundsPoolScaling)));
+            return m_iExplosiveRoundsPoolBase;
+
+        return int(m_iExplosiveRoundsPoolBase * (1.0f + (m_pStats.GetLevel() * m_flExplosiveRoundsPoolScaling)));
     }
 
     void ActivateExplosiveRounds(CBasePlayer@ pPlayer)
@@ -93,18 +82,18 @@ class ExplosiveRoundsData
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamId]);
         float current = float(resources['current']);
 
-        if(current < flEnergyCostPerActivation)
+        if(current < m_flEnergyCostPerActivation)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(flEnergyCostPerActivation) + " energy!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flEnergyCostPerActivation) + " energy!\n");
             return;
         }
 
-        m_flRoundsInPool = Math.min(m_flRoundsInPool + flRoundsGivenPerActivation, float(GetMaxRounds())); // Add fixed number of rounds.
+        m_flRoundsInPool = Math.min(m_flRoundsInPool + m_flRoundsGivenPerActivation, float(GetMaxRounds())); // Add fixed number of rounds.
 
-        resources['current'] = Math.max(0, current - flEnergyCostPerActivation); // Deduct fixed energy cost.
+        resources['current'] = Math.max(0, current - m_flEnergyCostPerActivation); // Deduct fixed energy cost.
 
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strExplosiveRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + int(flRoundsGivenPerActivation) + " Explosive Round\n");
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + int(m_flRoundsGivenPerActivation) + " Explosive Round\n");
 
         m_flLastToggleTime = currentTime;
     }

@@ -24,9 +24,8 @@ Can also revive players and NPC's at double the normal drain rate when triggered
 NPC healing is 50% stronger.
 
 # Berserker - HP/Lifesteal Tank
-Gain lifesteal.
-Toggles a bloodlust rage state, giving % bonus HP, allowing you to overheal. Whilst bloodlust is active you gain double lifesteal, doubled again if holding a melee weapon.
-Any overhealed health will slowly drain back to your default whilst inactive.
+Gains a scaling damage bonus the lower your current HP, that scales with level.
+Toggles a bloodlust rage state, giving % damage dealt as lifesteal.
 Has to fully recover between uses, but can be deactivated early to start recovering.
 
 # Engineer - Robot Minions

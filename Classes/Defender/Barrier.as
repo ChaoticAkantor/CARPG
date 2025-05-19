@@ -2,11 +2,6 @@ string strBarrierToggleSound = "debris/glass2.wav";
 string strBarrierHitSound = "debris/glass1.wav";
 string strBarrierBreakSound = "debris/impact_glass.wav";
 
-// Defines for stat menu
-const float flBaseDamageReduction = 1.00f; // Base damage reduction.
-const float flEnergyDrainPerSecond = 0.0f; // Energy drain per second while active.
-const float flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
-const float flBarrierDamageToEnergyMult = 0.4f; // Damage taken to energy drain scale factor.
 
 const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B
 
@@ -17,6 +12,10 @@ dictionary g_BarrierGlowData; // Stores glow data for players with Barrier activ
 class BarrierData
 {
     private bool m_bActive = false;
+    private float m_flBaseDamageReduction = 1.00f; // Base damage reduction.
+    private float m_flEnergyDrainPerSecond = 0.0f; // Energy drain per second while active.
+    private float m_flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
+    private float m_flBarrierDamageToEnergyMult = 0.4f; // Damage taken to energy drain scale factor.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private ClassStats@ m_pStats = null;
@@ -37,7 +36,7 @@ class BarrierData
             return;
 
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastToggleTime < flToggleCooldown)
+        if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
         {
             //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier on cooldown!\n");
             return;
@@ -83,7 +82,7 @@ class BarrierData
         if(m_pStats is null)
             return 0.0f;
             
-        return flBaseDamageReduction; // Now always 100% damage reduction.
+        return m_flBaseDamageReduction; // Now always 100% damage reduction.
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -108,7 +107,7 @@ class BarrierData
         if(currentTime - m_flLastDrainTime >= 1.0f)
         {
             // Drain energy every second.
-            float newEnergy = currentEnergy - flEnergyDrainPerSecond;
+            float newEnergy = currentEnergy - m_flEnergyDrainPerSecond;
             
             if(newEnergy <= 0)
             {
@@ -139,7 +138,7 @@ class BarrierData
         float current = float(resources['current']);
         
         // Drain energy proportional to damage blocked
-        float energyCost = (blockedDamage * flBarrierDamageToEnergyMult); // Damage taken to energy drain scale factor.
+        float energyCost = (blockedDamage * m_flBarrierDamageToEnergyMult); // Damage taken to energy drain scale factor.
         current -= energyCost;
         
         if(current <= 0)

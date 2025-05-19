@@ -34,15 +34,6 @@ string strRobogruntSoundKick = "zombie/claw_miss2.wav";
 // Flags
 const int SF_MONSTER_START_ACTIVE = 32;  // Start active without trigger
 
-// Made all these global for use in stats menu.
-float g_flBaseMinionHP = 100.0; // Base health of Minion.
-float g_flMinionHPBonus = 0.0; // Health % scaling per level.
-float g_flMinionDMGBonus = 0.0; // Damage bonus for stat menu.
-int g_iMinionResourceCost = 1; // Cost to summon minion.
-
-float flMinionReservePool = 0.0; // Reserve pool.
-float flMinionMaxReservePool = 0.0; // Max reserve pool.
-
 dictionary g_PlayerMinions;
 
 enum MinionType // Minion gun type. Not all are supported.
@@ -71,10 +62,11 @@ class MinionData
     private MinionMenu@ m_pMenu;
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = g_flBaseMinionHP;
+    private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
     private float m_flHealthScale = 0.12; // Health % scaling per level. Less than Xeno as they have armor.
     private float m_flDamageScale = 0.03; // Damage % scaling per level. Less than Xeno as they are purely ranged and much more effective.
-    private int m_iMinionResourceCost = g_iMinionResourceCost; // Cost to summon 1 minion.
+    private int m_iMinionResourceCost = 1; // Cost to summon 1 minion. Init.
+    private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
@@ -88,8 +80,8 @@ class MinionData
             dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
             if(resources !is null)
             {
-                flMinionMaxReservePool = float(resources['max']) - flMinionReservePool; // Calculate available reserve.
-                return flMinionMaxReservePool <= 0; // Block regen if we've used all our reserve.
+                float maxReserve = float(resources['max']) - m_flReservePool;
+                return maxReserve <= 0;
             }
         }
         return false;
@@ -98,6 +90,8 @@ class MinionData
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
     int GetMinionCount() { return m_hMinions.length(); }
+
+    float GetReservePool() { return m_flReservePool; }
 
     bool HasStats() { return m_pStats !is null; }
     array<EHandle>@ GetMinions() { return m_hMinions; }
@@ -184,7 +178,8 @@ class MinionData
             m_hMinions.insertLast(EHandle(pNewMinion));
             m_bActive = true;
 
-            flMinionReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
+            // Add to reserve pool when minion is created.
+            m_flReservePool += MINION_COSTS[minionType]; 
             current -= MINION_COSTS[minionType]; // Subtract from current resources.
             resources['current'] = current;
 
@@ -224,7 +219,7 @@ class MinionData
                 {
                     if(name.Find(MINION_NAMES[j]) >= 0)
                     {
-                        flMinionReservePool -= MINION_COSTS[j];
+                        m_flReservePool -= MINION_COSTS[j];
                         break;
                     }
                 }
@@ -286,7 +281,7 @@ class MinionData
         }
 
         // Reset reserve pool after destroying all minions
-        flMinionReservePool = 0.0;
+        m_flReservePool = 0.0f;
         
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
         m_bActive = false;
@@ -298,8 +293,8 @@ class MinionData
             return m_flBaseHealth;
 
         float level = m_pStats.GetLevel();
-        g_flMinionHPBonus = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
-        return g_flMinionHPBonus + m_flBaseHealth;
+        float flScaledHealth = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
+        return flScaledHealth + m_flBaseHealth;
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
@@ -308,8 +303,8 @@ class MinionData
             return 0.0f; // Technically should never be zero, but is always null when we have no minions.
 
         float level = m_pStats.GetLevel();
-        g_flMinionDMGBonus = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
-        return g_flMinionDMGBonus;
+        float flScaledDamage = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
+        return flScaledDamage;
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)

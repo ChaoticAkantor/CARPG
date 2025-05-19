@@ -1,26 +1,21 @@
-// Constants for the ability
-const float flCloakEnergyCostPerShot = 100.0f; // Energy drain per shot.
-const float flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
-const float flBaseDrainRate = 1.0f; // Base drain rate when standing still.
-const float flMovementDrainMultiplier = 2.0f; // How much more it drains when moving at max speed.
-const float flMaxMovementSpeed = 320.0f; // Maximum movement speed to scale drain against.
-
-const float flBaseDamageBonus = 1.0f;      // Base % damage increase.
-const float flDamageBonusPerLevel = 0.02f;   // Bonus % per level.
-
-float g_flDamageBonusBase = flBaseDamageBonus * 100.0f;  // For stats menu.
-float g_flDamageBonus = 0.0f;               // For stats menu.
-
-const Vector CLOAK_COLOR = Vector(50, 50, 50); // R G B
-
 const string strCloakActivateSound = "player/hud_nightvision.wav";
 const string strCloakActiveSound = "ambience/alien_twow.wav";
+
+const Vector CLOAK_COLOR = Vector(50, 50, 50); // R G B
 
 dictionary g_PlayerCloaks;
 
 class CloakData
 {
     private bool m_bActive = false;
+    private float m_flCloakEnergyCostPerShot = 100.0f; // Energy drain per shot.
+    private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
+    private float m_flBaseDrainRate = 1.0f; // Base drain rate when standing still.
+    private float m_flMovementDrainMultiplier = 2.0f; // How much more it drains when moving at max speed.
+    private float m_flMaxMovementSpeed = 320.0f; // Maximum movement speed to scale drain against.
+    private float m_flBaseDamageBonus = 1.0f;      // Base % damage increase.
+    private float m_flDamageBonusPerLevel = 0.02f;   // Bonus % per level.
+
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastEnergyConsumed = 0.0f;
@@ -35,11 +30,11 @@ class CloakData
             return 1.0f;
                 
         // Get total potential damage bonus based on level.
-        float totalPossibleBonus = flBaseDamageBonus; // First set it to base.
+        float totalPossibleBonus = m_flBaseDamageBonus; // First set it to base.
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            totalPossibleBonus *= (1.0f + (level * flDamageBonusPerLevel)); // Now multiply by level bonus.
+            totalPossibleBonus *= (1.0f + (level * m_flDamageBonusPerLevel)); // Now multiply by level bonus.
         }
         
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -51,10 +46,6 @@ class CloakData
                 float maxEnergy = float(resources['max']);
                 float energyScale = Math.min(1.0f, m_flLastEnergyConsumed / maxEnergy);
                 float actualBonus = totalPossibleBonus * energyScale;
-                
-                // Update stats menu
-                g_flDamageBonus = actualBonus * 100.0f;
-                g_flDamageBonusBase = flBaseDamageBonus * 100.0f;
                 
                 return 1.0f + actualBonus;
             }
@@ -69,7 +60,7 @@ class CloakData
             return;
 
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastToggleTime < flCloakToggleCooldown)
+        if(currentTime - m_flLastToggleTime < m_flCloakToggleCooldown)
             return;
 
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -172,17 +163,17 @@ class CloakData
                 dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
                 if(resources !is null)
                 {
-                    float finalDrain = flBaseDrainRate;  // Default to base drain when crouching, no matter the movement speed.
+                    float finalDrain = m_flBaseDrainRate;  // Default to base drain when crouching, no matter the movement speed.
                     
                     // Only calculate movement drain if not crouching
                     if((pPlayer.pev.flags & FL_DUCKING) == 0)
                     {
                         Vector velocity = pPlayer.pev.velocity;
                         float speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-                        float speedRatio = Math.min(1.0f, speed / flMaxMovementSpeed);
+                        float speedRatio = Math.min(1.0f, speed / m_flMaxMovementSpeed);
                         
-                        float drainMultiplier = 1.0f + (speedRatio * (flMovementDrainMultiplier - 1.0f));
-                        finalDrain = flBaseDrainRate * drainMultiplier;
+                        float drainMultiplier = 1.0f + (speedRatio * (m_flMovementDrainMultiplier - 1.0f));
+                        finalDrain = m_flBaseDrainRate * drainMultiplier;
                     }
                     
                     // Apply drain and update last energy consumed for damage scaling.
@@ -217,7 +208,7 @@ class CloakData
                 float current = float(resources['current']);
                 m_flLastEnergyConsumed = current;
                 
-                current -= flCloakEnergyCostPerShot; // Reduce energy when shooting.
+                current -= m_flCloakEnergyCostPerShot; // Reduce energy when shooting.
                 
                 // End cloak if energy runs out.
                 if(current <= 0)

@@ -104,15 +104,16 @@ void RegenClassResource()
                                 float current = float(resources['current']);
                                 float regen = float(resources['regen']);
                                 
-                                // Calculate available max to regen to using reserve.
-                                flMinionMaxReservePool = float(resources['max']) - flMinionReservePool;
+                                float maxReserve = 0.0f;  // Initialize first
+                                // Use instance reserve pool
+                                maxReserve = float(resources['max']) - minion.GetReservePool();
                                 
                                 // Only regenerate if we have remaining reserve.
-                                if(flMinionMaxReservePool > 0 && current < flMinionMaxReservePool)
+                                if(maxReserve > 0 && current < maxReserve)
                                 {
                                     current += regen;
-                                    if(current > flMinionMaxReservePool)
-                                        current = flMinionMaxReservePool;
+                                    if(current > maxReserve)
+                                        current = maxReserve;
                                     resources['current'] = current;
                                 }
                                 continue; // Skip normal regen logic.
@@ -131,15 +132,16 @@ void RegenClassResource()
                                 float current = float(resources['current']);
                                 float regen = float(resources['regen']);
                                 
-                                // Calculate available max to regen to using reserve.
-                                flXenMaxReservePool = float(resources['max']) - flXenReservePool;
+                                float maxReserve = 0.0f;  // Initialize first
+                                // Use instance reserve pool
+                                maxReserve = float(resources['max']) - minion.GetReservePool();
                                 
                                 // Only regenerate if we have remaining reserve.
-                                if(flXenMaxReservePool > 0 && current < flXenMaxReservePool)
+                                if(maxReserve > 0 && current < maxReserve)
                                 {
                                     current += regen;
-                                    if(current > flXenMaxReservePool)
-                                        current = flXenMaxReservePool;
+                                    if(current > maxReserve)
+                                        current = maxReserve;
                                     resources['current'] = current;
                                 }
                                 continue; // Skip normal regen logic.
@@ -176,22 +178,12 @@ string GetResourceBar(float current, float maximum, int barLength = 20)
     float segmentSize = 1.0f / barLength;
     string output = "[";
     
-    // Calculate filled segments more accurately.
+    // Simple filled/empty segment display.
     for(int i = 0; i < barLength; i++)
     {
         float segmentThreshold = segmentSize * (i + 1);
-        
         if(ratio >= segmentThreshold)
-            output += "|"; // Fully filled segment.
-        else if(ratio > segmentSize * i && ratio < segmentThreshold)
-        {
-            // Partially filled segment.
-            float partialFill = (ratio - (segmentSize * i)) / segmentSize;
-            if(partialFill > 0.5f)
-                output += ":"; // 50% segment.
-            else
-                output += "."; // 25% segment.
-        }
+            output += "|"; // Filled segment.
         else
             output += " "; // Empty segment.
     }
@@ -257,7 +249,7 @@ void UpdateClassResource()
                             resourceName = "Shockrifle Battery";
                             break;
                         case PlayerClass::CLASS_BERSERKER:
-                            resourceName = "Blood";
+                            resourceName = "Bloodlust";
                             break;
                         case PlayerClass::CLASS_CLOAKER:
                             resourceName = "Cloak Battery";
@@ -361,13 +353,12 @@ void UpdateClassResource()
                                 if(bloodlust !is null)
                                 {
                                     bool isActive = bloodlust.IsActive();
-                                    float lifesteal = bloodlust.GetLifestealAmount(false) * 100;
-                                    resourceInfo += "[" + (isActive ? "ON" : "OFF") + " | Lifesteal: " + int(lifesteal) + "%] " ;
+                                    float lifesteal = bloodlust.GetLifestealAmount() * 100; // Base lifesteal.
+                                    float dmgBonus = bloodlust.GetDamageBonus(pPlayer) * 100;
                                     
-                                    if(isActive)
-                                    {
-                                        resourceInfo += "[+" + int((flBloodlustOverhealBase + flBloodlustOverhealBonus) * 100) + "% HP]";
-                                    }
+                                    resourceInfo += "[" + (isActive ? "ON" : "OFF") + "]";
+                                    resourceInfo += " [Lifesteal: " + int(lifesteal) + "%]";
+                                    resourceInfo += " [DMG Bonus: +" + int(dmgBonus) + "%]";
                                 }
                             }
                             break;

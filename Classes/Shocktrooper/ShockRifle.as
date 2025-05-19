@@ -60,7 +60,7 @@ class ShockRifleData
             // Force remove the weapon.
             g_EntityFuncs.Remove(pWeapon);
             
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle Stowed: +" + currentAmmo + " energy\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle Stowed: +" + currentAmmo + " battery.\n");
             g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strShockrifleEquipSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             
             m_flLastUseTime = flCurrentTime;
@@ -77,7 +77,7 @@ class ShockRifleData
         float currentEnergy = float(resources['current']);
         if(currentEnergy < g_iResourceCostShockRifle)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle needs " + g_iResourceCostShockRifle + " charge minimum\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle needs " + g_iResourceCostShockRifle + " battery.\n");
             return;
         }
         
@@ -100,7 +100,7 @@ class ShockRifleData
         int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
         pPlayer.m_rgAmmo(ammoIndex, energyToUse);
         
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle equipped - Shock Charges: " + energyToUse + "\n");
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle equipped!\n");
         g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strShockrifleEquipSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
         
         m_flLastUseTime = flCurrentTime;

@@ -80,11 +80,11 @@ void MapStart() // Called after 0.1 seconds of game activity, this is used to si
 void PluginReset() // Used to reset anything important to the plugin on reload.
 {
     // Clear all dictionaries.
+    g_Scheduler.ClearTimerList(); // Clear all timers.
+
     g_PlayerRPGData.deleteAll();
     g_PlayerMinions.deleteAll(); // Clear Minion dictionary.
-        flMinionReservePool = 0.0; // Reset reserve pool.
     g_XenologistMinions.deleteAll(); // Clear Xenologist Minion dictionary.
-        flXenReservePool = 0.0; // Reset reserve pool.
     g_HealingAuras.deleteAll();
     g_PlayerBarriers.deleteAll();
     g_PlayerBloodlusts.deleteAll();
@@ -95,11 +95,11 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     
 
     ClearMinions(); // Clear all minions from the map.
-    SetupTimers(); // For calling timer refresh.
-    InitializeMapMultipliers(); // Map multipliers for ammo recovery.
-    UpdateMapMultiplier(); // Map multipliers for ammo recovery update.
-    InitializeAmmoRegen(); // Ammo types for ammo recovery.
-    ApplyDifficultySettings(); // Difficulty forcing.
+    InitializeMapMultipliers(); // Re-apply map multipliers for ammo recovery.
+    InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
+    UpdateMapMultiplier(); // Re-apply map multipliers for ammo recovery update.
+    SetupTimers(); // Re-setup timers.
+    ApplyDifficultySettings(); // Re-apply difficulty settings.
 }
 
 void RegisterHooks()
@@ -150,7 +150,6 @@ void SetupTimers()
     g_Scheduler.SetInterval("CheckAllPlayerScores", 0.5f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
 
     // Medic.
-    g_Scheduler.SetInterval("CheckCanRevive", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking self-revive.
     g_Scheduler.SetInterval("CheckHealAura", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking heal aura.
 
     // Engineer.
@@ -578,7 +577,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
     CBasePlayer@ pAttacker = cast<CBasePlayer@>(info.pAttacker);
     string steamID = g_EngineFuncs.GetPlayerAuthId(pAttacker.edict());
     
-    // Handle all class-specific damage conversions
+    // Handle all class-specific damage conversions.
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -593,14 +592,58 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
                 }
                 case PlayerClass::CLASS_BERSERKER:
                 {
-                    CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pAttacker.m_hActiveItem.GetEntity());
-                    if(pWeapon !is null && (
-                        pWeapon.GetClassname() == "weapon_crowbar" || 
-                        pWeapon.GetClassname() == "weapon_pipewrench" || 
-                        pWeapon.GetClassname() == "weapon_grapple"
-                    ))
+                    // Apply damage type first
+                    info.bitsDamageType |= DMG_SLOWBURN;
+        
+                    // Get bloodlust data for damage bonus
+                    if(g_PlayerBloodlusts.exists(steamID))
                     {
-                        info.bitsDamageType |= DMG_SLOWBURN; // Add Burning effect.
+                        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                        if(bloodlust !is null)
+                        {
+                            // Apply damage bonus based on missing health
+                            float damageBonus = bloodlust.GetDamageBonus(pAttacker);
+                            info.flDamage *= (1.0f + damageBonus);
+                            
+                            // Only process lifesteal if bloodlust is active
+                            if(bloodlust.IsActive())
+                            {
+                                bloodlust.ProcessLifesteal(pAttacker, info.flDamage);
+                                
+                                // Add rising blood particles
+                                Vector pos = pAttacker.pev.origin;
+                                Vector mins = pos - Vector(16, 16, 0);
+                                Vector maxs = pos + Vector(16, 16, 64);
+
+                                NetworkMessage bubbleMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY);
+                                    bubbleMsg.WriteByte(TE_BUBBLES);
+                                    bubbleMsg.WriteCoord(mins.x);
+                                    bubbleMsg.WriteCoord(mins.y);
+                                    bubbleMsg.WriteCoord(mins.z);
+                                    bubbleMsg.WriteCoord(maxs.x);
+                                    bubbleMsg.WriteCoord(maxs.y);
+                                    bubbleMsg.WriteCoord(maxs.z);
+                                    bubbleMsg.WriteCoord(112.0f);
+                                    bubbleMsg.WriteShort(g_EngineFuncs.ModelIndex(strBloodlustSprite));
+                                    bubbleMsg.WriteByte(10);
+                                    bubbleMsg.WriteCoord(2.0f);
+                                bubbleMsg.End();
+
+                                // Add dynamic light
+                                NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                                    msg.WriteByte(TE_DLIGHT);
+                                    msg.WriteCoord(pAttacker.pev.origin.x);
+                                    msg.WriteCoord(pAttacker.pev.origin.y);
+                                    msg.WriteCoord(pAttacker.pev.origin.z);
+                                    msg.WriteByte(15); // Radius.
+                                    msg.WriteByte(int(BLOODLUST_COLOR.x));
+                                    msg.WriteByte(int(BLOODLUST_COLOR.y));
+                                    msg.WriteByte(int(BLOODLUST_COLOR.z));
+                                    msg.WriteByte(2); // Life in 0.1s.
+                                    msg.WriteByte(1); // Decay rate.
+                                msg.End();
+                            }
+                        }
                     }
                     break;
                 }
@@ -633,60 +676,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
             info.flDamage *= damageCloakMultiplier;
             info.bitsDamageType |= DMG_ALWAYSGIB;
             cloak.DrainEnergyFromShot(pAttacker);
-        }
-    }
-
-    // Handle lifesteal and bloodlust bonus lifesteal for Berserkers.
-    if(g_PlayerRPGData.exists(steamID))
-    {
-        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-        if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
-        {
-            BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
-            if(bloodlust !is null)
-            {
-                CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pAttacker.m_hActiveItem.GetEntity());
-                bool isMelee = (pWeapon !is null && (
-                    pWeapon.GetClassname() == "weapon_crowbar" || 
-                    pWeapon.GetClassname() == "weapon_pipewrench" || 
-                    pWeapon.GetClassname() == "weapon_grapple"
-                ));
-                
-                bloodlust.ProcessLifesteal(pAttacker, info.flDamage, isMelee);
-
-                // Add rising blood particles.
-                Vector pos = pAttacker.pev.origin;
-                Vector mins = pos - Vector(16, 16, 0);
-                Vector maxs = pos + Vector(16, 16, 64);
-
-                NetworkMessage bubbleMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY);
-                    bubbleMsg.WriteByte(TE_BUBBLES);
-                    bubbleMsg.WriteCoord(mins.x);
-                    bubbleMsg.WriteCoord(mins.y);
-                    bubbleMsg.WriteCoord(mins.z);
-                    bubbleMsg.WriteCoord(maxs.x);
-                    bubbleMsg.WriteCoord(maxs.y);
-                    bubbleMsg.WriteCoord(maxs.z);
-                    bubbleMsg.WriteCoord(112.0f);
-                    bubbleMsg.WriteShort(g_EngineFuncs.ModelIndex(strBloodlustSprite));
-                    bubbleMsg.WriteByte(10);
-                    bubbleMsg.WriteCoord(2.0f);
-                bubbleMsg.End();
-
-                // Add dynamic light
-                NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
-                    msg.WriteByte(TE_DLIGHT);
-                    msg.WriteCoord(pAttacker.pev.origin.x);
-                    msg.WriteCoord(pAttacker.pev.origin.y);
-                    msg.WriteCoord(pAttacker.pev.origin.z);
-                    msg.WriteByte(15); // Radius.
-                    msg.WriteByte(int(BLOODLUST_COLOR.x));
-                    msg.WriteByte(int(BLOODLUST_COLOR.y));
-                    msg.WriteByte(int(BLOODLUST_COLOR.z));
-                    msg.WriteByte(2); // Life in 0.1s.
-                    msg.WriteByte(1); // Decay rate.
-                msg.End();
-            }
         }
     }
     
@@ -863,7 +852,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(data !is null && data.GetCurrentClass() != PlayerClass::CLASS_NONE)
                 {
-                    ShowClassStats(pPlayer);
+                    //ShowClassStats(pPlayer); // Disabled for now whilst we rework the stats menu.
                     pParams.ShouldHide = true;
                     return HOOK_HANDLED;
                 }
@@ -1047,7 +1036,6 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         if(minion !is null)
         {
             minion.DestroyAllMinions(pPlayer);
-            flMinionReservePool = 0.0;  // Reset reserve.
         }
     }
 
@@ -1058,7 +1046,6 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         if(xenMinion !is null)
         {
             xenMinion.DestroyAllMinions(pPlayer);
-            flXenReservePool = 0.0;  // Reset reserve
         }
     }
 

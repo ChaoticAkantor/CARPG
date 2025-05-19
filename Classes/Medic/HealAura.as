@@ -4,18 +4,6 @@ string strHealSound = "player/heartbeat1.wav"; // Aura heal hit sound.
 string strHealAuraSprite = "sprites/zbeam6.spr"; // Aura sprite.
 string strHealAuraEffectSprite = "sprites/saveme.spr"; // Aura healing sprite.
 
-// Defines for stat menu.
-float g_flHealAuraBase = 10.0f; // Base heal amount.
-float g_flHealAuraBonus = 0.04f; // % Bonus per level.
-float g_flHealAuraRadius = 640.0f; // Radius of the aura, does not scale currently.
-int g_iHealAuraDrain = 2; // Energy drain per interval.
-int g_iHealAuraDrainRevive = g_iHealAuraDrain * 10; // Energy drain per revival.
-float g_flHealAuraInterval = 1.0f; // Time between heals.
-
-// For stat menu.
-float flHealAuraHealBase = g_flHealAuraBase;
-float flHealAuraHealBonus = 0.0f;
-
 dictionary g_HealingAuras;
 
 array<string> ISPLAYERALLY_EXCLUSION = 
@@ -55,18 +43,19 @@ void CheckHealAura()
 class HealingAura 
 {
     private bool m_bIsActive = false;
-    private float m_flRadius = g_flHealAuraRadius; // Radius of the aura.
-    private float m_flBaseHealAmount = g_flHealAuraBase; // Derived from a global variable, so that we can use it in the stat menu.
-    private float m_flHealScaling = g_flHealAuraBonus; // % per level scaling.
-    private float m_flHeal = 0.0f; // Total Heal amount.
-    private int m_iDrainAmount = g_iHealAuraDrain;
+    private float m_flRadius = 640.0f; // Radius of the aura.
+    private float m_flBaseHealAmount = 10.0f; // Base heal amount.
+    private float m_flHealScaling = 0.04; // % per level scaling.
+    private int m_iDrainAmount = 2.0f;
+    private int m_iHealAuraDrainRevive = m_iDrainAmount * 10; // Energy drain per revival.
+    private float m_flHealAuraInterval = 1.0f; // Time between heals.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
     private float m_flLastHealTime = 0.0f;
     private float m_flHealInterval = 1.0f;
 
     private float m_flNextVisualUpdate = 0.0f;
-    private float m_flVisualUpdateInterval = g_flHealAuraInterval; // Time between visual updates.
+    private float m_flVisualUpdateInterval = m_flHealAuraInterval; // Time between visual updates. Same as heal rate.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
 
     private float m_flGlowDuration = 0.25f;
@@ -257,7 +246,7 @@ class HealingAura
         m_flLastHealTime = currentTime;
 
         // Check if we have enough energy for potential revival.
-        int reviveCost = g_iHealAuraDrainRevive; // Drain more for revival.
+        int reviveCost = m_iHealAuraDrainRevive; // Drain more for revival.
         
         Vector playerOrigin = pPlayer.pev.origin;
         CBaseEntity@ pEntity = null;
@@ -371,9 +360,7 @@ class HealingAura
             return m_flBaseHealAmount;
             
         int level = m_pStats.GetLevel();
-        m_flHeal = m_flBaseHealAmount * (1.0f + (float(level) * m_flHealScaling));
-        flHealAuraHealBonus = m_flBaseHealAmount * (1.0f + (float(level) * m_flHealScaling)) - flHealAuraHealBase; // For stat menu.
-        return m_flHeal;
+        return m_flBaseHealAmount * (1.0f + (float(level) * m_flHealScaling));
     }
 
     private void ApplyHealEffect(CBaseEntity@ target)

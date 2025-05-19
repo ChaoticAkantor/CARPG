@@ -7,7 +7,7 @@
 
 #include "Classes/ClassMenu"
 #include "Classes/ClassResource"
-#include "classes/ClassStatsMenu"
+//#include "classes/ClassStatsMenu" - Disabled whist I rework it.
 
 // Class Features.
 #include "Classes/GiveWeapons"

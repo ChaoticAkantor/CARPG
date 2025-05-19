@@ -4,18 +4,6 @@ string strBloodlustHitSound = "debris/bustflesh1.wav";
 string strBloodlustActiveSound = "player/heartbeat1.wav";
 string strBloodlustSprite = "sprites/saveme.spr";
 
-float flBloodlustEnergyCost = 1.0f; // Energy drain per 0.5s.
-float flBaseHPBonus = 0.50f; // Base health bonus whilst bloodlust is active.
-float flHPBonusPerLevel = 0.02f; // bonus health per level.
-float flBaseDamageLifesteal = 0.10f; // % base damage dealt returned as health. Doubled when bloodlust is active.
-float flLifestealPerLevel = 0.02f; // % bonus lifesteal per level. Doubled when bloodlust is active.
-float flMeleeLifestealMult = flBaseDamageLifesteal * 2; // Double lifesteal whilst holding melee weapons.
-const float flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
-
-// For stats menu.
-float flBloodlustOverhealBase = flBaseHPBonus;
-float flBloodlustOverhealBonus = 0.0f;
-
 const Vector BLOODLUST_COLOR = Vector(255, 0, 0); // Red glow.
 
 dictionary g_PlayerBloodlusts;
@@ -23,6 +11,12 @@ dictionary g_PlayerBloodlusts;
 class BloodlustData
 {
     private bool m_bActive = false;
+    private float m_flBloodlustEnergyCost = 2.0f; // Energy drain per 0.5s.
+    private float m_flBaseDamageBonus = 0.25f; // Base damage increase at lowest health.
+    private float m_flDamageBonusPerLevel = 0.05f; // Bonus damage scaling per level.
+    private float m_flBaseDamageLifesteal = 0.01f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
+    private float m_flLifestealPerLevel = 0.05f; // % bonus lifesteal per level.
+    private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private ClassStats@ m_pStats = null;
@@ -32,26 +26,33 @@ class BloodlustData
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
-    float GetHPBonus()
+    float GetDamageBonus(CBasePlayer@ pPlayer)
     {
-        float bonus = flBaseHPBonus;
+        if(pPlayer is null)
+            return 0.0f;
+            
+        float bonus = m_flBaseDamageBonus;
         
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            bonus *= ( 1.0f + (level * flHPBonusPerLevel));
+            bonus *= (1.0f + (level * m_flDamageBonusPerLevel));
         }
-
-        return bonus;
+        
+        // Scale bonus based on missing health percentage
+        float healthRatio = (pPlayer.pev.health / pPlayer.pev.max_health);
+        float missingHealthMult = (1.0f - healthRatio); // 0.0 at full health, 1.0 at 0 health
+        
+        return bonus * missingHealthMult;
     }
-
+    
     void ToggleBloodlust(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastToggleTime < flToggleCooldownBloodlust)
+        if(currentTime - m_flLastToggleTime < m_flToggleCooldownBloodlust)
             return;
 
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -80,15 +81,6 @@ class BloodlustData
 
         if(!m_bActive)
         {
-            // Add bonus health.
-            float currentHP = pPlayer.pev.max_health;
-            float HPBonus = GetHPBonus();
-            pPlayer.pev.max_health += (currentHP * HPBonus);
-
-            flBloodlustOverhealBonus = GetHPBonus(); // Store for stat menu.
-            flBloodlustOverhealBonus = flBloodlustOverhealBonus - flBloodlustOverhealBase;
-
-            // Activate.
             m_bActive = true;
             m_flLastDrainTime = currentTime;
             ApplyGlow(pPlayer);
@@ -100,7 +92,7 @@ class BloodlustData
         {
             DeactivateBloodlust(pPlayer);
         }
-
+        
         m_flLastToggleTime = currentTime;
     }
 
@@ -139,7 +131,7 @@ class BloodlustData
                 if(resources !is null)
                 {
                     float current = float(resources['current']);
-                    current -= flBloodlustEnergyCost; // Energy Drain.
+                    current -= m_flBloodlustEnergyCost; // Energy Drain.
                     
                     if(current <= 0)
                     {
@@ -155,44 +147,45 @@ class BloodlustData
         }
     }
 
-    float GetLifestealAmount(bool isMelee)
+    float GetLifestealAmount()
     {
-        float baseAmount = flBaseDamageLifesteal;
+        float baseAmount = m_flBaseDamageLifesteal;
         
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            baseAmount *= (1.0f + (level * flLifestealPerLevel));
+            baseAmount *= (1.0f + (level * m_flLifestealPerLevel));
         }
-
-        // Apply melee multiplier first if using melee weapon.
-        baseAmount = isMelee ? (baseAmount * flMeleeLifestealMult) : baseAmount;
-        
-        // Double lifesteal if bloodlust is active.
-        return m_bActive ? (baseAmount * 2.0f) : baseAmount;
+            
+        return baseAmount;
     }
 
-    float ProcessLifesteal(CBasePlayer@ pPlayer, float damageDealt, bool isMelee)
+    float ProcessLifesteal(CBasePlayer@ pPlayer, float damageDealt)
     {
         if(pPlayer is null)
             return 0.0f;
 
-        // Check for valid stats.
+        // Check for valid stats
         if(m_pStats is null)
             return 0.0f;
 
-        // Check if player died.
+        // Check if player died
         if(!pPlayer.IsAlive())
         {
             DeactivateBloodlust(pPlayer);
             return 0.0f;
         }
 
-        float lifestealMult = GetLifestealAmount(isMelee);
+        float lifestealMult = GetLifestealAmount();
         float healAmount = damageDealt * lifestealMult;
 
-        pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, pPlayer.pev.max_health); // Add lifesteal amount to health.
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.6f, ATTN_NORM, 0, PITCH_NORM);
+        // Add health without clamping to max_health if we're in bloodlust.
+        if(m_bActive)
+            pPlayer.pev.health += healAmount;
+        else
+            pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, pPlayer.pev.max_health);
+
+        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustHitSound, 0.8f, ATTN_NORM, 0, PITCH_NORM);
 
         return healAmount;
     }
@@ -201,23 +194,14 @@ class BloodlustData
     {
         if(!m_bActive)
             return;
-
+            
         if(pPlayer !is null)
         {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerRPGData.exists(steamID))
-            {
-                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null)
-                {
-                    RemoveGlow(pPlayer);
-                    m_bActive = false;
-                    data.CalculateStats(pPlayer);
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.0f, ATTN_NORM, SND_STOP);
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustEndSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_LOW);
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Off!\n");
-                }
-            }
+            RemoveGlow(pPlayer);
+            m_bActive = false;
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.0f, ATTN_NORM, SND_STOP);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustEndSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_LOW);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Off!\n");
         }
     }
 

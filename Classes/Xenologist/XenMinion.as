@@ -65,9 +65,6 @@ string strAlienGruntSoundAlert3 = "agrunt/ag_alert3.wav";
 string strAlienGruntSoundAlert4 = "agrunt/ag_alert4.wav";
 string strAlienGruntSoundAlert5 = "agrunt/ag_alert5.wav";
 
-float flXenReservePool = 0.0f;     // Current reserve used by Xen creatures.
-float flXenMaxReservePool = 0.0f;  // Max reserve for Xen creatures.
-
 dictionary g_XenologistMinions;
 
 enum XenType
@@ -108,21 +105,17 @@ const array<float> XEN_HEALTH_MODS =
     1.5f     // Alien Grunt.
 };
 
-float g_flBaseXenMinionHP = 100.0;
-float g_flXenMinionHPBonus = 0.0;
-float g_flXenMinionDMGBonus = 0.0;
-int g_iXenResourceCost = 1;
-
 class XenMinionData
 {
     private XenMinionMenu@ m_pMenu;
     private array<EHandle> m_hMinions;
     private array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
-    private float m_flBaseHealth = g_flBaseXenMinionHP;
+    private float m_flBaseHealth = 100.0;
     private float m_flHealthScale = 0.12; // Health % scaling per level. Higher for Xenologist.
     private float m_flDamageScale = 0.03; // Damage % scaling per level. Lower for Xenologist.
-    private int m_iMinionResourceCost = g_iXenResourceCost; // Cost to summon specific minion.
+    private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
+    private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
@@ -136,8 +129,8 @@ class XenMinionData
             dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
             if(resources !is null)
             {
-                flXenMaxReservePool = float(resources['max']) - flXenReservePool;
-                return flXenMaxReservePool <= 0;
+                float maxReserve = float(resources['max']) - m_flReservePool;
+                return maxReserve <= 0;
             }
         }
         return false;
@@ -146,6 +139,8 @@ class XenMinionData
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
     int GetMinionCount() { return m_hMinions.length(); }
+
+    float GetReservePool() { return m_flReservePool; }
 
     bool HasStats() { return m_pStats !is null; }
     array<EHandle>@ GetMinions() { return m_hMinions; }
@@ -206,7 +201,13 @@ class XenMinionData
         vecSrc = vecSrc + (spawnForward * 64);
         vecSrc.z -= 32;
 
-        float scaledHealth = GetScaledHealth(minionType); // Pass creature type
+        // Update individual reserve pool instead of global
+        m_flReservePool += XEN_COSTS[minionType];
+        current -= XEN_COSTS[minionType];
+        resources['current'] = current;
+
+        // Keep existing health/damage multipliers
+        float scaledHealth = GetScaledHealth(minionType);
         float scaledDamage = GetScaledDamage();
         
         dictionary keys;
@@ -227,10 +228,6 @@ class XenMinionData
             m_hMinions.insertLast(EHandle(pNewMinion));
             m_CreatureTypes.insertLast(minionType); // Store type alongside handle
             m_bActive = true;
-
-            flXenReservePool += XEN_COSTS[minionType];
-            current -= XEN_COSTS[minionType];
-            resources['current'] = current;
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, XEN_NAMES[minionType] + " summoned!\n");
@@ -258,10 +255,10 @@ class XenMinionData
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
             
-            if(pExistingMinion is null) // // Only count them if truly dead and not in revivable state.
+            if(pExistingMinion is null)
             {
-                // Use stored type index to reduce pool.
-                flXenReservePool -= XEN_COSTS[m_CreatureTypes[i]];
+                // Return costs to individual reserve pool
+                m_flReservePool -= XEN_COSTS[m_CreatureTypes[i]];
                 m_hMinions.removeAt(i);
                 m_CreatureTypes.removeAt(i);
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creature bled out!\n");
@@ -318,8 +315,8 @@ class XenMinionData
             }
         }
 
-        // Reset reserve pool after destroying all minions
-        flXenReservePool = 0.0;
+        // Reset individual reserve pool
+        m_flReservePool = 0.0f;
         
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures destroyed!\n");
         m_bActive = false;
@@ -331,8 +328,8 @@ class XenMinionData
             return m_flBaseHealth * XEN_HEALTH_MODS[creatureType];
 
         float level = m_pStats.GetLevel();
-        g_flXenMinionHPBonus = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
-        return (g_flXenMinionHPBonus) * XEN_HEALTH_MODS[creatureType] + m_flBaseHealth;
+        float flScaledHealth = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
+        return (flScaledHealth) * XEN_HEALTH_MODS[creatureType] + m_flBaseHealth;
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
@@ -341,8 +338,8 @@ class XenMinionData
             return 0.0f; // Technically should never be zero, but is always null when we have no minions.
 
         float level = m_pStats.GetLevel();
-        g_flXenMinionDMGBonus = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
-        return g_flXenMinionDMGBonus;
+        float flScaledDamage = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level as there is no base damage.
+        return flScaledDamage;
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)

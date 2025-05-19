@@ -23,8 +23,8 @@ class AmmoType
     AmmoType(string ammoName, int baseDelay, int regenAmount, int maxAmmo, bool useThreshold = false, int thresholdValue = 0) 
     {
         name = ammoName;
-        counter = int(baseDelay * g_CurrentMapMultiplier); // Multiply the max by the map multiplier.
-        delay = int(baseDelay * g_CurrentMapMultiplier); // Multiply the delay by the map multiplier.
+        counter = int(baseDelay * g_CurrentMapMultiplier);
+        delay = int(baseDelay * g_CurrentMapMultiplier);
         amount = regenAmount;
         baseAmount = regenAmount;
         maxAmount = maxAmmo;
@@ -104,30 +104,30 @@ void AmmoTimerTick() // Do ammo regen.
             if (g_AmmoTypes[ammoIndex].counter < 0) 
             {
                 int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
-                if (gameAmmoIndex >= 0) // Make sure ammo type is valid.
+                if (gameAmmoIndex >= 0)
                 {
-                    // Double-check player is still valid.
-                    if(pPlayer is null || !pPlayer.IsAlive())
-                        continue;
-                        
-                    int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
-                    
-                    // Check ammo limits.
-                    if (currentAmmo < ammoType.maxAmount) 
+                    if(pPlayer !is null && pPlayer.IsAlive())
                     {
-                        // Check threshold if needed.
-                        bool canRegenerate = true;
-                        if (ammoType.hasThreshold && currentAmmo > ammoType.threshold)
-                            canRegenerate = false;
+                        int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
                         
-                        if (canRegenerate) 
+                        // Check ammo limits.
+                        if (currentAmmo < ammoType.maxAmount) 
                         {
-                            pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + ammoType.amount);
+                            // Check threshold if needed.
+                            bool canRegenerate = true;
+                            if (ammoType.hasThreshold && currentAmmo > ammoType.threshold)
+                                canRegenerate = false;
+                        
+                            if (canRegenerate) 
+                            {
+                                // Always add exactly amount (no multiplication)
+                                pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + ammoType.amount);
+                            }
                         }
                     }
                 }
                 
-                // Reset counter in the global array.
+                // Reset counter with scaled delay
                 g_AmmoTypes[ammoIndex].counter = g_AmmoTypes[ammoIndex].delay;
             }
         }

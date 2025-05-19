@@ -110,27 +110,27 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     
                 case PlayerClass::CLASS_BERSERKER:
                     def.energyPerLevel = 0.02f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.08f;
+                    def.energyRegenPerLevel = 0.06f;
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
                     def.energyPerLevel = 0.02f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.08f;
+                    def.energyRegenPerLevel = 0.06f;
                     break;
 
                 case PlayerClass::CLASS_SHOCKTROOPER:
-                    def.energyPerLevel = 0.04f; // Requires 31 for activation, specific case.
-                    def.energyRegenPerLevel = 0.04f;
+                    def.energyPerLevel = 0.02f; // Requires 31 for activation, specific case.
+                    def.energyRegenPerLevel = 0.01f;
                     break;
 
                 case PlayerClass::CLASS_CLOAKER:
                     def.energyPerLevel = 0.02f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.08f;
+                    def.energyRegenPerLevel = 0.06f;
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
                     def.energyPerLevel = 0.03f; // Requires base cost for activation.
-                    def.energyRegenPerLevel = 0.04f;
+                    def.energyRegenPerLevel = 0.02f;
                     break;
             }
             
