@@ -2,23 +2,11 @@ const string strLevelUpSound = "misc/secret.wav";
 
 dictionary g_PlayerRPGData;
 
-// Default initialisation for bonuses.
-float g_flHPBonus = 100.0f;
-float g_flAPBonus = 100.0f;
-float g_flResourceBonus = 100.0f;
-float g_flResourceRegenBonus = 1.0f;
-
 // Base Stats.
 float g_flBaseMaxHP = 100.0f;
 float g_flBaseMaxAP = 100.0f;
-float g_flBaseMaxResource = 100.0f;
-float g_flBaseResourceRegen = 1.0f;
-
-// Get Medic specific for stat menu.
-float g_flMedkitRecharge = 0.0f;
-float g_flMedkitRechargeBonus = 0.0f;
-float g_flMedkitCapacity = 0.0f;
-float g_flMedkitCapacityBonus = 0.0f;
+float g_flBaseMaxResource = 25.0f;
+float g_flBaseResourceRegen = 0.5f;
 
 // Used for debug menu.
 int g_iMaxLevel = 50;
@@ -94,43 +82,43 @@ void InitializeClassDefinitions() // Initialize class definitions.
             switch(pClass) // These are multipliers, will multiply stats by this value per level.
             {
                 case PlayerClass::CLASS_MEDIC:
-                    def.energyPerLevel = 0.02f; // Requires base cost for activation.
-                    def.energyRegenPerLevel = 0.02f;
+                    def.energyPerLevel = 0.14f;
+                    def.energyRegenPerLevel = 0.1f;
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
-                    def.energyPerLevel = 0.00f; // Minion class, no bonus energy.
-                    def.energyRegenPerLevel = 0.01f; // Minion class, slow regen.
+                    def.energyPerLevel = 0.06f; // Minion class, no bonus energy.
+                    def.energyRegenPerLevel = 0.05f; // Minion class, slow regen.
                     break;
 
                 case PlayerClass::CLASS_XENOLOGIST:
-                    def.energyPerLevel = 0.00f; // Minion class, no bonus energy.
-                    def.energyRegenPerLevel = 0.01f; // Minion class, slow regen.
+                    def.energyPerLevel = 0.06f; // Minion class, no bonus energy.
+                    def.energyRegenPerLevel = 0.05f; // Minion class, slow regen.
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
-                    def.energyPerLevel = 0.02f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.06f;
+                    def.energyPerLevel = 0.14f; // Requires full recharge between uses. Even if partially filled.
+                    def.energyRegenPerLevel = 0.1f;
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
-                    def.energyPerLevel = 0.02f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.06f;
+                    def.energyPerLevel = 0.14f; // Requires full recharge between uses. Even if partially filled.
+                    def.energyRegenPerLevel = 0.1f;
                     break;
 
                 case PlayerClass::CLASS_SHOCKTROOPER:
-                    def.energyPerLevel = 0.02f; // Requires 31 for activation, specific case.
-                    def.energyRegenPerLevel = 0.01f;
+                    def.energyPerLevel = 0.14f; // Requires 31 for activation, specific case.
+                    def.energyRegenPerLevel = 0.05f;
                     break;
 
                 case PlayerClass::CLASS_CLOAKER:
-                    def.energyPerLevel = 0.02f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.06f;
+                    def.energyPerLevel = 0.14f; // Requires full recharge between uses. Even if partially filled.
+                    def.energyRegenPerLevel = 0.1f;
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
-                    def.energyPerLevel = 0.03f; // Requires base cost for activation.
-                    def.energyRegenPerLevel = 0.02f;
+                    def.energyPerLevel = 0.14f;
+                    def.energyRegenPerLevel = 0.05f;
                     break;
             }
             
@@ -493,10 +481,10 @@ class PlayerData
         {
             ClassDefinition@ def = cast<ClassDefinition@>(g_ClassDefinitions[m_CurrentClass]);
 
-            float maxHealth = g_flBaseMaxHP * (1.0f + (level * def.healthPerLevel)); // Changed to % scaling.
-            float maxArmor = g_flBaseMaxAP * (1.0f + (level * def.armorPerLevel)); // Changed to % scaling.
-            float maxResource = g_flBaseMaxResource * (1.0f + (level * def.energyPerLevel)); // Changed to % scaling.
-            float resourceRegen = g_flBaseResourceRegen * (1.0f + (level * def.energyRegenPerLevel)); // Changed to % scaling.
+            float maxHealth = g_flBaseMaxHP * (1.0f + (level * def.healthPerLevel)); // Max HP scaling.
+            float maxArmor = g_flBaseMaxAP * (1.0f + (level * def.armorPerLevel)); // Max AP scaling.
+            float maxResource = g_flBaseMaxResource * (1.0f + (level * def.energyPerLevel)); // Max Energy scaling.
+            float resourceRegen = g_flBaseResourceRegen * (1.0f + (level * def.energyRegenPerLevel)); // Energy Regen scaling.
             
             // Set Max HP/AP.
             pPlayer.pev.max_health = maxHealth;
@@ -521,12 +509,6 @@ class PlayerData
             // Same for armor.
             if(pPlayer.pev.armorvalue > maxArmor)
                 pPlayer.pev.armorvalue = maxArmor;
-                
-            // Update menu display values.
-            g_flHPBonus = maxHealth - g_flBaseMaxHP;
-            g_flAPBonus = maxArmor - g_flBaseMaxAP;
-            g_flResourceBonus = maxResource - g_flBaseMaxResource;
-            g_flResourceRegenBonus = resourceRegen - g_flBaseResourceRegen;
             
             // Class-specific weapon loadouts and other non-basic scaling bonuses like ammo and capacity.
             switch(m_CurrentClass)
