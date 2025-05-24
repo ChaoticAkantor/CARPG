@@ -15,8 +15,8 @@ class BloodlustData
     private float m_flBloodlustEnergyCost = 5.0f; // Energy drain per interval.
     private float m_flBaseDamageBonus = 0.25f; // Base damage increase at lowest health.
     private float m_flDamageBonusPerLevel = 0.05f; // Bonus damage scaling per level.
-    private float m_flBaseDamageLifesteal = 0.01f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
-    private float m_flLifestealPerLevel = 0.05f; // % bonus lifesteal per level.
+    private float m_flBaseDamageLifesteal = 0.1f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
+    private float m_flLifestealPerLevel = 0.08f; // % bonus lifesteal per level.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -26,6 +26,8 @@ class BloodlustData
     bool HasStats() { return m_pStats !is null; }
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+
+    float GetEnergyCost() const { return m_flBloodlustEnergyCost; }
 
     float GetDamageBonus(CBasePlayer@ pPlayer)
     {
@@ -40,9 +42,9 @@ class BloodlustData
             bonus *= (1.0f + (level * m_flDamageBonusPerLevel));
         }
         
-        // Scale bonus based on missing health percentage
+        // Scale bonus based on missing health percentage.
         float healthRatio = (pPlayer.pev.health / pPlayer.pev.max_health);
-        float missingHealthMult = (1.0f - healthRatio); // 0.0 at full health, 1.0 at 0 health
+        float missingHealthMult = (1.0f - healthRatio); // 0% at full health, 100% at 0 health.
         
         return bonus * missingHealthMult;
     }
@@ -124,7 +126,6 @@ class BloodlustData
         float currentTime = g_Engine.time;
         if(currentTime - m_flLastDrainTime >= m_flBloodlustEnergyDrainInterval) // Interval for energy drain.
         {
-            // Only drain energy.
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerClassResources.exists(steamID))
             {
@@ -180,11 +181,7 @@ class BloodlustData
         float lifestealMult = GetLifestealAmount();
         float healAmount = damageDealt * lifestealMult;
 
-        // Add health without clamping to max_health if we're in bloodlust.
-        if(m_bActive)
-            pPlayer.pev.health += healAmount;
-        else
-            pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, pPlayer.pev.max_health);
+        pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, pPlayer.pev.max_health); // Add health, but don't exceed max health.
 
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustHitSound, 0.8f, ATTN_NORM, 0, PITCH_NORM);
 

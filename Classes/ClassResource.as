@@ -352,7 +352,7 @@ void UpdateClassResource()
 
                                     if (isActive)
                                     {
-                                        resourceInfo += " [Lifesteal: +" + int(lifesteal) + "%]";
+                                        resourceInfo += " [Lifesteal: " + int(lifesteal) + "%]";
                                     }
 
                                 }
