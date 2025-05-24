@@ -7,15 +7,13 @@ const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B
 
 dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
 
-dictionary g_BarrierGlowData; // Stores glow data for players with Barrier active.
-
 class BarrierData
 {
     private bool m_bActive = false;
     private float m_flBaseDamageReduction = 1.00f; // Base damage reduction.
     private float m_flEnergyDrainPerSecond = 0.0f; // Energy drain per second while active.
     private float m_flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
-    private float m_flBarrierDamageToEnergyMult = 0.4f; // Damage taken to energy drain scale factor.
+    private float m_flBarrierDamageToEnergyMult = 0.25f; // Damage taken to energy drain factor. % damage dealt to shield, lower = better.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private ClassStats@ m_pStats = null;
@@ -183,23 +181,6 @@ class BarrierData
         pPlayer.pev.rendermode = kRenderNormal;
         pPlayer.pev.renderamt = 255;
         pPlayer.pev.rendercolor = Vector(255, 255, 255);
-    }
-
-    private void ResetBarrierGlow(string targetId)
-    {
-        if(g_BarrierGlowData.exists(targetId))
-        {
-            CBaseEntity@ target = g_EntityFuncs.Instance(atoi(targetId));
-            if(target !is null)
-            {
-                GlowData@ data = cast<GlowData@>(g_BarrierGlowData[targetId]);
-                target.pev.renderfx = data.renderFX;
-                target.pev.rendermode = data.renderMode;
-                target.pev.rendercolor = data.renderColor;
-                target.pev.renderamt = data.renderAmt;
-            }
-            g_BarrierGlowData.delete(targetId);
-        }
     }
 
     private void EffectBarrierShatter(Vector origin)
