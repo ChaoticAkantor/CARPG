@@ -46,7 +46,7 @@ class HealingAura
     private float m_flRadius = 640.0f; // Radius of the aura.
     private float m_flBaseHealAmount = 10.0f; // Base heal amount.
     private float m_flHealScaling = 0.04; // % per level scaling.
-    private int m_iDrainAmount = 2.0f;
+    private int m_iDrainAmount = 5.0f; // Energy drain per interval.
     private int m_iHealAuraDrainRevive = m_iDrainAmount * 10; // Energy drain per revival.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
     private float m_flLastToggleTime = 0.0f;
