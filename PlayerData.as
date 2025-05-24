@@ -62,6 +62,27 @@ class ClassDefinition
     {
         name = _name;
     }
+    
+    // Get actual values after scaling
+    float GetPlayerHealth(int level)
+    {
+        return g_flBaseMaxHP * (1.0f + (level * healthPerLevel));
+    }
+    
+    float GetPlayerArmor(int level)
+    {
+        return g_flBaseMaxAP * (1.0f + (level * armorPerLevel));
+    }
+    
+    float GetPlayerEnergy(int level)
+    {
+        return g_flBaseMaxResource * (1.0f + (level * energyPerLevel));
+    }
+    
+    float GetPlayerEnergyRegen(int level, float maxEnergy)
+    {
+        return maxEnergy * (g_flBaseResourceRegen + (level * energyRegenPerLevel));
+    }
 }
 
 dictionary g_ClassDefinitions;
@@ -133,8 +154,8 @@ class ClassStats
     private int m_iLevel = 1;
     private int m_iXP = 0;
     private int m_iCurrentLevelXP = 0;
-    private int XP_BASE = 1;          // Base XP for calculation.
-    private int XP_MULTIPLIER = 50;     // Exponential growth factor. How much increase extra per level up.
+    private int XP_BASE = 2;          // Base XP for calculation.
+    private int XP_MULTIPLIER = 10;     // Exponential growth factor. How much increase extra per level up.
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
     

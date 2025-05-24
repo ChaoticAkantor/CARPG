@@ -852,7 +852,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(data !is null && data.GetCurrentClass() != PlayerClass::CLASS_NONE)
                 {
-                    //ShowClassStats(pPlayer); // Disabled for now whilst we rework the stats menu.
+                    ShowClassStats(pPlayer); // Show class stats menu.
                     pParams.ShouldHide = true;
                     return HOOK_HANDLED;
                 }
