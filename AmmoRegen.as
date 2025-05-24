@@ -60,75 +60,48 @@ void InitializeAmmoRegen() // Initialize all ammo types at startup.
     g_AmmoTypes.insertLast(AmmoType("snarks", 30, 1, 15, true, 1));
 }
 
-void AmmoTimerTick() // Do ammo regen.
+void AmmoTimerTick()
 {
     const int iMaxPlayers = g_Engine.maxClients;
-    for (int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex) 
+    for(int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex)
     {   
         CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(playerIndex);
-        if (pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
+        if(pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
             continue;
 
-        // Create temporary copies of ammo types for this player.
-        array<AmmoType@> playerAmmoTypes;
-        for (uint i = 0; i < g_AmmoTypes.length(); i++) 
+        // Process ammo regeneration using global settings
+        for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
         {
-            if(i >= g_AmmoTypes.length() || g_AmmoTypes[i] is null)
+            AmmoType@ ammoType = g_AmmoTypes[ammoIndex];
+            if(ammoType is null)
                 continue;
                 
-            AmmoType@ original = g_AmmoTypes[i];
-            AmmoType@ copy = AmmoType(original.name, original.delay, original.amount, original.maxAmount, 
-                                      original.hasThreshold, original.threshold);
-            playerAmmoTypes.insertLast(copy);
-        }
-        
-        // Adjust ammo for this player's class (using the copies).
-        AdjustAmmoForPlayerClass(pPlayer, playerAmmoTypes);
-
-        // Process ammo regeneration using player-specific settings.
-        for (uint ammoIndex = 0; ammoIndex < playerAmmoTypes.length(); ammoIndex++) 
-        {
-            if(ammoIndex >= playerAmmoTypes.length() || playerAmmoTypes[ammoIndex] is null || 
-               ammoIndex >= g_AmmoTypes.length() || g_AmmoTypes[ammoIndex] is null)
-                continue;
-                
-            AmmoType@ ammoType = playerAmmoTypes[ammoIndex];
+            // Decrease counter
+            ammoType.counter--;
             
-            // Get the original counter from global ammo type.
-            ammoType.counter = g_AmmoTypes[ammoIndex].counter;
-            
-            // Decrease counter.
-            g_AmmoTypes[ammoIndex].counter--;
-            
-            // Check if it's time to regenerate
-            if (g_AmmoTypes[ammoIndex].counter < 0) 
+            if(ammoType.counter < 0)
             {
                 int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
-                if (gameAmmoIndex >= 0)
+                if(gameAmmoIndex >= 0)
                 {
-                    if(pPlayer !is null && pPlayer.IsAlive())
+                    int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
+                    
+                    if(currentAmmo < ammoType.maxAmount)
                     {
-                        int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
+                        bool canRegenerate = true;
+                        if(ammoType.hasThreshold && currentAmmo > ammoType.threshold)
+                            canRegenerate = false;
                         
-                        // Check ammo limits.
-                        if (currentAmmo < ammoType.maxAmount) 
+                        if(canRegenerate)
                         {
-                            // Check threshold if needed.
-                            bool canRegenerate = true;
-                            if (ammoType.hasThreshold && currentAmmo > ammoType.threshold)
-                                canRegenerate = false;
-                        
-                            if (canRegenerate) 
-                            {
-                                // Always add exactly amount (no multiplication)
-                                pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + ammoType.amount);
-                            }
+                            // Add exactly amount (no multiplication)
+                            pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + ammoType.amount);
                         }
                     }
                 }
                 
                 // Reset counter with scaled delay
-                g_AmmoTypes[ammoIndex].counter = g_AmmoTypes[ammoIndex].delay;
+                ammoType.counter = ammoType.delay;
             }
         }
     }

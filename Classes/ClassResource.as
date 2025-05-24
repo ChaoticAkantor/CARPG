@@ -1,14 +1,8 @@
 /*
-This file handles class specific resource, recovery and hud.
+This file handles class resource regeneration and HUD display.
 */
 
 dictionary g_PlayerClassResources; // Store resources per player.
-
-// Base values for stat menu.
-const float flBaseResource = 0.0;
-const float flBaseResourceMax = 100.0;
-const float flBaseResourceRegen = 1.0;
-
 float flClassResourceRegenDelay = 1.0; // Delay between class resource regen ticks.
 
 void RegenClassResource()
@@ -17,155 +11,146 @@ void RegenClassResource()
     for(int i = 1; i <= iMaxPlayers; ++i)
     {
         CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if(pPlayer !is null && pPlayer.IsConnected() && pPlayer.IsAlive()) // Check if player exists, is connected AND is alive.
+        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+            continue;
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(!g_PlayerClassResources.exists(steamID))
+            continue;
+            
+        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        
+        if(g_PlayerRPGData.exists(steamID))
         {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            
-            // Initialize resource if it doesn't exist.
-            if(!g_PlayerClassResources.exists(steamID))
+            PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+            if(data !is null)
             {
-                dictionary resources = {
-                    {'current', flBaseResource},
-                    {'max', flBaseResourceMax},
-                    {'regen', flBaseResourceRegen}
-                };
-                g_PlayerClassResources[steamID] = resources;
-            }
-            
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            
-            if(g_PlayerRPGData.exists(steamID))
-            {
-                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null)
+                // Check for active abilities and prevent energy regen.
+                bool isAuraActive = false;
+                bool isBarrierActive = false;
+                bool hasActiveMinions = false;
+                bool hasShockRifleEquipped = false;
+                bool isBloodlustActive = false;
+                bool isCloakActive = false;
+
+                if(g_HealingAuras.exists(steamID))
                 {
-                    // Check for active abilities and prevent energy regen.
-                    bool isAuraActive = false;
-                    bool isBarrierActive = false;
-                    bool hasActiveMinions = false;
-                    bool hasShockRifleEquipped = false;
-                    bool isBloodlustActive = false;
-                    bool isCloakActive = false;
+                    HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
+                    if(aura !is null)
+                        isAuraActive = aura.IsActive();
+                }
 
-                    if(g_HealingAuras.exists(steamID))
+                if(g_PlayerBarriers.exists(steamID))
+                {
+                    BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                    if(barrier !is null)
+                        isBarrierActive = barrier.IsActive();
+                }
+
+                if(g_PlayerMinions.exists(steamID))
+                {
+                    MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+                    if(minion !is null)
+                        hasActiveMinions = minion.IsActive();
+                }
+
+                if(g_PlayerBloodlusts.exists(steamID))
+                {
+                    BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                    if(bloodlust !is null)
+                        isBloodlustActive = bloodlust.IsActive();
+                }
+
+                if(g_PlayerCloaks.exists(steamID))
+                {
+                    CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+                    if(cloak !is null)
+                        isCloakActive = cloak.IsActive();
+                }
+
+                // Shocktrooper Shock Rifle.
+                if(data.GetCurrentClass() == PlayerClass::CLASS_SHOCKTROOPER)
+                {
+                    CBasePlayerItem@ currentItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
+                    
+                    if(currentItem !is null && pPlayer.m_hActiveItem.GetEntity() is currentItem)
                     {
-                        HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
-                        if(aura !is null)
-                            isAuraActive = aura.IsActive();
+                        hasShockRifleEquipped = true;
                     }
+                }
 
-                    if(g_PlayerBarriers.exists(steamID))
-                    {
-                        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                        if(barrier !is null)
-                            isBarrierActive = barrier.IsActive();
-                    }
-
+                // Engineer Minion reserve pool.
+                if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
+                {
                     if(g_PlayerMinions.exists(steamID))
                     {
                         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
                         if(minion !is null)
-                            hasActiveMinions = minion.IsActive();
-                    }
-
-                    if(g_PlayerBloodlusts.exists(steamID))
-                    {
-                        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
-                        if(bloodlust !is null)
-                            isBloodlustActive = bloodlust.IsActive();
-                    }
-
-                    if(g_PlayerCloaks.exists(steamID))
-                    {
-                        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
-                        if(cloak !is null)
-                            isCloakActive = cloak.IsActive();
-                    }
-
-                    // Shocktrooper Shock Rifle.
-                    if(data.GetCurrentClass() == PlayerClass::CLASS_SHOCKTROOPER)
-                    {
-                        CBasePlayerItem@ currentItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
-                        
-                        if(currentItem !is null && pPlayer.m_hActiveItem.GetEntity() is currentItem)
                         {
-                            hasShockRifleEquipped = true;
-                        }
-                    }
-
-                    // Engineer Minion Reserve Pool
-                    if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
-                    {
-                        if(g_PlayerMinions.exists(steamID))
-                        {
-                            MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
-                            if(minion !is null)
+                            float current = float(resources['current']);
+                            float regen = float(resources['regen']);
+                            
+                            float maxReserve = 0.0f;  // Initialize first.
+                            // Use instance reserve pool
+                            maxReserve = float(resources['max']) - minion.GetReservePool();
+                            
+                            // Only regenerate if we have remaining reserve.
+                            if(maxReserve > 0 && current < maxReserve)
                             {
-                                float current = float(resources['current']);
-                                float regen = float(resources['regen']);
-                                
-                                float maxReserve = 0.0f;  // Initialize first
-                                // Use instance reserve pool
-                                maxReserve = float(resources['max']) - minion.GetReservePool();
-                                
-                                // Only regenerate if we have remaining reserve.
-                                if(maxReserve > 0 && current < maxReserve)
-                                {
-                                    current += regen;
-                                    if(current > maxReserve)
-                                        current = maxReserve;
-                                    resources['current'] = current;
-                                }
-                                continue; // Skip normal regen logic.
+                                current += regen;
+                                if(current > maxReserve)
+                                    current = maxReserve;
+                                resources['current'] = current;
                             }
+                            continue; // Skip normal regen logic.
                         }
                     }
+                }
 
-                    // Xenologist Minion Reserve Pool
-                    if(data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST)
+                // Xenologist Minion reserve pool.
+                if(data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST)
+                {
+                    if(g_XenologistMinions.exists(steamID))
                     {
-                        if(g_XenologistMinions.exists(steamID))
+                        XenMinionData@ minion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                        if(minion !is null)
                         {
-                            XenMinionData@ minion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
-                            if(minion !is null)
+                            float current = float(resources['current']);
+                            float regen = float(resources['regen']);
+                            
+                            float maxReserve = 0.0f;  // Initialize first.
+                            // Use instance reserve pool
+                            maxReserve = float(resources['max']) - minion.GetReservePool();
+                            
+                            // Only regenerate if we have remaining reserve.
+                            if(maxReserve > 0 && current < maxReserve)
                             {
-                                float current = float(resources['current']);
-                                float regen = float(resources['regen']);
-                                
-                                float maxReserve = 0.0f;  // Initialize first
-                                // Use instance reserve pool
-                                maxReserve = float(resources['max']) - minion.GetReservePool();
-                                
-                                // Only regenerate if we have remaining reserve.
-                                if(maxReserve > 0 && current < maxReserve)
-                                {
-                                    current += regen;
-                                    if(current > maxReserve)
-                                        current = maxReserve;
-                                    resources['current'] = current;
-                                }
-                                continue; // Skip normal regen logic.
+                                current += regen;
+                                if(current > maxReserve)
+                                    current = maxReserve;
+                                resources['current'] = current;
                             }
+                            continue; // Skip normal regen logic.
                         }
                     }
+                }
 
-                    // Skip regen if any ability is active.
-                    if(isAuraActive || isBarrierActive || hasActiveMinions || 
-                       hasShockRifleEquipped || isBloodlustActive || isCloakActive)
-                        continue;
+                // Skip regen if any ability is active.
+                if(isAuraActive || isBarrierActive || hasActiveMinions || 
+                   hasShockRifleEquipped || isBloodlustActive || isCloakActive)
+                    continue;
 
-                    // Normal regen logic
-                    float current = float(resources['current']);
-                    float maximum = float(resources['max']);
-                    float regen = float(resources['regen']);
+                // Normal regen logic
+                float current = float(resources['current']);
+                float maximum = float(resources['max']);
+                float regen = float(resources['regen']);
 
-                    if(current < maximum)
-                    {
-                        current += regen;
-                        if(current > maximum)
-                            current = maximum;
-                        resources['current'] = current;
-                    }
+                if(current < maximum)
+                {
+                    current += regen;
+                    if(current > maximum)
+                        current = maximum;
+                    resources['current'] = current;
                 }
             }
         }
@@ -209,8 +194,8 @@ void UpdateClassResource()
 
             HUDTextParams params;
             params.channel = 5;
-            params.x = -1; // Center horizontally
-            params.y = 0.85; // Position near bottom
+            params.x = -1; // Center horizontally.
+            params.y = 0.85; // Position near bottom.
             params.effect = 6; // 0: Normal text (no effect), 1: Fade in/out, 2: Flickering credits, 3: Write out (scan out), 4: Write out (scan right to left), 5: Write out (scan left to right), 6: Shimmer/vibrate.
             params.fadeinTime = 0;
             params.fadeoutTime = 0;
@@ -237,13 +222,13 @@ void UpdateClassResource()
                     switch(currentClass)
                     {
                         case PlayerClass::CLASS_ENGINEER:
-                            resourceName = "Power-Reserve";
+                            resourceName = "Robot Reserve";
                             break;
                         case PlayerClass::CLASS_DEFENDER:
                             resourceName = "Ice Shield";
                             break;
                         case PlayerClass::CLASS_MEDIC:
-                            resourceName = "Bio-Energy";
+                            resourceName = "Healing Aura";
                             break;
                         case PlayerClass::CLASS_SHOCKTROOPER:
                             resourceName = "Shockrifle Battery";
@@ -255,10 +240,10 @@ void UpdateClassResource()
                             resourceName = "Cloak Battery";
                             break;
                         case PlayerClass::CLASS_DEMOLITIONIST:
-                            resourceName = "H.E. Backpack";
+                            resourceName = "Ammo Pack";
                             break;
                         case PlayerClass::CLASS_XENOLOGIST:
-                            resourceName = "Bio-Reserve";
+                            resourceName = "Creature Reserve";
                             break;
                     }
                 }
@@ -320,9 +305,15 @@ void UpdateClassResource()
                                 HealingAura@ healingAura = cast<HealingAura@>(g_HealingAuras[steamID]);
                                 if(healingAura !is null)
                                 {
+                                    float HealAmount = healingAura.GetScaledHealAmount();
+
                                     bool isActive = healingAura.IsActive();
-                                    
-                                    resourceInfo += "[" + (isActive ? "ON" : "OFF") + "]";
+                                    resourceInfo += "[" + (isActive ? "ON" : "OFF") + "] ";
+
+                                    if(isActive)
+                                    {
+                                        resourceInfo += "[Heal: " + int(HealAmount) + "HP/s]";
+                                    }
                                 }
                             }
                             break;
@@ -357,8 +348,13 @@ void UpdateClassResource()
                                     float dmgBonus = bloodlust.GetDamageBonus(pPlayer) * 100;
                                     
                                     resourceInfo += "[" + (isActive ? "ON" : "OFF") + "]";
-                                    resourceInfo += " [Lifesteal: " + int(lifesteal) + "%]";
                                     resourceInfo += " [DMG Bonus: +" + int(dmgBonus) + "%]";
+
+                                    if (isActive)
+                                    {
+                                        resourceInfo += " [Lifesteal: +" + int(lifesteal) + "%]";
+                                    }
+
                                 }
                             }
                             break;

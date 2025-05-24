@@ -6,7 +6,7 @@ dictionary g_AmmoTypeDamageMultipliers = // Our multipliers for explosive damage
 {
     {"9mm", 1.0f},
     {"357", 1.0f},
-    {"buckshot", 0.5f},
+    {"buckshot", 0.4f},
     {"bolts", 1.0f},
     {"556", 1.0f},
     {"762", 1.0f},
@@ -18,12 +18,12 @@ dictionary g_PlayerExplosiveRounds;
 
 class ExplosiveRoundsData
 {
-    private float m_flExplosiveRoundsDamage = 10.0f;
+    private float m_flExplosiveRoundsDamage = 5.0f;
     private float m_flExplosiveRoundsDamageScaling = 0.1f; // % Damage increase per level.
     private float m_flExplosiveRoundsPoolScaling = 0.1f; // % Pool size increase per level.
     private float m_flExplosiveRoundsRadius = 96.0f; // Radius of explosion.
     private int m_iExplosiveRoundsPoolBase = 15;
-    private float m_flEnergyCostPerActivation = 10.0f;
+    private float m_flEnergyCostPerActivation = 5.0f;
     private float m_flRoundsGivenPerActivation = 1.0f;
     private float m_flRoundsInPool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -84,7 +84,7 @@ class ExplosiveRoundsData
 
         if(current < m_flEnergyCostPerActivation)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flEnergyCostPerActivation) + " energy!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flEnergyCostPerActivation) + " reserve!\n");
             return;
         }
 
@@ -92,7 +92,7 @@ class ExplosiveRoundsData
 
         resources['current'] = Math.max(0, current - m_flEnergyCostPerActivation); // Deduct fixed energy cost.
 
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strExplosiveRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strExplosiveRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + int(m_flRoundsGivenPerActivation) + " Explosive Round\n");
 
         m_flLastToggleTime = currentTime;
@@ -151,7 +151,7 @@ class ExplosiveRoundsData
                 msg.WriteCoord(tr.vecEndPos.z);
                 msg.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
                 msg.WriteByte(10); // Scale.
-                msg.WriteByte(15); // Framerate.
+                msg.WriteByte(30); // Framerate.
                 msg.WriteByte(0); // Flags.
                 msg.End();
 
@@ -163,7 +163,7 @@ class ExplosiveRoundsData
                     GetScaledDamage() * damageMultiplier,
                     GetRadius(),
                     CLASS_PLAYER_ALLY, // Will not damage allies of player.
-                    DMG_BLAST | DMG_ALWAYSGIB // Damage type and flags/
+                    DMG_BLAST // Damage type and flags (if any).
                 );
             }
 
@@ -205,7 +205,7 @@ class ExplosiveRoundsData
                     GetScaledDamage() * damageMultiplier,
                     GetRadius(),
                     CLASS_PLAYER_ALLY,
-                    DMG_BLAST | DMG_ALWAYSGIB
+                    DMG_BLAST // Damage type and flags (if any).
                 );
 
                 ConsumeRound();
@@ -232,8 +232,8 @@ class ExplosiveRoundsData
             msg.WriteCoord(tr.vecEndPos.y);
             msg.WriteCoord(tr.vecEndPos.z);
             msg.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
-            msg.WriteByte(15); // Scale.
-            msg.WriteByte(15); // Framerate.
+            msg.WriteByte(10); // Scale.
+            msg.WriteByte(30); // Framerate.
             msg.WriteByte(0); // Flags.
             msg.End();
 
@@ -244,8 +244,8 @@ class ExplosiveRoundsData
                 GetScaledDamage() * damageMultiplier,
                 GetRadius(),
                 CLASS_PLAYER_ALLY, // Make sure we always use this flag to stop greifing!
-                DMG_BLAST | DMG_ALWAYSGIB
-            );
+                DMG_BLAST // Damage type and flags (if any).
+            ); 
             
             ConsumeRound();
         }

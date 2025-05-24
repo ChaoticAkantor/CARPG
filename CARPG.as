@@ -58,6 +58,7 @@ void MapInit() // When a new map is started, all scripts are initialized by call
 {
     PrecacheAll(); // Precache our models, sounds and sprites.
     PluginReset(); // Reset all plugin data when a new map is loaded.
+    UpdateMapMultiplier(); // Update map multipliers for ammo recovery.
 }
 
 void MapActivate() // Like MapInit, only called after all mapper placed entities have been activated and the sound list has been written.
@@ -334,12 +335,12 @@ HookReturnCode OnWeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pW
 // Hook handler for Secondary Attack.
 HookReturnCode OnWeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
 {
-    if(pWeapon is null || pPlayer is null || (pWeapon.m_iClip2 <= 0 && pWeapon.m_iClip2 != -1)) // Make sure clip2 is not empty and isn't infinite.
+    if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0 && pWeapon.m_iClip2 != -1 ) // Check if clip is not empty and clip2 isn't infinite.
         return HOOK_CONTINUE;
 
     string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     string SecondaryWeaponName = pWeapon.pev.classname;
-    if(SecondaryWeaponName == "weapon_shotgun" || SecondaryWeaponName == "weapon_sawedoff")
+    if(SecondaryWeaponName == "weapon_shotgun" || SecondaryWeaponName == "weapon_9mmhandgun" || SecondaryWeaponName == "weapon_sawedoff")
     {
         if(g_PlayerExplosiveRounds.exists(steamId))
         {

@@ -44,8 +44,8 @@ class HealingAura
 {
     private bool m_bIsActive = false;
     private float m_flRadius = 640.0f; // Radius of the aura.
-    private float m_flBaseHealAmount = 10.0f; // Base heal amount.
-    private float m_flHealScaling = 0.04; // % per level scaling.
+    private float m_flBaseHealAmount = 5.0f; // Base heal amount.
+    private float m_flHealScaling = 0.05; // % per level scaling.
     private int m_iDrainAmount = 5.0f; // Energy drain per interval.
     private int m_iHealAuraDrainRevive = m_iDrainAmount * 10; // Energy drain per revival.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
@@ -67,6 +67,15 @@ class HealingAura
 
     bool IsActive() { return m_bIsActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+
+    float GetScaledHealAmount()
+    {
+        if (m_pStats is null)
+            return m_flBaseHealAmount;
+            
+        int level = m_pStats.GetLevel();
+        return m_flBaseHealAmount * (1.0f + (float(level) * m_flHealScaling));
+    }
     
     void ToggleAura(CBasePlayer@ pPlayer)
     {
@@ -90,7 +99,7 @@ class HealingAura
             int current = int(resources['current']);
             if (current < m_iDrainAmount) // Check energy before activation.
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura needs 2 Bio-energy!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura recharging...\n");
                 return;
             }
         }
@@ -352,15 +361,6 @@ class HealingAura
                 g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
             }
         }
-    }
-
-    private float GetScaledHealAmount()
-    {
-        if (m_pStats is null)
-            return m_flBaseHealAmount;
-            
-        int level = m_pStats.GetLevel();
-        return m_flBaseHealAmount * (1.0f + (float(level) * m_flHealScaling));
     }
 
     private void ApplyHealEffect(CBaseEntity@ target)

@@ -1,11 +1,11 @@
-const string strShockrifleEquipSound = "weapons/shock_draw.wav";
-const int g_iResourceCostShockRifle = 31; // Need at least 31 energy to equip, other wise it will begin to overload.
+string strShockrifleEquipSound = "weapons/shock_draw.wav";
 
 dictionary g_ShockRifleData;
 
 class ShockRifleData 
 {
     private ClassStats@ m_pStats = null;
+    private int m_iResourceCostShockRifle = 25; // Need at least 31 energy to equip, other wise it will begin to overload.
     private float m_flLastUseTime = 0.0f;
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
 
@@ -47,14 +47,14 @@ class ShockRifleData
                 return;
             }
             
-            // Return all remaining ammo as energy.
+            // Get ammo index and current ammo.
             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
             int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
             
-            // Update player's energy with remaining ammo.
+            // Sync player's energy with remaining ammo.
             float currentEnergy = float(resources['current']);
             float maxEnergy = float(resources['max']);
-            currentEnergy = Math.min(currentEnergy + currentAmmo, maxEnergy);
+            currentEnergy = Math.min(currentEnergy + (currentAmmo), maxEnergy); // Restore battery into energy from held rifle.
             resources['current'] = currentEnergy;
             
             // Force remove the weapon.
@@ -75,9 +75,10 @@ class ShockRifleData
 
         // Create new shock rifle - first check energy.
         float currentEnergy = float(resources['current']);
-        if(currentEnergy < g_iResourceCostShockRifle)
+        float maxEnergy = float(resources['max']);
+        if(currentEnergy < maxEnergy)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle needs " + g_iResourceCostShockRifle + " battery.\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle recharging...\n");
             return;
         }
         
@@ -91,6 +92,7 @@ class ShockRifleData
 
         // Use ALL current energy for the shock rifle.
         int energyToUse = int(currentEnergy);
+            energyToUse += 50; //Add a Buffer to stop overload and make lower levels more useful.
         resources['current'] = 0; // Set energy to zero.
         
         // Give the weapon

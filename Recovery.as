@@ -10,8 +10,8 @@ class RecoveryData
     float lastHurtTime = 0.0f;
 }
 
-const float flRegenTickHP = 0.5f; // Time between HP regen ticks.
-const float flRegenTickAP = 0.25f; // Time between AP regen ticks.
+const float flRegenTickHP = 1.0f; // Time between HP regen ticks.
+const float flRegenTickAP = 0.5f; // Time between AP regen ticks.
 const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks.
 const float flHurtDelay = 2.0f; // Total time to stay "hurt" before regen starts.
 const float flPercentHPRegen = 1.0f; // % of HP to regen per tick.

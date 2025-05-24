@@ -3,10 +3,11 @@ const string strLevelUpSound = "misc/secret.wav";
 dictionary g_PlayerRPGData;
 
 // Base Stats.
-float g_flBaseMaxHP = 100.0f;
-float g_flBaseMaxAP = 100.0f;
-float g_flBaseMaxResource = 25.0f;
-float g_flBaseResourceRegen = 0.5f;
+float g_flBaseMaxHP = 100.0f; // Base max HP before bonuses.
+float g_flBaseMaxAP = 100.0f; // Base max AP before bonuses.
+float g_flBaseMaxResource = 25.0f; // Base max resource before bonuses.
+float g_flBaseResourceRegen = 0.5f; // Base resource regen per second.
+float g_flCurrentResource = 0.0f; // Current resource init.
 
 // Used for debug menu.
 int g_iMaxLevel = 50;
@@ -82,43 +83,43 @@ void InitializeClassDefinitions() // Initialize class definitions.
             switch(pClass) // These are multipliers, will multiply stats by this value per level.
             {
                 case PlayerClass::CLASS_MEDIC:
-                    def.energyPerLevel = 0.14f;
-                    def.energyRegenPerLevel = 0.1f;
+                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.energyRegenPerLevel = 0.1f; // 500% at max level.
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
-                    def.energyPerLevel = 0.06f; // Minion class, no bonus energy.
-                    def.energyRegenPerLevel = 0.05f; // Minion class, slow regen.
+                    def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
+                    def.energyRegenPerLevel = 0.05f; // 250% regen at max level.
                     break;
 
                 case PlayerClass::CLASS_XENOLOGIST:
-                    def.energyPerLevel = 0.06f; // Minion class, no bonus energy.
-                    def.energyRegenPerLevel = 0.05f; // Minion class, slow regen.
+                    def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
+                    def.energyRegenPerLevel = 0.05f; // 250% regen at max level.
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
-                    def.energyPerLevel = 0.14f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.1f;
+                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.energyRegenPerLevel = 0.1f; // 500% regen at max level.
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
-                    def.energyPerLevel = 0.14f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.1f;
+                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.energyRegenPerLevel = 0.1f; // 500% regen at max level.
                     break;
 
                 case PlayerClass::CLASS_SHOCKTROOPER:
-                    def.energyPerLevel = 0.14f; // Requires 31 for activation, specific case.
-                    def.energyRegenPerLevel = 0.05f;
+                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.energyRegenPerLevel = 0.08f; // 400% regen at max level.
                     break;
 
                 case PlayerClass::CLASS_CLOAKER:
-                    def.energyPerLevel = 0.14f; // Requires full recharge between uses. Even if partially filled.
-                    def.energyRegenPerLevel = 0.1f;
+                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.energyRegenPerLevel = 0.1f; // 500% regen at max level.
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
-                    def.energyPerLevel = 0.14f;
-                    def.energyRegenPerLevel = 0.05f;
+                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.energyRegenPerLevel = 0.05f; // 250% regen at max level.
                     break;
             }
             
@@ -132,8 +133,8 @@ class ClassStats
     private int m_iLevel = 1;
     private int m_iXP = 0;
     private int m_iCurrentLevelXP = 0;
-    private int XP_BASE = 20;          // Base XP for level 1.
-    private int XP_MULTIPLIER = 3;     // Exponential growth factor.
+    private int XP_BASE = 1;          // Base XP for calculation.
+    private int XP_MULTIPLIER = 50;     // Exponential growth factor. How much increase extra per level up.
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
     
@@ -355,9 +356,9 @@ class PlayerData
                 {
                     dictionary resources = 
                     {
-                        {'current', flBaseResource},
-                        {'max', flBaseResourceMax},
-                        {'regen', flBaseResourceRegen}
+                        {'current', g_flCurrentResource},
+                        {'max', g_flBaseMaxResource},
+                        {'regen', g_flBaseResourceRegen}
                     };
                     @g_PlayerClassResources[steamID] = resources;
                 }
