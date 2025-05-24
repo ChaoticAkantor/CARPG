@@ -11,7 +11,8 @@ dictionary g_PlayerBloodlusts;
 class BloodlustData
 {
     private bool m_bActive = false;
-    private float m_flBloodlustEnergyCost = 2.0f; // Energy drain per 0.5s.
+    private float m_flBloodlustEnergyDrainInterval = 1.0f; // Interval to remove energy.
+    private float m_flBloodlustEnergyCost = 5.0f; // Energy drain per interval.
     private float m_flBaseDamageBonus = 0.25f; // Base damage increase at lowest health.
     private float m_flDamageBonusPerLevel = 0.05f; // Bonus damage scaling per level.
     private float m_flBaseDamageLifesteal = 0.01f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
@@ -121,7 +122,7 @@ class BloodlustData
             return;
 
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastDrainTime >= 0.5f) // Interval for energy drain.
+        if(currentTime - m_flLastDrainTime >= m_flBloodlustEnergyDrainInterval) // Interval for energy drain.
         {
             // Only drain energy.
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
