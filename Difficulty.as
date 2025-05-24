@@ -58,30 +58,30 @@ final class ForceDifficulty
 	private array<float> weapon_damage_values = 
 	{
 		10.0, //Medkit - Default 10.
-		20.0, //Crowbar - Default 15.
-		30.0, //Wrench - Default 22.
-		60.0, //Grapple (Barnacle) - Default 40.
-		15.0, //Handgun (9mm Handgun) - Default 12.
-		72.0, //357 (Deagle is 2/3 of this) - Default 66.
-		13.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
-		13.0, //MP5 (9mm AR) - Default 8.
-		12.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
-		75.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
-		18.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
+		25.0, //Crowbar - Default 15.
+		44.0, //Wrench - Default 22.
+		80.0, //Grapple (Barnacle) - Default 40.
+		18.0, //Handgun (9mm Handgun) - Default 12.
+		80.0, //357 (Deagle is 2/3 of this) - Default 66.
+		15.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
+		15.0, //MP5 (9mm AR) - Default 8.
+		14.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
+		80.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
+		24.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
 		150.0, //M203 (ARgrenades) - Default 100.
 		200.0, //RPG - Default 150.
-		24.0, //Gauss (No charge) - Default 19.
-		240.0, //Secondary Guass (Max Charge) - Default 190.
-		15.0, //Gluon (Egon) Gun - Default 12.
-		18.0, //Hornet Gun - Default 12.
+		25.0, //Gauss (No charge) - Default 19.
+		250.0, //Secondary Guass (Max Charge) - Default 190.
+		16.0, //Gluon (Egon) Gun - Default 12.
+		20.0, //Hornet Gun - Default 12.
 		150.0, //Hand Grenade - Default 100.
 		180.0, //Satchel - Default 160.
 		200.0, //Tripmine - Default 150.
-		130.0, //762 (Sniper Rifle) - Default 110.
+		140.0, //762 (Sniper Rifle) - Default 110.
 		120.0, //Spore Launcher - Default 100.
 		300.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
-		27.0, //Shockrifle (Primary) - Default 15.
+		30.0, //Shockrifle (Primary) - Default 15.
 		9.0, //Shockrifle (Beam) - Default 2 (x3? I think it does this damage per beam that connects).
 		350.0, //Shockrifle Touch damage (on self on detonate?) - Default 350.
 		150.0 //Shockroach Splash damage (on self when detonate?) - Default 150.
@@ -330,7 +330,7 @@ final class ForceDifficulty
 		8, // sk_hornet_dmg - Default 8
 		34, // sk_otis_bullet - Default 34
 		4, // sk_grunt_buckshot - Default 3
-		20 // sk_556_bullet - Default 12
+		24 // sk_556_bullet - Default 12
 	};
 
 
