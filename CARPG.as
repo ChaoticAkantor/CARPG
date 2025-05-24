@@ -93,7 +93,6 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_ShockRifleData.deleteAll();
     g_PlayerClassResources.deleteAll();
     
-
     ClearMinions(); // Clear all minions from the map.
     InitializeMapMultipliers(); // Re-apply map multipliers for ammo recovery.
     InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
