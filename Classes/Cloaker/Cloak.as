@@ -9,9 +9,10 @@ class CloakData
 {
     private bool m_bActive = false;
     private float m_flCloakEnergyCostPerShot = 100.0f; // Energy drain per shot.
+    private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
-    private float m_flBaseDrainRate = 1.0f; // Base drain rate when standing still.
-    private float m_flMovementDrainMultiplier = 2.0f; // How much more it drains when moving at max speed.
+    private float m_flBaseDrainRate = 5.0f; // Base drain rate when standing still.
+    private float m_flMovementDrainMultiplier = 1.5f; // How much more it drains when moving at max speed.
     private float m_flMaxMovementSpeed = 320.0f; // Maximum movement speed to scale drain against.
     private float m_flBaseDamageBonus = 1.0f;      // Base % damage increase.
     private float m_flDamageBonusPerLevel = 0.02f;   // Bonus % per level.
@@ -155,7 +156,7 @@ class CloakData
         }
 
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastDrainTime >= 0.5f)
+        if(currentTime - m_flLastDrainTime >= m_flCloakEnergyDrainInterval) // Drain interval.
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerClassResources.exists(steamID))
