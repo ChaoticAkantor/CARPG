@@ -1,26 +1,25 @@
-float flMortarStrikeDelay = 3.0f;
-float flMortarStrikeEnergyCost = 100.0f;
-const float flMortarStrikeRange = 1024.0f;
-float flMortarStrikeDamage = 80.0f; // base damage of each explosion.
-float MORTAR_DAMAGE_SCALE = 0.20f; // 10% damage increase per level
-float flMortarStrikeDamageRadius = 512.0f;
-int iBaseNumExplosions = 10; // Base number of clusters.
-int iExplosionsScalingNum = 2; // Extra clusters per 5 levels.
-
-const string strMortarStrikeSetSound = "weapons/mine_deploy.wav";
-const string strMortarStrikeChargeSound = "weapons/mine_charge.wav";
-const string strMortarStrikeLaunchSound = "weapons/mortar.wav";
-const string strMortarStrikeAirSound = "weapons/mortar.wav";
-const string strMortarStrikeImpactSound = "weapons/mortarhit.wav";
-const string strMortarStrikeTargetSprite = "sprites/laserbeam.spr";
-const string strMortarStrikeImpactSprite = "sprites/zerogxplode.spr";
-const string strMortarStrikeSmokeSprite = "sprites/steam1.spr";
-const string strMortarStrikeGlowSprite = "sprites/glow01.spr";
+string strMortarStrikeSetSound = "weapons/mine_deploy.wav";
+string strMortarStrikeChargeSound = "weapons/mine_charge.wav";
+string strMortarStrikeLaunchSound = "weapons/mortar.wav";
+string strMortarStrikeAirSound = "weapons/mortar.wav";
+string strMortarStrikeImpactSound = "weapons/mortarhit.wav";
+string strMortarStrikeTargetSprite = "sprites/laserbeam.spr";
+string strMortarStrikeImpactSprite = "sprites/zerogxplode.spr";
+string strMortarStrikeSmokeSprite = "sprites/steam1.spr";
+string strMortarStrikeGlowSprite = "sprites/glow01.spr";
 
 dictionary g_PlayerMortarStrikes;
 
 class MortarStrikeData
-{
+{   
+    private float m_flMortarStrikeDelay = 3.0f;
+    private float m_flMortarStrikeEnergyCost = 100.0f;
+    private float m_flMortarStrikeRange = 1024.0f;
+    private float m_flMortarStrikeBaseDamage = 25.0f; // Base damage of each explosion.
+    private float m_flMortarStrikeDamageScale = 0.1f; // % Damage increase per level.
+    private float m_flMortarStrikeDamageRadius = 512.0f; // Damage radius of each explosion.
+    int m_iMortarStrikeBaseExplosions = 3; // Base number of clusters.
+    int m_iMortarStrikeExplosionsScaling = 2; // Extra clusters per 2 levels.
     private float m_flCooldown = 2.0f;
     private float m_flLastUseTime = 0.0f;
     private ClassStats@ m_pStats = null;
@@ -65,9 +64,9 @@ class MortarStrikeData
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamId]);
         float current = float(resources['current']);
         
-        if(current < flMortarStrikeEnergyCost)
+        if(current < m_flMortarStrikeEnergyCost)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough energy for Mortar Strike!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Mortar Strike recharging...\n");
             return;
         }
         
@@ -75,7 +74,7 @@ class MortarStrikeData
         TraceResult tr;
         Vector vecSrc = pPlayer.EyePosition();
         Math.MakeVectors(pPlayer.pev.v_angle);
-        Vector vecEnd = vecSrc + g_Engine.v_forward * flMortarStrikeRange;
+        Vector vecEnd = vecSrc + g_Engine.v_forward * m_flMortarStrikeRange;
         
         g_Utility.TraceLine(vecSrc, vecEnd, dont_ignore_monsters, pPlayer.edict(), tr);
         
@@ -83,7 +82,7 @@ class MortarStrikeData
         if(tr.pHit !is null && tr.flFraction < 1.0 && tr.vecPlaneNormal.z >= 0.7)
         {
             // Take energy using resource system
-            current -= flMortarStrikeEnergyCost;
+            current -= m_flMortarStrikeEnergyCost;
             resources['current'] = current;
             
             // Start cooldown
@@ -97,7 +96,7 @@ class MortarStrikeData
             g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strMortarStrikeChargeSound, 1.0, ATTN_NORM, 0, PITCH_NORM);
         
             // Schedule explosion - using method reference from within class
-            g_Scheduler.SetTimeout(this, "MortarImpact", flMortarStrikeDelay, tr.vecEndPos, @pPlayer);
+            g_Scheduler.SetTimeout(this, "MortarImpact", m_flMortarStrikeDelay, tr.vecEndPos, @pPlayer);
             
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Mortar strike incoming!\n");
         }
@@ -120,7 +119,7 @@ class MortarStrikeData
             targetMsg.WriteShort(g_EngineFuncs.ModelIndex(strMortarStrikeTargetSprite));
             targetMsg.WriteByte(0);
             targetMsg.WriteByte(0);
-            targetMsg.WriteByte(int(flMortarStrikeDelay * 5.0));
+            targetMsg.WriteByte(int(m_flMortarStrikeDelay * 5.0));
             targetMsg.WriteByte(64);
             targetMsg.WriteByte(0);
             targetMsg.WriteByte(255);
@@ -149,7 +148,7 @@ class MortarStrikeData
         
         // Create main explosion
         CreateExplosionEffect(position);
-        g_WeaponFuncs.RadiusDamage(position, pAttacker.pev, pAttacker.pev, scaledDamage, flMortarStrikeDamageRadius, CLASS_PLAYER, DMG_BLAST);
+        g_WeaponFuncs.RadiusDamage(position, pAttacker.pev, pAttacker.pev, scaledDamage, m_flMortarStrikeDamageRadius, CLASS_PLAYER, DMG_BLAST);
         
         // Schedule scattered explosions
         for(int i = 0; i < numExplosions - 1; i++)
@@ -181,15 +180,15 @@ class MortarStrikeData
     private int GetScaledExplosions()
     {
         if(m_pStats is null)
-            return iBaseNumExplosions;
+            return m_iMortarStrikeBaseExplosions;
             
-        return iBaseNumExplosions + (m_pStats.GetLevel() / 5 * iExplosionsScalingNum);
+        return m_iMortarStrikeBaseExplosions + (m_pStats.GetLevel() / 2 * m_iMortarStrikeExplosionsScaling);
     }
 
     private void CreateDelayedExplosion(Vector position, CBasePlayer@ pAttacker, float damage)
     {  
         CreateExplosionEffect(position);
-        g_WeaponFuncs.RadiusDamage(position, pAttacker.pev, pAttacker.pev, damage, flMortarStrikeDamageRadius, CLASS_PLAYER, DMG_BLAST);
+        g_WeaponFuncs.RadiusDamage(position, pAttacker.pev, pAttacker.pev, damage, m_flMortarStrikeDamageRadius, CLASS_PLAYER, DMG_BLAST);
         CreateAfterEffect(position);
     }
 
@@ -210,9 +209,9 @@ class MortarStrikeData
     private float GetScaledDamage()
     {
         if(m_pStats is null)
-            return flMortarStrikeDamage;
+            return m_flMortarStrikeBaseDamage;
             
-        float scaledDamage = flMortarStrikeDamage * (1.0f + (m_pStats.GetLevel() * MORTAR_DAMAGE_SCALE));
+        float scaledDamage = m_flMortarStrikeBaseDamage * (1.0f + (m_pStats.GetLevel() * m_flMortarDamageScale));
         return scaledDamage;
     }
 
