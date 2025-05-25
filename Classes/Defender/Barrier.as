@@ -1,7 +1,7 @@
 string strBarrierToggleSound = "debris/glass2.wav";
 string strBarrierHitSound = "debris/glass1.wav";
 string strBarrierBreakSound = "debris/impact_glass.wav";
-
+string strBarrierActiveSound = "ambience/alien_powernode.wav";
 
 const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B
 
@@ -11,7 +11,6 @@ class BarrierData
 {
     private bool m_bActive = false;
     private float m_flBaseDamageReduction = 1.00f; // Base damage reduction.
-    private float m_flEnergyDrainPerSecond = 0.0f; // Energy drain per second while active.
     private float m_flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
     private float m_flBarrierDamageToEnergyMult = 0.25f; // Damage taken to energy drain factor. % damage dealt to shield, lower = better.
     private float m_flLastDrainTime = 0.0f;
@@ -19,6 +18,12 @@ class BarrierData
     private ClassStats@ m_pStats = null;
     private float m_flNextGlowUpdate = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
+
+    private float m_flRefundAmount = 0.0f;
+    private float m_flRefundTimeLeft = 0.0f;
+    private float m_flStoredEnergy = 0.0f;
+    private float REFUND_TIME = 5.0f;
+    private float REFUND_INTERVAL = 1.0f; // 1 tick per second.
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
@@ -60,14 +65,18 @@ class BarrierData
             m_flLastDrainTime = currentTime;
             ApplyGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield On!\n");
         }
         else
         {
-            // Deactivate.
+            StartResourceRefund(pPlayer); // Start refund.
+
+            // Deactivate Manually.
             m_bActive = false;
             RemoveGlow(pPlayer);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n");
             EffectBarrierShatter(pPlayer.pev.origin);
         }
@@ -97,15 +106,16 @@ class BarrierData
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
         if(!g_PlayerClassResources.exists(steamID))
             return;
-        
+    
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
         float currentEnergy = float(resources['current']);
-        
         float currentTime = g_Engine.time;
+
+        // Handle normal drain.
         if(currentTime - m_flLastDrainTime >= 1.0f)
         {
             // Drain energy every second.
-            float newEnergy = currentEnergy - m_flEnergyDrainPerSecond;
+            float newEnergy = currentEnergy;
             
             if(newEnergy <= 0)
             {
@@ -135,7 +145,7 @@ class BarrierData
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
         float current = float(resources['current']);
         
-        // Drain energy proportional to damage blocked
+        // Drain energy proportional to damage blocked.
         float energyCost = (blockedDamage * m_flBarrierDamageToEnergyMult); // Damage taken to energy drain scale factor.
         current -= energyCost;
         
@@ -154,6 +164,7 @@ class BarrierData
         {
             m_bActive = false;
             RemoveGlow(pPlayer);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP); // Stop looping sound here too.
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n");
             EffectBarrierShatter(pPlayer.pev.origin);
@@ -225,4 +236,34 @@ class BarrierData
             breakMsg.End();
     }
 
+    void StartResourceRefund(CBasePlayer@ pPlayer)
+    {
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(!g_PlayerClassResources.exists(steamID))
+            return;
+            
+        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        m_flRefundAmount = float(resources['current']); // Store current energy
+        resources['current'] = 0; // Empty energy
+        
+        if(m_flRefundAmount > 0)
+        {
+            float refundPerTick = m_flRefundAmount / (REFUND_TIME/REFUND_INTERVAL);
+            g_Scheduler.SetInterval("BarrierRefund", REFUND_INTERVAL, int(REFUND_TIME/REFUND_INTERVAL), steamID, refundPerTick);
+        }
+    }
+}
+
+void BarrierRefund(string steamID, float refundAmount)
+{
+    if(!g_PlayerClassResources.exists(steamID))
+        return;
+        
+    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+    if(resources !is null)
+    {
+        float current = float(resources['current']);
+        float maxEnergy = float(resources['max']);
+        resources['current'] = Math.min(current + refundAmount, maxEnergy);
+    }
 }
