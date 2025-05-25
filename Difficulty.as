@@ -59,12 +59,12 @@ final class ForceDifficulty
 	{
 		10.0, //Medkit - Default 10.
 		20.0, //Crowbar - Default 15.
-		27.0, //Wrench - Default 22.
+		25.0, //Wrench - Default 22.
 		45.0, //Grapple (Barnacle) - Default 40.
-		15.0, //Handgun (9mm Handgun) - Default 12.
-		72.0, //357 (Deagle is 2/3 of this) - Default 66.
-		13.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
-		13.0, //MP5 (9mm AR) - Default 8.
+		14.0, //Handgun (9mm Handgun) - Default 12.
+		70.0, //357 (Deagle is 2/3 of this) - Default 66.
+		12.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
+		12.0, //MP5 (9mm AR) - Default 8.
 		12.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
 		70.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
 		18.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
