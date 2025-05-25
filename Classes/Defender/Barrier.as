@@ -248,8 +248,8 @@ class BarrierData
         
         if(m_flRefundAmount > 0)
         {
-            float refundPerTick = m_flRefundAmount / (REFUND_TIME/REFUND_INTERVAL);
-            g_Scheduler.SetInterval("BarrierRefund", REFUND_INTERVAL, int(REFUND_TIME/REFUND_INTERVAL), steamID, refundPerTick);
+            float refundPerTick = m_flRefundAmount / REFUND_TIME;
+            g_Scheduler.SetInterval("BarrierRefund", REFUND_INTERVAL, int(REFUND_TIME), steamID, refundPerTick);
         }
     }
 }
