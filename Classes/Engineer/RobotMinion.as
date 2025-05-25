@@ -63,8 +63,8 @@ class MinionData
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
-    private float m_flHealthScale = 0.12; // Health % scaling per level. Less than Xeno as they have armor.
-    private float m_flDamageScale = 0.03; // Damage % scaling per level. Less than Xeno as they are purely ranged and much more effective.
+    private float m_flHealthScale = 0.10; // Health % scaling per level. Robogrunts have natural armor!
+    private float m_flDamageScale = 0.03; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Cost to summon 1 minion. Init.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -157,7 +157,7 @@ class MinionData
         
         dictionary keys;
         keys["origin"] = vecSrc.ToString();
-        keys["angles"] = Vector(0, pPlayer.pev.v_angle.y, 0).ToString();
+        keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
         keys["targetname"] = "_minion_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s " + MINION_NAMES[minionType];
         keys["weapons"] = "" + (minionType == 0 ? MINION_MP5 : 
