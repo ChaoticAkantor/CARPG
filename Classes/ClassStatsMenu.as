@@ -61,8 +61,8 @@ namespace Menu
                     if(minion !is null)
                     {
                         m_pMenu.AddItem("=== Engineer Stats: ===" + "\n" + 
-                        "Robot Minions Health: " + int(minion.GetScaledHealth()) + "HP\n" + 
-                        "Robot Minions Damage: +" + int(minion.GetScaledDamage() * 100) + "% DMG\n\n", null);
+                        "Robot Minions Health: " + int(minion.GetScaledHealth()) + "\n" + 
+                        "Robot Minions Damage: +" + int(minion.GetScaledDamage() * 100) + "%\n\n", null);
                     }
                     break;
                 }
