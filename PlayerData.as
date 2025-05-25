@@ -105,27 +105,27 @@ void InitializeClassDefinitions() // Initialize class definitions.
             {
                 case PlayerClass::CLASS_MEDIC:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.2f;
+                    def.energyRegenPerLevel = 0.25f;
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
                     def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
-                    def.energyRegenPerLevel = 0.05f;
+                    def.energyRegenPerLevel = 0.02f;
                     break;
 
                 case PlayerClass::CLASS_XENOLOGIST:
                     def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
-                    def.energyRegenPerLevel = 0.05f;
+                    def.energyRegenPerLevel = 0.02f;
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.24f;
+                    def.energyRegenPerLevel = 0.25f;
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.28f;
+                    def.energyRegenPerLevel = 0.3f;
                     break;
 
                 case PlayerClass::CLASS_SHOCKTROOPER:
@@ -135,7 +135,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
 
                 case PlayerClass::CLASS_CLOAKER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.28f;
+                    def.energyRegenPerLevel = 0.3f;
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
