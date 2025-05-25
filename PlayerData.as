@@ -105,42 +105,42 @@ void InitializeClassDefinitions() // Initialize class definitions.
             {
                 case PlayerClass::CLASS_MEDIC:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.1f; // 500% at max level.
+                    def.energyRegenPerLevel = 0.12f;
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
                     def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
-                    def.energyRegenPerLevel = 0.05f; // 250% regen at max level.
+                    def.energyRegenPerLevel = 0.05f;
                     break;
 
                 case PlayerClass::CLASS_XENOLOGIST:
                     def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
-                    def.energyRegenPerLevel = 0.05f; // 250% regen at max level.
+                    def.energyRegenPerLevel = 0.05f;
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.1f; // 500% regen at max level.
+                    def.energyRegenPerLevel = 0.15f;
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.1f; // 500% regen at max level.
+                    def.energyRegenPerLevel = 0.12f;
                     break;
 
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.08f; // 400% regen at max level.
+                    def.energyRegenPerLevel = 0.08f;
                     break;
 
                 case PlayerClass::CLASS_CLOAKER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.1f; // 500% regen at max level.
+                    def.energyRegenPerLevel = 0.15f;
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.05f; // 250% regen at max level.
+                    def.energyRegenPerLevel = 0.08f;
                     break;
             }
             
