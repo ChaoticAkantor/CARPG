@@ -101,8 +101,8 @@ const array<int> XEN_COSTS =
 const array<float> XEN_HEALTH_MODS = 
 {
     1.0f,    // Pitdrone.
-    1.25f,    // Gonome.
-    1.5f     // Alien Grunt.
+    1.15f,    // Gonome. 15% more health.
+    1.30f     // Alien Grunt. 30% more health.
 };
 
 class XenMinionData
@@ -112,8 +112,8 @@ class XenMinionData
     private array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0;
-    private float m_flHealthScale = 0.12; // Health % scaling per level. Higher for Xenologist.
-    private float m_flDamageScale = 0.03; // Damage % scaling per level. Lower for Xenologist.
+    private float m_flHealthScale = 0.10; // Health % scaling per level.
+    private float m_flDamageScale = 0.08; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -216,7 +216,7 @@ class XenMinionData
         keys["targetname"] = "_xenminion_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s " + XEN_NAMES[minionType];
         keys["health"] = string(scaledHealth);
-        keys["scale"] = "1.0";
+        keys["scale"] = "0.75"; 
         keys["friendly"] = "1";
         keys["spawnflag"] = "32"; // SF_MONSTER_FRIENDLY (32)
         keys["is_player_ally"] = "1";
@@ -224,9 +224,15 @@ class XenMinionData
         CBaseEntity@ pNewMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
         if(pNewMinion !is null)
         {
+            // Make them glow green.
+            pNewMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
+            pNewMinion.pev.rendermode = kRenderNormal; // Render mode.
+            pNewMinion.pev.renderamt = 3; // Shell thickness.
+            pNewMinion.pev.rendercolor = Vector(0, 255, 0); // Green.
+
             g_EntityFuncs.DispatchSpawn(pNewMinion.edict());
             m_hMinions.insertLast(EHandle(pNewMinion));
-            m_CreatureTypes.insertLast(minionType); // Store type alongside handle
+            m_CreatureTypes.insertLast(minionType); // Store type alongside handle.
             m_bActive = true;
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strXenMinionSoundCreate, 1.0f, ATTN_NORM);

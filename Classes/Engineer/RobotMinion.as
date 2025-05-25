@@ -63,8 +63,8 @@ class MinionData
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
-    private float m_flHealthScale = 0.10; // Health % scaling per level. Robogrunts have natural armor!
-    private float m_flDamageScale = 0.03; // Damage % scaling per level.
+    private float m_flHealthScale = 0.06; // Health % scaling per level. Robogrunts have natural armor and don't get health increases per tier like Xeno.
+    private float m_flDamageScale = 0.08; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Cost to summon 1 minion. Init.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -128,7 +128,7 @@ class MinionData
         // Check resources for spawning new minion.
         if(current < MINION_COSTS[minionType])
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough energy for " + MINION_NAMES[minionType] + "!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough reserve for " + MINION_NAMES[minionType] + "!\n");
             return;
         }
 
@@ -164,8 +164,8 @@ class MinionData
                                minionType == 1 ? MINION_SHOTGUN : 
                                MINION_M16);
         keys["health"] = string(scaledHealth);
-        keys["dmg"] = string(scaledDamage); // This method doesn't seem to work. Could be logic error.
-        keys["scale"] = "1.0";
+        keys["dmg"] = string(scaledDamage); // This method doesn't seem to work.
+        keys["scale"] = "0.75"; // Make them slightly smaller to reduce blocking.
         keys["friendly"] = "1";
         keys["spawnflag"] = "32";
         keys["is_player_ally"] = "1";
@@ -174,12 +174,17 @@ class MinionData
         CBaseEntity@ pNewMinion = g_EntityFuncs.CreateEntity("monster_robogrunt", keys, true);
         if(pNewMinion !is null)
         {
-            g_EntityFuncs.DispatchSpawn(pNewMinion.edict());
-            m_hMinions.insertLast(EHandle(pNewMinion));
-            m_bActive = true;
+            // Make them glow green.
+            pNewMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
+            pNewMinion.pev.rendermode = kRenderNormal; // Render mode.
+            pNewMinion.pev.renderamt = 3; // Shell thickness.
+            pNewMinion.pev.rendercolor = Vector(0, 255, 0); // Green.
 
-            // Add to reserve pool when minion is created.
-            m_flReservePool += MINION_COSTS[minionType]; 
+            g_EntityFuncs.DispatchSpawn(pNewMinion.edict()); // Dispatch the entity.
+
+            m_hMinions.insertLast(EHandle(pNewMinion)); // Insert into handle.
+            m_bActive = true; // Set ability as "active".
+            m_flReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
             current -= MINION_COSTS[minionType]; // Subtract from current resources.
             resources['current'] = current;
 
@@ -336,8 +341,8 @@ class MinionData
             }
         }
 
-    g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundBeam, 1.0f, ATTN_NORM);
-    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robots teleported!\n");
+        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundBeam, 1.0f, ATTN_NORM);
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robots teleported!\n");
     }
 }
 
