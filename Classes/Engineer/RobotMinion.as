@@ -182,8 +182,9 @@ class MinionData
 
             g_EntityFuncs.DispatchSpawn(pNewMinion.edict()); // Dispatch the entity.
 
-            m_hMinions.insertLast(EHandle(pNewMinion)); // Insert into handle.
+            m_hMinions.insertLast(EHandle(pNewMinion)); //Insert into minion list.
             m_bActive = true; // Set ability as "active".
+            
             m_flReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
             current -= MINION_COSTS[minionType]; // Subtract from current resources.
             resources['current'] = current;

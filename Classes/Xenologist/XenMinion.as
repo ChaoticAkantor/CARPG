@@ -201,11 +201,6 @@ class XenMinionData
         vecSrc = vecSrc + (spawnForward * 64);
         vecSrc.z -= 32;
 
-        // Update individual reserve pool instead of global
-        m_flReservePool += XEN_COSTS[minionType];
-        current -= XEN_COSTS[minionType];
-        resources['current'] = current;
-
         // Keep existing health/damage multipliers
         float scaledHealth = GetScaledHealth(minionType);
         float scaledDamage = GetScaledDamage();
@@ -216,9 +211,9 @@ class XenMinionData
         keys["targetname"] = "_xenminion_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s " + XEN_NAMES[minionType];
         keys["health"] = string(scaledHealth);
-        keys["scale"] = "0.75"; 
+        keys["scale"] = "0.75"; // Make them slightly smaller to reduce blocking.
         keys["friendly"] = "1";
-        keys["spawnflag"] = "32"; // SF_MONSTER_FRIENDLY (32)
+        keys["spawnflag"] = "32";
         keys["is_player_ally"] = "1";
 
         CBaseEntity@ pNewMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
@@ -230,10 +225,14 @@ class XenMinionData
             pNewMinion.pev.renderamt = 3; // Shell thickness.
             pNewMinion.pev.rendercolor = Vector(0, 255, 0); // Green.
 
-            g_EntityFuncs.DispatchSpawn(pNewMinion.edict());
-            m_hMinions.insertLast(EHandle(pNewMinion));
+            g_EntityFuncs.DispatchSpawn(pNewMinion.edict()); // Dispatch the entity.
+            m_hMinions.insertLast(EHandle(pNewMinion)); // Insert into minion list.
             m_CreatureTypes.insertLast(minionType); // Store type alongside handle.
             m_bActive = true;
+
+            m_flReservePool += XEN_COSTS[minionType]; // Add to reserve pool when minion is created.
+            current -= XEN_COSTS[minionType]; // Subtract from current resources.
+            resources['current'] = current;
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, XEN_NAMES[minionType] + " summoned!\n");
