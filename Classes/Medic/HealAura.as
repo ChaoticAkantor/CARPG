@@ -43,11 +43,11 @@ void CheckHealAura()
 class HealingAura 
 {
     private bool m_bIsActive = false;
-    private float m_flRadius = 640.0f; // Radius of the aura.
-    private float m_flBaseHealAmount = 5.0f; // Base heal amount.
+    private float m_flRadius = 800.0f; // Radius of the aura.
+    private float m_flBaseHealAmount = 10.0f; // Base heal amount.
     private float m_flHealScaling = 0.05; // % per level scaling.
     private int m_iDrainAmount = 5.0f; // Energy drain per interval.
-    private int m_iHealAuraDrainRevive = m_iDrainAmount * 10; // Energy drain per revival.
+    private int m_iHealAuraDrainRevive = m_iDrainAmount * 2; // Energy drain per revival.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
