@@ -14,43 +14,6 @@ ForceDifficulty g_ForceDifficulty;
 void ApplyDifficultySettings()
 {
     g_ForceDifficulty.ApplyDifficultySettings();
-	g_Scheduler.SetTimeout( "DisableAmmoRespawns", 0.5f ); // Add a small delay to ensure all entities have spawned
-}
-
-void DisableAmmoRespawns() // Force norespawn flag on all ammo entities in the map if enabled.
-{
-    const float flExcludeRadius = 512.0; // Radius around players to exclude ammo entities (attempt not to break maps with respawn rooms).
-    CBaseEntity@ ent = null;
-
-    while ( (@ent = g_EntityFuncs.FindEntityByClassname(ent, "ammo_*") ) !is null)
-    {
-        bool bExclude = false;
-
-        // Check distance to all players
-        for (int i = 1; i <= g_Engine.maxClients; ++i)
-        {
-            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-            if (pPlayer !is null && pPlayer.IsConnected())
-            {
-                float flDistance = (ent.pev.origin - pPlayer.pev.origin).Length();
-                if (flDistance <= flExcludeRadius)
-                {
-                    bExclude = true;
-                    break; // No need to check further players.
-                }
-            }
-        }
-
-        // Skip this entity if it's within the exclusion radius of a player.
-        if (bExclude)
-            continue;
-
-        // Remove respawn flag if it exists.
-        if (ent.pev.spawnflags & SF_NORESPAWN == 0)
-        {
-            ent.pev.spawnflags |= SF_NORESPAWN;
-        }
-    }
 }
 
 final class ForceDifficulty
