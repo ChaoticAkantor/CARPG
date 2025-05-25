@@ -36,8 +36,8 @@ namespace Menu
             float energyRegen = resources !is null ? float(resources['regen']) : g_flBaseResourceRegen;
 
             m_pMenu.AddItem("=== Basic Stats: ===" + "\n" +
-            "Max Health: " + pPlayer.pev.max_health + " HP\n" + 
-            "Max Armor: " + pPlayer.pev.armortype + " AP\n" + 
+            "Max Health: " + int(pPlayer.pev.max_health) + " HP\n" + 
+            "Max Armor: " + int(pPlayer.pev.armortype) + " AP\n" + 
             "Max Energy: " + int(maxEnergy) + "\n" + 
             "Energy Regen: " + energyRegen + "/s\n", null);
     
