@@ -69,16 +69,16 @@ void InitializeAmmoRegen()
     
     // Initialize ammo types with current map multiplier
     g_AmmoTypes.insertLast(AmmoType("health", 1, 5, 100, true, 100));
-    g_AmmoTypes.insertLast(AmmoType("9mm", 2, 1, 300));
-    g_AmmoTypes.insertLast(AmmoType("buckshot", 16, 1, 125));
-    g_AmmoTypes.insertLast(AmmoType("357", 20, 1, 36));
-    g_AmmoTypes.insertLast(AmmoType("556", 3, 1, 600));
-    g_AmmoTypes.insertLast(AmmoType("m40a1", 25, 1, 25));
-    g_AmmoTypes.insertLast(AmmoType("bolts", 30, 1, 30));
+    g_AmmoTypes.insertLast(AmmoType("9mm", 1, 1, 300));
+    g_AmmoTypes.insertLast(AmmoType("buckshot", 12, 1, 125));
+    g_AmmoTypes.insertLast(AmmoType("357", 16, 1, 36));
+    g_AmmoTypes.insertLast(AmmoType("556", 2, 1, 600));
+    g_AmmoTypes.insertLast(AmmoType("m40a1", 20, 1, 25));
+    g_AmmoTypes.insertLast(AmmoType("bolts", 25, 1, 30));
     g_AmmoTypes.insertLast(AmmoType("sporeclip", 30, 1, 20));
     g_AmmoTypes.insertLast(AmmoType("hornets", 3, 1, 100));
     g_AmmoTypes.insertLast(AmmoType("shock charges", 3, 1, 100));
-    g_AmmoTypes.insertLast(AmmoType("uranium", 12, 1, 100));
+    g_AmmoTypes.insertLast(AmmoType("uranium", 10, 1, 100));
     
     // Threshold-based ammo types (explosives, etc).
     g_AmmoTypes.insertLast(AmmoType("hand grenade", 60, 1, 10, true, 1));
