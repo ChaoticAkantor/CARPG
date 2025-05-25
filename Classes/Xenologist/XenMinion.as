@@ -177,7 +177,7 @@ class XenMinionData
         // Check resources for spawning new minion.
         if(current < XEN_COSTS[minionType])
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough energy for " + XEN_NAMES[minionType] + "!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough reserve for " + XEN_NAMES[minionType] + "!\n");
             return;
         }
 
@@ -222,8 +222,8 @@ class XenMinionData
             // Make them glow green.
             pNewMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
             pNewMinion.pev.rendermode = kRenderNormal; // Render mode.
-            pNewMinion.pev.renderamt = 3; // Shell thickness.
-            pNewMinion.pev.rendercolor = Vector(0, 255, 0); // Green.
+            pNewMinion.pev.renderamt = 1; // Shell thickness.
+            pNewMinion.pev.rendercolor = Vector(25, 100, 25); // Green.
 
             g_EntityFuncs.DispatchSpawn(pNewMinion.edict()); // Dispatch the entity.
             m_hMinions.insertLast(EHandle(pNewMinion)); // Insert into minion list.
@@ -327,6 +327,64 @@ class XenMinionData
         m_bActive = false;
     }
 
+        void HealAllMinions(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null || !m_bActive)
+            return;
+
+        if(m_hMinions.length() == 0)
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Creatures to heal!\n");
+            return;
+        }
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(!g_PlayerClassResources.exists(steamID))
+            return;
+
+        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        float currentEnergy = float(resources['current']);
+
+        if(currentEnergy <= 0)
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No remaining reserve!\n");
+            return;
+        }
+
+        // Heal % of max health per energy point spent.
+        float healPercent = 0.05f; // % to heal per energy point spent.
+        int minionsHealed = 0; // Count how many minions were healed.
+
+        for(uint i = 0; i < m_hMinions.length(); i++)
+        {
+            CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
+            if(pMinion !is null)
+            {
+                float maxHealth = pMinion.pev.max_health;
+                float currentHealth = pMinion.pev.health;
+                
+                if(currentHealth < maxHealth)
+                {
+                    float healAmount = maxHealth * (healPercent * currentEnergy);
+                    pMinion.pev.health = Math.min(currentHealth + healAmount, maxHealth);
+                    minionsHealed++;
+                }
+            }
+        }
+
+        if(minionsHealed > 0)
+        {
+            // Consume all current energy
+            resources['current'] = 0;
+            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_ITEM, strPitdroneSoundEat, 1.0f, ATTN_NORM);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healed " + minionsHealed + " Creatures!\n");
+        }
+        else
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures at full health!\n");
+        }
+    }
+
     float GetScaledHealth(int creatureType = 0) // Default to Pitdrone health mod
     {
         if(m_pStats is null)
@@ -396,7 +454,7 @@ class XenMinionMenu
         if(pPlayer is null) return;
         
         @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
-        m_pMenu.SetTitle("Xen Creatures Control Menu\n");
+        m_pMenu.SetTitle("[Xen Creatures Control Menu]\n");
         
         for(uint i = 0; i < XEN_NAMES.length(); i++) 
         {
@@ -405,8 +463,9 @@ class XenMinionMenu
         
         if(m_pOwner.GetMinionCount() > 0) 
         {
-            m_pMenu.AddItem("Teleport Creatures\n", any(98));
-            m_pMenu.AddItem("Kill All Creatures\n", any(99));
+            m_pMenu.AddItem("Teleport All\n", any(98));
+            m_pMenu.AddItem("Heal All (Consumes all remaining Reserve)\n", any(97));
+            m_pMenu.AddItem("Kill All\n", any(99));
         }
         
         m_pMenu.Register();
@@ -429,6 +488,11 @@ class XenMinionMenu
             {
                 // Teleport existing minions.
                 m_pOwner.TeleportMinions(pPlayer);
+            }
+            else if(choice == 97)
+            {
+                // Heal all minions.
+                m_pOwner.HealAllMinions(pPlayer);
             }
             else if(choice >= 0 && uint(choice) < XEN_NAMES.length())
             {
