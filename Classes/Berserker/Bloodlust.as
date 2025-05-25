@@ -13,7 +13,7 @@ class BloodlustData
     private bool m_bActive = false;
     private float m_flBloodlustEnergyDrainInterval = 1.0f; // Interval to remove energy.
     private float m_flBloodlustEnergyCost = 5.0f; // Energy drain per interval.
-    private float m_flBaseDamageBonus = 0.25f; // Base damage increase at lowest health.
+    private float m_flBaseDamageBonus = 0.5f; // Base damage increase at lowest health.
     private float m_flDamageBonusPerLevel = 0.05f; // Bonus damage scaling per level.
     private float m_flBaseDamageLifesteal = 0.1f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
     private float m_flLifestealPerLevel = 0.08f; // % bonus lifesteal per level.
@@ -27,7 +27,8 @@ class BloodlustData
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
-    float GetEnergyCost() const { return m_flBloodlustEnergyCost; }
+    float GetEnergyCost() { return m_flBloodlustEnergyCost; }
+    float GetLowHPDMGBonus() { return (m_flDamageBonusPerLevel * m_pStats.GetLevel()) * 100; }
 
     float GetDamageBonus(CBasePlayer@ pPlayer)
     {
@@ -42,11 +43,13 @@ class BloodlustData
             bonus *= (1.0f + (level * m_flDamageBonusPerLevel));
         }
         
-        // Scale bonus based on missing health percentage.
-        float healthRatio = (pPlayer.pev.health / pPlayer.pev.max_health);
-        float missingHealthMult = (1.0f - healthRatio); // 0% at full health, 100% at 0 health.
+        // Calculate missing health percentage
+        float maxHealth = pPlayer.pev.max_health;
+        float missingHealth = maxHealth - pPlayer.pev.health;
+        float missingHealthPercent = (missingHealth / maxHealth) * 100.0f;
         
-        return bonus * missingHealthMult;
+        // Apply bonus per % of missing health (1:1 ratio).
+        return bonus * (missingHealthPercent / 100.0f);
     }
     
     void ToggleBloodlust(CBasePlayer@ pPlayer)
