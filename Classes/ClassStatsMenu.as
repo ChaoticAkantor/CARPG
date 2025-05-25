@@ -50,7 +50,7 @@ namespace Menu
                     {
                         m_pMenu.AddItem("=== Berserker Stats: ===" + "\n" + 
                         "Bloodlust Life Steal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
-                        "Bloodlust +DMG per 1% missing HP: " + int(bloodlust.GetDamageBonus(pPlayer) * 100) + "%\n" + 
+                        "Bloodlust Low HP Scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
                         "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + "/s\n\n", null);
                     }
                     break;
