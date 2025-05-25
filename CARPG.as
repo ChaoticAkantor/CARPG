@@ -49,8 +49,6 @@ void PluginInit()
     g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
     g_Module.ScriptInfo.SetContactInfo("None");
 
-    RemoveHooks(); // Remove Hooks.
-    RegisterHooks(); // Re-register Hooks.
     PluginReset(); // Call a full reset whenever plugin is initialised or reloaded.
 }
 
@@ -58,7 +56,6 @@ void MapInit() // When a new map is started, all scripts are initialized by call
 {
     PrecacheAll(); // Precache our models, sounds and sprites.
     PluginReset(); // Reset all plugin data when a new map is loaded.
-    UpdateMapMultiplier(); // Update map multipliers for ammo recovery.
 }
 
 void MapActivate() // Like MapInit, only called after all mapper placed entities have been activated and the sound list has been written.
@@ -82,6 +79,8 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
 {
     // Clear all dictionaries.
     g_Scheduler.ClearTimerList(); // Clear all timers.
+    RemoveHooks(); // Remove Hooks.
+    RegisterHooks(); // Re-register Hooks.
 
     g_PlayerRPGData.deleteAll();
     g_PlayerMinions.deleteAll(); // Clear Minion dictionary.
@@ -94,12 +93,10 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_ShockRifleData.deleteAll();
     g_PlayerClassResources.deleteAll();
     
-    ClearMinions(); // Clear all minions from the map.
-    InitializeMapMultipliers(); // Re-apply map multipliers for ammo recovery.
     InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
-    UpdateMapMultiplier(); // Re-apply map multipliers for ammo recovery update.
     SetupTimers(); // Re-setup timers.
     ApplyDifficultySettings(); // Re-apply difficulty settings.
+    ClearMinions(); // Clear all minions from the map.
 }
 
 void RegisterHooks()
