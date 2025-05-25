@@ -194,6 +194,7 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strBarrierToggleSound);
     g_SoundSystem.PrecacheSound(strBarrierHitSound);
     g_SoundSystem.PrecacheSound(strBarrierBreakSound);
+    g_SoundSystem.PrecacheSound(strBarrierActiveSound);
 
     // Cloaker Ability Precache.
     g_SoundSystem.PrecacheSound(strCloakActivateSound);

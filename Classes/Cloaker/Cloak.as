@@ -1,5 +1,5 @@
-const string strCloakActivateSound = "player/hud_nightvision.wav";
-const string strCloakActiveSound = "ambience/alien_twow.wav";
+string strCloakActivateSound = "player/hud_nightvision.wav";
+string strCloakActiveSound = "ambience/alien_twow.wav";
 
 const Vector CLOAK_COLOR = Vector(50, 50, 50); // R G B
 
