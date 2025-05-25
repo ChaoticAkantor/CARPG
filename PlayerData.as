@@ -597,8 +597,7 @@ class PlayerData
                                 if(stats !is null)
                                 {
                                     stats.AddXP(scoreDiff, pOtherPlayer, otherData);
-                                    g_PlayerFuncs.ClientPrint(pOtherPlayer, HUD_PRINTCONSOLE, 
-                                        "+" + scoreDiff + " XP\n");
+                                    //g_PlayerFuncs.ClientPrint(pOtherPlayer, HUD_PRINTCONSOLE, "+" + scoreDiff + " XP\n"); // Show gained XP.
                                 }
                             }
                         }
