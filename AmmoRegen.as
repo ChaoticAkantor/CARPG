@@ -36,9 +36,40 @@ class AmmoType
 
 array<AmmoType@> g_AmmoTypes; // Store all ammo types in an array.
 
-void InitializeAmmoRegen() // Initialize all ammo types at startup.
+void InitializeAmmoRegen() 
 {
-    // Regular ammo types.
+    // Clear existing ammo types first
+    g_AmmoTypes.resize(0);
+
+    // Balance ammo regeneration seperately for different map series by mulitplying the timer values.
+    g_MapPrefixMultipliers["sc"] = 1.0f;    // Sven Co-op maps.
+    g_MapPrefixMultipliers["th"] = 4.0f;    // They Hunger.
+    g_MapPrefixMultipliers["aom"] = 4.0f;   // Afraid of Monsters Classic.
+    g_MapPrefixMultipliers["aomdc"] = 4.0f; // Afraid of Monsters Directors-Cut.
+    g_MapPrefixMultipliers["hl"] = 2.0f;    // Half-Life Campaign.
+    g_MapPrefixMultipliers["of"] = 2.0f;    // Opposing-Force Campaign.
+    g_MapPrefixMultipliers["bs"] = 2.0f;    // Blue-Shift Campaign.
+    // Add more prefixes as needed.
+
+    // Update map multiplier before creating ammo types
+    string mapName = string(g_Engine.mapname).ToLowercase();
+    g_CurrentMapMultiplier = 1.0f; // Default multiplier
+    
+    dictionary@ prefixes = g_MapPrefixMultipliers;
+    array<string>@ prefixKeys = prefixes.getKeys();
+    
+    for(uint i = 0; i < prefixKeys.length(); i++)
+    {
+        string prefix = prefixKeys[i].ToLowercase();
+        if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix)
+        {
+            g_CurrentMapMultiplier = float(prefixes[prefixKeys[i]]);
+            g_Game.AlertMessage(at_console, "=== CARPG: ===\nMap prefix - '" + prefixKeys[i] + "' detected. Ammo regen multiplier set to " + g_CurrentMapMultiplier + "x.\n=== CARPG ===\n");
+            break;
+        }
+    }
+    
+    // Initialize ammo types with current map multiplier
     g_AmmoTypes.insertLast(AmmoType("health", 1, 5, 100, true, 100));
     g_AmmoTypes.insertLast(AmmoType("9mm", 2, 1, 300));
     g_AmmoTypes.insertLast(AmmoType("buckshot", 15, 1, 125));
@@ -238,38 +269,5 @@ void AdjustAmmoDelay(array<AmmoType@>@ playerAmmoTypes, string ammoName, int bas
     if(ammoType !is null) {
         int newDelay = Math.max(1, baseDelay - int(classLevel * reductionFactor));
         ammoType.delay = newDelay;
-    }
-}
-
-void InitializeMapMultipliers()
-{
-    // Balance ammo regeneration seperately for different map series by mulitplying the timer values.
-    g_MapPrefixMultipliers["sc"] = 1.0f;    // Sven Co-op maps.
-    g_MapPrefixMultipliers["th"] = 4.0f;    // They Hunger.
-    g_MapPrefixMultipliers["aom"] = 4.0f;   // Afraid of Monsters Classic.
-    g_MapPrefixMultipliers["aomdc"] = 4.0f; // Afraid of Monsters Directors-Cut.
-    g_MapPrefixMultipliers["hl"] = 2.0f;    // Half-Life Campaign.
-    g_MapPrefixMultipliers["of"] = 2.0f;    // Opposing-Force Campaign.
-    g_MapPrefixMultipliers["bs"] = 2.0f;    // Blue-Shift Campaign.
-    // Add more prefixes as needed
-}
-
-void UpdateMapMultiplier()
-{
-    string mapName = string(g_Engine.mapname).ToLowercase();
-    g_CurrentMapMultiplier = 1.0f; // Default multiplier.
-    
-    dictionary@ prefixes = g_MapPrefixMultipliers;
-    array<string>@ prefixKeys = prefixes.getKeys();
-    
-    for(uint i = 0; i < prefixKeys.length(); i++)
-    {
-        string prefix = prefixKeys[i].ToLowercase();
-        if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix) // Check if map name starts with this prefix.
-        {
-            g_CurrentMapMultiplier = float(prefixes[prefixKeys[i]]);
-            g_Game.AlertMessage(at_console, "=== CARPG: ===\n Map prefix - '" + prefixKeys[i] + "' detected. Ammo regen multiplier set to " + g_CurrentMapMultiplier + "x.\n=== CARPG ===\n");
-            break;
-        }
     }
 }
