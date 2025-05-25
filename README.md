@@ -42,9 +42,9 @@ Always gets a pipewrench, can hit them with the wrench to heal them. Can potenti
 Can summon friendly Xen Creatures based on maximum bio reserve via a menu. 
 Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. 
 They can be also be killed or teleported from the menu. 
-Teleporting pulls them around you in a circle and updates their HP from any gained levels. 
-Manually killing them does not refund any cost, only reserve.
-All three minion types should attempt to eat other dead creatures to regain their lost health.
+Teleporting pulls them around you in a circle. 
+Manually killing them does not refund any cost, only restores reserve.
+All three minion types should attempt to eat dead enemies to regain their lost health when not in combat.
 Their health and damage scales with level.
 Any XP (frags/score) they gain is sent to you instead.
 Can be healed with medkit. Can be revived.
