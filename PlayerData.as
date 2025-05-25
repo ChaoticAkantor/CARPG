@@ -154,8 +154,8 @@ class ClassStats
     private int m_iLevel = 1;
     private int m_iXP = 0;
     private int m_iCurrentLevelXP = 0;
-    private int XP_BASE = 2;          // Base XP for calculation.
-    private int XP_MULTIPLIER = 10;     // Exponential growth factor. How much increase extra per level up.
+    private int XP_BASE = 50;          // Base XP for calculation.
+    private int XP_MULTIPLIER = 4;     // Exponential growth factor. How much increase extra per level up.
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
     
@@ -218,9 +218,8 @@ class ClassStats
                 if(pPlayer !is null && playerData !is null)
                 {
                     string className = playerData.GetClassName(playerData.GetCurrentClass());
-                    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG] " + pPlayer.pev.netname + 
-                        " (" + className + ") has reached Level " + m_iLevel + "!\n");
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Your (" + className + ") is now Level " + m_iLevel + "!\n");
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
                     NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
                     message.WriteByte(TE_PARTICLEBURST);
@@ -267,9 +266,8 @@ class ClassStats
                 if(pPlayer !is null)
                 {
                     string className = playerData.GetClassName(playerData.GetCurrentClass());
-                    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG] " + pPlayer.pev.netname + 
-                        " (" + className + ") has reached Level " + m_iLevel + "!\n");
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Your (" + className + ") is now Level " + m_iLevel + "!\n");
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
                     // Level up effect.
                     NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
