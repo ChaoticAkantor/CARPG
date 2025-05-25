@@ -59,8 +59,7 @@ Always has a Shockrifle available, can stow it to recharge Shock Charges (shockr
 
 # Cloaker - Stealthy Damage Dealer 
 Invisiblity cloak that gains a damage bonus based on the amount of energy you have, but drains a signifiant amount of energy per shot. 
-Becomes completely invisible to AI for the duration. 
-Cloak drains twice as fast whilst moving at max speed, crouching significantly reduces drain.
+Becomes completely invisible to AI for the duration.
 Has to fully recover between uses, but can be deactivated early to start recharging.
 
 # Stat Scaling/Leveling

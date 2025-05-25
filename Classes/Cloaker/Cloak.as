@@ -12,8 +12,6 @@ class CloakData
     private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 5.0f; // Base drain rate when standing still.
-    private float m_flMovementDrainMultiplier = 1.5f; // How much more it drains when moving at max speed.
-    private float m_flMaxMovementSpeed = 320.0f; // Maximum movement speed to scale drain against.
     private float m_flBaseDamageBonus = 1.0f;      // Base % damage increase.
     private float m_flDamageBonusPerLevel = 0.02f;   // Bonus % per level.
 
@@ -163,24 +161,11 @@ class CloakData
             {
                 dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
                 if(resources !is null)
-                {
-                    float finalDrain = m_flBaseDrainRate;  // Default to base drain when crouching, no matter the movement speed.
-                    
-                    // Only calculate movement drain if not crouching
-                    if((pPlayer.pev.flags & FL_DUCKING) == 0)
-                    {
-                        Vector velocity = pPlayer.pev.velocity;
-                        float speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-                        float speedRatio = Math.min(1.0f, speed / m_flMaxMovementSpeed);
-                        
-                        float drainMultiplier = 1.0f + (speedRatio * (m_flMovementDrainMultiplier - 1.0f));
-                        finalDrain = m_flBaseDrainRate * drainMultiplier;
-                    }
-                    
+                {      
                     // Apply drain and update last energy consumed for damage scaling.
                     float current = float(resources['current']);
                     m_flLastEnergyConsumed = current;
-                    current -= finalDrain;
+                    current -= m_flBaseDrainRate;
                     
                     if(current <= 0)
                     {
