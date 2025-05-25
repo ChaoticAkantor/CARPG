@@ -595,17 +595,17 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
                     // Apply damage type first
                     info.bitsDamageType |= DMG_SLOWBURN;
         
-                    // Get bloodlust data for damage bonus
+                    // Get bloodlust data for damage bonus.
                     if(g_PlayerBloodlusts.exists(steamID))
                     {
                         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                         if(bloodlust !is null)
                         {
-                            // Apply damage bonus based on missing health
+                            // Apply damage bonus based on missing health.
                             float damageBonus = bloodlust.GetDamageBonus(pAttacker);
                             info.flDamage *= (1.0f + damageBonus);
                             
-                            // Only process lifesteal if bloodlust is active
+                            // Only process lifesteal if bloodlust is active.
                             if(bloodlust.IsActive())
                             {
                                 bloodlust.ProcessLifesteal(pAttacker, info.flDamage);
