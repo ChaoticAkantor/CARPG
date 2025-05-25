@@ -42,18 +42,16 @@ void InitializeAmmoRegen()
     g_AmmoTypes.resize(0);
 
     // Balance ammo regeneration seperately for different map series by mulitplying the timer values.
-    g_MapPrefixMultipliers["sc"] = 1.0f;    // Sven Co-op maps.
-    g_MapPrefixMultipliers["th"] = 4.0f;    // They Hunger.
-    g_MapPrefixMultipliers["aom"] = 4.0f;   // Afraid of Monsters Classic.
-    g_MapPrefixMultipliers["aomdc"] = 4.0f; // Afraid of Monsters Directors-Cut.
-    g_MapPrefixMultipliers["hl"] = 2.0f;    // Half-Life Campaign.
-    g_MapPrefixMultipliers["of"] = 2.0f;    // Opposing-Force Campaign.
-    g_MapPrefixMultipliers["bs"] = 2.0f;    // Blue-Shift Campaign.
+    g_MapPrefixMultipliers["th"] = 5.0f;    // They Hunger.
+    g_MapPrefixMultipliers["aom"] = 5.0f;   // Afraid of Monsters Classic.
+    g_MapPrefixMultipliers["aomdc"] = 5.0f; // Afraid of Monsters Directors-Cut.
+    g_MapPrefixMultipliers["hl"] = 3.0f;    // Half-Life Campaign.
+    g_MapPrefixMultipliers["of"] = 3.0f;    // Opposing-Force Campaign.
+    g_MapPrefixMultipliers["bs"] = 3.0f;    // Blue-Shift Campaign.
     // Add more prefixes as needed.
 
-    // Update map multiplier before creating ammo types
-    string mapName = string(g_Engine.mapname).ToLowercase();
-    g_CurrentMapMultiplier = 1.0f; // Default multiplier
+    string mapName = string(g_Engine.mapname).ToLowercase(); // Update map multiplier before creating ammo types.
+    g_CurrentMapMultiplier = 1.0f; // Default multiplier.
     
     dictionary@ prefixes = g_MapPrefixMultipliers;
     array<string>@ prefixKeys = prefixes.getKeys();
@@ -72,14 +70,14 @@ void InitializeAmmoRegen()
     // Initialize ammo types with current map multiplier
     g_AmmoTypes.insertLast(AmmoType("health", 1, 5, 100, true, 100));
     g_AmmoTypes.insertLast(AmmoType("9mm", 2, 1, 300));
-    g_AmmoTypes.insertLast(AmmoType("buckshot", 15, 1, 125));
+    g_AmmoTypes.insertLast(AmmoType("buckshot", 16, 1, 125));
     g_AmmoTypes.insertLast(AmmoType("357", 20, 1, 36));
     g_AmmoTypes.insertLast(AmmoType("556", 3, 1, 600));
     g_AmmoTypes.insertLast(AmmoType("m40a1", 25, 1, 25));
     g_AmmoTypes.insertLast(AmmoType("bolts", 30, 1, 30));
     g_AmmoTypes.insertLast(AmmoType("sporeclip", 30, 1, 20));
     g_AmmoTypes.insertLast(AmmoType("hornets", 3, 1, 100));
-    g_AmmoTypes.insertLast(AmmoType("shock charges", 5, 1, 100));
+    g_AmmoTypes.insertLast(AmmoType("shock charges", 3, 1, 100));
     g_AmmoTypes.insertLast(AmmoType("uranium", 12, 1, 100));
     
     // Threshold-based ammo types (explosives, etc).
