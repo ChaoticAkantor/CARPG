@@ -49,13 +49,18 @@ Their health and damage scales with level.
 Any XP (frags/score) they gain is sent to you instead.
 Can be healed with medkit. Can be revived.
 
-# Warden - Ice Tank
-Has a toggleable Ice Shield that layers over health and armor that has it's own health pool. 
-Whilst active it absorbs all incoming damage until it shatters. 
-Has to fully recover between uses, but can be shattered early to start recovering.
+# Warden - Ice Shield Tank
+Can form an Ice Shield that layers over health and armor that has it's own health pool, making you functionally immortal against all damage types. Works best when used strategically to negate extreme burst damage such as fall damage and explosions.
+Whilst active it absorbs all incoming damage until it shatters, there is no bleed-through.
+Whilst active it will recover 50% slower.
+Has to fully recover between uses, but can be shattered early to start recovering at 100%.
+If shattered early, any remaining health will be refunded over 5s.
 
 # Shocktrooper - Power Weapon Damage Dealer
-Always has a Shockrifle available, can stow it to recharge Shock Charges (shockrifle ammo) using it's shockroach battery at an increased rate and max capacity. Can also stow picked up shock roaches in order to restore a large chunk of battery.
+Always has a Shockrifle available, can stow it to regain Battery charge, meaning picked up shock roaches can be consumed to restore a large chunk of battery.
+Damage of improved shockrifle scales with level.
+Battery Capacity increases with level, allowing you to use it for longer (plus base capacity).
+Has to fully recover between uses, but current ammo can be refunded if stowed early.
 
 # Cloaker - Stealthy Damage Dealer 
 Invisiblity cloak that gains a damage bonus based on the amount of energy you have, but drains a signifiant amount of energy per shot. 
