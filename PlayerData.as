@@ -154,7 +154,7 @@ class ClassStats
     private int m_iLevel = 1;
     private int m_iXP = 0;
     private int m_iCurrentLevelXP = 0;
-    private int XP_BASE = 50;          // Base XP for calculation.
+    private int XP_BASE = 25;          // Base XP for calculation.
     private int XP_MULTIPLIER = 2;     // Exponential growth factor. How much increase extra per level up.
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
