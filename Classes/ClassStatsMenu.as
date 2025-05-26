@@ -123,8 +123,8 @@ namespace Menu
                     if(shockRifle !is null)
                     {
                         string ShocktrooperStatsText = "=== Shocktrooper Stats: ===" + "\n" + 
-                            "Shockrifle Battery Capacity: " + int(maxEnergy) + "\n\n";
-                            //"Shockrifle Damage Bonus: " + int(shockRifle.GetScaledDamage() * 100) + "%\n\n";
+                            "Shockrifle Battery Capacity: " + int(maxEnergy) + " (+100 Base)\n" +
+                            "Shockrifle Damage Bonus: +" + int(shockRifle.GetScaledDamage() * 10) + "%\n\n";
 
                         m_pMenu.AddItem(ShocktrooperStatsText, null);
                     }
