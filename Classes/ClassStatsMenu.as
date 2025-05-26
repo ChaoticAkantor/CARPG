@@ -93,12 +93,12 @@ namespace Menu
                 }
                 case PlayerClass::CLASS_ENGINEER:
                 {
-                    MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
-                    if(minion !is null)
+                    MinionData@ roboMinion = cast<MinionData@>(g_PlayerMinions[steamID]);
+                    if(roboMinion !is null)
                     {
                         string EngineerStatsText = "=== Engineer Stats: ===" + "\n" + 
-                        "Robot Minions Health: " + int(minion.GetScaledHealth()) + "\n" + 
-                        "Robot Minions Damage: +" + int(minion.GetScaledDamage() * 100) + "%\n\n";
+                        "Robot Minions Health: " + int(roboMinion.GetScaledHealth()) + "\n" + 
+                        "Robot Minions Damage: +" + int(roboMinion.GetScaledDamage() * 100) + "%\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
@@ -123,8 +123,8 @@ namespace Menu
                     if(shockRifle !is null)
                     {
                         string ShocktrooperStatsText = "=== Shocktrooper Stats: ===" + "\n" + 
-                            "Shockrifle Battery Capacity: " + int(maxEnergy) + " (+100 Base)\n" +
-                            "Shockrifle Damage Bonus: +" + int(shockRifle.GetScaledDamage() * 10) + "%\n\n";
+                            "Shockrifle Battery Capacity: " + int(maxEnergy + 100) + "\n" +
+                            "Shockrifle Damage Bonus: +" + int((shockRifle.GetScaledDamage() - 1.0f) * 100) + "%\n\n";
 
                         m_pMenu.AddItem(ShocktrooperStatsText, null);
                     }
@@ -137,8 +137,8 @@ namespace Menu
                     {
                         string DefenderStatsText = "=== Defender Stats: ===" + "\n" + 
                             "Ice Shield Max Health: " + int(maxEnergy) + "\n" + 
-                            "Ice Shield Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" + 
-                            "Ice Shield Durability Modifier: " + int(barrier.GetDamageToEnergyMultiplier() * 1000) + "x\n\n";
+                            "Ice Shield Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
+                            "Energy Regeneration Whilst Active: 50%\n\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }
