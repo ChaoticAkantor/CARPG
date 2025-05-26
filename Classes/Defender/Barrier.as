@@ -21,7 +21,7 @@ class BarrierData
     private float m_flRefundAmount = 0.0f;
     private float m_flRefundTimeLeft = 0.0f;
     private float m_flStoredEnergy = 0.0f;
-    private float m_flRefundTime = 10.0f; // Time to refund energy, total / this.
+    private float m_flRefundTime = 5.0f; // Time to refund energy, total / this.
     private float m_flRefundInterval = 1.0f; // Intervals to give refunded energy.
 
     bool IsActive() { return m_bActive; }
