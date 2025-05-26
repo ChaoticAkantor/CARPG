@@ -1,6 +1,6 @@
 string strBarrierToggleSound = "debris/glass2.wav";
 string strBarrierHitSound = "debris/glass1.wav";
-string strBarrierBreakSound = "debris/impact_glass.wav";
+string strBarrierBreakSound = "debris/bustglass2.wav";
 string strBarrierActiveSound = "ambience/alien_powernode.wav";
 
 const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B
