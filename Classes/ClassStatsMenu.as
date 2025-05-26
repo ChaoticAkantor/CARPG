@@ -122,11 +122,11 @@ namespace Menu
                     ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
                     if(shockRifle !is null)
                     {
-                        //string ShocktrooperStatsText = "=== Shocktrooper Stats: ===" + "\n" + 
-                            //"Shockrifle Battery Capacity: " + int(maxEnergy) + "\n" +
+                        string ShocktrooperStatsText = "=== Shocktrooper Stats: ===" + "\n" + 
+                            "Shockrifle Battery Capacity: " + int(maxEnergy) + "\n\n";
                             //"Shockrifle Damage Bonus: " + int(shockRifle.GetScaledDamage() * 100) + "%\n\n";
 
-                        //m_pMenu.AddItem(ShocktrooperStatsText, null);
+                        m_pMenu.AddItem(ShocktrooperStatsText, null);
                     }
                     break;
                 }
