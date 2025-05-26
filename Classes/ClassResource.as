@@ -136,14 +136,20 @@ void RegenClassResource()
                 }
 
                 // Skip regen if any ability is active.
-                if(isAuraActive || isBarrierActive || hasActiveMinions || 
+                if(isAuraActive || hasActiveMinions || 
                    hasShockRifleEquipped || isBloodlustActive || isCloakActive)
                     continue;
 
-                // Normal regen logic
+                // Normal regen logic with special case for Defender
                 float current = float(resources['current']);
                 float maximum = float(resources['max']);
                 float regen = float(resources['regen']);
+
+                // Special case for Defender with active barrier. Regen at a reduced rate.
+                if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && isBarrierActive)
+                {
+                    regen *= 0.5f; // Half regeneration rate.
+                }
 
                 if(current < maximum)
                 {

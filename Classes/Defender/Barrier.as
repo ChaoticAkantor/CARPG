@@ -12,7 +12,7 @@ class BarrierData
     private bool m_bActive = false;
     private float m_flBaseDamageReduction = 1.00f; // Base damage reduction.
     private float m_flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
-    private float m_flBarrierDamageToEnergyMult = 0.25f; // Damage taken to energy drain factor. % damage dealt to shield, lower = better.
+    private float m_flBarrierDamageToEnergyMult = 1.0f; // Damage taken to energy drain factor. % damage dealt to shield, lower = tougher shield.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private ClassStats@ m_pStats = null;
