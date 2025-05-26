@@ -77,14 +77,13 @@ void MapStart() // Called after 0.1 seconds of game activity, this is used to si
 
 void PluginReset() // Used to reset anything important to the plugin on reload.
 {
-    // Clear all dictionaries.
     g_Scheduler.ClearTimerList(); // Clear all timers.
-    RemoveHooks(); // Remove Hooks.
-    RegisterHooks(); // Re-register Hooks.
+    //RemoveHooks(); // Remove Hooks.
 
+    // Clear all dictionaries.
     g_PlayerRPGData.deleteAll();
-    g_PlayerMinions.deleteAll(); // Clear Minion dictionary.
-    g_XenologistMinions.deleteAll(); // Clear Xenologist Minion dictionary.
+    g_PlayerMinions.deleteAll();
+    g_XenologistMinions.deleteAll();
     g_HealingAuras.deleteAll();
     g_PlayerBarriers.deleteAll();
     g_PlayerBloodlusts.deleteAll();
@@ -93,10 +92,10 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_ShockRifleData.deleteAll();
     g_PlayerClassResources.deleteAll();
     
+    RegisterHooks(); // Re-register Hooks.
     InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
     SetupTimers(); // Re-setup timers.
     ApplyDifficultySettings(); // Re-apply difficulty settings.
-    ClearMinions(); // Clear all minions from the map.
 }
 
 void RegisterHooks()
@@ -581,18 +580,20 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null)
         {
+            if(data.GetCurrentClassStats().GetLevel() >= 15) // Add blood poisoning to all classes at level 15.
+            {
+                info.bitsDamageType |= DMG_POISON;
+            }
+
+            // Then handle class-specific damage types
             switch(data.GetCurrentClass())
             {
                 case PlayerClass::CLASS_SHOCKTROOPER:
                 {
-                    info.bitsDamageType = DMG_SHOCK | DMG_SHOCK_GLOW; 
                     break;
                 }
                 case PlayerClass::CLASS_BERSERKER:
                 {
-                    // Apply damage type first
-                    info.bitsDamageType |= DMG_SLOWBURN;
-        
                     // Get bloodlust data for damage bonus.
                     if(g_PlayerBloodlusts.exists(steamID))
                     {
@@ -647,17 +648,17 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
                 }
                 case PlayerClass::CLASS_DEMOLITIONIST:
                 {
-                    info.bitsDamageType |= DMG_SLOWBURN; // Add Burning effect.
+
                     break;
                 }
                 case PlayerClass::CLASS_XENOLOGIST:
                 {
-                    info.bitsDamageType |= DMG_POISON; // Add Poison effect.
+
                     break;
                 }
                 case PlayerClass::CLASS_DEFENDER:
                 {
-                    info.bitsDamageType |= DMG_SLOWFREEZE | DMG_PARALYZE; // Add Freeze effect and paralyze.
+
                     break;
                 }
             }
