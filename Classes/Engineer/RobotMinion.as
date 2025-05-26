@@ -343,7 +343,7 @@ class MinionData
             // Consume all current energy
             resources['current'] = 0;
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_ITEM, strRobogruntSoundRepair, 1.0f, ATTN_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healed " + minionsHealed + " Robots!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healed all Robots!\n");
         }
         else
         {

@@ -377,7 +377,7 @@ class XenMinionData
             // Consume all current energy
             resources['current'] = 0;
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_ITEM, strPitdroneSoundEat, 1.0f, ATTN_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healed " + minionsHealed + " Creatures!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healed all Creatures!\n");
         }
         else
         {
