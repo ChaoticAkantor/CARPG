@@ -14,8 +14,8 @@ namespace Menu
             @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
             m_pMenu.SetTitle("Dev Debug Menu\n");
             
-            m_pMenu.AddItem("Give 50 XP\n", any(0));
-            m_pMenu.AddItem("Set to Max Level\n", any(1));
+            m_pMenu.AddItem("Add 100 XP\n", any(0));
+            m_pMenu.AddItem("Set Max Level\n", any(1));
             m_pMenu.AddItem("Reset Level\n", any(2));
             m_pMenu.AddItem("Fill Class Resource\n", any(3));
             m_pMenu.AddItem("Toggle God Mode\n", any(4));
@@ -42,12 +42,12 @@ namespace Menu
                     
                     if(choice == 0 && stats !is null)
                     {
-                        stats.AddXP(50, pPlayer, data);
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Added 50 XP to current class.\n");
+                        stats.AddXP(100, pPlayer, data);
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Added 100 XP to current class.\n");
                     }
                     else if(choice == 1 && stats !is null)
                     {
-                        stats.SetXP(99999999, pPlayer, data);
+                        stats.SetXP(99999999, pPlayer, data); // Add enough XP to reach max level.
                         stats.SetLevel(g_iMaxLevel); // Set level to max.
                         stats.UpdateCurrentLevelXP(); // Recalculate Needed XP.
                         data.CalculateStats(pPlayer); // Recalculate stats.
@@ -56,8 +56,8 @@ namespace Menu
                     }
                     else if(choice == 2 && stats !is null)
                     {
-                        stats.SetXP(0, pPlayer, data);
                         stats.SetLevel(1); // Set level to 1.
+                        stats.SetXP(0, pPlayer, data); // Set XP to 0.
                         stats.UpdateCurrentLevelXP(); // Recalculate Needed XP.
                         data.CalculateStats(pPlayer); // Recalculate stats.
                         data.SaveToFile(); // Save the changes.
