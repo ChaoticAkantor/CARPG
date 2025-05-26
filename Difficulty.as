@@ -44,8 +44,8 @@ final class ForceDifficulty
 		100.0, //Spore Launcher - Default 100.
 		300.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
-		16.0, //Shockrifle (Primary) - Default 15. Shocktrooper shockrifles scale with level.
-		4.0, //Shockrifle (Beam) - Default 2 per beam (x3). Shocktrooper shockrifles scale with level.
+		18.0, //Shockrifle (Primary) - Default 15. Shocktrooper shockrifles scale with level.
+		3.0, //Shockrifle (Beam) - Default 2 per beam (x3). Shocktrooper shockrifles scale with level.
 		350.0, //Shockrifle Touch damage (on self on detonate?) - Default 350.
 		150.0 //Shockroach Splash damage (on self when detonate?) - Default 150.
 	};
