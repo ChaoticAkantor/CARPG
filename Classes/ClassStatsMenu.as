@@ -64,19 +64,6 @@ namespace Menu
                     }
                     break;
                 }
-                {
-                    BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
-                    if(bloodlust !is null)
-                    {
-                        string BerserkerStatsText = "=== Berserker Stats: ===" + "\n" + 
-                        "Bloodlust Life Steal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
-                        "Bloodlust Low HP Scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
-                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + "/s\n\n";
-
-                        m_pMenu.AddItem(BerserkerStatsText, null);
-                    }
-                    break;
-                }
                 case PlayerClass::CLASS_BERSERKER:
                 {
                     BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
@@ -138,7 +125,7 @@ namespace Menu
                         string DefenderStatsText = "=== Defender Stats: ===" + "\n" + 
                             "Ice Shield Max Health: " + int(maxEnergy) + "\n" + 
                             "Ice Shield Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
-                            "Energy Regeneration Whilst Active: 50%\n\n";
+                            "Ice Shield Regen Whilst Active: " + (energyRegen * 0.5) + "/s\n\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }
