@@ -21,11 +21,13 @@ class BarrierData
     private float m_flRefundAmount = 0.0f;
     private float m_flRefundTimeLeft = 0.0f;
     private float m_flStoredEnergy = 0.0f;
-    private float REFUND_TIME = 10.0f; // Time to refund energy total in seconds.
-    private float REFUND_INTERVAL = 1.0f; // 1 tick per second.
+    private float m_flRefundTime = 10.0f; // Time to refund energy, total / this.
+    private float m_flRefundInterval = 1.0f; // Intervals to give refunded energy.
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
+    float GetBaseDamageReduction() { return m_flBaseDamageReduction; }
+    float GetDamageToEnergyMultiplier() { return m_flBarrierDamageToEnergyMult; }
     
     void Initialize(ClassStats@ stats)
     {
@@ -240,8 +242,8 @@ class BarrierData
         
         if(m_flRefundAmount > 0)
         {
-            float refundPerTick = m_flRefundAmount / REFUND_TIME;
-            g_Scheduler.SetInterval("BarrierRefund", REFUND_INTERVAL, int(REFUND_TIME), steamID, refundPerTick);
+            float refundPerTick = m_flRefundAmount / m_flRefundTime;
+            g_Scheduler.SetInterval("BarrierRefund", m_flRefundInterval, int(m_flRefundTime), steamID, refundPerTick);
         }
     }
 }

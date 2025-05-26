@@ -33,6 +33,7 @@ class ExplosiveRoundsData
     bool HasStats() { return m_pStats !is null; }
     bool HasRounds() { return m_flRoundsInPool > 0; }
     float GetRounds() { return m_flRoundsInPool; }
+    float GetEnergyCost() { return m_flEnergyCostPerActivation; }
     void ResetRounds() { m_flRoundsInPool = 0; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 

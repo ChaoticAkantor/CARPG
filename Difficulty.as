@@ -26,11 +26,11 @@ final class ForceDifficulty
 		45.0, //Grapple (Barnacle) - Default 40.
 		14.0, //Handgun (9mm Handgun) - Default 12.
 		70.0, //357 (Deagle is 2/3 of this) - Default 66.
-		12.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
-		12.0, //MP5 (9mm AR) - Default 8.
+		13.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
+		13.0, //MP5 (9mm AR) - Default 8.
 		12.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
 		70.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
-		18.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
+		20.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
 		150.0, //M203 (ARgrenades) - Default 100.
 		200.0, //RPG - Default 150.
 		22.0, //Gauss (No charge) - Default 19.
@@ -293,7 +293,7 @@ final class ForceDifficulty
 		8, // sk_hornet_dmg - Default 8
 		34, // sk_otis_bullet - Default 34
 		4, // sk_grunt_buckshot - Default 3
-		18 // sk_556_bullet - Default 12
+		20 // sk_556_bullet - Default 12
 	};
 
 

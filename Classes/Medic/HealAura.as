@@ -67,6 +67,9 @@ class HealingAura
 
     bool IsActive() { return m_bIsActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    float GetHealingRadius() { return m_flRadius; }
+    float GetEnergyCost() { return m_iDrainAmount; }
+    float GetEnergyCostRevive() { return m_iHealAuraDrainRevive; }
 
     float GetScaledHealAmount()
     {

@@ -8,7 +8,7 @@ dictionary g_PlayerCloaks;
 class CloakData
 {
     private bool m_bActive = false;
-    private float m_flCloakEnergyCostPerShot = 100.0f; // Energy drain per shot.
+    private float m_flCloakEnergyCostPerShot = 50.0f; // Energy drain per shot.
     private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 5.0f; // Base drain rate when standing still.
@@ -22,6 +22,9 @@ class CloakData
 
     bool IsActive() { return m_bActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    float GetDamageBonus() { return m_flBaseDamageBonus * (1.0f + m_pStats.GetLevel() * m_flDamageBonusPerLevel); }
+    float GetEnergyCost () { return m_flBaseDrainRate; }
+    float GetEnergyCostPerShot() { return m_flCloakEnergyCostPerShot; }
 
     float GetDamageMultiplier(CBasePlayer@ pPlayer)
     {
