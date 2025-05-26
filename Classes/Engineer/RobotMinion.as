@@ -364,7 +364,7 @@ class MinionData
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
     {
         if(m_pStats is null)
-            return 0.0f; // Technically should never be zero, but is always null when we have no minions.
+            return 1.0f; // Technically should never be null, but would always be null when we have no minions.
 
         float level = m_pStats.GetLevel();
         float flScaledDamage = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
