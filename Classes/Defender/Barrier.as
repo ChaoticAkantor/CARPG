@@ -69,7 +69,7 @@ class BarrierData
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield On!\n");
         }
-        else
+        else // MANUAL DEACTIVATION.
         {
             StartResourceRefund(pPlayer); // Start refund.
 
@@ -78,7 +78,7 @@ class BarrierData
             RemoveGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // MANUALLY SHATTERED.
             EffectBarrierShatter(pPlayer.pev.origin);
         }
 
@@ -152,7 +152,7 @@ class BarrierData
         resources['current'] = current;
     }
 
-    void DeactivateBarrier(CBasePlayer@ pPlayer)
+    void DeactivateBarrier(CBasePlayer@ pPlayer) // Called when DESTROYED, NOT MANUALLY DEACTIVATED.
     {
         if(m_bActive)
         {
@@ -160,8 +160,9 @@ class BarrierData
             RemoveGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP); // Stop looping sound here too.
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // SHATTERED - DESTROYED.
             EffectBarrierShatter(pPlayer.pev.origin);
+            // Add Lv25 passive bonus here to refund 25% of cost when shattered from damage. OR refund a scaling % per level instead.
         }
     }
 
