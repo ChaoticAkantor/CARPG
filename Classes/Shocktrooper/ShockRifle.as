@@ -5,9 +5,9 @@ dictionary g_ShockRifleData;
 class ShockRifleData 
 {
     private ClassStats@ m_pStats = null;
-    private int m_iResourceCostShockRifle = 25; // Need at least 31 energy to equip, other wise it will begin to overload.
     private float m_flLastUseTime = 0.0f;
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
+    private float m_flDamageScalePerLevel = 0.02f; // % damage increase for shockrifle per level.
 
     bool HasStats() { return m_pStats !is null; }    
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -92,7 +92,7 @@ class ShockRifleData
 
         // Use ALL current energy for the shock rifle.
         int energyToUse = int(currentEnergy);
-            energyToUse += 50; //Add a Buffer to stop overload and make lower levels more useful.
+            energyToUse += 100; //Add base shockrifle capacity on top.
         resources['current'] = 0; // Set energy to zero.
         
         // Give the weapon
@@ -116,6 +116,15 @@ class ShockRifleData
         CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pPlayer.HasNamedPlayerItem("weapon_shockrifle"));
         if(pWeapon !is null)
             g_EntityFuncs.Remove(pWeapon);
+    }
+
+    float GetScaledDamage()
+    {
+        if(m_pStats is null)
+            return 1.0f;
+            
+        float damageBonus = m_pStats.GetLevel() * m_flDamageScalePerLevel;
+        return 1.0f + damageBonus;
     }
 }
 

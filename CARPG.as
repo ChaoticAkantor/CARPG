@@ -590,6 +590,20 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
             {
                 case PlayerClass::CLASS_SHOCKTROOPER:
                 {
+                    // Check if player has shock rifle equipped.
+                    CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pAttacker.m_hActiveItem.GetEntity());
+                    if(pWeapon !is null && pWeapon.GetClassname() == "weapon_shockrifle")
+                    {
+                        if(g_ShockRifleData.exists(steamID))
+                        {
+                            ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
+                            if(shockRifle !is null)
+                            {
+                                float damageMultiplier = shockRifle.GetScaledDamage();
+                                info.flDamage *= damageMultiplier; // Scaling damage multiplier for shocktroopers.
+                            }
+                        }
+                    }
                     break;
                 }
                 case PlayerClass::CLASS_BERSERKER:
