@@ -12,11 +12,10 @@ class BarrierData
     private bool m_bActive = false;
     private float m_flBaseDamageReduction = 1.00f; // Base damage reduction.
     private float m_flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
-    private float m_flBarrierDamageToEnergyMult = 0.33f; // Damage taken to energy drain factor. % damage dealt to shield, lower = better.
+    private float m_flBarrierDamageToEnergyMult = 0.25f; // Damage taken to energy drain factor. % damage dealt to shield, lower = better.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private ClassStats@ m_pStats = null;
-    private float m_flNextGlowUpdate = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
 
     private float m_flRefundAmount = 0.0f;
@@ -127,13 +126,6 @@ class BarrierData
             resources['current'] = newEnergy;
             m_flLastDrainTime = currentTime;
         }
-
-        // Update glow effect
-        if(currentTime >= m_flNextGlowUpdate)
-        {
-            ApplyGlow(pPlayer);
-            m_flNextGlowUpdate = currentTime + m_flGlowUpdateInterval;
-        }
     }
 
     void DrainEnergy(CBasePlayer@ pPlayer, float blockedDamage)
@@ -176,7 +168,7 @@ class BarrierData
         if(pPlayer is null)
             return;
         
-        // Apply glow shell
+        // Apply glow shell.
         pPlayer.pev.renderfx = kRenderFxGlowShell;
         pPlayer.pev.rendermode = kRenderNormal;
         pPlayer.pev.rendercolor = BARRIER_COLOR;
