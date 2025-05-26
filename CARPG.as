@@ -580,7 +580,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null)
         {
-            if(data.GetCurrentClassStats().GetLevel() >= 15) // Add blood poisoning to all classes at level 15.
+            if(data.GetCurrentClassStats().GetLevel() >= 10) // Add blood poisoning to all classes at level 10.
             {
                 info.bitsDamageType |= DMG_POISON;
             }

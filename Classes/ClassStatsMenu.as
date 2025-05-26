@@ -41,9 +41,38 @@ namespace Menu
                 "Max Armor: " + int(pPlayer.pev.armortype) + " AP\n" + 
                 "Max Energy: " + int(maxEnergy) + "\n" + 
                 "Energy Regen: " + energyRegen + "/s\n\n";
+
+                BaseStatsText += "=== Shared Passives: ===\n";
             
                 // Display any extra passive bonuses gained through leveling.
-                if(m_pStats.GetLevel() >= 15) BaseStatsText += "+ Blood Poisoning Damage Passive\n\n";
+                if(m_pStats.GetLevel() >= 10)
+                BaseStatsText += "Lv. 10 - +Poison Shots\n\n";
+                else
+                BaseStatsText += "Lv. 10 - LOCKED\n\n";
+
+                // Display any extra passive bonuses gained through leveling.
+                if(m_pStats.GetLevel() >= 20)
+                BaseStatsText += "Lv. 20 - +WIP\n\n";
+                else
+                BaseStatsText += "Lv. 20 - LOCKED\n\n";
+
+                // Display any extra passive bonuses gained through leveling.
+                if(m_pStats.GetLevel() >= 30)
+                BaseStatsText += "Lv. 30 - +WIP Damage\n\n";
+                else
+                BaseStatsText += "Lv. 30 - LOCKED\n\n";
+
+                // Display any extra passive bonuses gained through leveling.
+                if(m_pStats.GetLevel() >= 40)
+                BaseStatsText += "Lv. 40 - +WIP Damage\n\n";
+                else
+                BaseStatsText += "Lv. 40 - LOCKED\n\n";
+
+                // Display any extra passive bonuses gained through leveling.
+                if(m_pStats.GetLevel() >= 50)
+                BaseStatsText += "Lv. 50 - +WIP Damage\n\n";
+                else
+                BaseStatsText += "Lv. 50 - LOCKED\n\n";
 
             m_pMenu.AddItem(BaseStatsText, null);
     
