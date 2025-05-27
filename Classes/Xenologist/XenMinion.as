@@ -352,7 +352,7 @@ class XenMinionData
         }
 
         // Heal % of max health per energy point spent.
-        float healPercent = 0.05f; // % to heal per energy point spent.
+        float healPercent = 0.02f; // % to heal per energy point spent.
         int minionsHealed = 0; // Count how many minions were healed.
 
         for(uint i = 0; i < m_hMinions.length(); i++)
