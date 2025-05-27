@@ -186,7 +186,7 @@ class BloodlustData
 
         pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, pPlayer.pev.max_health); // Add health, but don't exceed max health.
 
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustHitSound, 0.8f, ATTN_NORM, 0, PITCH_NORM);
+        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
         return healAmount;
     }
@@ -200,8 +200,8 @@ class BloodlustData
         {
             RemoveGlow(pPlayer);
             m_bActive = false;
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustEndSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_LOW);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Off!\n");
         }
     }
