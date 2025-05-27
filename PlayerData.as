@@ -110,12 +110,12 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     
                 case PlayerClass::CLASS_ENGINEER:
                     def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
-                    def.energyRegenPerLevel = 0.02f;
+                    def.energyRegenPerLevel = 0.01f;
                     break;
 
                 case PlayerClass::CLASS_XENOLOGIST:
                     def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
-                    def.energyRegenPerLevel = 0.02f;
+                    def.energyRegenPerLevel = 0.01f;
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
