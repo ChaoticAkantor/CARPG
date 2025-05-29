@@ -164,8 +164,7 @@ class MinionData
                                minionType == 1 ? MINION_SHOTGUN : 
                                MINION_M16);
         keys["health"] = string(scaledHealth);
-        keys["dmg"] = string(scaledDamage); // This method doesn't seem to work.
-        keys["scale"] = "0.75"; // Make them slightly smaller to reduce blocking.
+        keys["scale"] = "1";
         keys["friendly"] = "1";
         keys["spawnflag"] = "32";
         keys["is_player_ally"] = "1";

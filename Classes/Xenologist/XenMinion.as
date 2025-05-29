@@ -211,7 +211,7 @@ class XenMinionData
         keys["targetname"] = "_xenminion_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s " + XEN_NAMES[minionType];
         keys["health"] = string(scaledHealth);
-        keys["scale"] = "0.75"; // Make them slightly smaller to reduce blocking.
+        keys["scale"] = "1";
         keys["friendly"] = "1";
         keys["spawnflag"] = "32";
         keys["is_player_ally"] = "1";
