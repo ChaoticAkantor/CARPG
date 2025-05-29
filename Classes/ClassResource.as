@@ -163,7 +163,7 @@ void RegenClassResource()
     }
 }
 
-string GetResourceBar(float current, float maximum, int barLength = 20)
+string GetResourceBar(float current, float maximum, int barLength = 30)
 {
     float ratio = current / maximum;
     float segmentSize = 1.0f / barLength;
@@ -183,7 +183,7 @@ string GetResourceBar(float current, float maximum, int barLength = 20)
     return output;
 }
 
-void UpdateClassResource() 
+void UpdateClassResource() // Update the class resource hud display for all players.
 {
     for(int i = 1; i <= g_Engine.maxClients; ++i)
     {
@@ -199,19 +199,19 @@ void UpdateClassResource()
             float maximum = float(resources['max']);
 
             HUDTextParams params;
-            params.channel = 5;
+            params.channel = 5; // API says 1-4, though I'm sure it supports up to 16 actually?
             params.x = -1; // Center horizontally.
-            params.y = 0.85; // Position near bottom.
-            params.effect = 6; // 0: Normal text (no effect), 1: Fade in/out, 2: Flickering credits, 3: Write out (scan out), 4: Write out (scan right to left), 5: Write out (scan left to right), 6: Shimmer/vibrate.
+            params.y = 0.9; // Position near bottom.
+            params.effect = 0; // 0: Fade in/out, 1: Credits, 2: Scan Out.
             params.fadeinTime = 0;
             params.fadeoutTime = 0;
-            params.holdTime = 0.5;
-            params.fxTime = 2.0;
+            params.holdTime = 0.2; // How long message displays.
+            params.fxTime = 0.0; // Effect time (scan effect only).
 
             // Primary Colour.
             params.r1 = 0;
             params.g1 = 255;
-            params.b1 = 150;
+            params.b1 = 255;
 
             // Effect Colour.
             params.r2 = 0;
