@@ -10,8 +10,8 @@ class RecoveryData
     float lastHurtTime = 0.0f;
 }
 
-const float flRegenTickHP = 0.5f; // Time between HP regen ticks.
-const float flRegenTickAP = 1.0f; // Time between AP regen ticks.
+const float flRegenTickHP = 1.0f; // Time between HP regen ticks.
+const float flRegenTickAP = 0.25f; // Time between AP regen ticks.
 const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks.
 const float flHurtDelay = 2.0f; // Total time to stay "hurt" before regen starts.
 const float flPercentHPRegen = 1.0f; // % of HP to regen per tick.
@@ -40,11 +40,11 @@ void RegenTickHP() // Regen HP.
             if(data !is null && data.isRegenerating && bAllowHPRegen)
             {
                 float flCalcPercHP = pPlayer.pev.max_health * flPercentHPRegen / 100;
-                float iRegenHP = Math.max(int(flCalcPercHP), 1);
+                float flRegenHP = Math.max(int(flCalcPercHP), 1);
 
                 if (pPlayer.pev.health < pPlayer.pev.max_health)
                 {
-                    pPlayer.pev.health = Math.min(pPlayer.pev.health + iRegenHP, pPlayer.pev.max_health);
+                    pPlayer.pev.health = Math.min(pPlayer.pev.health + flRegenHP, pPlayer.pev.max_health);
                 }
             }
         }
