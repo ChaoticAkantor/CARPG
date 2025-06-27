@@ -149,10 +149,10 @@ void SetupTimers()
     g_Scheduler.SetInterval("CheckHealAura", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking heal aura.
 
     // Engineer.
-    g_Scheduler.SetInterval("CheckEngineerMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer Robogrunts.
+    g_Scheduler.SetInterval("CheckEngineerMinions", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer Robogrunts.
 
     // Xenologist.
-    g_Scheduler.SetInterval("CheckXenologistMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
+    g_Scheduler.SetInterval("CheckXenologistMinions", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Xenologist minions.
 
     // Defender.
     g_Scheduler.SetInterval("CheckBarrier", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Barrier.
