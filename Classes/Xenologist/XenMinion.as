@@ -94,15 +94,15 @@ const array<int> XEN_COSTS =
 {
     25,  // Pitdrone.
     50,  // Gonome.
-    75   // Alien Grunt.
+    50   // Alien Grunt.
 };
 
 // Health modifiers for each Xen creature type, applied AFTER scaling.
 const array<float> XEN_HEALTH_MODS = 
 {
     1.0f,    // Pitdrone.
-    1.15f,    // Gonome. 15% more health.
-    1.30f     // Alien Grunt. 30% more health.
+    1.25f,    // Gonome.
+    1.25f     // Alien Grunt.
 };
 
 class XenMinionData
@@ -112,7 +112,8 @@ class XenMinionData
     private array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0;
-    private float m_flHealthScale = 0.10; // Health % scaling per level.
+    private float m_flHealthScale = 0.12; // Health % scaling per level.
+    private float m_flHealthRegen = 0.005; // Health regen % per second.
     private float m_flDamageScale = 0.08; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
@@ -141,6 +142,8 @@ class XenMinionData
     int GetMinionCount() { return m_hMinions.length(); }
 
     float GetReservePool() { return m_flReservePool; }
+    
+    float GetMinionRegen() { return m_flHealthRegen; }
 
     bool HasStats() { return m_pStats !is null; }
     array<EHandle>@ GetMinions() { return m_hMinions; }
@@ -262,7 +265,7 @@ class XenMinionData
             
             if(pExistingMinion is null)
             {
-                // Return costs to individual reserve pool
+                // Return costs to individual reserve pool.
                 m_flReservePool -= XEN_COSTS[m_CreatureTypes[i]];
                 m_hMinions.removeAt(i);
                 m_CreatureTypes.removeAt(i);
@@ -270,7 +273,7 @@ class XenMinionData
                 continue;
             }
 
-            // Check if minion has gained a frag
+            // Check if minion has gained a frag.
             if(pExistingMinion.pev.frags > 0)
             {
                 pPlayer.pev.frags += 1;
@@ -327,65 +330,27 @@ class XenMinionData
         m_bActive = false;
     }
 
-        void HealAllMinions(CBasePlayer@ pPlayer)
+    void MinionRegen()
     {
-        if(pPlayer is null || !m_bActive)
-            return;
-
-        if(m_hMinions.length() == 0)
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Creatures to heal!\n");
-            return;
-        }
-
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
-
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        float currentEnergy = float(resources['current']);
-
-        if(currentEnergy <= 0)
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No remaining reserve!\n");
-            return;
-        }
-
-        // Heal % of max health per energy point spent.
-        float healPercent = 0.02f; // % to heal per energy point spent.
-        int minionsHealed = 0; // Count how many minions were healed.
-
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
             CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
             if(pMinion !is null)
             {
-                float maxHealth = pMinion.pev.max_health;
-                float currentHealth = pMinion.pev.health;
-                
-                if(currentHealth < maxHealth)
+                float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
+
+                if(pMinion.pev.health < pMinion.pev.max_health)
                 {
-                    float healAmount = maxHealth * (healPercent * currentEnergy);
-                    pMinion.pev.health = Math.min(currentHealth + healAmount, maxHealth);
-                    minionsHealed++;
+                    pMinion.pev.health = Math.min(pMinion.pev.health + flHealAmount, pMinion.pev.max_health); // Add health.
+
+                    if(pMinion.pev.health > pMinion.pev.max_health) 
+                        pMinion.pev.health = pMinion.pev.max_health; // Clamp to max health.
                 }
             }
         }
-
-        if(minionsHealed > 0)
-        {
-            // Consume all current energy
-            resources['current'] = 0;
-            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_ITEM, strPitdroneSoundEat, 1.0f, ATTN_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healed all Creatures!\n");
-        }
-        else
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures at full health!\n");
-        }
     }
 
-    float GetScaledHealth(int creatureType = 0) // Default to Pitdrone health mod
+    float GetScaledHealth(int creatureType = 0) // Default to Pitdrone health mod.
     {
         if(m_pStats is null)
             return m_flBaseHealth * XEN_HEALTH_MODS[creatureType];
@@ -464,7 +429,6 @@ class XenMinionMenu
         if(m_pOwner.GetMinionCount() > 0) 
         {
             m_pMenu.AddItem("Teleport All\n", any(98));
-            m_pMenu.AddItem("Heal All (Consumes all remaining Reserve)\n", any(97));
             m_pMenu.AddItem("Kill All\n", any(99));
         }
         
@@ -488,11 +452,6 @@ class XenMinionMenu
             {
                 // Teleport existing minions.
                 m_pOwner.TeleportMinions(pPlayer);
-            }
-            else if(choice == 97)
-            {
-                // Heal all minions.
-                m_pOwner.HealAllMinions(pPlayer);
             }
             else if(choice >= 0 && uint(choice) < XEN_NAMES.length())
             {
@@ -546,12 +505,31 @@ void CheckXenologistMinions()
                     }
                 }
 
+                xenMinion.MinionRegen(); // Minion Regeneration.
+
                 // Always update scaling values for stats menu.
                 xenMinion.GetScaledHealth();
                 xenMinion.GetScaledDamage();
 
-                // Normal update for active minions.
-                xenMinion.XenUpdate(pPlayer);
+                xenMinion.XenUpdate(pPlayer); // Normal update for active minions.
+            }
+        }
+    }
+}
+
+void XenMinionRegenTimer()
+{
+    for(int i = 1; i <= g_Engine.maxClients; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+            if(xenMinion !is null && xenMinion.IsActive())
+            {
+                // Regenerate minions.
+                xenMinion.MinionRegen();
             }
         }
     }

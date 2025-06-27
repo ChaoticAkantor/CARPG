@@ -53,8 +53,8 @@ const array<string> MINION_NAMES =
 const array<int> MINION_COSTS = 
 {
     25,  // MP5
-    50,  // Shotgun
-    75   // M16
+    25,  // Shotgun
+    50   // M16
 };
 
 class MinionData
@@ -63,7 +63,8 @@ class MinionData
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
-    private float m_flHealthScale = 0.06; // Health % scaling per level. Robogrunts have natural armor and don't get health increases per tier like Xeno.
+    private float m_flHealthScale = 0.08; // Health % scaling per level. Robogrunts have natural armor and don't get health increases per tier like Xeno.
+    private float m_flHealthRegen = 0.005; // Health regen % per second.
     private float m_flDamageScale = 0.08; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Cost to summon 1 minion. Init.
     private float m_flReservePool = 0.0f;
@@ -92,6 +93,8 @@ class MinionData
     int GetMinionCount() { return m_hMinions.length(); }
 
     float GetReservePool() { return m_flReservePool; }
+
+    float GetMinionRegen() { return m_flHealthRegen; }
 
     bool HasStats() { return m_pStats !is null; }
     array<EHandle>@ GetMinions() { return m_hMinions; }
@@ -292,61 +295,23 @@ class MinionData
         m_bActive = false;
     }
 
-    void HealAllMinions(CBasePlayer@ pPlayer)
+    void MinionRegen()
     {
-        if(pPlayer is null || !m_bActive)
-            return;
-
-        if(m_hMinions.length() == 0)
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Robots to heal!\n");
-            return;
-        }
-
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
-
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        float currentEnergy = float(resources['current']);
-
-        if(currentEnergy <= 0)
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No remaining reserve!\n");
-            return;
-        }
-
-        // Heal % of max health per energy point spent.
-        float healPercent = 0.02f; // % to heal per energy point spent.
-        int minionsHealed = 0; // Count how many minions were healed.
-
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
             CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
             if(pMinion !is null)
             {
-                float maxHealth = pMinion.pev.max_health;
-                float currentHealth = pMinion.pev.health;
-                
-                if(currentHealth < maxHealth)
+                float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
+
+                if(pMinion.pev.health < pMinion.pev.max_health)
                 {
-                    float healAmount = maxHealth * (healPercent * currentEnergy);
-                    pMinion.pev.health = Math.min(currentHealth + healAmount, maxHealth);
-                    minionsHealed++;
+                    pMinion.pev.health = Math.min(pMinion.pev.health + flHealAmount, pMinion.pev.max_health); // Add health.
+
+                    if(pMinion.pev.health > pMinion.pev.max_health) 
+                        pMinion.pev.health = pMinion.pev.max_health; // Clamp to max health.
                 }
             }
-        }
-
-        if(minionsHealed > 0)
-        {
-            // Consume all current energy
-            resources['current'] = 0;
-            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_ITEM, strRobogruntSoundRepair, 1.0f, ATTN_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healed all Robots!\n");
-        }
-        else
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots at full health!\n");
         }
     }
 
@@ -431,7 +396,6 @@ class MinionMenu
         if(m_pOwner.GetMinionCount() > 0) 
         {
             m_pMenu.AddItem("Teleport All\n", any(98));
-            m_pMenu.AddItem("Heal All (Consumes all remaining Reserve)\n", any(97));
             m_pMenu.AddItem("Destroy All\n", any(99));
         }
         
@@ -455,10 +419,6 @@ class MinionMenu
             {
                 // Teleport existing minions
                 m_pOwner.TeleportMinions(pPlayer);
-            }
-            else if(choice == 97)
-            {
-                m_pOwner.HealAllMinions(pPlayer);
             }
             else if(choice >= 0 && uint(choice) < MINION_NAMES.length())
             {
@@ -511,6 +471,8 @@ void CheckEngineerMinions()
                         }
                     }
                 }
+
+                Minion.MinionRegen(); // Minion Regeneration.
 
                 // Always update scaling values for stats menu
                 Minion.GetScaledHealth();
