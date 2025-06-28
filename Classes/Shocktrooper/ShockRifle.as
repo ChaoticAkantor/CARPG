@@ -49,12 +49,12 @@ class ShockRifleData
             
             // Get ammo index and current ammo.
             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
-            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
+            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex) / 2; // Use half of the current remaining ammo as energy.
             
             // Sync player's energy with remaining ammo.
             float currentEnergy = float(resources['current']);
             float maxEnergy = float(resources['max']);
-            currentEnergy = Math.min(currentEnergy + (currentAmmo), maxEnergy); // Restore battery into energy from held rifle.
+            currentEnergy = Math.min(currentEnergy + (currentAmmo), maxEnergy); // Restore half remaining battery into energy from held rifle.
             resources['current'] = currentEnergy;
             
             // Force remove the weapon.
