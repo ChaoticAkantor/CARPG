@@ -101,7 +101,7 @@ namespace Menu
                         string BerserkerStatsText = "=== Berserker Stats: ===" + "\n" + 
                         "Bloodlust Life Steal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
                         "Bloodlust Low HP Scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
-                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + "/s\n\n";
+                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + "/0.25s\n\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
