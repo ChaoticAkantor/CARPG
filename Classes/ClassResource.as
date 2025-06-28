@@ -300,7 +300,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(barrierData !is null)
                                 {
                                     bool isActive = barrierData.IsActive();
-                                        resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "] ";
+                                        //resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "] ";
                                 }
                             }
                             break;
@@ -314,7 +314,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     float HealAmount = healingAura.GetScaledHealAmount();
 
                                     bool isActive = healingAura.IsActive();
-                                        resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "] ";
+                                        //resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "] ";
 
                                     if(isActive)
                                     {
@@ -353,7 +353,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     float lifesteal = bloodlust.GetLifestealAmount() * 100; // Base lifesteal.
                                     float dmgBonus = bloodlust.GetDamageBonus(pPlayer) * 100;
                                     
-                                    resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "]";
+                                    //resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "]";
                                     resourceInfo += " [DMG Bonus: +" + int(dmgBonus) + "%]";
 
                                     if (isActive)
