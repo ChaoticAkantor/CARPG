@@ -120,7 +120,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     
                 case PlayerClass::CLASS_BERSERKER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.3f;
+                    def.energyRegenPerLevel = 0.05f; // Slower regen, Berserkers steal energy with damage.
 
                     def.healthPerLevel = 0.05f; // Berserkers get more HP per level.
                     def.armorPerLevel = 0.005f; // Berserkers get less AP per level.
