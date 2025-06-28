@@ -105,7 +105,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
             {
                 case PlayerClass::CLASS_MEDIC:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.25f;
+                    def.energyRegenPerLevel = 0.3f;
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
@@ -120,7 +120,10 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     
                 case PlayerClass::CLASS_BERSERKER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.25f;
+                    def.energyRegenPerLevel = 0.3f;
+
+                    def.healthPerLevel = 0.05f; // Berserkers get more HP per level.
+                    def.armorPerLevel = 0.005f; // Berserkers get less AP per level.
                     break;
                     
                     case PlayerClass::CLASS_DEFENDER:
@@ -135,12 +138,12 @@ void InitializeClassDefinitions() // Initialize class definitions.
 
                 case PlayerClass::CLASS_CLOAKER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.32f;
+                    def.energyRegenPerLevel = 0.35f;
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.1f;
+                    def.energyRegenPerLevel = 0.15f;
                     break;
             }
             
