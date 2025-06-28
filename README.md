@@ -24,9 +24,10 @@ Can also revive players and NPC's at double the normal drain rate when triggered
 NPC healing is 50% stronger.
 
 # Berserker - HP/Lifesteal Tank
-Gains a scaling damage bonus the lower your current HP, that scales with level.
-Toggles a bloodlust rage state, giving % damage dealt as lifesteal.
-Has to fully recover between uses, but can be deactivated early to start recovering.
+Toggles a Bloodlust rage state, giving % damage dealt as lifesteal. Bloodlust recharges very slowly and drains very quickly. It relies on dealing damage to gain charge and maintain it when active.
+20% of damage dealt as energy steal, does not scale with level.
+Gain a damage bonus the lower your current HP, that scales with level.
+Can be activated regardless of charge level.
 
 # Engineer - Robot Minions
 Can summon friendly robots based on maximum reserve power via a menu.
