@@ -98,10 +98,11 @@ namespace Menu
                     BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                     if(bloodlust !is null)
                     {
-                        string BerserkerStatsText = "=== Berserker Stats: ===" + "\n" + 
-                        "Bloodlust Life Steal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
-                        "Bloodlust Low HP Scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
-                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + "/0.25s\n\n";
+                        string BerserkerStatsText = "=== Berserker Stats: ===" + "\n" +
+                        "Damage converted to Energy: " + int(bloodlust.GetEnergySteal()) + "%\n" +
+                        "Bloodlust Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
+                        "Bloodlust Max DMG Bonus at 1% HP: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
+                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + " every 0.25s\n\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
