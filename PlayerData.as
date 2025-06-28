@@ -119,8 +119,8 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     break;
                     
                 case PlayerClass::CLASS_BERSERKER:
-                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.05f; // Slower regen, Berserkers steal energy with damage.
+                    def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
+                    def.energyRegenPerLevel = 0.05f; // Slower regen, Berserkers must gain energy with damage.
 
                     def.healthPerLevel = 0.05f; // Berserkers get more HP per level.
                     def.armorPerLevel = 0.005f; // Berserkers get less AP per level.
@@ -128,7 +128,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
                     
                     case PlayerClass::CLASS_DEFENDER:
                     def.energyPerLevel = 0.78f; // Up to 1000 energy at max level.
-                    def.energyRegenPerLevel = 1.0f;
+                    def.energyRegenPerLevel = 1.0f; // Ice shield recovers strength very quickly.
                     break;
 
                 case PlayerClass::CLASS_SHOCKTROOPER:
@@ -138,7 +138,7 @@ void InitializeClassDefinitions() // Initialize class definitions.
 
                 case PlayerClass::CLASS_CLOAKER:
                     def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.35f;
+                    def.energyRegenPerLevel = 0.5f; // Cloak recharges quickly, as it drains alot of energy on use.
                     break;
 
                 case PlayerClass::CLASS_DEMOLITIONIST:
