@@ -26,7 +26,7 @@ string strPitdroneSoundEat = "pitdrone/pit_drone_eat.wav";
 
 string strGonomeModel = "models/gonome.mdl";
 string strGonomeSpriteSpit = "sprites/blood_chnk.spr";
-string strGonomeSoundSpit1 = "bullchicken/bc_spihit1.wav";
+string strGonomeSoundSpit1 = "bullchicken/bc_spithit1.wav";
 string strGonomeSoundDeath2 = "gonome/gonome_death2.wav";
 string strGonomeSoundDeath3 = "gonome/gonome_death3.wav";
 string strGonomeSoundDeath4 = "gonome/gonome_death4.wav";
