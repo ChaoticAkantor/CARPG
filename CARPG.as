@@ -617,13 +617,15 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
                             // Apply damage bonus based on missing health.
                             float damageBonus = bloodlust.GetDamageBonus(pAttacker);
                             info.flDamage *= (1.0f + damageBonus);
+
+                            bloodlust.ProcessEnergySteal(pAttacker, info.flDamage); // Energy steal inside and outside of bloodlust.
                             
                             // Only process lifesteal if bloodlust is active.
                             if(bloodlust.IsActive())
                             {
-                                bloodlust.ProcessLifesteal(pAttacker, info.flDamage);
+                                bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Bloodlust active lifesteal.
                                 
-                                // Add rising blood particles
+                                // Add rising blood particles.
                                 Vector pos = pAttacker.pev.origin;
                                 Vector mins = pos - Vector(16, 16, 0);
                                 Vector maxs = pos + Vector(16, 16, 64);
