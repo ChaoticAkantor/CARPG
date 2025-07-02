@@ -8,12 +8,12 @@ dictionary g_PlayerCloaks;
 class CloakData
 {
     private bool m_bActive = false;
-    private float m_flCloakEnergyCostPerShot = 25.0f; // Energy drain per shot.
-    private float m_flCloakEnergyDrainInterval = 0.25f; // Energy drain interval.
+    private float m_flCloakEnergyCostPerShot = 50.0f; // Energy drain per shot.
+    private float m_flCloakEnergyDrainInterval = 0.15f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 1.0f; // Base drain rate.
-    private float m_flBaseDamageBonus = 1.0f;      // Base % damage increase.
-    private float m_flDamageBonusPerLevel = 0.02f;   // Bonus % per level.
+    private float m_flBaseDamageBonus = 1.0f; // Base % damage increase.
+    private float m_flDamageBonusPerLevel = 0.02f; // Bonus % per level.
 
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
