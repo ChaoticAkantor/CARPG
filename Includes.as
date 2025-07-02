@@ -4,6 +4,7 @@
 #include "Difficulty"
 #include "PlayerData"
 #include "DebugMenu"
+#include "PerkMenu"
 
 #include "Classes/ClassMenu"
 #include "Classes/ClassResource"
