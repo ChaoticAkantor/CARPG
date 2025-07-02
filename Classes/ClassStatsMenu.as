@@ -57,25 +57,21 @@ namespace Menu
                 else
                 BaseStatsText += "Lv. 10 - LOCKED\n\n";
 
-                // Display any extra passive bonuses gained through leveling.
                 if(m_pStats.GetLevel() >= 20)
                 BaseStatsText += "Lv. 20 - WIP\n\n";
                 else
                 BaseStatsText += "Lv. 20 - LOCKED\n\n";
 
-                // Display any extra passive bonuses gained through leveling.
                 if(m_pStats.GetLevel() >= 30)
                 BaseStatsText += "Lv. 30 - WIP\n\n";
                 else
                 BaseStatsText += "Lv. 30 - LOCKED\n\n";
 
-                // Display any extra passive bonuses gained through leveling.
                 if(m_pStats.GetLevel() >= 40)
                 BaseStatsText += "Lv. 40 - WIP\n\n";
                 else
                 BaseStatsText += "Lv. 40 - LOCKED\n\n";
 
-                // Display any extra passive bonuses gained through leveling.
                 if(m_pStats.GetLevel() >= 50)
                 BaseStatsText += "Lv. 50 - WIP\n\n";
                 else
@@ -109,7 +105,7 @@ namespace Menu
                         "Damage as Ability Charge: " + int(bloodlust.GetEnergySteal()) + "%\n" +
                         "Bloodlust Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
                         "Bloodlust health scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
-                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + " every 0.15s\n\n";
+                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + " / 0.15s\n\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
@@ -175,7 +171,7 @@ namespace Menu
                     if(cloak !is null)
                     {
                         string CloakerStatsText = "=== Cloaker Stats: ===" + "\n" +  
-                            "Cloak Battery Drain: " + int(cloak.GetEnergyCost()) + "/s\n" +
+                            "Cloak Battery Drain: " + int(cloak.GetEnergyCost()) + " / 0.15s\n" +
                             "Cloak Battery Drain Per Shot: " + int(cloak.GetEnergyCostPerShot()) + "\n" +
                             "Cloak Damage Bonus at 100% Battery: +" + int(cloak.GetDamageBonus() * 100) + "%\n\n";
 
