@@ -11,13 +11,13 @@ dictionary g_PlayerBloodlusts;
 class BloodlustData
 {
     private bool m_bActive = false;
-    private float m_flBloodlustEnergyDrainInterval = 0.25f; // Interval to remove energy.
+    private float m_flBloodlustEnergyDrainInterval = 0.1f; // Interval to remove energy.
     private float m_flBloodlustEnergyCost = 1.0f; // Energy drain per interval.
     private float m_flBaseDamageBonus = 0.5f; // Base damage increase at lowest health.
     private float m_flDamageBonusPerLevel = 0.05f; // Bonus damage scaling per level.
     private float m_flBaseDamageLifesteal = 0.25f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
     private float m_flLifestealPerLevel = 0.04f; // % bonus lifesteal per level.
-    private float m_flEnergysteal = 0.2f; // % Energy steal.
+    private float m_flEnergysteal = 0.1f; // % Energy steal.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -71,22 +71,6 @@ class BloodlustData
         if(data is null)
             return;
 
-        //if(!m_bActive)
-        //{
-            //if(!g_PlayerClassResources.exists(steamID))
-            //    return;
-                
-            //dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            //if(resources is null)
-            //    return;
-
-            //if(float(resources['current']) < float(resources['max'])) // Check energy before activation.
-            //{
-            //    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust recharging...\n");
-            //    return;
-            //}
-        //}
-
         if(!m_bActive)
         {
             m_bActive = true;
@@ -94,7 +78,7 @@ class BloodlustData
             ApplyGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustStartSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust On!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Activated!\n");
         }
         else
         {
