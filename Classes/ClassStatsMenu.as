@@ -30,17 +30,24 @@ namespace Menu
             title += "Lvl: " + level + " | " + "XP: (" + m_pStats.GetCurrentLevelXP() + "/" + m_pStats.GetNeededXP() + ")\n\n";
             m_pMenu.SetTitle(title);
     
-            // Get energy stats from resource dictionary instead
+            // Get energy stats from resource dictionary, fallback to class definition if missing.
             dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            float maxEnergy = resources !is null ? float(resources['max']) : g_flBaseMaxResource;
-            float energyRegen = resources !is null ? float(resources['regen']) : g_flBaseResourceRegen;
+            float maxEnergy = def !is null ? def.GetPlayerEnergy(level) : 100.0f;
+            float energyRegen = def !is null ? def.GetPlayerEnergyRegen(level, maxEnergy) : 0.0f;
+            if(resources !is null)
+            {
+                if(resources.exists('max'))
+                    maxEnergy = float(resources['max']);
+                if(resources.exists('regen'))
+                    energyRegen = float(resources['regen']);
+            }
 
             // Display basic stats.
             string BaseStatsText = "=== Basic Stats: ===\n" +
                 "Max Health: " + int(pPlayer.pev.max_health) + " HP\n" + 
                 "Max Armor: " + int(pPlayer.pev.armortype) + " AP\n" + 
                 "Max Energy: " + int(maxEnergy) + "\n" + 
-                "Energy Regen: " + energyRegen + "/s\n\n";
+                "Ability Recharge: " + energyRegen + "/s\n\n";
 
                 BaseStatsText += "=== Shared Passives: ===\n";
             
@@ -52,25 +59,25 @@ namespace Menu
 
                 // Display any extra passive bonuses gained through leveling.
                 if(m_pStats.GetLevel() >= 20)
-                BaseStatsText += "Lv. 20 - +WIP\n\n";
+                BaseStatsText += "Lv. 20 - WIP\n\n";
                 else
                 BaseStatsText += "Lv. 20 - LOCKED\n\n";
 
                 // Display any extra passive bonuses gained through leveling.
                 if(m_pStats.GetLevel() >= 30)
-                BaseStatsText += "Lv. 30 - +WIP Damage\n\n";
+                BaseStatsText += "Lv. 30 - WIP\n\n";
                 else
                 BaseStatsText += "Lv. 30 - LOCKED\n\n";
 
                 // Display any extra passive bonuses gained through leveling.
                 if(m_pStats.GetLevel() >= 40)
-                BaseStatsText += "Lv. 40 - +WIP Damage\n\n";
+                BaseStatsText += "Lv. 40 - WIP\n\n";
                 else
                 BaseStatsText += "Lv. 40 - LOCKED\n\n";
 
                 // Display any extra passive bonuses gained through leveling.
                 if(m_pStats.GetLevel() >= 50)
-                BaseStatsText += "Lv. 50 - +WIP Damage\n\n";
+                BaseStatsText += "Lv. 50 - WIP\n\n";
                 else
                 BaseStatsText += "Lv. 50 - LOCKED\n\n";
 
@@ -99,10 +106,10 @@ namespace Menu
                     if(bloodlust !is null)
                     {
                         string BerserkerStatsText = "=== Berserker Stats: ===" + "\n" +
-                        "Damage converted to Energy: " + int(bloodlust.GetEnergySteal()) + "%\n" +
+                        "Damage as Ability Charge: " + int(bloodlust.GetEnergySteal()) + "%\n" +
                         "Bloodlust Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
-                        "Bloodlust Max DMG Bonus at 1% HP: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
-                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + " every 0.25s\n\n";
+                        "Bloodlust health scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
+                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + " every 0.15s\n\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
