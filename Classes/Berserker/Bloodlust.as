@@ -16,7 +16,7 @@ class BloodlustData
     private float m_flBaseDamageBonus = 0.5f; // Base damage increase at lowest health.
     private float m_flDamageBonusPerLevel = 0.05f; // Bonus damage scaling per level.
     private float m_flBaseDamageLifesteal = 0.25f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
-    private float m_flLifestealPerLevel = 0.04f; // % bonus lifesteal per level.
+    private float m_flLifestealPerLevel = 0.03f; // % bonus lifesteal per level.
     private float m_flEnergysteal = 0.1f; // % Energy steal.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f;
