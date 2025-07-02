@@ -2,13 +2,6 @@ const string strLevelUpSound = "misc/secret.wav";
 
 dictionary g_PlayerRPGData;
 
-// Base Stats.
-float g_flBaseMaxHP = 100.0f; // Base max HP before bonuses.
-float g_flBaseMaxAP = 100.0f; // Base max AP before bonuses.
-float g_flBaseMaxResource = 25.0f; // Base max resource before bonuses.
-float g_flBaseResourceRegen = 0.5f; // Base resource regen per second.
-float g_flCurrentResource = 0.0f; // Current resource init.
-
 // Used for debug menu.
 int g_iMaxLevel = 50;
 
@@ -50,46 +43,50 @@ enum PlayerClass
     CLASS_DEMOLITIONIST
 }
 
+// --- Per-class stat definitions. ---
 class ClassDefinition 
 {
+    // Base stats for each class. Typically overridden on a per class basis.
     string name;
-    float healthPerLevel = 0.02f; // % HP per level. Same for all classes.
-    float armorPerLevel = 0.01f; // % AP per level. Same for all classes.
-    float energyPerLevel = 0.1f; // Default % energy per level. Overridden by class.
-    float energyRegenPerLevel = 0.05f; // Default % energy regen per level. Overridden by class.
-    
+    float baseHP = 100.0f; // Base health.
+    float baseAP = 100.0f; // Base armor.
+    float baseResource = 100.0f; // Base max ability charge/duration.
+    float baseResourceRegen = 1.0f; // Base ability regen per second.
+
+    float healthPerLevel = 0.02f; // 2% of base health per level.
+    float armorPerLevel = 0.01f; // 1% of base armor per level.
+    float energyPerLevel = 0.1f; // 10% of base energy per level.
+    float energyRegenPerLevel = 0.05f; // 5% of base energy regen per level.
+
     ClassDefinition(string _name) 
     {
         name = _name;
     }
-    
-    // Get actual values after scaling
+
     float GetPlayerHealth(int level)
     {
-        return g_flBaseMaxHP * (1.0f + (level * healthPerLevel));
+        return baseHP * (1.0f + (level * healthPerLevel));
     }
-    
     float GetPlayerArmor(int level)
     {
-        return g_flBaseMaxAP * (1.0f + (level * armorPerLevel));
+        return baseAP * (1.0f + (level * armorPerLevel));
     }
-    
     float GetPlayerEnergy(int level)
     {
-        return g_flBaseMaxResource * (1.0f + (level * energyPerLevel));
+        float maxEnergy = baseResource;
+        return maxEnergy * (level * energyPerLevel);
     }
-    
-    float GetPlayerEnergyRegen(int level, float maxEnergy)
+    float GetPlayerEnergyRegen(int level, float energyRegen)
     {
-        return maxEnergy * (g_flBaseResourceRegen + (level * energyRegenPerLevel));
+        return baseResourceRegen * (baseResourceRegen + (level * energyRegenPerLevel));
     }
 }
 
 dictionary g_ClassDefinitions;
 
-void InitializeClassDefinitions() // Initialize class definitions.
+// --- Initialize per-class base stats and scaling. ---
+void InitializeClassDefinitions()
 {
-    // Clear existing definitions
     if(g_ClassDefinitions !is null)
         g_ClassDefinitions.deleteAll();
 
@@ -99,54 +96,77 @@ void InitializeClassDefinitions() // Initialize class definitions.
         if(g_ClassNames.exists(pClass))
         {
             ClassDefinition@ def = ClassDefinition(string(g_ClassNames[pClass]));
-            
-            // Set class-specific parameters.
-            switch(pClass) // These are multipliers, will multiply stats by this value per level.
+
+            // Set class-specific base stats and scaling
+            switch(pClass)
             {
                 case PlayerClass::CLASS_MEDIC:
-                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 100.0f;
+                    def.baseResourceRegen = 1.0f;
+                    def.energyPerLevel = 0.14f;
                     def.energyRegenPerLevel = 0.3f;
                     break;
-                    
                 case PlayerClass::CLASS_ENGINEER:
-                    def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 100.0f;
+                    def.baseResourceRegen = 0.5f;
+                    def.energyPerLevel = 0.08f; // 100 at level 50.
                     def.energyRegenPerLevel = 0.01f;
                     break;
-
                 case PlayerClass::CLASS_XENOLOGIST:
-                    def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 100.0f;
+                    def.baseResourceRegen = 0.5f;
+                    def.energyPerLevel = 0.08f; // 100 at level 50.
                     def.energyRegenPerLevel = 0.01f;
                     break;
-                    
                 case PlayerClass::CLASS_BERSERKER:
-                    def.energyPerLevel = 0.06f; // Up to 100 energy at max level.
-                    def.energyRegenPerLevel = 0.05f; // Slower regen, Berserkers must gain energy with damage.
-
-                    def.healthPerLevel = 0.05f; // Berserkers get more HP per level.
-                    def.armorPerLevel = 0.005f; // Berserkers get less AP per level.
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 100.0f;
+                    def.baseResourceRegen = 1.0f;
+                    def.energyPerLevel = 0.04f; // 200 at level 50.
+                    def.energyRegenPerLevel = 0.05f;
+                    def.healthPerLevel = 0.04f; // Berserkers gain 4% of base health per level instead.
+                    def.armorPerLevel = 0.005f; // Berserkers gain 0.5% of base armor per level instead.
                     break;
-                    
-                    case PlayerClass::CLASS_DEFENDER:
-                    def.energyPerLevel = 0.78f; // Up to 1000 energy at max level.
-                    def.energyRegenPerLevel = 1.0f; // Ice shield recovers strength very quickly.
+                case PlayerClass::CLASS_DEFENDER:
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 100.0f;
+                    def.baseResourceRegen = 0.4f;
+                    def.energyPerLevel = 0.78f;
+                    def.energyRegenPerLevel = 1.0f;
                     break;
-
                 case PlayerClass::CLASS_SHOCKTROOPER:
-                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 100.0f;
+                    def.baseResourceRegen = 0.5f;
+                    def.energyPerLevel = 0.14f;
                     def.energyRegenPerLevel = 0.05f;
                     break;
-
                 case PlayerClass::CLASS_CLOAKER:
-                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
-                    def.energyRegenPerLevel = 0.5f; // Cloak recharges quickly, as it drains alot of energy on use.
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 100.0f;
+                    def.baseResourceRegen = 0.6f;
+                    def.energyPerLevel = 0.14f;
+                    def.energyRegenPerLevel = 0.5f;
                     break;
-
                 case PlayerClass::CLASS_DEMOLITIONIST:
-                    def.energyPerLevel = 0.14f; // Up to 200 energy at max level.
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 100.0f;
+                    def.baseResourceRegen = 0.5f;
+                    def.energyPerLevel = 0.14f;
                     def.energyRegenPerLevel = 0.15f;
                     break;
             }
-            
             @g_ClassDefinitions[pClass] = @def;
         }
     }
@@ -297,6 +317,7 @@ class ClassStats
     void SetSteamID(string steamID) { m_szSteamID = steamID; }
 }
 
+// --- PlayerData and stat calculation ---
 class PlayerData
 {
     // Player identification.
@@ -378,9 +399,9 @@ class PlayerData
                 {
                     dictionary resources = 
                     {
-                        {'current', g_flCurrentResource},
-                        {'max', g_flBaseMaxResource},
-                        {'regen', g_flBaseResourceRegen}
+                        {'current', 0.0f}, // Start at 0 or set to max after CalculateStats.
+                        {'max', 0.0f},
+                        {'regen', 0.0f}
                     };
                     @g_PlayerClassResources[steamID] = resources;
                 }
@@ -504,11 +525,11 @@ class PlayerData
         {
             ClassDefinition@ def = cast<ClassDefinition@>(g_ClassDefinitions[m_CurrentClass]);
 
-            float maxHealth = g_flBaseMaxHP * (1.0f + (level * def.healthPerLevel)); // Max HP scaling.
-            float maxArmor = g_flBaseMaxAP * (1.0f + (level * def.armorPerLevel)); // Max AP scaling.
-            float maxResource = g_flBaseMaxResource * (1.0f + (level * def.energyPerLevel)); // Max Energy scaling.
-            float resourceRegen = g_flBaseResourceRegen * (1.0f + (level * def.energyRegenPerLevel)); // Energy Regen scaling.
-            
+            float maxHealth = def.GetPlayerHealth(level);
+            float maxArmor = def.GetPlayerArmor(level);
+            float maxResource = def.GetPlayerEnergy(level);
+            float resourceRegen = def.GetPlayerEnergyRegen(level, maxResource);
+
             // Set Max HP/AP.
             pPlayer.pev.max_health = maxHealth;
             pPlayer.pev.armortype = maxArmor;
@@ -537,33 +558,19 @@ class PlayerData
             switch(m_CurrentClass)
             {
                 case PlayerClass::CLASS_MEDIC:
-
                     break;
-
                 case PlayerClass::CLASS_BERSERKER:
-
                     break;
-
                 case PlayerClass::CLASS_ENGINEER:
-
                     break;
-
                 case PlayerClass::CLASS_DEFENDER:
-
                     break;
-
                 case PlayerClass::CLASS_SHOCKTROOPER:
-
                     break;
-
                 case PlayerClass::CLASS_CLOAKER:
-
                     break;
-
                 case PlayerClass::CLASS_DEMOLITIONIST:
-
                     break;
-
             }
 
             GiveClassWeapons(pPlayer, m_CurrentClass);
@@ -712,11 +719,10 @@ class PlayerData
                 if(stats !is null)
                 {
                     int level = stats.GetLevel();
-                    float resourceMax = g_flBaseMaxResource + (level * def.energyPerLevel);
-                    float resourceRegen = g_flBaseResourceRegen + (level * def.energyRegenPerLevel);
+                    float resourceMax = def.GetPlayerEnergy(level);
+                    float resourceRegen = def.GetPlayerEnergyRegen(level, resourceMax);
                     
                     resources['max'] = resourceMax;
-                    //resources['current'] = resourceMax; // Start with full energy.
                     resources['regen'] = resourceRegen;
                 }
             }
