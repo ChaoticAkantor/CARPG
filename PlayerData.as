@@ -74,7 +74,7 @@ class ClassDefinition
     float GetPlayerEnergy(int level)
     {
         float maxEnergy = baseResource;
-        return maxEnergy * (level * energyPerLevel);
+        return maxEnergy * (1.0f + (level * energyPerLevel));
     }
     float GetPlayerEnergyRegen(int level, float energyRegen)
     {
@@ -105,24 +105,24 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f;
                     def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.14f;
-                    def.energyRegenPerLevel = 0.3f;
+                    def.energyPerLevel = 0.02f; // 200 at level 50.
+                    def.energyRegenPerLevel = 0.1f; // 10% per level.
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f;
+                    def.baseResource = 25.0f;
                     def.baseResourceRegen = 0.5f;
                     def.energyPerLevel = 0.08f; // 100 at level 50.
-                    def.energyRegenPerLevel = 0.01f;
+                    def.energyRegenPerLevel = 0.01f; // 1% per level.
                     break;
                 case PlayerClass::CLASS_XENOLOGIST:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f;
+                    def.baseResource = 25.0f;
                     def.baseResourceRegen = 0.5f;
                     def.energyPerLevel = 0.08f; // 100 at level 50.
-                    def.energyRegenPerLevel = 0.01f;
+                    def.energyRegenPerLevel = 0.01f; // 1% per level.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 100.0f;
@@ -130,41 +130,41 @@ void InitializeClassDefinitions()
                     def.baseResource = 100.0f;
                     def.baseResourceRegen = 1.0f;
                     def.energyPerLevel = 0.04f; // 200 at level 50.
-                    def.energyRegenPerLevel = 0.05f;
+                    def.energyRegenPerLevel = 0.05f; // 5% per level.
                     def.healthPerLevel = 0.04f; // Berserkers gain 4% of base health per level instead.
                     def.armorPerLevel = 0.005f; // Berserkers gain 0.5% of base armor per level instead.
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f;
-                    def.baseResourceRegen = 0.4f;
-                    def.energyPerLevel = 0.78f;
-                    def.energyRegenPerLevel = 1.0f;
+                    def.baseResource = 100.0f; // Shield Base HP.
+                    def.baseResourceRegen = 1.0f;
+                    def.energyPerLevel = 0.2f; // 1000 at level 50. Shield HP Scaling.
+                    def.energyRegenPerLevel = 0.5f; // 50% per level.
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f;
-                    def.baseResourceRegen = 0.5f;
-                    def.energyPerLevel = 0.14f;
-                    def.energyRegenPerLevel = 0.05f;
+                    def.baseResource = 100.0f; // Base Shock Rifle battery capacity.
+                    def.baseResourceRegen = 1.0f;
+                    def.energyPerLevel = 0.1f; // 500 at level 50. Shockrfile battery scaling.
+                    def.energyRegenPerLevel = 0.05f; // 5% per level.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f;
-                    def.baseResourceRegen = 0.6f;
-                    def.energyPerLevel = 0.14f;
-                    def.energyRegenPerLevel = 0.5f;
+                    def.baseResource = 100.0f; // Cloak battery (duration).
+                    def.baseResourceRegen = 1.0f;
+                    def.energyPerLevel = 0.02f; // 200 at level 50. Cloak battery scaling.
+                    def.energyRegenPerLevel = 0.2f; // 20% per level.
                     break;
                 case PlayerClass::CLASS_DEMOLITIONIST:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f;
-                    def.baseResourceRegen = 0.5f;
-                    def.energyPerLevel = 0.14f;
-                    def.energyRegenPerLevel = 0.15f;
+                    def.baseResource = 100.0f; // Energy available to convert into explosive rounds.
+                    def.baseResourceRegen = 1.0f;
+                    def.energyPerLevel = 0.02f; // 200 at level 50. Energy Pool for converting to rounds scaling.
+                    def.energyRegenPerLevel = 0.05f; // 5% per level.
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
