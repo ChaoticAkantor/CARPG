@@ -103,7 +103,6 @@ void RegisterHooks()
     g_Hooks.RegisterHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
     g_Hooks.RegisterHook(Hooks::Weapon::WeaponPrimaryAttack, @OnWeaponPrimaryAttack);
     g_Hooks.RegisterHook(Hooks::Weapon::WeaponSecondaryAttack, @OnWeaponSecondaryAttack);
-    g_Hooks.RegisterHook(Hooks::Weapon::WeaponTertiaryAttack, @OnWeaponTertiaryAttack);
     g_Hooks.RegisterHook(Hooks::Player::ClientPutInServer, @OnClientPutInServer);
     g_Hooks.RegisterHook(Hooks::Player::ClientDisconnect, @OnClientDisconnect);
     g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
@@ -116,7 +115,6 @@ void RemoveHooks()
     g_Hooks.RemoveHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
     g_Hooks.RemoveHook(Hooks::Weapon::WeaponPrimaryAttack, @OnWeaponPrimaryAttack);
     g_Hooks.RemoveHook(Hooks::Weapon::WeaponSecondaryAttack, @OnWeaponSecondaryAttack);
-    g_Hooks.RemoveHook(Hooks::Weapon::WeaponTertiaryAttack, @OnWeaponTertiaryAttack);
     g_Hooks.RemoveHook(Hooks::Player::ClientPutInServer, @OnClientPutInServer);
     g_Hooks.RemoveHook(Hooks::Player::ClientDisconnect, @OnClientDisconnect);
     g_Hooks.RemoveHook(Hooks::Player::ClientSay, @ClientSay);
@@ -349,163 +347,6 @@ HookReturnCode OnWeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ 
         }
     }
     
-    return HOOK_CONTINUE;
-}
-
-// Hook handler for Tertiary Attack.
-HookReturnCode OnWeaponTertiaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
-{
-    if (pPlayer is null || !pPlayer.IsConnected())
-        return HOOK_CONTINUE;
-        
-    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    if(g_PlayerRPGData.exists(steamID))
-    {
-        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-        if(data !is null)
-        {
-            // Handle Engineer Ability.
-            if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
-            {
-                if(!g_PlayerMinions.exists(steamID))
-                {
-                    MinionData MinionData;
-                    @g_PlayerMinions[steamID] = MinionData;
-                }
-
-                MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
-                if(Minion !is null)
-                {
-                    Minion.SpawnMinion(pPlayer);
-                    return HOOK_HANDLED;
-                }
-            }
-
-            // Handle Medic Ability.
-            else if(data.GetCurrentClass() == PlayerClass::CLASS_MEDIC)
-            {
-                if(!g_HealingAuras.exists(steamID))
-                {
-                    HealingAura aura;
-                    @g_HealingAuras[steamID] = aura;
-                }
-
-                HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
-                if(aura !is null)
-                {
-                    aura.ToggleAura(pPlayer);
-                    return HOOK_HANDLED;
-                }
-            }
-            
-            // Handle Shocktrooper Ability.
-            else if(data.GetCurrentClass() == PlayerClass::CLASS_SHOCKTROOPER)
-            {
-                if(!g_ShockRifleData.exists(steamID))
-                {
-                    ShockRifleData shockRifle;
-                    @g_ShockRifleData[steamID] = shockRifle;
-                    shockRifle.Initialize(data.GetCurrentClassStats());
-                }
-
-                ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
-                if(shockRifle !is null)
-                {
-                    shockRifle.EquipShockRifle(pPlayer);
-                    return HOOK_HANDLED;
-                }
-            }
-            
-            // Handle Barrier Ability.
-            else if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER)
-            {
-                if(!g_PlayerBarriers.exists(steamID))
-                {
-                    BarrierData barrier;
-                    @g_PlayerBarriers[steamID] = barrier;
-                    barrier.Initialize(data.GetCurrentClassStats());
-                }
-
-                BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                if(barrier !is null)
-                {
-                    barrier.ToggleBarrier(pPlayer);
-                    return HOOK_HANDLED;
-                }
-            }
-
-            // Handle Bloodlust Ability.
-            else if(data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
-            {
-                if(!g_PlayerBloodlusts.exists(steamID))
-                {
-                    BloodlustData bloodlust;
-                    @g_PlayerBloodlusts[steamID] = bloodlust;
-                    bloodlust.Initialize(data.GetCurrentClassStats());
-                }
-
-                BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
-                if(bloodlust !is null)
-                {
-                    bloodlust.ToggleBloodlust(pPlayer);
-                    return HOOK_HANDLED;
-                }
-            }
-
-            // Handle Cloak Ability.
-            else if(data.GetCurrentClass() == PlayerClass::CLASS_CLOAKER)
-            {
-                if(!g_PlayerCloaks.exists(steamID))
-                {
-                    CloakData cloak;
-                    @g_PlayerCloaks[steamID] = cloak;
-                    cloak.Initialize(data.GetCurrentClassStats());
-                }
-
-                CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
-                if(cloak !is null)
-                {
-                    cloak.ToggleCloak(pPlayer);
-                    return HOOK_HANDLED;
-                }
-            }
-
-            // Handle Demolitionist Ability.
-            else if(data.GetCurrentClass() == PlayerClass::CLASS_DEMOLITIONIST)
-            {
-                if(!g_PlayerExplosiveRounds.exists(steamID))
-                {
-                    ExplosiveRoundsData explosiveRounds;
-                    @g_PlayerExplosiveRounds[steamID] = explosiveRounds;
-                    explosiveRounds.Initialize(data.GetCurrentClassStats());
-                }
-
-                ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-                if(explosiveRounds !is null)
-                {
-                    explosiveRounds.ActivateExplosiveRounds(pPlayer);
-                    return HOOK_HANDLED;
-                }
-            }
-
-            // Handle Xenologist Ability.
-            else if(data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST)
-            {
-                if(!g_XenologistMinions.exists(steamID))
-                {
-                    XenMinionData xenData;
-                    @g_XenologistMinions[steamID] = xenData;
-                }
-
-                XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
-                if(xenMinion !is null)
-                {
-                    xenMinion.SpawnXenMinion(pPlayer);
-                    return HOOK_HANDLED;
-                }
-            }
-        }
-    }
     return HOOK_CONTINUE;
 }
 
@@ -873,6 +714,120 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 }
             }
         }
+        else if(command == "useability")
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null)
+                {
+                    // Engineer ability handling.
+                    if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
+                    {
+                        if(!g_PlayerMinions.exists(steamID))
+                        {
+                            MinionData MinionData;
+                            @g_PlayerMinions[steamID] = MinionData;
+                        }
+                        MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+                        if(Minion !is null)
+                            Minion.SpawnMinion(pPlayer);
+                    }
+                    // Medic ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_MEDIC)
+                    {
+                        if(!g_HealingAuras.exists(steamID))
+                        {
+                            HealingAura aura;
+                            @g_HealingAuras[steamID] = aura;
+                        }
+                        HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
+                        if(aura !is null)
+                            aura.ToggleAura(pPlayer);
+                    }
+                    // Shocktrooper ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_SHOCKTROOPER)
+                    {
+                        if(!g_ShockRifleData.exists(steamID))
+                        {
+                            ShockRifleData shockRifle;
+                            @g_ShockRifleData[steamID] = shockRifle;
+                            shockRifle.Initialize(data.GetCurrentClassStats());
+                        }
+                        ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
+                        if(shockRifle !is null)
+                            shockRifle.EquipShockRifle(pPlayer);
+                    }
+                    // Defender ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER)
+                    {
+                        if(!g_PlayerBarriers.exists(steamID))
+                        {
+                            BarrierData barrier;
+                            @g_PlayerBarriers[steamID] = barrier;
+                            barrier.Initialize(data.GetCurrentClassStats());
+                        }
+                        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                        if(barrier !is null)
+                            barrier.ToggleBarrier(pPlayer);
+                    }
+                    // Berserker ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
+                    {
+                        if(!g_PlayerBloodlusts.exists(steamID))
+                        {
+                            BloodlustData bloodlust;
+                            @g_PlayerBloodlusts[steamID] = bloodlust;
+                            bloodlust.Initialize(data.GetCurrentClassStats());
+                        }
+                        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                        if(bloodlust !is null)
+                            bloodlust.ToggleBloodlust(pPlayer);
+                    }
+                    // Cloaker ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_CLOAKER)
+                    {
+                        if(!g_PlayerCloaks.exists(steamID))
+                        {
+                            CloakData cloak;
+                            @g_PlayerCloaks[steamID] = cloak;
+                            cloak.Initialize(data.GetCurrentClassStats());
+                        }
+                        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+                        if(cloak !is null)
+                            cloak.ToggleCloak(pPlayer);
+                    }
+                    // Demolitionist ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_DEMOLITIONIST)
+                    {
+                        if(!g_PlayerExplosiveRounds.exists(steamID))
+                        {
+                            ExplosiveRoundsData explosiveRounds;
+                            @g_PlayerExplosiveRounds[steamID] = explosiveRounds;
+                            explosiveRounds.Initialize(data.GetCurrentClassStats());
+                        }
+                        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
+                        if(explosiveRounds !is null)
+                            explosiveRounds.ActivateExplosiveRounds(pPlayer);
+                    }
+                    // Xenologist ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST)
+                    {
+                        if(!g_XenologistMinions.exists(steamID))
+                        {
+                            XenMinionData xenData;
+                            @g_XenologistMinions[steamID] = xenData;
+                        }
+                        XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                        if(xenMinion !is null)
+                            xenMinion.SpawnXenMinion(pPlayer);
+                    }
+                    pParams.ShouldHide = true;
+                    return HOOK_HANDLED;
+                }
+            }
+        }
         else if(command == "debug")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -1218,5 +1173,5 @@ void AdjustAmmoForClass(CBasePlayer@ pPlayer)
 
 void ShowHints()
 {
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Welcome to CARPG! Type 'class' to select your class. Press (Tertiary Fire) to use your Class Ability.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Welcome to CARPG! Type 'class' to select your class. Bind say UseAbility to a button to use your Class Ability.\n");
 }
