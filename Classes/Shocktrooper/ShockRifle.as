@@ -92,7 +92,6 @@ class ShockRifleData
 
         // Use ALL current energy for the shock rifle.
         int energyToUse = int(currentEnergy);
-            energyToUse += 100; //Add base shockrifle capacity on top.
         resources['current'] = 0; // Set energy to zero.
         
         // Give the weapon
