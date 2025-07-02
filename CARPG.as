@@ -828,6 +828,16 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 }
             }
         }
+        else if(command == "perks")
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                g_PerkMenu.ShowPerkSlotsMenu(pPlayer);
+                pParams.ShouldHide = true;
+                return HOOK_HANDLED;
+            }
+        }
         else if(command == "debug")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
