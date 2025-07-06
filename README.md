@@ -53,19 +53,21 @@ Can be healed with medkit. Can be revived.
 # Warden - Ice Shield Tank
 Can form an Ice Shield that layers over health and armor that has it's own health pool, making you functionally immortal against all damage types. Works best when used strategically to negate extreme burst damage such as fall damage and explosions.
 Whilst active it absorbs all incoming damage until it shatters, there is no bleed-through.
-Whilst active it will recover 50% slower.
-Has to fully recover between uses, but can be shattered early to start recovering at 100%.
-If shattered early, any remaining health will be refunded over 5s.
+Whilst active it will still recover over time, but 50% slower.
+Has to fully recover between uses, but can be ended early to start recovering at 100%.
+If ended early, any remaining health will be refunded over 5s.
 
 # Shocktrooper - Power Weapon Damage Dealer
-Always has a Shockrifle available, can stow it to regain Battery charge, meaning picked up shock roaches can be consumed to restore a large chunk of battery.
-Damage of improved shockrifle scales with level.
-Battery Capacity increases with level, allowing you to use it for longer (plus base capacity).
-Has to fully recover between uses, but current ammo can be refunded if stowed early.
+Always has a Shockrifle available, can stow it to regain Battery charge, meaning picked up shock roaches can be consumed to restore a large chunk of battery, stowing restores half of current ammo to battery.
+Damage of Shockrifle scales with level.
+Battery Capacity increases with level, allowing you to use it for longer.
+Has to fully recharge between uses.
 
 # Cloaker - Stealthy Damage Dealer 
-Invisiblity cloak that gains a damage bonus based on the amount of energy you have, but drains a signifiant amount of energy per shot. 
-Becomes completely invisible to AI for the duration.
+Invisiblity cloak that gains a damage bonus, that drops as your battery loses charge.
+Becomes completely invisible to AI.
+Battery drains very quickly.
+Battery is drained a signifiant amount per shot.
 Has to fully recover between uses, but can be deactivated early to start recharging.
 
 # Stat Scaling/Leveling
@@ -85,14 +87,14 @@ Has to fully recover between uses, but can be deactivated early to start recharg
  The ammo system also multiplies ammo timers for horror map series for They Hunger and Afraid of Monsters Classic/DC.
 
 # Recovery
- The mod also features it's own recovery system, regeneration will halt for a delay after taking damage.
- HP restores 1% per 1.0s. Meaning recovery will scale with max HP.
- AP restores 1% per 2.0s. Meaning recovery will scale with max AP.
+ The mod also features it's own recovery system. 
+ Regeneration will halt for a delay after taking damage, displaying an icon in the hud.
+ HP restores 1% of Max HP every 1.0s.
+ AP restores 1% of Max AP every 0.5s.
 
 # Difficulty
- The mod also features it's own difficulty system. 
- Damage dealt is slightly increased.
- Damage taken is also increasesd depending on enemy, mostly melee attacks. 
+ The mod also features it's own difficulty setting system.
+ Damage dealt by players is slightly increased, most weapons are rebalanced.
  Zombies and headcrabs specifically are more dangerous.
 
 # Installation instructions:
