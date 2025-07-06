@@ -97,7 +97,11 @@ Has to fully recover between uses, but can be deactivated early to start recharg
 
 # Installation instructions:
 
-1. Extract/drop CARPG into either Sven Co-op/Svencoop_addon/scripts/plugins/ or perferably Svencoop/scripts/plugins/.
+1. Extract/drop CARPG into perferably Svencoop/scripts/plugins/
+or 
+Sven Co-op/Svencoop_addon/scripts/plugins/
+
+Svencoop/scripts/plugins/CARPG should be what the structure looks like.
 
 2. Add the following to your default_plugins.txt located inside Sven Co-op/svencoop/;
 
