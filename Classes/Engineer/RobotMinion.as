@@ -392,7 +392,7 @@ class MinionMenu
             m_pMenu.AddItem("Deploy " + MINION_NAMES[i] + " (Cost: " + MINION_COSTS[i] + ")\n", any(i));
         }
         
-        // Add management options if we have minions
+        // Add management options if we have minions.
         if(m_pOwner.GetMinionCount() > 0) 
         {
             m_pMenu.AddItem("Teleport All\n", any(98));

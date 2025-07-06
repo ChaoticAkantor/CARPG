@@ -49,33 +49,156 @@ namespace Menu
                 "Max Energy: " + int(maxEnergy) + "\n" + 
                 "Ability Recharge: " + energyRegen + "/s\n\n";
 
-                BaseStatsText += "=== Shared Passives: ===\n";
+                BaseStatsText += "=== Class Perks: ===\n";
             
-                // Display any extra passive bonuses gained through leveling.
-                if(m_pStats.GetLevel() >= 10)
-                BaseStatsText += "Lv. 10 - +Poison Shots\n\n";
-                else
-                BaseStatsText += "Lv. 10 - LOCKED\n\n";
+                // Display perks based on class and level
+                switch(m_pOwner.GetCurrentClass())
+                {
+                    case PlayerClass::CLASS_MEDIC:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
 
-                if(m_pStats.GetLevel() >= 20)
-                BaseStatsText += "Lv. 20 - WIP\n\n";
-                else
-                BaseStatsText += "Lv. 20 - LOCKED\n\n";
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
 
-                if(m_pStats.GetLevel() >= 30)
-                BaseStatsText += "Lv. 30 - WIP\n\n";
-                else
-                BaseStatsText += "Lv. 30 - LOCKED\n\n";
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
+                    case PlayerClass::CLASS_BERSERKER:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
 
-                if(m_pStats.GetLevel() >= 40)
-                BaseStatsText += "Lv. 40 - WIP\n\n";
-                else
-                BaseStatsText += "Lv. 40 - LOCKED\n\n";
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
 
-                if(m_pStats.GetLevel() >= 50)
-                BaseStatsText += "Lv. 50 - WIP\n\n";
-                else
-                BaseStatsText += "Lv. 50 - LOCKED\n\n";
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
+                    case PlayerClass::CLASS_ENGINEER:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
+                    case PlayerClass::CLASS_XENOLOGIST:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
+                    case PlayerClass::CLASS_SHOCKTROOPER:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
+                    case PlayerClass::CLASS_DEFENDER:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
+                    case PlayerClass::CLASS_CLOAKER:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
+                    case PlayerClass::CLASS_DEMOLITIONIST:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
+                }
 
             m_pMenu.AddItem(BaseStatsText, null);
     
@@ -194,7 +317,8 @@ namespace Menu
                     break;
                 }
             }
-
+            
+            /* - Commented out for now whilst I decide how to deal with this info later.
             // Universal ammo regeneration stats.
             m_pMenu.AddItem("=== Ammo Regeneration ===", null);
             
@@ -239,6 +363,7 @@ namespace Menu
                                       (ammoType.delay * flAmmoTick) + "s" + thresholdInfo;
                 m_pMenu.AddItem(explosiveInfo, null);
             }
+            */
             
             m_pMenu.Register();
             m_pMenu.Open(0, 0, pPlayer);

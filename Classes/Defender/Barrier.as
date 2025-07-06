@@ -9,13 +9,13 @@ dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
 
 class BarrierData
 {
+    private ClassStats@ m_pStats = null;
     private bool m_bActive = false;
     private float m_flBaseDamageReduction = 1.00f; // Base damage reduction.
     private float m_flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
     private float m_flBarrierDamageToEnergyMult = 1.0f; // Damage taken to energy drain factor. % damage dealt to shield, lower = tougher shield.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
-    private ClassStats@ m_pStats = null;
     private float m_flGlowUpdateInterval = 0.1f;
 
     private float m_flRefundAmount = 0.0f;
@@ -26,6 +26,7 @@ class BarrierData
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
+    ClassStats@ GetStats() {return m_pStats;}
     float GetBaseDamageReduction() { return m_flBaseDamageReduction; }
     float GetDamageToEnergyMultiplier() { return m_flBarrierDamageToEnergyMult; }
     
@@ -67,7 +68,7 @@ class BarrierData
             ApplyGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield On!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Activated!\n");
         }
         else // MANUAL DEACTIVATION.
         {
@@ -78,7 +79,7 @@ class BarrierData
             RemoveGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // MANUALLY SHATTERED.
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Refunded!\n"); // MANUALLY SHATTERED.
             EffectBarrierShatter(pPlayer.pev.origin);
         }
 
@@ -90,7 +91,7 @@ class BarrierData
         if(m_pStats is null)
             return 0.0f;
             
-        return m_flBaseDamageReduction; // Now always 100% damage reduction.
+        return m_flBaseDamageReduction; // Now always 100% damage reduction to player.
     }
 
     void Update(CBasePlayer@ pPlayer)

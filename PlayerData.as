@@ -139,7 +139,7 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Shield Base HP.
                     def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.2f; // 1000 at level 50. Shield HP Scaling.
+                    def.energyPerLevel = 0.18f; // 1000 at level 50. Shield HP Scaling.
                     def.energyRegenPerLevel = 0.5f; // 50% per level.
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
@@ -405,82 +405,6 @@ class PlayerData
                     };
                     @g_PlayerClassResources[steamID] = resources;
                 }
-
-                // Initialize class-specific data
-                switch(newClass)
-                {
-                    case PlayerClass::CLASS_MEDIC:
-                        if(!g_HealingAuras.exists(steamID))
-                        {
-                            HealingAura data;
-                            data.Initialize(GetCurrentClassStats());
-                            g_HealingAuras[steamID] = data;
-                        }
-                        break;
-                        
-                    case PlayerClass::CLASS_DEFENDER:
-                        if(!g_PlayerBarriers.exists(steamID))
-                        {
-                            BarrierData data;
-                            data.Initialize(GetCurrentClassStats());
-                            g_PlayerBarriers[steamID] = data;
-                        }
-                        break;
-                    
-                    case PlayerClass::CLASS_ENGINEER:
-                        if(!g_PlayerMinions.exists(steamID))
-                        {
-                            MinionData data;
-                            data.Initialize(GetCurrentClassStats());
-                            g_PlayerMinions[steamID] = data;
-                        }
-                        break;
-
-                        case PlayerClass::CLASS_XENOLOGIST:
-                        if(!g_XenologistMinions.exists(steamID))
-                        {
-                            XenMinionData data;
-                            data.Initialize(GetCurrentClassStats());
-                            g_XenologistMinions[steamID] = data;
-                        }
-                        break;
-                        
-                    case PlayerClass::CLASS_SHOCKTROOPER:
-                        if(!g_ShockRifleData.exists(steamID))
-                        {
-                            ShockRifleData data;
-                            data.Initialize(GetCurrentClassStats());
-                            g_ShockRifleData[steamID] = data;
-                        }
-                        break;
-                        
-                    case PlayerClass::CLASS_BERSERKER:
-                        if(!g_PlayerBloodlusts.exists(steamID))
-                        {
-                            BloodlustData data;
-                            data.Initialize(GetCurrentClassStats());
-                            @g_PlayerBloodlusts[steamID] = data;
-                        }
-                        break;
-
-                    case PlayerClass::CLASS_CLOAKER:
-                        if(!g_PlayerCloaks.exists(steamID))
-                        {
-                            CloakData data;
-                            data.Initialize(GetCurrentClassStats());
-                            g_PlayerCloaks[steamID] = data;
-                        }
-                        break;
-
-                    case PlayerClass::CLASS_DEMOLITIONIST:
-                        if(!g_PlayerExplosiveRounds.exists(steamID))
-                        {
-                            ExplosiveRoundsData data;
-                            data.Initialize(GetCurrentClassStats());
-                            g_PlayerExplosiveRounds[steamID] = data;
-                        }
-                        break;
-                }
                 
                 CalculateStats(pPlayer);
                 
@@ -515,7 +439,86 @@ class PlayerData
     {
         if(pPlayer is null || m_CurrentClass == PlayerClass::CLASS_NONE)
             return;
+            
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+
+        // Initialize abilities if they don't exist.
+        // Initialize class-specific data.
+        switch(m_CurrentClass)
+        {
+            case PlayerClass::CLASS_MEDIC:
+                if(!g_HealingAuras.exists(steamID))
+                {
+                    HealingAura data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_HealingAuras[steamID] = data;
+                }
+                break;
+                        
+            case PlayerClass::CLASS_DEFENDER:
+                if(!g_PlayerBarriers.exists(steamID))
+                {
+                    BarrierData data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_PlayerBarriers[steamID] = data;
+                 }
+                 break;
                     
+            case PlayerClass::CLASS_ENGINEER:
+                if(!g_PlayerMinions.exists(steamID))
+                {
+                    MinionData data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_PlayerMinions[steamID] = data;
+                }
+                break;
+
+            case PlayerClass::CLASS_XENOLOGIST:
+                if(!g_XenologistMinions.exists(steamID))
+                {
+                    XenMinionData data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_XenologistMinions[steamID] = data;
+                }
+                break;
+                        
+              case PlayerClass::CLASS_SHOCKTROOPER:
+                if(!g_ShockRifleData.exists(steamID))
+                {
+                    ShockRifleData data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_ShockRifleData[steamID] = data;
+                }
+                break;
+                        
+               case PlayerClass::CLASS_BERSERKER:
+                if(!g_PlayerBloodlusts.exists(steamID))
+                {
+                    BloodlustData data;
+                    data.Initialize(GetCurrentClassStats());
+                    @g_PlayerBloodlusts[steamID] = data;
+                }
+                break;
+
+               case PlayerClass::CLASS_CLOAKER:
+                   if(!g_PlayerCloaks.exists(steamID))
+                   {
+                      CloakData data;
+                     data.Initialize(GetCurrentClassStats());
+                    g_PlayerCloaks[steamID] = data;
+                }
+                break;
+
+               case PlayerClass::CLASS_DEMOLITIONIST:
+                if(!g_PlayerExplosiveRounds.exists(steamID))
+                {
+                    ExplosiveRoundsData data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_PlayerExplosiveRounds[steamID] = data;
+                }
+                break;
+        }
+
         ClassStats@ stats = GetCurrentClassStats();
         if(stats is null) return;
                 
@@ -534,8 +537,6 @@ class PlayerData
             pPlayer.pev.max_health = maxHealth;
             pPlayer.pev.armortype = maxArmor;
 
-            // Update resource values.
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(!g_PlayerClassResources.exists(steamID))
             {
                 dictionary resources;

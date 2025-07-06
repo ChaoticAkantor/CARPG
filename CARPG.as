@@ -421,9 +421,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null)
         {
-            if(data.GetCurrentClassStats().GetLevel() >= 10) // Add blood poisoning to all classes at level 10.
+            if(data.GetCurrentClassStats().GetLevel() >= 10) // Add blood poisoning damage. Reserved as a future perk.
             {
-                info.bitsDamageType |= DMG_POISON;
+                //info.bitsDamageType |= DMG_POISON; // Disabled for now.
             }
 
             // Then handle class-specific damage types
@@ -540,69 +540,79 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
 
 HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
 {
+    if(pDamageInfo is null || pDamageInfo.pVictim is null) 
+        return HOOK_CONTINUE;
+
     CBasePlayer@ pPlayer = cast<CBasePlayer@>(pDamageInfo.pVictim);
-    if(pPlayer !is null && pDamageInfo.flDamage > 0)
-    {
-        StopPlayerRegen(pPlayer); // Stop regen temporarily when taking damage.
-        
-        // Handle Barrier damage reduction and energy drain from damage blocked.
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(g_PlayerBarriers.exists(steamID))
+    if(pPlayer is null || pDamageInfo.flDamage <= 0) 
+        return HOOK_CONTINUE;
+
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(!g_PlayerBarriers.exists(steamID)) 
+        return HOOK_CONTINUE;
+
+    BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+    if(barrier is null || !barrier.IsActive())
+        return HOOK_CONTINUE;
+
+    // Get attacker before any damage calculations
+    CBaseEntity@ attacker = pDamageInfo.pAttacker;
+    if(attacker is null)
+        return HOOK_CONTINUE;
+
+    float incomingDamage = pDamageInfo.flDamage;
+    float reduction = barrier.GetDamageReduction();
+    float blockedDamage = incomingDamage * reduction;
+    pDamageInfo.flDamage = incomingDamage - blockedDamage;
+
+    // Check for Deflect perk and apply effect.
+
+        if(barrier.HasStats() && barrier.GetStats().GetLevel() >= 5) // Level req.
         {
-            BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-            if(barrier !is null && barrier.IsActive())
-            {
-                float incomingDamage = pDamageInfo.flDamage;
-                float reduction = barrier.GetDamageReduction();
-                
-                // Calculate damage blocked.
-                float blockedDamage = incomingDamage * reduction;
+            float deflectDamage = incomingDamage * 0.5f;
+            attacker.TakeDamage(pPlayer.pev, pPlayer.pev, deflectDamage, DMG_SLOWFREEZE);
 
-                // Calculate final damage.
-                pDamageInfo.flDamage = incomingDamage - blockedDamage;
-                
-                // Drain energy based on blocked damage.
-                barrier.DrainEnergy(pPlayer, blockedDamage);
-                
-                // Play hit sound with random pitch.
-                int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
+            // Need some kind of feedback here.
+        }
 
-                // Add visual effect for damage blocked.
-                Vector origin = pPlayer.pev.origin;
-                //origin.z += 32; // Offset to center of entity
+        // Play hit sound with random pitch.
+        int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+        g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
 
-                // Create ricochet effect.
-                NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-                    ricMsg.WriteByte(TE_ARMOR_RICOCHET);
-                    ricMsg.WriteCoord(origin.x);
-                    ricMsg.WriteCoord(origin.y);
-                    ricMsg.WriteCoord(origin.z);
-                    ricMsg.WriteByte(1); // Scale.
+        // Add visual effect for damage blocked.
+        Vector origin = pPlayer.pev.origin;
+        //origin.z += 32; // Offset to center of entity
+
+        // Create ricochet effect.
+        NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+                ricMsg.WriteByte(TE_ARMOR_RICOCHET);
+                ricMsg.WriteCoord(origin.x);
+                ricMsg.WriteCoord(origin.y);
+                ricMsg.WriteCoord(origin.z);
+                ricMsg.WriteByte(1); // Scale.
                 ricMsg.End();
 
-                // Add effect to chip off metal chunks as barrier takes damage.
-                NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
-                    breakMsg.WriteByte(TE_BREAKMODEL);
-                    breakMsg.WriteCoord(origin.x);
-                    breakMsg.WriteCoord(origin.y);
-                    breakMsg.WriteCoord(origin.z);
-                    breakMsg.WriteCoord(3); // Size.
-                    breakMsg.WriteCoord(3); // Size.
-                    breakMsg.WriteCoord(3); // Size.
-                    breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
-                    breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
-                    breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
-                    breakMsg.WriteByte(20); // Gib random speed and direction.
-                    breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-                    breakMsg.WriteByte(2); // Count.
-                    breakMsg.WriteByte(10); // Lifetime.
-                    breakMsg.WriteByte(1); // Sound Flags.
+        // Add effect to chip off metal chunks as barrier takes damage.
+        NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+                breakMsg.WriteByte(TE_BREAKMODEL);
+                breakMsg.WriteCoord(origin.x);
+                breakMsg.WriteCoord(origin.y);
+                breakMsg.WriteCoord(origin.z);
+                breakMsg.WriteCoord(3); // Size.
+                breakMsg.WriteCoord(3); // Size.
+                breakMsg.WriteCoord(3); // Size.
+                breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+                breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+                breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
+                breakMsg.WriteByte(20); // Gib random speed and direction.
+                breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+                breakMsg.WriteByte(2); // Count.
+                breakMsg.WriteByte(10); // Lifetime.
+                breakMsg.WriteByte(1); // Sound Flags.
                 breakMsg.End();
-            }
-        }
-    }
-    
+
+    barrier.DrainEnergy(pPlayer, blockedDamage);
+
     return HOOK_CONTINUE;
 }
 
@@ -826,16 +836,6 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                     pParams.ShouldHide = true;
                     return HOOK_HANDLED;
                 }
-            }
-        }
-        else if(command == "perks")
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerRPGData.exists(steamID))
-            {
-                g_PerkMenu.ShowPerkSlotsMenu(pPlayer);
-                pParams.ShouldHide = true;
-                return HOOK_HANDLED;
             }
         }
         else if(command == "debug")
