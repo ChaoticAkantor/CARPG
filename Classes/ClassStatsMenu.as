@@ -147,7 +147,7 @@ namespace Menu
                     case PlayerClass::CLASS_DEFENDER:
                     {
                         if(m_pStats.GetLevel() >= 10)
-                            BaseStatsText += "N/A.\n";
+                            BaseStatsText += "Deflect - Ice Shield deflects 50% of damage to attacker.\n";
                         else
                             BaseStatsText += "< LOCKED - Lv. 10 >\n";
 
@@ -282,7 +282,6 @@ namespace Menu
                             "Ice Shield Max Health: " + int(maxEnergy) + "\n" + 
                             "Ice Shield Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
                             "Ice Shield Regen Whilst Active: " + (energyRegen * 0.5) + "/s\n\n";
-                            // Add passive bonus at Lv25 that refunds 25% of cost when shattered.
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }
