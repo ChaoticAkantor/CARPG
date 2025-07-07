@@ -565,53 +565,50 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     float blockedDamage = incomingDamage * reduction;
     pDamageInfo.flDamage = incomingDamage - blockedDamage;
 
-    // Check for Deflect perk and apply effect.
+    // Apply Deflect perk if at the required level.
+    if(barrier.HasStats() && barrier.GetStats().GetLevel() >= 5) // Level req.
+    {
+        float deflectDamage = incomingDamage * 0.5f;
+        attacker.TakeDamage(pPlayer.pev, pPlayer.pev, deflectDamage, DMG_SLOWFREEZE); // Apply the damage as slow freeze type.
+    }
 
-        if(barrier.HasStats() && barrier.GetStats().GetLevel() >= 5) // Level req.
-        {
-            float deflectDamage = incomingDamage * 0.5f;
-            attacker.TakeDamage(pPlayer.pev, pPlayer.pev, deflectDamage, DMG_SLOWFREEZE);
+    // Play hit sound with random pitch.
+    int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+    g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
 
-            // Need some kind of feedback here.
-        }
+    Vector origin = pPlayer.pev.origin; // Player as origin.
 
-        // Play hit sound with random pitch.
-        int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
-        g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
+    //origin.z += 32; // Offset to center of entity
 
-        // Add visual effect for damage blocked.
-        Vector origin = pPlayer.pev.origin;
-        //origin.z += 32; // Offset to center of entity
+    // Create ricochet effect.
+    NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+        ricMsg.WriteByte(TE_ARMOR_RICOCHET);
+        ricMsg.WriteCoord(origin.x);
+        ricMsg.WriteCoord(origin.y);
+        ricMsg.WriteCoord(origin.z);
+        ricMsg.WriteByte(1); // Scale.
+        ricMsg.End();
 
-        // Create ricochet effect.
-        NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-                ricMsg.WriteByte(TE_ARMOR_RICOCHET);
-                ricMsg.WriteCoord(origin.x);
-                ricMsg.WriteCoord(origin.y);
-                ricMsg.WriteCoord(origin.z);
-                ricMsg.WriteByte(1); // Scale.
-                ricMsg.End();
+    // Add effect to chip off chunks as barrier takes damage.
+    NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+        breakMsg.WriteByte(TE_BREAKMODEL);
+        breakMsg.WriteCoord(origin.x);
+        breakMsg.WriteCoord(origin.y);
+        breakMsg.WriteCoord(origin.z);
+        breakMsg.WriteCoord(3); // Size.
+        breakMsg.WriteCoord(3); // Size.
+        breakMsg.WriteCoord(3); // Size.
+        breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+        breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+        breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
+        breakMsg.WriteByte(20); // Gib random speed and direction.
+        breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+        breakMsg.WriteByte(2); // Count.
+        breakMsg.WriteByte(10); // Lifetime.
+        breakMsg.WriteByte(1); // Sound Flags.
+        breakMsg.End();
 
-        // Add effect to chip off metal chunks as barrier takes damage.
-        NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
-                breakMsg.WriteByte(TE_BREAKMODEL);
-                breakMsg.WriteCoord(origin.x);
-                breakMsg.WriteCoord(origin.y);
-                breakMsg.WriteCoord(origin.z);
-                breakMsg.WriteCoord(3); // Size.
-                breakMsg.WriteCoord(3); // Size.
-                breakMsg.WriteCoord(3); // Size.
-                breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
-                breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
-                breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
-                breakMsg.WriteByte(20); // Gib random speed and direction.
-                breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-                breakMsg.WriteByte(2); // Count.
-                breakMsg.WriteByte(10); // Lifetime.
-                breakMsg.WriteByte(1); // Sound Flags.
-                breakMsg.End();
-
-    barrier.DrainEnergy(pPlayer, blockedDamage);
+    barrier.DrainEnergy(pPlayer, blockedDamage); // Apply energy drain to the barrier health.
 
     return HOOK_CONTINUE;
 }
