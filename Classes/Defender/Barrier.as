@@ -65,7 +65,7 @@ class BarrierData
             // Activate.
             m_bActive = true;
             m_flLastDrainTime = currentTime;
-            ApplyGlow(pPlayer);
+            ToggleGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Activated!\n");
@@ -76,7 +76,7 @@ class BarrierData
 
             // Deactivate Manually.
             m_bActive = false;
-            RemoveGlow(pPlayer);
+            ToggleGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Refunded!\n"); // MANUALLY SHATTERED.
@@ -99,9 +99,12 @@ class BarrierData
         if(!m_bActive || pPlayer is null)
             return;
 
+        ToggleGlow(pPlayer); // Handle glow state.
+
         if(!pPlayer.IsAlive()) // Deactivate if player dies.
         {
             DeactivateBarrier(pPlayer);
+            ToggleGlow(pPlayer);
             return;
         }
 
@@ -158,7 +161,7 @@ class BarrierData
         if(m_bActive)
         {
             m_bActive = false;
-            RemoveGlow(pPlayer);
+            ToggleGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP); // Stop looping sound here too.
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // SHATTERED - DESTROYED.
@@ -167,27 +170,28 @@ class BarrierData
         }
     }
 
-    private void ApplyGlow(CBasePlayer@ pPlayer)
+    private void ToggleGlow(CBasePlayer@ pPlayer)
     {
+        // Apply glow shell to player based on if ability is active or not.
         if(pPlayer is null)
             return;
-        
-        // Apply glow shell.
-        pPlayer.pev.renderfx = kRenderFxGlowShell;
-        pPlayer.pev.rendermode = kRenderNormal;
-        pPlayer.pev.rendercolor = BARRIER_COLOR;
-        pPlayer.pev.renderamt = 5; // Thickness.
-    }
 
-    private void RemoveGlow(CBasePlayer@ pPlayer)
-    {
-        if(pPlayer is null)
-            return;
-        
-        pPlayer.pev.renderfx = kRenderFxNone;
-        pPlayer.pev.rendermode = kRenderNormal;
-        pPlayer.pev.renderamt = 255;
-        pPlayer.pev.rendercolor = Vector(255, 255, 255);
+        if(m_bActive)
+        {
+            // Apply glow shell if ability is active.
+            pPlayer.pev.renderfx = kRenderFxGlowShell;
+            pPlayer.pev.rendermode = kRenderNormal;
+            pPlayer.pev.rendercolor = BARRIER_COLOR;
+            pPlayer.pev.renderamt = 5; // Thickness.
+        }
+        else
+        {
+            // Remove glow shell if ability is inactive.
+            pPlayer.pev.renderfx = kRenderFxNone;
+            pPlayer.pev.rendermode = kRenderNormal;
+            pPlayer.pev.renderamt = 255;
+            pPlayer.pev.rendercolor = Vector(255, 255, 255);
+        }
     }
 
     private void EffectBarrierShatter(Vector origin)
