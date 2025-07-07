@@ -339,7 +339,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
                             int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
                             
-                            resourceInfo += "[Shock Rifle: " + (hasShockRifleEquipped ? " EQUIPPED " : " STOWED ") + "] "; // Shockrifle battery.
+                            resourceInfo += "[Shock Rifle: " + (hasShockRifleEquipped ? " EQUIPPED" : " STORED") + "] "; // Shockrifle battery.
                             break;
                         }
 
