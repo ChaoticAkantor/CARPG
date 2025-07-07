@@ -121,7 +121,7 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                     def.baseResource = 25.0f;
                     def.baseResourceRegen = 0.5f;
-                    def.energyPerLevel = 0.08f; // 100 at level 50.
+                    def.energyPerLevel = 0.06f; // 100 at level 50.
                     def.energyRegenPerLevel = 0.01f; // 1% per level.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
@@ -138,17 +138,17 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Shield Base HP.
-                    def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.18f; // 1000 at level 50. Shield HP Scaling.
-                    def.energyRegenPerLevel = 0.5f; // 50% per level.
+                    def.baseResourceRegen = 5.0f; // Defender needs higher base regen to keep up with shield HP scaling.
+                    def.energyPerLevel = 0.1f; // 500 at level 50. Shield HP Scaling.
+                    def.energyRegenPerLevel = 0.02f; // 2% per level.
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Base Shock Rifle battery capacity.
-                    def.baseResourceRegen = 1.0f;
+                    def.baseResourceRegen = 2.0f;
                     def.energyPerLevel = 0.1f; // 500 at level 50. Shockrfile battery scaling.
-                    def.energyRegenPerLevel = 0.05f; // 5% per level.
+                    def.energyRegenPerLevel = 0.01f; // 1% per level.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
