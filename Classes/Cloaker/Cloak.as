@@ -108,7 +108,7 @@ class CloakData
                     // Sounds - activation and loop.
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak On!\n");
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Activated!\n");
                 }
                 else
                 {
@@ -139,7 +139,7 @@ class CloakData
         // Stop looping sound and play deactivation sound.
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.0f, ATTN_NORM, SND_STOP);
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);    
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Off!\n");
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Disabled!\n");
         
         m_flLastEnergyConsumed = 0.0f;
     }
@@ -149,7 +149,7 @@ class CloakData
         if(!m_bActive || pPlayer is null)
             return;
 
-        // Deactivate if player is dead
+        // Deactivate if player is dead.
         if(!pPlayer.IsAlive())
         {
             DeactivateCloak(pPlayer);
