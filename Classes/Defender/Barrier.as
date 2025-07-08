@@ -166,7 +166,6 @@ class BarrierData
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // SHATTERED - DESTROYED.
             EffectBarrierShatter(pPlayer.pev.origin);
-            // Add Lv25 passive bonus here to refund 25% of cost when shattered from damage. OR refund a scaling % per level instead.
         }
     }
 

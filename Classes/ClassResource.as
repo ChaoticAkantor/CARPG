@@ -146,9 +146,13 @@ void RegenClassResource()
                 float regen = float(resources['regen']);
 
                 // Special case for Defender with active barrier. Regen at a reduced rate.
+                BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                 if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && isBarrierActive)
                 {
-                    regen *= 0.5f; // Half regeneration rate.
+                    if(barrier.HasStats() && barrier.GetStats().GetLevel() >= g_iPerk2LvlReq) // Defender Frosted perk.
+                        regen *= 0.50f; // 50% regeneration rate when active instead if we meet the level requirement.
+                    else
+                        regen *= 0.25f; // Otherwise 25% regeneration rate when active.
                 }
 
                 if(current < maximum)

@@ -46,7 +46,7 @@ namespace Menu
             string BaseStatsText = "=== Basic Stats: ===\n" +
                 "Max Health: " + int(pPlayer.pev.max_health) + " HP\n" + 
                 "Max Armor: " + int(pPlayer.pev.armortype) + " AP\n" + 
-                "Max Energy: " + int(maxEnergy) + "\n" + 
+                "Max Ability Charge: " + int(maxEnergy) + "\n" + 
                 "Ability Recharge: " + energyRegen + "/s\n\n";
 
                 BaseStatsText += "=== Class Perks: ===\n";
@@ -146,18 +146,18 @@ namespace Menu
                     }
                     case PlayerClass::CLASS_DEFENDER:
                     {
-                        if(m_pStats.GetLevel() >= 10)
-                            BaseStatsText += "Deflect - Ice Shield deflects 50% of damage to attacker.\n";
+                        if(m_pStats.GetLevel() >= g_iPerk1LvlReq)
+                            BaseStatsText += "Reflective Ice - Ice Shield reflects 50% of damage to attacker.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "Reflective Ice - < LOCKED - Lv. 10 >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
-                            BaseStatsText += "N/A.\n";
+                        if(m_pStats.GetLevel() >= g_iPerk2LvlReq)
+                            BaseStatsText += "Frosted - Ice Shield active regeneration penalty reduced to 50%.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "Frosted - < LOCKED - Lv. 20 >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
-                            BaseStatsText += "N/A.\n";
+                        if(m_pStats.GetLevel() >= g_iPerk3LvlReq)
+                            BaseStatsText += "N/A - None.\n";
                         else
                             BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
                         break;
@@ -281,7 +281,7 @@ namespace Menu
                         string DefenderStatsText = "=== Defender Stats: ===" + "\n" + 
                             "Ice Shield Max Health: " + int(maxEnergy) + "\n" + 
                             "Ice Shield Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
-                            "Ice Shield Regen Whilst Active: " + (energyRegen * 0.5) + "/s\n\n";
+                            "Ice Shield Regen Whilst Active: " + (m_pStats.GetLevel() >= g_iPerk2LvlReq ? (energyRegen * 0.75) : (energyRegen * 0.5)) + "/s\n\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }

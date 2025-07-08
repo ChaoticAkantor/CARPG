@@ -4,6 +4,9 @@ dictionary g_PlayerRPGData;
 
 // Used for debug menu.
 int g_iMaxLevel = 50;
+int g_iPerk1LvlReq = 10; // Level required to unlock first perk.
+int g_iPerk2LvlReq = 20; // Level required to unlock first perk.
+int g_iPerk3LvlReq = 30; // Level required to unlock first perk.
 
 dictionary g_ClassNames = 
 {
@@ -78,7 +81,7 @@ class ClassDefinition
     }
     float GetPlayerEnergyRegen(int level, float energyRegen)
     {
-        return baseResourceRegen * (baseResourceRegen + (level * energyRegenPerLevel));
+        return baseResourceRegen * (1.0f + (level * energyRegenPerLevel));
     }
 }
 
@@ -139,8 +142,8 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Shield Base HP.
                     def.baseResourceRegen = 5.0f; // Defender needs higher base regen to keep up with shield HP scaling.
-                    def.energyPerLevel = 0.1f; // 500 at level 50. Shield HP Scaling.
-                    def.energyRegenPerLevel = 0.02f; // 2% per level.
+                    def.energyPerLevel = 0.08f; // 500 at level 50. Shield HP Scaling.
+                    def.energyRegenPerLevel = 0.06f; // 6% per level.
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;

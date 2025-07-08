@@ -421,7 +421,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null)
         {
-            if(data.GetCurrentClassStats().GetLevel() >= 10) // Add blood poisoning damage. Reserved as a future perk.
+            if(data.GetCurrentClassStats().GetLevel() >= g_iPerk1LvlReq) // Add blood poisoning damage. Reserved as a future perk.
             {
                 //info.bitsDamageType |= DMG_POISON; // Disabled for now.
             }
@@ -565,11 +565,11 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     float blockedDamage = incomingDamage * reduction;
     pDamageInfo.flDamage = incomingDamage - blockedDamage;
 
-    // Apply Deflect perk if at the required level.
-    if(barrier.HasStats() && barrier.GetStats().GetLevel() >= 5) // Level req.
+    // Apply Reflect perk if at the required level.
+    if(barrier.HasStats() && barrier.GetStats().GetLevel() >= g_iPerk1LvlReq) // Level req.
     {
-        float deflectDamage = incomingDamage * 0.5f;
-        attacker.TakeDamage(pPlayer.pev, pPlayer.pev, deflectDamage, DMG_SLOWFREEZE); // Apply the damage as slow freeze type.
+        float reflectDamage = incomingDamage * 0.5f;
+        attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_SLOWFREEZE); // Apply the damage as slow freeze type.
     }
 
     // Play hit sound with random pitch.
