@@ -258,7 +258,7 @@ namespace Menu
                     if(roboMinion !is null)
                     {
                         string EngineerStatsText = "=== Engineer Stats: ===" + "\n" + 
-                        "Robot Minions Health: " + int(roboMinion.GetScaledHealth()) + "\n" + 
+                        "Robot Minions Health: " + int(roboMinion.GetScaledHealth()) + "HP\n" + 
                         "Robot Minions Damage: +" + int(roboMinion.GetScaledDamage() * 100) + "%\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
@@ -271,7 +271,7 @@ namespace Menu
                     if(xenMinion !is null)
                     {
                         string XenologistStatsText = "=== Xenologist Stats: ===" + "\n" + 
-                        "Xen Creatures Health: " + int(xenMinion.GetScaledHealth()) + "\n" + 
+                        "Xen Creatures Health: " + int(xenMinion.GetScaledHealth()) + "HP\n" + 
                         "Xen Creatures Damage: +" + int(xenMinion.GetScaledDamage() * 100) + "%\n\n";
 
                         m_pMenu.AddItem(XenologistStatsText, null);
@@ -297,7 +297,7 @@ namespace Menu
                     if(barrier !is null)
                     {
                         string DefenderStatsText = "=== Defender Stats: ===" + "\n" + 
-                            "Ice Shield Max Health: " + int(maxEnergy) + "\n" + 
+                            "Ice Shield Durability: " + int(maxEnergy) + "HP\n" + 
                             "Ice Shield Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
                             "Ice Shield Regen Whilst Active: " + (m_pStats.GetLevel() >= g_iPerk2LvlReq ? (energyRegen * 0.75) : (energyRegen * 0.5)) + "/s\n\n";
 
@@ -339,10 +339,10 @@ namespace Menu
                     if(sentry !is null)
                     {
                         string EngineerStatsText = "=== Engineer Stats: ===" + "\n" + 
-                            "Sentry Health: " + int(sentry.GetScaledHealth()) + "\n" +
-                            "Sentry Damage: +" + int(sentry.GetScaledDamage() * 100) + "\n" + 
-                            "Healing Amount: " + int(sentry.GetHealAmount()) + " HP/s\n" +
-                            "Healing Radius: " + int(sentry.GetHealRadius() / 16) + "ft\n" +
+                            "Sentry Health: " + int(sentry.GetScaledHealth()) + "HP\n" +
+                            "Sentry Damage: +" + int(sentry.GetScaledDamage() * 100) + "%\n" + 
+                            "Regeneration Buff: " + int(sentry.GetHealAmount()) + " HP/s\n" +
+                            //"Healing Radius: " + int(sentry.GetHealRadius() / 16) + "ft\n" +
                             "Energy Drain: " + int(sentry.GetEnergyDrain()) + "/s\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);

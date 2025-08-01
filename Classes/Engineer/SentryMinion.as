@@ -11,10 +11,10 @@ class SentryData
 {
     private EHandle m_hSentry;
     private bool m_bIsActive = false;
-    private float m_flBaseHealth = 100.0; // Base health of the sentry.
-    private float m_flHealthScale = 0.40; // Health scaling per level.
+    private float m_flBaseHealth = 200.0; // Base health of the sentry.
+    private float m_flHealthScale = 0.50; // Health scaling per level.
     private float m_flDamageScale = 0.04; // Damage scaling per level.
-    private float m_flRadius = 256.0; // Radius in which the sentry can heal players.
+    private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
     private float m_flHealScale = 0.06f; // Healing scaling per level.
     private float m_flSelfHealModifier = 3.0f; // How much the sentry's self healing is modified.
@@ -339,7 +339,7 @@ class SentryData
             auramsg.WriteCoord(pos.z);
             auramsg.WriteCoord(pos.x);
             auramsg.WriteCoord(pos.y);
-            auramsg.WriteCoord(pos.z + m_flRadius); // Height.
+            auramsg.WriteCoord(pos.z + 24); // Height.
             auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame.
             auramsg.WriteByte(16); // Frame rate.
