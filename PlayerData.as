@@ -5,8 +5,8 @@ dictionary g_PlayerRPGData;
 // Used for debug menu.
 int g_iMaxLevel = 50;
 int g_iPerk1LvlReq = 10; // Level required to unlock first perk.
-int g_iPerk2LvlReq = 20; // Level required to unlock first perk.
-int g_iPerk3LvlReq = 30; // Level required to unlock first perk.
+int g_iPerk2LvlReq = 20;
+int g_iPerk3LvlReq = 30;
 
 dictionary g_ClassNames = 
 {
@@ -14,6 +14,7 @@ dictionary g_ClassNames =
     {PlayerClass::CLASS_MEDIC, "Medic"},
     {PlayerClass::CLASS_BERSERKER, "Berserker"},
     {PlayerClass::CLASS_ENGINEER, "Engineer"},
+    {PlayerClass::CLASS_ROBOMANCER, "Robomancer"},
     {PlayerClass::CLASS_XENOLOGIST, "Xenologist"},
     {PlayerClass::CLASS_DEFENDER, "Warden"},
     {PlayerClass::CLASS_SHOCKTROOPER, "Shocktrooper"},
@@ -26,6 +27,7 @@ array<PlayerClass> g_ClassList =
     PlayerClass::CLASS_MEDIC,
     PlayerClass::CLASS_BERSERKER,
     PlayerClass::CLASS_ENGINEER,
+    PlayerClass::CLASS_ROBOMANCER,
     PlayerClass::CLASS_XENOLOGIST,
     PlayerClass::CLASS_DEFENDER,
     PlayerClass::CLASS_SHOCKTROOPER,
@@ -39,6 +41,7 @@ enum PlayerClass
     CLASS_MEDIC,
     CLASS_BERSERKER,
     CLASS_ENGINEER,
+    CLASS_ROBOMANCER,
     CLASS_XENOLOGIST,
     CLASS_DEFENDER,
     CLASS_SHOCKTROOPER,
@@ -100,7 +103,7 @@ void InitializeClassDefinitions()
         {
             ClassDefinition@ def = ClassDefinition(string(g_ClassNames[pClass]));
 
-            // Set class-specific base stats and scaling
+            // Set class-specific base stats and scaling.
             switch(pClass)
             {
                 case PlayerClass::CLASS_MEDIC:
@@ -112,6 +115,14 @@ void InitializeClassDefinitions()
                     def.energyRegenPerLevel = 0.1f; // 10% per level.
                     break;
                 case PlayerClass::CLASS_ENGINEER:
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 25.0f; // Effective max seconds active.
+                    def.baseResourceRegen = 1.0f;
+                    def.energyPerLevel = 0.096f; // 120 at level 50.
+                    def.energyRegenPerLevel = 0.04f; // 4% per level.
+                    break;
+                case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 25.0f;
@@ -132,7 +143,7 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f;
                     def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.04f; // 200 at level 50.
+                    def.energyPerLevel = 0.02f; // 200 at level 50.
                     def.energyRegenPerLevel = 0.05f; // 5% per level.
                     def.healthPerLevel = 0.04f; // Berserkers gain 4% of base health per level instead.
                     def.armorPerLevel = 0.005f; // Berserkers gain 0.5% of base armor per level instead.
@@ -150,7 +161,7 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Base Shock Rifle battery capacity.
                     def.baseResourceRegen = 2.0f;
-                    def.energyPerLevel = 0.1f; // 500 at level 50. Shockrfile battery scaling.
+                    def.energyPerLevel = 0.08f; // 500 at level 50. Shockrifle battery capacity scaling.
                     def.energyRegenPerLevel = 0.01f; // 1% per level.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
@@ -467,7 +478,7 @@ class PlayerData
                  }
                  break;
                     
-            case PlayerClass::CLASS_ENGINEER:
+            case PlayerClass::CLASS_ROBOMANCER:
                 if(!g_PlayerMinions.exists(steamID))
                 {
                     MinionData data;
@@ -566,6 +577,8 @@ class PlayerData
                 case PlayerClass::CLASS_BERSERKER:
                     break;
                 case PlayerClass::CLASS_ENGINEER:
+                    break;
+                case PlayerClass::CLASS_ROBOMANCER:
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     break;

@@ -16,7 +16,10 @@
 #include "Classes/Medic/HealAura"
 
 // Engineer.
-#include "Classes/Engineer/RobotMinion"
+#include "Classes/Engineer/SentryMinion"
+
+// Engineer.
+#include "Classes/Robomancer/RobotMinion"
 
 // Xenologist.
 #include "Classes/Xenologist/XenMinion"

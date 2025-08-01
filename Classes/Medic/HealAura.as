@@ -377,7 +377,7 @@ class HealingAura
         Vector endPoint = origin;
         endPoint.z += 10; // Trail moves upward.
 
-        // Create sprite trail effect
+        // Create sprite trail effect.
         NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
             msg.WriteByte(TE_SPRITETRAIL);
             msg.WriteCoord(origin.x);

@@ -90,7 +90,7 @@ namespace Menu
                             BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
                         break;
                     }
-                    case PlayerClass::CLASS_ENGINEER:
+                    case PlayerClass::CLASS_ROBOMANCER:
                     {
                         if(m_pStats.GetLevel() >= 10)
                             BaseStatsText += "N/A.\n";
@@ -198,6 +198,24 @@ namespace Menu
                             BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
                         break;
                     }
+                    case PlayerClass::CLASS_ENGINEER:
+                    {
+                        if(m_pStats.GetLevel() >= 10)
+                            BaseStatsText += "Improved Healing - Healing amount increased by 50%\n";
+                        else
+                            BaseStatsText += "Improved Healing - < LOCKED - Lv. 10 >\n";
+
+                        if(m_pStats.GetLevel() >= 20)
+                            BaseStatsText += "Energy Efficient - Energy drain reduced by 25%\n";
+                        else
+                            BaseStatsText += "Energy Efficient - < LOCKED - Lv. 20 >\n";
+
+                        if(m_pStats.GetLevel() >= 30)
+                            BaseStatsText += "Enhanced Range - Healing radius increased by 50%\n";
+                        else
+                            BaseStatsText += "Enhanced Range - < LOCKED - Lv. 30 >\n\n";
+                        break;
+                    }
                 }
 
             m_pMenu.AddItem(BaseStatsText, null);
@@ -234,7 +252,7 @@ namespace Menu
                     }
                     break;
                 }
-                case PlayerClass::CLASS_ENGINEER:
+                case PlayerClass::CLASS_ROBOMANCER:
                 {
                     MinionData@ roboMinion = cast<MinionData@>(g_PlayerMinions[steamID]);
                     if(roboMinion !is null)
@@ -312,6 +330,22 @@ namespace Menu
                             "Explosive Ammo Cost: " + int(explosiveRounds.GetEnergyCost()) + "/ per Round\n\n";
 
                         m_pMenu.AddItem(DemolitionistStatsText, null);
+                    }
+                    break;
+                }
+                case PlayerClass::CLASS_ENGINEER:
+                {
+                    SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
+                    if(sentry !is null)
+                    {
+                        string EngineerStatsText = "=== Engineer Stats: ===" + "\n" + 
+                            "Sentry Health: " + int(sentry.GetScaledHealth()) + "\n" +
+                            "Sentry Damage: +" + int(sentry.GetScaledDamage() * 100) + "\n" + 
+                            "Healing Amount: " + int(sentry.GetHealAmount()) + " HP/s\n" +
+                            "Healing Radius: " + int(sentry.GetHealRadius() / 16) + "ft\n" +
+                            "Energy Drain: " + int(sentry.GetEnergyDrain()) + "/s\n\n";
+
+                        m_pMenu.AddItem(EngineerStatsText, null);
                     }
                     break;
                 }

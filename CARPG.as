@@ -147,6 +147,8 @@ void SetupTimers()
     g_Scheduler.SetInterval("CheckHealAura", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking heal aura.
 
     // Engineer.
+    g_Scheduler.SetInterval("CheckSentries", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer sentries.
+
     g_Scheduler.SetInterval("CheckEngineerMinions", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer Robogrunts.
 
     // Xenologist.
@@ -198,6 +200,13 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strCloakActiveSound);
 
     // Minion Precache for any/all minion class monsters.
+
+    // Sentry.
+    g_SoundSystem.PrecacheSound(strSentryCreate);
+    g_SoundSystem.PrecacheSound(strSentryDestroy);
+
+    g_Game.PrecacheModel(strSentryModel);
+    g_Game.PrecacheModel(strSentryGibs);
 
     // Robogrunt.
     g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
@@ -355,13 +364,34 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
     if(info.pVictim is null || info.pAttacker is null)
         return HOOK_CONTINUE;
 
-    // RobotMinion Damage Scaling.
     // Check if attacker is a minion.
     CBaseEntity@ attacker = info.pAttacker;
     string targetname = string(attacker.pev.targetname);
 
+    // Engineer Sentry Damage Scaling.
+    if(targetname.StartsWith("_sentry_"))
+    {
+        // Find owner's SentryData by the index in targetname
+        string ownerIndex = targetname.SubString(8);
+        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
+        if(pOwner !is null)
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+            if(g_PlayerSentries.exists(steamID))
+            {
+                SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
+                if(sentry !is null)
+                {
+                    // Apply the damage multiplier
+                    float damageSentryMultiplier = 1.0f + sentry.GetScaledDamage();
+                    info.flDamage *= damageSentryMultiplier;
+                }
+            }
+        }
+    }
 
-    if(targetname.StartsWith("_minion_"))
+    // RobotMinion Damage Scaling.
+    else if(targetname.StartsWith("_minion_"))
     {
         // Find owner's MinionData by the index in targetname.
         string ownerIndex = targetname.SubString(8); // Look specifically for only targetnames with indexes added.
@@ -383,9 +413,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
             }
         }
     }
-
     // Xenologist Minion Damage Scaling.
-    // Check if attacker is a Xen minion.
     else if(targetname.StartsWith("_xenminion_"))
     {
         // Find owner's XenMinionData by the index in targetname
@@ -729,8 +757,21 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(data !is null)
                 {
-                    // Engineer ability handling.
+                    // Engineer ability handling (new)
                     if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
+                    {
+                        if(!g_PlayerSentries.exists(steamID))
+                        {
+                            SentryData sentry;
+                            @g_PlayerSentries[steamID] = sentry;
+                            sentry.Initialize(data.GetCurrentClassStats());
+                        }
+                        SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
+                        if(sentry !is null)
+                            sentry.ToggleSentry(pPlayer);
+                    }
+                    // Robomancer ability handling (keep existing)
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
                     {
                         if(!g_PlayerMinions.exists(steamID))
                         {
@@ -1006,7 +1047,17 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
 
-    // Reset Engineer Minions and pools.
+    // Reset Engineer Sentry
+    if(g_PlayerSentries.exists(steamID))
+    {
+        SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
+        if(sentry !is null)
+        {
+            sentry.DestroySentry(pPlayer);
+        }
+    }
+
+    // Reset Robomancer Minions (keep existing)
     if(g_PlayerMinions.exists(steamID))
     {
         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);

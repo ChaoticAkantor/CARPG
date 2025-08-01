@@ -32,6 +32,7 @@ void RegenClassResource()
                 bool hasShockRifleEquipped = false;
                 bool isBloodlustActive = false;
                 bool isCloakActive = false;
+                bool hasSentryActive = false;
 
                 if(g_HealingAuras.exists(steamID))
                 {
@@ -68,6 +69,15 @@ void RegenClassResource()
                         isCloakActive = cloak.IsActive();
                 }
 
+                if(g_PlayerSentries.exists(steamID))
+                {
+                    SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
+                    if(sentry !is null)
+                    {
+                        hasSentryActive = sentry.IsActive();
+                    }
+                }
+
                 // Shocktrooper Shock Rifle.
                 if(data.GetCurrentClass() == PlayerClass::CLASS_SHOCKTROOPER)
                 {
@@ -80,7 +90,7 @@ void RegenClassResource()
                 }
 
                 // Engineer Minion reserve pool.
-                if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
+                if(data.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
                 {
                     if(g_PlayerMinions.exists(steamID))
                     {
@@ -136,9 +146,11 @@ void RegenClassResource()
                 }
 
                 // Skip regen if any ability is active.
-                if(isAuraActive || hasActiveMinions || 
-                   hasShockRifleEquipped || isBloodlustActive || isCloakActive)
+                if(isAuraActive || hasActiveMinions || hasShockRifleEquipped || 
+                   isBloodlustActive || isCloakActive || hasSentryActive)
+                {
                     continue;
+                }
 
                 // Normal regen logic with special case for Defender
                 float current = float(resources['current']);
@@ -231,8 +243,11 @@ void UpdateClassResource() // Update the class resource hud display for all play
                     PlayerClass currentClass = data.GetCurrentClass();
                     switch(currentClass)
                     {
-                        case PlayerClass::CLASS_ENGINEER:
+                        case PlayerClass::CLASS_ROBOMANCER:
                             resourceName = "Robot Reserve";
+                            break;
+                        case PlayerClass::CLASS_ENGINEER:
+                            resourceName = "Sentry Battery";
                             break;
                         case PlayerClass::CLASS_DEFENDER:
                             resourceName = "Ice Shield";
@@ -269,7 +284,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                     PlayerClass currentClass = data.GetCurrentClass();
                     switch(currentClass)
                     {
-                        case PlayerClass::CLASS_ENGINEER:
+                        case PlayerClass::CLASS_ROBOMANCER:
                             if(g_PlayerMinions.exists(steamID))
                             {
                                 MinionData@ minionData = cast<MinionData@>(g_PlayerMinions[steamID]);
@@ -426,6 +441,27 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                                 float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
                                                 resourceInfo += "[" + int(healthPercent) + "%] ";
                                             }
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                            
+                        case PlayerClass::CLASS_ENGINEER:
+                            if(g_PlayerSentries.exists(steamID))
+                            {
+                                SentryData@ sentryData = cast<SentryData@>(g_PlayerSentries[steamID]);
+                                if(sentryData !is null)
+                                {
+                                    bool isActive = sentryData.IsActive();
+                                    if(isActive)
+                                    {
+                                        CBaseEntity@ pSentry = sentryData.GetSentryEntity();
+                                        if(pSentry !is null)
+                                        {
+                                            float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
+                                            resourceInfo += "[Sentry HP: " + int(healthPercent) + "%]";
+                                            resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]";
                                         }
                                     }
                                 }
