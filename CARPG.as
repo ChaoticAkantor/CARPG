@@ -576,6 +576,20 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         return HOOK_CONTINUE;
 
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    
+    // Add hurt delay when player takes damage
+    if(g_PlayerRecoveryData.exists(steamID))
+    {
+        RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
+        if(data !is null)
+        {
+            data.isRegenerating = false;
+            data.hurtDelayCounter = flHurtDelay;
+            data.lastHurtTime = g_Engine.time;
+        }
+    }
+
+    // Handle barrier checks
     if(!g_PlayerBarriers.exists(steamID)) 
         return HOOK_CONTINUE;
 
