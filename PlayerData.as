@@ -120,7 +120,7 @@ void InitializeClassDefinitions()
                     def.baseResource = 25.0f; // Effective max seconds active.
                     def.baseResourceRegen = 1.0f;
                     def.energyPerLevel = 0.096f; // 120 at level 50.
-                    def.energyRegenPerLevel = 0.04f; // 4% per level.
+                    def.energyRegenPerLevel = 0.05f; // 5% per level.
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;

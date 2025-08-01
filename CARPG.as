@@ -385,6 +385,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
                     // Apply the damage multiplier
                     float damageSentryMultiplier = 1.0f + sentry.GetScaledDamage();
                     info.flDamage *= damageSentryMultiplier;
+
+                    // AP Sentry Ammo Perk - Convert damage type to armor penetrating.
+                    if(sentry.HasStats() && sentry.GetStats().GetLevel() >= g_iPerk3LvlReq)
+                    {
+                        info.bitsDamageType |= DMG_SNIPER;
+                    }
                 }
             }
         }

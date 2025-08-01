@@ -200,20 +200,20 @@ namespace Menu
                     }
                     case PlayerClass::CLASS_ENGINEER:
                     {
-                        if(m_pStats.GetLevel() >= 10)
-                            BaseStatsText += "Improved Healing - Healing amount increased by 50%\n";
+                        if(m_pStats.GetLevel() >= g_iPerk1LvlReq)
+                            BaseStatsText += "N/A - \n";
                         else
-                            BaseStatsText += "Improved Healing - < LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "N/A - < LOCKED - Lv. 10 >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
-                            BaseStatsText += "Energy Efficient - Energy drain reduced by 25%\n";
+                        if(m_pStats.GetLevel() >= g_iPerk2LvlReq)
+                            BaseStatsText += "N/A - \n";
                         else
-                            BaseStatsText += "Energy Efficient - < LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "N/A - < LOCKED - Lv. 20 >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
-                            BaseStatsText += "Enhanced Range - Healing radius increased by 50%\n";
+                        if(m_pStats.GetLevel() >= g_iPerk3LvlReq)
+                            BaseStatsText += "AP Sentry Ammo - Sentry bullets penetrate armor.\n";
                         else
-                            BaseStatsText += "Enhanced Range - < LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "AP Sentry Ammo - < LOCKED - Lv. 30 >\n\n";
                         break;
                     }
                 }

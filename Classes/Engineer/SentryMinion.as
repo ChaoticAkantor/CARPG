@@ -12,7 +12,7 @@ class SentryData
     private EHandle m_hSentry;
     private bool m_bIsActive = false;
     private float m_flBaseHealth = 200.0; // Base health of the sentry.
-    private float m_flHealthScale = 0.50; // Health scaling per level.
+    private float m_flHealthScale = 0.40; // Health scaling per level.
     private float m_flDamageScale = 0.04; // Damage scaling per level.
     private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
@@ -51,6 +51,7 @@ class SentryData
         return true;
     }
     bool HasStats() { return m_pStats !is null; }
+    ClassStats@ GetStats() { return m_pStats; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
     CBaseEntity@ GetSentryEntity()
@@ -86,7 +87,7 @@ class SentryData
         // Only allow sentry to be deployed at maximum battery.
         if(current < maximum)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry is not charged!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry is charging!\n");
             return;
         }
 
@@ -147,6 +148,7 @@ class SentryData
             pSentry.Killed(pPlayer.pev, GIB_ALWAYS);
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSentryDestroy, 1.0f, ATTN_NORM);
             
+            /*
             // Drain all energy when manually destroyed.
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerClassResources.exists(steamID))
@@ -154,11 +156,12 @@ class SentryData
                 dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
                 resources['current'] = 0.0f;
             }
+            */
         }
 
         m_bIsActive = false;
         m_hSentry = null;
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry destroyed!\n");
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry refunded!\n");
     }
 
     void Update(CBasePlayer@ pPlayer)
