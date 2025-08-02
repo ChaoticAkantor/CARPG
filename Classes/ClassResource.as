@@ -319,7 +319,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(barrierData !is null)
                                 {
                                     bool isActive = barrierData.IsActive();
-                                        //resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "] ";
+                                    resourceInfo += "[" + (isActive ? " 50% Recovery " : " 100% Recovery ") + "] ";
                                 }
                             }
                             break;
@@ -333,8 +333,6 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     float HealAmount = healingAura.GetScaledHealAmount();
 
                                     bool isActive = healingAura.IsActive();
-                                        //resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "] ";
-
                                     if(isActive)
                                     {
                                         resourceInfo += "[Heal: " + int(HealAmount) + "HP/s]";
@@ -409,9 +407,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
                                 if(cloak !is null)
                                 {
-                                    bool isActive = cloak.IsActive();
-                                    resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "] ";
-                                    
+                                    bool isActive = cloak.IsActive(); 
                                     if(isActive)
                                     {
                                         float damageBonus = (cloak.GetDamageMultiplier(pPlayer) - 1.0f) * 100;

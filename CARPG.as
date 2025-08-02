@@ -84,6 +84,7 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_PlayerRPGData.deleteAll();
     g_PlayerMinions.deleteAll();
     g_XenologistMinions.deleteAll();
+    g_PlayerSentries.deleteAll();
     g_HealingAuras.deleteAll();
     g_PlayerBarriers.deleteAll();
     g_PlayerBloodlusts.deleteAll();
@@ -203,7 +204,16 @@ void PrecacheAll()
 
     // Sentry.
     g_SoundSystem.PrecacheSound(strSentryCreate);
-    g_SoundSystem.PrecacheSound(strSentryDestroy);
+    g_SoundSystem.PrecacheSound(strSentryRecall);
+    g_SoundSystem.PrecacheSound(strSentryFire);
+    g_SoundSystem.PrecacheSound(strSentryPing);
+    g_SoundSystem.PrecacheSound(strSentryActive);
+    g_SoundSystem.PrecacheSound(strSentryDie);
+    g_SoundSystem.PrecacheSound(strSentryDeploy);
+    g_SoundSystem.PrecacheSound(strSentrySpinUp);
+    g_SoundSystem.PrecacheSound(strSentrySpinDown);
+    g_SoundSystem.PrecacheSound(strSentrySearch);
+    g_SoundSystem.PrecacheSound(strSentryAlert);
 
     g_Game.PrecacheModel(strSentryModel);
     g_Game.PrecacheModel(strSentryGibs);
@@ -361,38 +371,40 @@ HookReturnCode OnWeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ 
 
 HookReturnCode MonsterTakeDamage(DamageInfo@ info)
 {
-    if(info.pVictim is null || info.pAttacker is null)
+    if(info is null || info.pVictim is null || info.pAttacker is null)
         return HOOK_CONTINUE;
 
-    // Check if attacker is a minion.
+    // Check if attacker is a minion
     CBaseEntity@ attacker = info.pAttacker;
     string targetname = string(attacker.pev.targetname);
 
-    // Engineer Sentry Damage Scaling.
+    // Engineer Sentry Damage Scaling
     if(targetname.StartsWith("_sentry_"))
     {
-        // Find owner's SentryData by the index in targetname
         string ownerIndex = targetname.SubString(8);
-        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
-        if(pOwner !is null)
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
-            if(g_PlayerSentries.exists(steamID))
-            {
-                SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
-                if(sentry !is null)
-                {
-                    // Apply the damage multiplier
-                    float damageSentryMultiplier = 1.0f + sentry.GetScaledDamage();
-                    info.flDamage *= damageSentryMultiplier;
+        if(ownerIndex.IsEmpty())
+            return HOOK_CONTINUE;
 
-                    // AP Sentry Ammo Perk - Convert damage type to armor penetrating.
-                    if(sentry.HasStats() && sentry.GetStats().GetLevel() >= g_iPerk3LvlReq)
-                    {
-                        info.bitsDamageType |= DMG_SNIPER;
-                    }
-                }
-            }
+        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
+        if(pOwner is null || !pOwner.IsConnected())
+            return HOOK_CONTINUE;
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+        if(steamID.IsEmpty() || !g_PlayerSentries.exists(steamID))
+            return HOOK_CONTINUE;
+
+        SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
+        if(sentry is null)
+            return HOOK_CONTINUE;
+
+        // Apply damage multiplier
+        float damageSentryMultiplier = 1.0f + sentry.GetScaledDamage();
+        info.flDamage *= damageSentryMultiplier;
+
+        // AP Sentry Ammo Perk
+        if(sentry.HasStats() && sentry.GetStats().GetLevel() >= g_iPerk3LvlReq)
+        {
+            info.bitsDamageType |= DMG_RADIATION; // Add AP damage type.
         }
     }
 
@@ -455,11 +467,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null)
         {
-            if(data.GetCurrentClassStats().GetLevel() >= g_iPerk1LvlReq) // Add blood poisoning damage. Reserved as a future perk.
-            {
-                //info.bitsDamageType |= DMG_POISON; // Disabled for now.
-            }
-
             // Then handle class-specific damage types
             switch(data.GetCurrentClass())
             {
@@ -1067,7 +1074,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
 
-    // Reset Engineer Sentry
+    // Reset Engineer Sentry.
     if(g_PlayerSentries.exists(steamID))
     {
         SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
@@ -1077,7 +1084,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
 
-    // Reset Robomancer Minions (keep existing)
+    // Reset Robomancer Minions.
     if(g_PlayerMinions.exists(steamID))
     {
         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);

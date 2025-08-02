@@ -1,9 +1,20 @@
 string strSentryCreate = "weapons/mine_deploy.wav";
-string strSentryDestroy = "turret/tu_die.wav";
+string strSentryRecall = "turret/tu_die.wav";
 
-// Sentry Models
+// Sentry Models.
 string strSentryModel = "models/sentry.mdl";
 string strSentryGibs = "models/computergibs.mdl";
+
+// Sentry Sounds.
+string strSentryFire = "weapons/hks_hl3.wav";
+string strSentryPing = "turret/tu_ping.wav";
+string strSentryActive = "turret/tu_active2.wav";
+string strSentryDie = "turret/tu_die3.wav";
+string strSentryDeploy = "turret/tu_deploy.wav";
+string strSentrySpinUp = "turret/tu_spinup.wav";
+string strSentrySpinDown = "turret/tu_spindown.wav";
+string strSentrySearch = "turret/tu_search.wav";
+string strSentryAlert = "turret/tu_alert.wav";
 
 dictionary g_PlayerSentries;
 
@@ -11,15 +22,16 @@ class SentryData
 {
     private EHandle m_hSentry;
     private bool m_bIsActive = false;
-    private float m_flBaseHealth = 200.0; // Base health of the sentry.
-    private float m_flHealthScale = 0.40; // Health scaling per level.
-    private float m_flDamageScale = 0.04; // Damage scaling per level.
+    private float m_flBaseHealth = 100.0; // Base health of the sentry.
+    private float m_flHealthScale = 0.18; // Health scaling % per level.
+    private float m_flDamageScale = 0.08; // Damage scaling % per level.
     private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
-    private float m_flHealScale = 0.06f; // Healing scaling per level.
-    private float m_flSelfHealModifier = 3.0f; // How much the sentry's self healing is modified.
-    private float m_flEnergyDrain = 1.0; // Energy drain per second.
-    private float m_flDrainInterval = 1.0f; // Drain interval in seconds.
+    private float m_flHealScale = 0.06f; // Heal scaling % per level.
+    private float m_flSelfHealModifier = 10.0f; // Sentry self-healing multiplier.
+    private float m_flEnergyDrain = 1.0; // Energy drain per interval.
+    private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
+    private float m_flRecallEnergyCost = 0.0f; // Energy % cost to recall.
     private float m_flNextDrain = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
@@ -42,9 +54,7 @@ class SentryData
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
         if(pSentry is null || !pSentry.IsAlive())
         {
-            // Auto-cleanup if sentry is invalid.
-            m_bIsActive = false;
-            m_hSentry = null;
+            m_bIsActive = false; // Skill is "inactive" if sentry doesnt exist or is dead.
             return false;
         }
 
@@ -60,39 +70,40 @@ class SentryData
     }
 
     void ToggleSentry(CBasePlayer@ pPlayer)
+{
+    if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+        return;
+
+    float currentTime = g_Engine.time;
+    if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
+        return;
+
+    m_flLastToggleTime = currentTime;
+
+    if(m_bIsActive)
     {
-        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
-            return;
-
-        float currentTime = g_Engine.time;
-        if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
-            return;
-
-        m_flLastToggleTime = currentTime;
-
-        if(m_bIsActive)
-        {
-            DestroySentry(pPlayer);
-            return;
-        }
-
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
-
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        float current = float(resources['current']);
-        float maximum = float(resources['max']);
-
-        // Only allow sentry to be deployed at maximum battery.
-        if(current < maximum)
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry is charging!\n");
-            return;
-        }
-
-        SpawnSentry(pPlayer);
+        DestroySentry(pPlayer);
+        return;
     }
+
+    // Check energy requirements for deployment.
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(!g_PlayerClassResources.exists(steamID))
+        return;
+
+    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+    float current = float(resources['current']);
+    float maximum = float(resources['max']);
+
+    // Only allow sentry to be deployed at maximum battery
+    if(current < maximum)
+    {
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry is charging!\n");
+        return;
+    }
+
+    SpawnSentry(pPlayer);
+}
 
     private void SpawnSentry(CBasePlayer@ pPlayer)
     {
@@ -113,55 +124,76 @@ class SentryData
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1"; // Size of the sentry.
         keys["friendly"] = "1"; // Force friendly.
-        keys["spawnflag"] = "33"; // 32 (active) + 1 (START_ON) combined
-        keys["triggercondition"] = "1"; // Force trigger condition to See Player, Mad at player.
-        keys["is_player_ally"] = "1";
+        keys["spawnflags"] = "32"; // 32 (ACTIVE).
+        keys["is_player_ally"] = "1"; // Force ally with player.
 
         CBaseEntity@ pSentry = g_EntityFuncs.CreateEntity("monster_sentry", keys, true);
         if(pSentry !is null)
         {
+            // Make the turret glow so it's easy to identify.
             pSentry.pev.renderfx = kRenderFxGlowShell;
             pSentry.pev.rendermode = kRenderNormal;
             pSentry.pev.renderamt = 1;
-            pSentry.pev.rendercolor = Vector(20, 255, 20); // Bright green.
+            pSentry.pev.rendercolor = Vector(20, 255, 255);
 
             g_EntityFuncs.DispatchSpawn(pSentry.edict());
 
-            //@pSentry.pev.owner = @pPlayer.edict(); // Try set sentry owner to player.
+            // Sentry won't wake unless touched or damaged, regardless of spawnflags. Gently encourage it.
+            pSentry.TakeDamage(pPlayer.pev, pPlayer.pev, 0.0f, DMG_GENERIC);
+
+            //@pSentry.pev.owner = @pPlayer.edict(); // Set sentry owner to player, but it seems to lose collision and targetinfo.
 
             m_hSentry = EHandle(pSentry);
-            m_bIsActive = true;
-            
+
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSentryCreate, 1.0f, ATTN_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry deployed!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Deployed!\n");
+
+            m_bIsActive = true;
         }
     }
 
     void DestroySentry(CBasePlayer@ pPlayer)
     {
-        if(!m_bIsActive)
+        if(!m_bIsActive || pPlayer is null)
             return;
 
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
         if(pSentry !is null)
         {
-            pSentry.Killed(pPlayer.pev, GIB_ALWAYS);
-            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSentryDestroy, 1.0f, ATTN_NORM);
-            
-            /*
-            // Drain all energy when manually destroyed.
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerClassResources.exists(steamID))
+            
+            // Handle different destroy conditions.
+            if(pSentry.pev.health <= 0)
             {
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                resources['current'] = 0.0f;
+                // Remove all energy if killed by damage.
+                if(g_PlayerClassResources.exists(steamID))
+                {
+                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                    resources['current'] = 0.0f;
+                }
+                g_EntityFuncs.Remove(pSentry);
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recalled!\n");
             }
-            */
+            else
+            {
+                // Manual destruction - apply recall cost.
+                if(g_PlayerClassResources.exists(steamID))
+                {
+                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                    float current = float(resources['current']);
+                    float recallCost = current * m_flRecallEnergyCost; // Get recall cost as percentage of current total.
+                    resources['current'] = current - recallCost;
+                }
+                
+                //pSentry.Killed(pPlayer.pev, GIB_NEVER);
+                g_EntityFuncs.Remove(pSentry); // Remove the sentry entity.
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recalled!\n");
+                g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSentryRecall, 1.0f, ATTN_NORM);
+            }
         }
 
         m_bIsActive = false;
         m_hSentry = null;
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry refunded!\n");
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -172,16 +204,7 @@ class SentryData
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
         if(pSentry is null || !pSentry.IsAlive())
         {
-            m_bIsActive = false;
-            m_hSentry = null;
-
-            // If sentry died naturally, drain all current energy.
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerClassResources.exists(steamID))
-            {
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                resources['current'] = 0.0f;
-            }
+            DestroySentry(pPlayer);
             return;
         }
 
@@ -189,6 +212,11 @@ class SentryData
         if(g_PlayerClassResources.exists(steamID))
         {
             float currentTime = g_Engine.time;
+            
+            SentryHeal(pSentry);
+            UpdateVisualEffect(pPlayer);
+            
+            // Handle energy drain.
             if(currentTime >= m_flNextDrain)
             {
                 m_flNextDrain = currentTime + m_flDrainInterval;
@@ -197,38 +225,25 @@ class SentryData
                 float current = float(resources['current']);
                 float drainAmount = GetEnergyDrain();
                 
-                // Only drain if we have energy
                 if(current > 0)
                 {
-                    // Don't let it go below 0
                     if(current - drainAmount < 0)
                         drainAmount = current;
-                        
+                    
                     current -= drainAmount;
                     resources['current'] = current;
-                    
-                    UpdateVisualEffect(pPlayer);
 
-                    // Only heal if we have energy
-                    if(current > 0)
+                    if(current <= 0)
                     {
-                        SentryHeal(pSentry);
+                        DestroySentry(pPlayer);
+                        return;
                     }
                 }
-                
-                // Destroy sentry if out of energy
-                if(current <= 0)
-                {
-                    DestroySentry(pPlayer);
-                    return;
-                }
 
-                // Check if sentry has gained a frag.
+                // Handle frag transfer.
                 if(pSentry.pev.frags > 0)
                 {
-                    // Add frag to player.
                     pPlayer.pev.frags += 1;
-                    // Reset sentry's frag counter.
                     pSentry.pev.frags = 0;
                 }
             }
@@ -260,14 +275,14 @@ class SentryData
         m_flNextHeal = currentTime + m_flHealInterval;
         float healAmount = GetHealAmount();
 
-        // The sentry will heal itself also (silently).
+        // The sentry should include itself when healing.
         if(pSentry.pev.health < pSentry.pev.max_health)
         {
-            // Sentry heals itself for twice the heal amount.
+            // Sentry self-healing is modified.
             pSentry.pev.health = Math.min(pSentry.pev.health + (healAmount * m_flSelfHealModifier), pSentry.pev.max_health);
-
-            ApplyHealEffect(pSentry);
         }
+
+        ApplyRegenEffect(pSentry); // Do regen effect on sentry.
 
         for(int i = 1; i <= g_Engine.maxClients; i++)
         {
@@ -280,17 +295,15 @@ class SentryData
                     if(pTarget.pev.health < pTarget.pev.max_health)
                     {
                         pTarget.pev.health = Math.min(pTarget.pev.health + healAmount, pTarget.pev.max_health);
-
-                        ApplyHealEffect(pTarget); // Do heal effect.
-
-                        // Play heal sound later possibly.
                     }
+
+                    ApplyRegenEffect(pTarget); // Do regen effect on players.
                 }
             }
         }
     }
 
-    private void ApplyHealEffect(CBaseEntity@ target)
+    private void ApplyRegenEffect(CBaseEntity@ target)
     {
         if(target is null)
             return;

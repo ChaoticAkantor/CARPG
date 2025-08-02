@@ -117,10 +117,10 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 25.0f; // Effective max seconds active.
+                    def.baseResource = 20.0f;
                     def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.096f; // 120 at level 50.
-                    def.energyRegenPerLevel = 0.05f; // 5% per level.
+                    def.energyPerLevel = 0.08f; // 200 at level 50.
+                    def.energyRegenPerLevel = 0.04f; // 4% per level.
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
@@ -399,7 +399,7 @@ class PlayerData
         
         m_CurrentClass = newClass;
     
-        // Find the player and update their stats
+        // Find the player and update their stats.
         const int iMaxPlayers = g_Engine.maxClients;
         for(int i = 1; i <= iMaxPlayers; ++i)
         {
@@ -422,7 +422,7 @@ class PlayerData
                 
                 CalculateStats(pPlayer);
                 
-                // Update resource caps after stats calculation
+                // Update resource caps after stats calculation.
                 dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
                 if(resources !is null)
                 {   
@@ -529,6 +529,15 @@ class PlayerData
                     ExplosiveRoundsData data;
                     data.Initialize(GetCurrentClassStats());
                     g_PlayerExplosiveRounds[steamID] = data;
+                }
+                break;
+
+            case PlayerClass::CLASS_ENGINEER:
+                if(!g_PlayerSentries.exists(steamID))
+                {
+                    SentryData data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_PlayerSentries[steamID] = data;
                 }
                 break;
         }
