@@ -9,7 +9,7 @@ class CloakData
 {
     private bool m_bActive = false;
     private float m_flCloakEnergyCostPerShot = 50.0f; // Energy drain per shot.
-    private float m_flCloakEnergyDrainInterval = 0.1f; // Energy drain interval.
+    private float m_flCloakEnergyDrainInterval = 0.15f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 1.0f; // Base drain rate.
     private float m_flBaseDamageBonus = 1.0f; // Base % damage increase.
