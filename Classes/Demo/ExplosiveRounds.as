@@ -1,12 +1,16 @@
 // Sounds and sprites.
-const string strExplosiveRoundsActivateSound = "weapons/reload3.wav";
-const string strExplosiveRoundsExplosionSprite = "sprites/eexplo.spr";
+string strExplosiveRoundsActivateSound = "weapons/reload3.wav";
+string strExplosiveRoundsImpactSound = "weapons/splauncher_impact.wav"; // Actual spore grenade impact sound.
+string strExplosiveRoundsExplosionSprite = "sprites/spore_exp_01.spr"; // Actual spore explosion sprite.
+string strExplosiveRoundsExplosionCoreSprite = "sprites/spore_exp_c_01.spr"; // Core explosion sprite.
+string strExplosiveRoundsGlowSprite = "sprites/glow01.spr"; // Glow effect.
+string strExplosiveRoundsSplatterSprite = "sprites/tinyspit.spr"; // Splatter effect.
 
 dictionary g_AmmoTypeDamageMultipliers = // Our multipliers for explosive damage based on ammo type.
 {
-    {"9mm", 1.0f},
+    {"9mm", 1.15f},
     {"357", 1.0f},
-    {"buckshot", 0.4f},
+    {"buckshot", 0.8f},
     {"bolts", 1.0f},
     {"556", 1.0f},
     {"762", 1.0f},
@@ -18,13 +22,13 @@ dictionary g_PlayerExplosiveRounds;
 
 class ExplosiveRoundsData
 {
-    private float m_flExplosiveRoundsDamage = 5.0f;
+    private float m_flExplosiveRoundsDamage = 6.0f;
     private float m_flExplosiveRoundsDamageScaling = 0.1f; // % Damage increase per level.
-    private float m_flExplosiveRoundsPoolScaling = 0.1f; // % Pool size increase per level.
+    private float m_flExplosiveRoundsPoolScaling = 0.06f; // % Pool size increase per level.
     private float m_flExplosiveRoundsRadius = 96.0f; // Radius of explosion.
-    private int m_iExplosiveRoundsPoolBase = 15;
-    private float m_flEnergyCostPerActivation = 5.0f;
-    private float m_flRoundsGivenPerActivation = 1.0f;
+    private int m_iExplosiveRoundsPoolBase = 30;
+    private float m_flEnergyCostPerActivation = 1.0f;
+    private float m_flRoundsFillPercentage = 0.33f; // Fill 33% of max pool per activation
     private float m_flRoundsInPool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.10f;
@@ -46,7 +50,28 @@ class ExplosiveRoundsData
 
     }
 
+    float GetRadiusDamage() { return GetScaledDamage(); }
+
+    float GetAmmoPerPack() { return m_flRoundsFillPercentage; }
+
     float GetRadius() { return m_flExplosiveRoundsRadius; }
+
+    void ApplyRadiusDamage(CBasePlayer@ pPlayer, Vector impactPoint, float damageMultiplier, int damageType = DMG_POISON | DMG_BLAST)
+    {
+        if(pPlayer is null)
+            return;
+            
+        // Apply damage at the specified position
+        g_WeaponFuncs.RadiusDamage(
+            impactPoint,
+            pPlayer.pev,
+            pPlayer.pev,
+            GetScaledDamage() * damageMultiplier,
+            GetRadius(),
+            CLASS_PLAYER_ALLY, // Will not damage allies of player.
+            damageType // Damage type - configurable via parameter
+        );
+    }
 
     void ConsumeRound() 
     { 
@@ -72,7 +97,7 @@ class ExplosiveRoundsData
 
         if(m_flRoundsInPool >= GetMaxRounds())
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Explosive Rounds full!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Spore Rounds full!\n");
             return;
         }
 
@@ -85,16 +110,23 @@ class ExplosiveRoundsData
 
         if(current < m_flEnergyCostPerActivation)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flEnergyCostPerActivation) + " reserve!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flEnergyCostPerActivation) + " Spore Ammo Pack!\n");
             return;
         }
 
-        m_flRoundsInPool = Math.min(m_flRoundsInPool + m_flRoundsGivenPerActivation, float(GetMaxRounds())); // Add fixed number of rounds.
+        // Calculate rounds to add based on percentage of max pool
+        int maxRounds = GetMaxRounds();
+        int roundsToAdd = int(maxRounds * m_flRoundsFillPercentage);
+        roundsToAdd = Math.max(1, roundsToAdd); // Always add at least 1 round.
+        
+        int oldRoundsInPool = int(m_flRoundsInPool);
+        m_flRoundsInPool = Math.min(m_flRoundsInPool + roundsToAdd, float(maxRounds));
+        int actualAdded = int(m_flRoundsInPool) - oldRoundsInPool;
 
         resources['current'] = Math.max(0, current - m_flEnergyCostPerActivation); // Deduct fixed energy cost.
 
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strExplosiveRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + int(m_flRoundsGivenPerActivation) + " Explosive Round\n");
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + actualAdded + " Spore Rounds\n");
 
         m_flLastToggleTime = currentTime;
     }
@@ -131,6 +163,8 @@ class ExplosiveRoundsData
                 Vector angles = pPlayer.pev.v_angle;
                 Math.MakeVectors(angles);
                 Vector vecAiming = g_Engine.v_forward;
+                
+                // Use more realistic shotgun spread pattern
                 Vector spread = Vector(
                     Math.RandomFloat(-0.1, 0.1),
                     Math.RandomFloat(-0.1, 0.1),
@@ -139,33 +173,89 @@ class ExplosiveRoundsData
                 vecAiming = vecAiming + spread;
 
                 Vector vecSrc = pPlayer.GetGunPosition();
-                Vector vecEnd = vecSrc + vecAiming * 4096;
+                Vector vecEnd = vecSrc + vecAiming * 8192; // Increased range for better accuracy
 
                 TraceResult tr;
                 g_Utility.TraceLine(vecSrc, vecEnd, dont_ignore_monsters, pPlayer.edict(), tr);
+                
+                // If we hit something, use that as the impact point
+                Vector impactPoint = tr.vecEndPos;
+                
+                // If we hit an entity, make sure the explosion happens at the surface
+                if (tr.pHit !is null) {
+                    CBaseEntity@ hitEntity = g_EntityFuncs.Instance(tr.pHit);
+                    if (hitEntity !is null) {
+                        // Adjust the impact point to be slightly in front of the hit surface
+                        impactPoint = tr.vecEndPos - (vecAiming * 2);
+                    }
+                }
 
-                // Create visual explosion.
-                NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, tr.vecEndPos);
-                msg.WriteByte(TE_EXPLOSION);
-                msg.WriteCoord(tr.vecEndPos.x);
-                msg.WriteCoord(tr.vecEndPos.y);
-                msg.WriteCoord(tr.vecEndPos.z);
-                msg.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
-                msg.WriteByte(10); // Scale.
-                msg.WriteByte(30); // Framerate.
-                msg.WriteByte(0); // Flags.
-                msg.End();
+                // Play impact sound (quieter for shotgun pellets)
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
+                
+                // Create smaller spore grenade-like effects for shotgun pellets
+                // 1. Main explosion sprite (spore_exp_01) - smaller scale
+                NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                msgExp.WriteByte(TE_SPRITE);
+                msgExp.WriteCoord(impactPoint.x);
+                msgExp.WriteCoord(impactPoint.y);
+                msgExp.WriteCoord(impactPoint.z);
+                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+                msgExp.WriteByte(6); // Smaller scale for shotgun
+                msgExp.WriteByte(180); // Brightness
+                msgExp.End();
+                
+                // 2. Core explosion sprite (spore_exp_c_01) - smaller scale
+                NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                msgCore.WriteByte(TE_SPRITE);
+                msgCore.WriteCoord(impactPoint.x);
+                msgCore.WriteCoord(impactPoint.y);
+                msgCore.WriteCoord(impactPoint.z);
+                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+                msgCore.WriteByte(4); // Smaller scale for shotgun
+                msgCore.WriteByte(180); // Brightness
+                msgCore.End();
+                
+                // 3. Small glow effect (glow01)
+                NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                msgGlow.WriteByte(TE_GLOWSPRITE);
+                msgGlow.WriteCoord(impactPoint.x);
+                msgGlow.WriteCoord(impactPoint.y);
+                msgGlow.WriteCoord(impactPoint.z);
+                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+                msgGlow.WriteByte(2); // Life
+                msgGlow.WriteByte(1); // Scale
+                msgGlow.WriteByte(180); // Brightness
+                msgGlow.End();
+                
+                // 4. Sprite trail burst effect for shotgun pellet splatter (smaller)
+                // Create endpoints with impact point as the start point
+                Vector startPoint = impactPoint;
+                Vector endPoint = impactPoint;
+                
+                // End point moves outward from impact in a random direction
+                endPoint.x = startPoint.x + Math.RandomFloat(-25, 25);
+                endPoint.y = startPoint.y + Math.RandomFloat(-25, 25);
+                endPoint.z = startPoint.z + Math.RandomFloat(5, 20); // Bias upward
+                
+                // Create sprite trail effect
+                NetworkMessage msgTrail(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
+                msgTrail.WriteByte(TE_SPRITETRAIL);
+                msgTrail.WriteCoord(startPoint.x);
+                msgTrail.WriteCoord(startPoint.y);
+                msgTrail.WriteCoord(startPoint.z);
+                msgTrail.WriteCoord(endPoint.x);
+                msgTrail.WriteCoord(endPoint.y);
+                msgTrail.WriteCoord(endPoint.z);
+                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+                msgTrail.WriteByte(8);  // Count - fewer sprites for smaller effect
+                msgTrail.WriteByte(2);  // Life in 0.1's
+                msgTrail.WriteByte(1);  // Scale in 0.1's
+                msgTrail.WriteByte(15); // Velocity along vector in 10's
+                msgTrail.WriteByte(10); // Random velocity in 10's
+                msgTrail.End();
 
-                // Apply damage at same position.
-                g_WeaponFuncs.RadiusDamage(
-                    tr.vecEndPos,
-                    pPlayer.pev,
-                    pPlayer.pev,
-                    GetScaledDamage() * damageMultiplier,
-                    GetRadius(),
-                    CLASS_PLAYER_ALLY, // Will not damage allies of player.
-                    DMG_BLAST // Damage type and flags (if any).
-                );
+                ApplyRadiusDamage(pPlayer, impactPoint, damageMultiplier); // Apply radius damage.
             }
 
             ConsumeRound();
@@ -182,32 +272,98 @@ class ExplosiveRoundsData
                 Vector angles = pPlayer.pev.v_angle;
                 Math.MakeVectors(angles);
                 Vector vecAiming = g_Engine.v_forward;
-                Vector vecEnd = vecSrc + (vecAiming * 4096);
+                
+                // Add slight spread for burst fire
+                Vector burstSpread = Vector(
+                    Math.RandomFloat(-0.05, 0.05),
+                    Math.RandomFloat(-0.05, 0.05),
+                    Math.RandomFloat(-0.05, 0.05)
+                );
+                vecAiming = vecAiming + burstSpread;
+                
+                Vector vecEnd = vecSrc + (vecAiming * 8192); // Increased range
 
                 TraceResult tr;
                 g_Utility.TraceLine(vecSrc, vecEnd, dont_ignore_monsters, pPlayer.edict(), tr);
+                
+                // If we hit something, use that as the impact point
+                Vector impactPoint = tr.vecEndPos;
+                
+                // If we hit an entity, make sure the explosion happens at the surface
+                if (tr.pHit !is null) {
+                    CBaseEntity@ hitEntity = g_EntityFuncs.Instance(tr.pHit);
+                    if (hitEntity !is null) {
+                        // Adjust the impact point to be slightly in front of the hit surface
+                        impactPoint = tr.vecEndPos - (vecAiming * 2);
+                    }
+                }
 
-                // Create visual explosion
-                NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, tr.vecEndPos);
-                msg.WriteByte(TE_EXPLOSION);
-                msg.WriteCoord(tr.vecEndPos.x);
-                msg.WriteCoord(tr.vecEndPos.y);
-                msg.WriteCoord(tr.vecEndPos.z);
-                msg.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
-                msg.WriteByte(8); // Slightly smaller scale for burst.
-                msg.WriteByte(15); // Framerate.
-                msg.WriteByte(0); // Flags.
-                msg.End();
+                // Play impact sound (quieter for burst fire)
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.4f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-10, 10), 0, true, impactPoint);
+                
+                // Create very small spore grenade-like effects for burst fire
+                // 1. Main explosion sprite (spore_exp_01) - smaller scale
+                NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                msgExp.WriteByte(TE_SPRITE);
+                msgExp.WriteCoord(impactPoint.x);
+                msgExp.WriteCoord(impactPoint.y);
+                msgExp.WriteCoord(impactPoint.z);
+                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+                msgExp.WriteByte(4); // Smaller scale for burst fire
+                msgExp.WriteByte(160); // Brightness
+                msgExp.End();
+                
+                // 2. Core explosion sprite (spore_exp_c_01) - smaller scale
+                NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                msgCore.WriteByte(TE_SPRITE);
+                msgCore.WriteCoord(impactPoint.x);
+                msgCore.WriteCoord(impactPoint.y);
+                msgCore.WriteCoord(impactPoint.z);
+                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+                msgCore.WriteByte(3); // Smaller scale for burst fire
+                msgCore.WriteByte(160); // Brightness
+                msgCore.End();
+                
+                // 3. Tiny glow effect (glow01)
+                NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                msgGlow.WriteByte(TE_GLOWSPRITE);
+                msgGlow.WriteCoord(impactPoint.x);
+                msgGlow.WriteCoord(impactPoint.y);
+                msgGlow.WriteCoord(impactPoint.z);
+                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+                msgGlow.WriteByte(1); // Life
+                msgGlow.WriteByte(1); // Scale
+                msgGlow.WriteByte(160); // Brightness
+                msgGlow.End();
+                
+                // 4. Just 1 sprite trail effect for M16 burst (very small)
+                // Create endpoints with impact point as the start point
+                Vector startPoint = impactPoint;
+                Vector endPoint = impactPoint;
+                
+                // End point moves outward from impact in a random direction
+                endPoint.x = startPoint.x + Math.RandomFloat(-15, 15);
+                endPoint.y = startPoint.y + Math.RandomFloat(-15, 15);
+                endPoint.z = startPoint.z + Math.RandomFloat(3, 15); // Bias upward
+                
+                // Create sprite trail effect
+                NetworkMessage msgTrail(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
+                msgTrail.WriteByte(TE_SPRITETRAIL);
+                msgTrail.WriteCoord(startPoint.x);
+                msgTrail.WriteCoord(startPoint.y);
+                msgTrail.WriteCoord(startPoint.z);
+                msgTrail.WriteCoord(endPoint.x);
+                msgTrail.WriteCoord(endPoint.y);
+                msgTrail.WriteCoord(endPoint.z);
+                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+                msgTrail.WriteByte(3);  // Count
+                msgTrail.WriteByte(1);  // Life in 0.1's
+                msgTrail.WriteByte(1);  // Scale in 0.1's
+                msgTrail.WriteByte(10); // Velocity along vector in 10's
+                msgTrail.WriteByte(5);  // Random velocity in 10's
+                msgTrail.End();
 
-                g_WeaponFuncs.RadiusDamage(
-                    tr.vecEndPos,
-                    pPlayer.pev,
-                    pPlayer.pev,
-                    GetScaledDamage() * damageMultiplier,
-                    GetRadius(),
-                    CLASS_PLAYER_ALLY,
-                    DMG_BLAST // Damage type and flags (if any).
-                );
+                ApplyRadiusDamage(pPlayer, impactPoint, damageMultiplier, DMG_POISON | DMG_BLAST); // Apply radius damage.
 
                 ConsumeRound();
             }
@@ -221,33 +377,92 @@ class ExplosiveRoundsData
             Math.MakeVectors(angles);
             Vector vecAiming = g_Engine.v_forward;
 
-            Vector vecEnd = vecSrc + (vecAiming * 4096);
+            Vector vecEnd = vecSrc + (vecAiming * 8192); // Increased range for better accuracy
 
             TraceResult tr;
+            // Use a more precise tracing method
             g_Utility.TraceLine(vecSrc, vecEnd, dont_ignore_monsters, pPlayer.edict(), tr);
-
-            // Create explosion at exact impact point
-            NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, tr.vecEndPos);
-            msg.WriteByte(TE_EXPLOSION);
-            msg.WriteCoord(tr.vecEndPos.x);
-            msg.WriteCoord(tr.vecEndPos.y);
-            msg.WriteCoord(tr.vecEndPos.z);
-            msg.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
-            msg.WriteByte(10); // Scale.
-            msg.WriteByte(30); // Framerate.
-            msg.WriteByte(0); // Flags.
-            msg.End();
-
-            g_WeaponFuncs.RadiusDamage(
-                tr.vecEndPos,
-                pPlayer.pev,
-                pPlayer.pev,
-                GetScaledDamage() * damageMultiplier,
-                GetRadius(),
-                CLASS_PLAYER_ALLY, // Make sure we always use this flag to stop greifing!
-                DMG_BLAST // Damage type and flags (if any).
-            ); 
             
+            // If we hit something, use that as the impact point
+            Vector impactPoint = tr.vecEndPos;
+            
+            // If we hit an entity, make sure the explosion happens at the surface
+            if (tr.pHit !is null) {
+                CBaseEntity@ hitEntity = g_EntityFuncs.Instance(tr.pHit);
+                if (hitEntity !is null) {
+                    // Adjust the impact point to be slightly in front of the hit surface
+                    impactPoint = tr.vecEndPos - (vecAiming * 2);
+                }
+            }
+
+            // Play impact sound
+            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.7f, ATTN_NORM, 0, PITCH_NORM, 0, true, impactPoint);
+            
+            // Create spore grenade-like explosion effects
+            // 1. Main explosion sprite (spore_exp_01)
+            NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            msgExp.WriteByte(TE_SPRITE);
+            msgExp.WriteCoord(impactPoint.x);
+            msgExp.WriteCoord(impactPoint.y);
+            msgExp.WriteCoord(impactPoint.z);
+            msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+            msgExp.WriteByte(10); // Scale
+            msgExp.WriteByte(200); // Brightness
+            msgExp.End();
+            
+            // 2. Core explosion sprite (spore_exp_c_01)
+            NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            msgCore.WriteByte(TE_SPRITE);
+            msgCore.WriteCoord(impactPoint.x);
+            msgCore.WriteCoord(impactPoint.y);
+            msgCore.WriteCoord(impactPoint.z);
+            msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+            msgCore.WriteByte(8); // Scale
+            msgCore.WriteByte(200); // Brightness
+            msgCore.End();
+            
+            // 3. Glow effect (glow01)
+            NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            msgGlow.WriteByte(TE_GLOWSPRITE);
+            msgGlow.WriteCoord(impactPoint.x);
+            msgGlow.WriteCoord(impactPoint.y);
+            msgGlow.WriteCoord(impactPoint.z);
+            msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+            msgGlow.WriteByte(3); // Life
+            msgGlow.WriteByte(2); // Scale
+            msgGlow.WriteByte(200); // Brightness
+            msgGlow.End();
+            
+            // 4. Sprite trail burst effect for splatter
+            // Create endpoints with impact point as the start point
+            Vector startPoint = impactPoint;
+            Vector endPoint = impactPoint;
+            
+            // End point moves outward from impact in a random direction
+            endPoint.x = startPoint.x + Math.RandomFloat(-50, 50);
+            endPoint.y = startPoint.y + Math.RandomFloat(-50, 50);
+            endPoint.z = startPoint.z + Math.RandomFloat(20, 50); // Bias upward
+            
+            // Create sprite trail effect
+            NetworkMessage msgTrail(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
+            msgTrail.WriteByte(TE_SPRITETRAIL);
+            msgTrail.WriteCoord(startPoint.x);
+            msgTrail.WriteCoord(startPoint.y);
+            msgTrail.WriteCoord(startPoint.z);
+            msgTrail.WriteCoord(endPoint.x);
+            msgTrail.WriteCoord(endPoint.y);
+            msgTrail.WriteCoord(endPoint.z);
+            msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+            msgTrail.WriteByte(16);  // Count - more sprites for a denser burst
+            msgTrail.WriteByte(3);   // Life in 0.1's
+            msgTrail.WriteByte(3);   // Scale in 0.1's
+            msgTrail.WriteByte(25);  // Velocity along vector in 10's
+            msgTrail.WriteByte(15);  // Random velocity in 10's - higher for more spread
+            msgTrail.End();
+
+            // Apply radius damage with poison and blast damage
+            ApplyRadiusDamage(pPlayer, impactPoint, damageMultiplier, DMG_POISON | DMG_BLAST); // Apply radius damage.
+
             ConsumeRound();
         }
     }

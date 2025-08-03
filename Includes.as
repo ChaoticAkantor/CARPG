@@ -22,7 +22,7 @@
 #include "Classes/Robomancer/RobotMinion"
 
 // Xenologist.
-#include "Classes/Xenologist/XenMinion"
+#include "Classes/Xenomancer/XenMinion"
 
 // Defender
 #include "Classes/Defender/Barrier"

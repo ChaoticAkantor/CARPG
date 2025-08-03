@@ -190,7 +190,7 @@ class XenMinionData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST) // Changed from ENGINEER
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER) // Changed from ENGINEER
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }
@@ -290,7 +290,7 @@ class XenMinionData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST) // Changed from ENGINEER
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER) // Changed from ENGINEER
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }
@@ -488,7 +488,7 @@ void CheckXenologistMinions()
                     PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                     if(data !is null)
                     {
-                        if(data.GetCurrentClass() != PlayerClass::CLASS_XENOLOGIST)
+                        if(data.GetCurrentClass() != PlayerClass::CLASS_XENOMANCER)
                         {
                             // Player is no longer this class, destroy active minions.
                             if(xenMinion.IsActive())

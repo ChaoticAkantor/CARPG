@@ -323,7 +323,12 @@ void PrecacheAll()
 
     // Explosive Rounds.
     g_SoundSystem.PrecacheSound(strExplosiveRoundsActivateSound);
+    g_SoundSystem.PrecacheSound(strExplosiveRoundsImpactSound);
+
     g_Game.PrecacheModel(strExplosiveRoundsExplosionSprite);
+    g_Game.PrecacheModel(strExplosiveRoundsExplosionCoreSprite);
+    g_Game.PrecacheModel(strExplosiveRoundsGlowSprite);
+    g_Game.PrecacheModel(strExplosiveRoundsSplatterSprite);
     
 }
 
@@ -544,12 +549,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
                     }
                     break;
                 }
-                case PlayerClass::CLASS_DEMOLITIONIST:
+                case PlayerClass::CLASS_POISONER:
                 {
 
                     break;
                 }
-                case PlayerClass::CLASS_XENOLOGIST:
+                case PlayerClass::CLASS_XENOMANCER:
                 {
 
                     break;
@@ -736,7 +741,18 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
             data.SaveToFile(); // Save player data when they disconnect.
         }
     }
-        ClearMinions();
+    
+    // Cancel any barrier refunds
+    if(g_PlayerBarriers.exists(steamID))
+    {
+        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+        if(barrier !is null)
+        {
+            barrier.CancelRefunds(steamID);
+        }
+    }
+    
+    ClearMinions();
     return HOOK_CONTINUE;
 }
 
@@ -779,6 +795,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
         else if(command == "useability")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -843,9 +860,12 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                             @g_PlayerBarriers[steamID] = barrier;
                             barrier.Initialize(data.GetCurrentClassStats());
                         }
+                        
                         BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                         if(barrier !is null)
+                        {
                             barrier.ToggleBarrier(pPlayer);
+                        }
                     }
                     // Berserker ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
@@ -874,7 +894,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                             cloak.ToggleCloak(pPlayer);
                     }
                     // Demolitionist ability handling.
-                    else if(data.GetCurrentClass() == PlayerClass::CLASS_DEMOLITIONIST)
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_POISONER)
                     {
                         if(!g_PlayerExplosiveRounds.exists(steamID))
                         {
@@ -887,7 +907,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                             explosiveRounds.ActivateExplosiveRounds(pPlayer);
                     }
                     // Xenologist ability handling.
-                    else if(data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST)
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER)
                     {
                         if(!g_XenologistMinions.exists(steamID))
                         {
@@ -898,6 +918,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         if(xenMinion !is null)
                             xenMinion.SpawnXenMinion(pPlayer);
                     }
+                    
                     pParams.ShouldHide = true;
                     return HOOK_HANDLED;
                 }
@@ -1140,10 +1161,24 @@ void CheckBarrier()
     array<string>@ barrierKeys = g_PlayerBarriers.getKeys();
     for(uint i = 0; i < barrierKeys.length(); i++)
     {
-        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[barrierKeys[i]]);
+        string steamID = barrierKeys[i];
+        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
         if(barrier !is null)
         {
-            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i + 1);
+            // Find player by steamID instead of index
+            CBasePlayer@ pPlayer = null;
+            const int iMaxPlayers = g_Engine.maxClients;
+            
+            for(int j = 1; j <= iMaxPlayers; j++)
+            {
+                CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(j);
+                if(tempPlayer !is null && g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict()) == steamID)
+                {
+                    @pPlayer = tempPlayer;
+                    break;
+                }
+            }
+            
             if(pPlayer !is null)
             {
                 barrier.Update(pPlayer);

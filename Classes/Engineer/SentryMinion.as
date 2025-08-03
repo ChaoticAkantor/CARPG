@@ -21,14 +21,14 @@ dictionary g_PlayerSentries;
 class SentryData
 {
     private EHandle m_hSentry;
-    private bool m_bIsActive = false;
-    private float m_flBaseHealth = 100.0; // Base health of the sentry.
+    private bool m_bActive = false;
+    private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take more damage than other NPC's, so health must scale very high.
     private float m_flHealthScale = 0.18; // Health scaling % per level.
     private float m_flDamageScale = 0.08; // Damage scaling % per level.
     private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
-    private float m_flHealScale = 0.06f; // Heal scaling % per level.
-    private float m_flSelfHealModifier = 10.0f; // Sentry self-healing multiplier.
+    private float m_flHealScale = 0.08f; // Heal scaling % per level.
+    private float m_flSelfHealModifier = 20.0f; // Sentry self-healing multiplier.
     private float m_flEnergyDrain = 1.0; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
     private float m_flRecallEnergyCost = 0.0f; // Energy % cost to recall.
@@ -47,19 +47,20 @@ class SentryData
     bool IsActive() 
     { 
         // First check if we think we're active.
-        if(!m_bIsActive)
+        if(!m_bActive)
             return false;
             
         // Then verify sentry exists and is alive.
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
         if(pSentry is null || !pSentry.IsAlive())
         {
-            m_bIsActive = false; // Skill is "inactive" if sentry doesnt exist or is dead.
+            m_bActive = false; // Skill is "inactive" if sentry doesnt exist or is dead.
             return false;
         }
 
         return true;
     }
+    
     bool HasStats() { return m_pStats !is null; }
     ClassStats@ GetStats() { return m_pStats; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -80,7 +81,7 @@ class SentryData
 
     m_flLastToggleTime = currentTime;
 
-    if(m_bIsActive)
+    if(m_bActive)
     {
         DestroySentry(pPlayer);
         return;
@@ -95,10 +96,10 @@ class SentryData
     float current = float(resources['current']);
     float maximum = float(resources['max']);
 
-    // Only allow sentry to be deployed at maximum battery
+    // Check energy - require FULL energy to activate.
     if(current < maximum)
     {
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry is charging!\n");
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recharging...\n");
         return;
     }
 
@@ -148,13 +149,13 @@ class SentryData
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSentryCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Deployed!\n");
 
-            m_bIsActive = true;
+            m_bActive = true;
         }
     }
 
     void DestroySentry(CBasePlayer@ pPlayer)
     {
-        if(!m_bIsActive || pPlayer is null)
+        if(!m_bActive || pPlayer is null)
             return;
 
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
@@ -192,13 +193,13 @@ class SentryData
             }
         }
 
-        m_bIsActive = false;
+        m_bActive = false;
         m_hSentry = null;
     }
 
     void Update(CBasePlayer@ pPlayer)
     {
-        if(!m_bIsActive || pPlayer is null)
+        if(!m_bActive || pPlayer is null)
             return;
 
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
@@ -330,7 +331,7 @@ class SentryData
 
     private void UpdateVisualEffect(CBasePlayer@ pPlayer)
     {
-        if (!m_bIsActive || pPlayer is null)
+        if (!m_bActive || pPlayer is null)
             return;
             
         float currentTime = g_Engine.time;

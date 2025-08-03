@@ -108,7 +108,7 @@ namespace Menu
                             BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
                         break;
                     }
-                    case PlayerClass::CLASS_XENOLOGIST:
+                    case PlayerClass::CLASS_XENOMANCER:
                     {
                         if(m_pStats.GetLevel() >= 10)
                             BaseStatsText += "N/A.\n";
@@ -152,12 +152,12 @@ namespace Menu
                             BaseStatsText += "Reflective Ice - < LOCKED - Lv. 10 >\n";
 
                         if(m_pStats.GetLevel() >= g_iPerk2LvlReq)
-                            BaseStatsText += "Frosted - Ice Shield active regeneration penalty reduced to 50%.\n";
+                            BaseStatsText += "Frosted - WIP.\n";
                         else
                             BaseStatsText += "Frosted - < LOCKED - Lv. 20 >\n";
 
                         if(m_pStats.GetLevel() >= g_iPerk3LvlReq)
-                            BaseStatsText += "N/A - None.\n";
+                            BaseStatsText += "N/A - WIP.\n";
                         else
                             BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
                         break;
@@ -180,7 +180,7 @@ namespace Menu
                             BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
                         break;
                     }
-                    case PlayerClass::CLASS_DEMOLITIONIST:
+                    case PlayerClass::CLASS_POISONER:
                     {
                         if(m_pStats.GetLevel() >= 10)
                             BaseStatsText += "N/A.\n";
@@ -265,7 +265,7 @@ namespace Menu
                     }
                     break;
                 }
-                case PlayerClass::CLASS_XENOLOGIST:
+                case PlayerClass::CLASS_XENOMANCER:
                 {
                     XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
                     if(xenMinion !is null)
@@ -319,15 +319,15 @@ namespace Menu
                     }
                     break;
                 }
-                case PlayerClass::CLASS_DEMOLITIONIST:
+                case PlayerClass::CLASS_POISONER:
                 {
                     ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
                     if(explosiveRounds !is null)
                     {
-                        string DemolitionistStatsText = "=== Demolitionist Stats: ===" + "\n" + 
-                            "Explosive Ammo Damage Bonus: " + int(explosiveRounds.GetScaledDamage() * 100) + "%\n" + 
-                            "Explosive Ammo Capacity: " + int(explosiveRounds.GetMaxRounds()) + "\n" +
-                            "Explosive Ammo Cost: " + int(explosiveRounds.GetEnergyCost()) + "/ per Round\n\n";
+                        string DemolitionistStatsText = "=== Poisoner Stats: ===" + "\n" + 
+                            "Spore Ammo Damage Bonus: " + int(explosiveRounds.GetScaledDamage()) + "%\n" + 
+                            "Spore Ammo Max Capacity: " + int(explosiveRounds.GetMaxRounds()) + "\n" +
+                            "Spore Ammo Per Pack: " + int(explosiveRounds.GetAmmoPerPack()) + "\n\n";
 
                         m_pMenu.AddItem(DemolitionistStatsText, null);
                     }

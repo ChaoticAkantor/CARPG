@@ -8,8 +8,8 @@ dictionary g_PlayerCloaks;
 class CloakData
 {
     private bool m_bActive = false;
-    private float m_flCloakEnergyCostPerShot = 50.0f; // Energy drain per shot.
-    private float m_flCloakEnergyDrainInterval = 0.15f; // Energy drain interval.
+    private float m_flCloakEnergyCostPerShot = 15.0f; // Duration drained per shot.
+    private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 1.0f; // Base drain rate.
     private float m_flBaseDamageBonus = 1.0f; // Base % damage increase.
@@ -74,7 +74,11 @@ class CloakData
                 if(!m_bActive)
                 {
                     // Activate
-                    if(float(resources['current']) < (float(resources['max']))) // Cloak needs to be fully charged between uses.
+                    float currentEnergy = float(resources['current']);
+                    float maxEnergy = float(resources['max']);
+                    
+                    // Check energy - require FULL energy to activate
+                    if(currentEnergy < maxEnergy) // Cloak needs to be fully charged between uses.
                     {
                         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak recharging...\n");
                         return;
@@ -84,7 +88,7 @@ class CloakData
                     m_flLastDrainTime = currentTime;
                     
                     // Set initial energy value for damage calculation.
-                    m_flLastEnergyConsumed = float(resources['current']);
+                    m_flLastEnergyConsumed = currentEnergy;
                     
                     // Visual effects
                     pPlayer.pev.rendermode = kRenderTransAlpha;

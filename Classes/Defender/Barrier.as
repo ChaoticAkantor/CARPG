@@ -23,6 +23,7 @@ class BarrierData
     private float m_flStoredEnergy = 0.0f;
     private float m_flRefundTime = 5.0f; // Time to refund energy, total / this.
     private float m_flRefundInterval = 1.0f; // Intervals to give refunded energy.
+    private float m_flLastRefundStartTime = 0.0f; // Track when the last refund started
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
@@ -38,25 +39,36 @@ class BarrierData
     void ToggleBarrier(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+        {
             return;
+        }
 
         float currentTime = g_Engine.time;
         if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
         {
-            //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier on cooldown!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Barrier on cooldown!\n");
             return;
         }
 
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
         if(!g_PlayerClassResources.exists(steamID))
+        {
             return;
+        }
             
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        if(resources is null)
+        {
+            return;
+        }
 
         if(!m_bActive)
         {
-            // Check energy.
-            if(float(resources['current']) < (float(resources['max']))) // Only allow Barrier to be used when it's full.
+            // Check energy - require FULL energy to activate
+            float currentEnergy = float(resources['current']);
+            float maxEnergy = float(resources['max']);
+            
+            if(currentEnergy < maxEnergy)
             {
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield recharging...\n");
                 return;
@@ -67,7 +79,7 @@ class BarrierData
             m_flLastDrainTime = currentTime;
             ToggleGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP, 100);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Activated!\n");
         }
         else // MANUAL DEACTIVATION.
@@ -77,7 +89,7 @@ class BarrierData
             // Deactivate Manually.
             m_bActive = false;
             ToggleGlow(pPlayer);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP, 100);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Refunded!\n"); // MANUALLY SHATTERED.
             EffectBarrierShatter(pPlayer.pev.origin);
@@ -112,26 +124,7 @@ class BarrierData
         if(!g_PlayerClassResources.exists(steamID))
             return;
     
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        float currentEnergy = float(resources['current']);
-        float currentTime = g_Engine.time;
-
-        // Handle normal drain.
-        if(currentTime - m_flLastDrainTime >= 1.0f)
-        {
-            // Drain energy every second.
-            float newEnergy = currentEnergy;
-            
-            if(newEnergy <= 0)
-            {
-                resources['current'] = 0;
-                ToggleBarrier(pPlayer); // Deactivate if we run out of energy.
-                return;
-            }
-            
-            resources['current'] = newEnergy;
-            m_flLastDrainTime = currentTime;
-        }
+        // Energy is only drained when taking damage, handled in DrainEnergy method
     }
 
     void DrainEnergy(CBasePlayer@ pPlayer, float blockedDamage)
@@ -162,11 +155,29 @@ class BarrierData
         {
             m_bActive = false;
             ToggleGlow(pPlayer);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP); // Stop looping sound here too.
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP, 100); // Stop looping sound here too.
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // SHATTERED - DESTROYED.
             EffectBarrierShatter(pPlayer.pev.origin);
         }
+        
+        // Cancel any ongoing refunds
+        if(pPlayer !is null)
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            CancelRefunds(steamID);
+        }
+    }
+    
+    bool IsRefundValid(float startTime)
+    {
+        return startTime >= m_flLastRefundStartTime;
+    }
+    
+    void CancelRefunds(string steamID)
+    {
+        // Update the last refund start time to invalidate any current refunds
+        m_flLastRefundStartTime = g_Engine.time + 0.1f; // Add a small buffer to ensure all new refunds have a newer timestamp
     }
 
     private void ToggleGlow(CBasePlayer@ pPlayer)
@@ -245,24 +256,47 @@ class BarrierData
         m_flRefundAmount = float(resources['current']); // Store current energy
         resources['current'] = 0; // Empty energy
         
+        // Update the refund start time
+        m_flLastRefundStartTime = g_Engine.time;
+        
         if(m_flRefundAmount > 0)
         {
             float refundPerTick = m_flRefundAmount / m_flRefundTime;
-            g_Scheduler.SetInterval("BarrierRefund", m_flRefundInterval, int(m_flRefundTime), steamID, refundPerTick);
+            g_Scheduler.SetInterval("BarrierRefund", m_flRefundInterval, int(m_flRefundTime), steamID, refundPerTick, m_flLastRefundStartTime);
         }
     }
 }
 
-void BarrierRefund(string steamID, float refundAmount)
+void BarrierRefund(string steamID, float refundAmount, float startTime)
 {
-    if(!g_PlayerClassResources.exists(steamID))
-        return;
-        
-    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-    if(resources !is null)
+    // Check if this refund is still valid
+    if(g_PlayerBarriers.exists(steamID))
     {
-        float current = float(resources['current']);
-        float maxEnergy = float(resources['max']);
-        resources['current'] = Math.min(current + refundAmount, maxEnergy);
+        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+        if(barrier !is null && barrier.IsRefundValid(startTime))
+        {
+            // Check if the player is still playing as Defender
+            if(g_PlayerRPGData.exists(steamID))
+            {        
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER)
+                {
+                    if(g_PlayerClassResources.exists(steamID))
+                    {
+                        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                        if(resources !is null)
+                        {
+                            float current = float(resources['current']);
+                            float maxEnergy = float(resources['max']);
+                            resources['current'] = Math.min(current + refundAmount, maxEnergy);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
+    
+    // If we get here, the refund should be canceled
+    g_Scheduler.RemoveTimer(g_Scheduler.GetCurrentFunction());
 }

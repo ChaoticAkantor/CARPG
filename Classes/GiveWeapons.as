@@ -10,10 +10,6 @@ dictionary g_ClassWeapons = {
     }},
     {PlayerClass::CLASS_ENGINEER, array<string> = {
         "weapon_pipewrench",
-    }},
-    {PlayerClass::CLASS_DEMOLITIONIST, array<string> = {
-        "weapon_satchel",
-        "weapon_handgrenade",
     }}
 };
 

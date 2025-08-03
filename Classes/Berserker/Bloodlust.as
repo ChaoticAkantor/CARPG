@@ -11,13 +11,13 @@ dictionary g_PlayerBloodlusts;
 class BloodlustData
 {
     private bool m_bActive = false;
-    private float m_flBloodlustEnergyDrainInterval = 0.1f; // Interval to remove energy.
+    private float m_flBloodlustEnergyDrainInterval = 1.0f; // Interval to remove energy.
     private float m_flBloodlustEnergyCost = 1.0f; // Energy drain per interval.
     private float m_flBaseDamageBonus = 0.5f; // Base damage increase at lowest health.
     private float m_flDamageBonusPerLevel = 0.05f; // Bonus damage scaling per level.
-    private float m_flBaseDamageLifesteal = 0.25f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
-    private float m_flLifestealPerLevel = 0.03f; // % bonus lifesteal per level.
-    private float m_flEnergysteal = 0.1f; // % Energy steal.
+    private float m_flBaseDamageLifesteal = 0.20f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
+    private float m_flLifestealPerLevel = 0.02f; // % bonus lifesteal per level.
+    private float m_flEnergysteal = 0.05f; // % Energy steal.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -73,6 +73,23 @@ class BloodlustData
 
         if(!m_bActive)
         {
+            // Check energy - require FULL energy to activate.
+            if(g_PlayerClassResources.exists(steamID))
+            {
+                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                if(resources !is null)
+                {
+                    float currentEnergy = float(resources['current']);
+                    float maxEnergy = float(resources['max']);
+                    
+                    if(currentEnergy < maxEnergy)
+                    {
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Recharging...\n");
+                        return;
+                    }
+                }
+            }
+            
             m_bActive = true;
             m_flLastDrainTime = currentTime;
             ApplyGlow(pPlayer);

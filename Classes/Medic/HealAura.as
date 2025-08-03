@@ -46,8 +46,8 @@ class HealingAura
     private float m_flRadius = 800.0f; // Radius of the aura.
     private float m_flBaseHealAmount = 10.0f; // Base heal amount.
     private float m_flHealScaling = 0.05; // % per level scaling.
-    private int m_iDrainAmount = 10.0f; // Energy drain per interval.
-    private int m_iHealAuraDrainRevive = m_iDrainAmount * 2; // Energy drain per revival.
+    private int m_iDrainAmount = 1.0f; // Energy drain per interval.
+    private int m_iHealAuraDrainRevive = m_iDrainAmount * 5; // Energy drain per revival.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
@@ -99,16 +99,19 @@ class HealingAura
             if (resources is null)
                 return;
 
-            int current = int(resources['current']);
-            if (current < m_iDrainAmount) // Check energy before activation.
+            float current = float(resources['current']);
+            float maximum = float(resources['max']);
+            
+            // Check energy - require FULL energy to activate.
+            if (current < maximum)
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura recharging...\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Recharging...\n");
                 return;
             }
         }
 
         m_bIsActive = !m_bIsActive;
-        string message = m_bIsActive ? "Healing Aura On!\n" : "Healing Aura Off!\n";
+        string message = m_bIsActive ? "Healing Aura Activated!\n" : "Healing Aura Deactivated!\n";
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, message);
 
         if (m_bIsActive) 

@@ -15,11 +15,11 @@ dictionary g_ClassNames =
     {PlayerClass::CLASS_BERSERKER, "Berserker"},
     {PlayerClass::CLASS_ENGINEER, "Engineer"},
     {PlayerClass::CLASS_ROBOMANCER, "Robomancer"},
-    {PlayerClass::CLASS_XENOLOGIST, "Xenologist"},
+    {PlayerClass::CLASS_XENOMANCER, "Xenomancer"},
     {PlayerClass::CLASS_DEFENDER, "Warden"},
     {PlayerClass::CLASS_SHOCKTROOPER, "Shocktrooper"},
     {PlayerClass::CLASS_CLOAKER, "Cloaker"},
-    {PlayerClass::CLASS_DEMOLITIONIST, "Demolitionist"}
+    {PlayerClass::CLASS_POISONER, "Poisoner"}
 };
 
 array<PlayerClass> g_ClassList = 
@@ -28,11 +28,11 @@ array<PlayerClass> g_ClassList =
     PlayerClass::CLASS_BERSERKER,
     PlayerClass::CLASS_ENGINEER,
     PlayerClass::CLASS_ROBOMANCER,
-    PlayerClass::CLASS_XENOLOGIST,
+    PlayerClass::CLASS_XENOMANCER,
     PlayerClass::CLASS_DEFENDER,
     PlayerClass::CLASS_SHOCKTROOPER,
     PlayerClass::CLASS_CLOAKER,
-    PlayerClass::CLASS_DEMOLITIONIST
+    PlayerClass::CLASS_POISONER
 };
 
 enum PlayerClass 
@@ -42,11 +42,11 @@ enum PlayerClass
     CLASS_BERSERKER,
     CLASS_ENGINEER,
     CLASS_ROBOMANCER,
-    CLASS_XENOLOGIST,
+    CLASS_XENOMANCER,
     CLASS_DEFENDER,
     CLASS_SHOCKTROOPER,
     CLASS_CLOAKER,
-    CLASS_DEMOLITIONIST
+    CLASS_POISONER
 }
 
 // --- Per-class stat definitions. ---
@@ -57,12 +57,11 @@ class ClassDefinition
     float baseHP = 100.0f; // Base health.
     float baseAP = 100.0f; // Base armor.
     float baseResource = 100.0f; // Base max ability charge/duration.
-    float baseResourceRegen = 1.0f; // Base ability regen per second.
+    float fullRegenTime = 60.0f; // Default time in seconds to regenerate from empty to full if not specified.
 
     float healthPerLevel = 0.02f; // 2% of base health per level.
     float armorPerLevel = 0.01f; // 1% of base armor per level.
     float energyPerLevel = 0.1f; // 10% of base energy per level.
-    float energyRegenPerLevel = 0.05f; // 5% of base energy regen per level.
 
     ClassDefinition(string _name) 
     {
@@ -82,9 +81,11 @@ class ClassDefinition
         float maxEnergy = baseResource;
         return maxEnergy * (1.0f + (level * energyPerLevel));
     }
-    float GetPlayerEnergyRegen(int level, float energyRegen)
+    float GetPlayerEnergyRegen(int level, float maxEnergy)
     {
-        return baseResourceRegen * (1.0f + (level * energyRegenPerLevel));
+        // Use the class-specific fullRegenTime to calculate regen rate
+        // This ensures it always takes fullRegenTime seconds to fully regenerate.
+        return maxEnergy / fullRegenTime;
     }
 }
 
@@ -109,76 +110,65 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_MEDIC:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f;
-                    def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.02f; // 200 at level 50.
-                    def.energyRegenPerLevel = 0.1f; // 10% per level.
+                    def.baseResource = 10.0f;
+                    def.fullRegenTime = 60.0f;
+                    def.energyPerLevel = 0.04f; // 30 at level 50.
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 20.0f;
-                    def.baseResourceRegen = 1.0f;
+                    def.fullRegenTime = 45.0f;
                     def.energyPerLevel = 0.08f; // 200 at level 50.
-                    def.energyRegenPerLevel = 0.04f; // 4% per level.
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 25.0f;
-                    def.baseResourceRegen = 0.5f;
+                    def.fullRegenTime = 90.0f; // Slower regeneration for balance
                     def.energyPerLevel = 0.08f; // 100 at level 50.
-                    def.energyRegenPerLevel = 0.01f; // 1% per level.
                     break;
-                case PlayerClass::CLASS_XENOLOGIST:
+                case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 25.0f;
-                    def.baseResourceRegen = 0.5f;
+                    def.fullRegenTime = 90.0f;
                     def.energyPerLevel = 0.06f; // 100 at level 50.
-                    def.energyRegenPerLevel = 0.01f; // 1% per level.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
-                    def.baseHP = 100.0f;
-                    def.baseAP = 100.0f;
-                    def.baseResource = 100.0f;
-                    def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.02f; // 200 at level 50.
-                    def.energyRegenPerLevel = 0.05f; // 5% per level.
-                    def.healthPerLevel = 0.04f; // Berserkers gain 4% of base health per level instead.
-                    def.armorPerLevel = 0.005f; // Berserkers gain 0.5% of base armor per level instead.
+                    def.baseHP = 150.0f; // Berserkers have higher base HP.
+                    def.baseAP = 50.0f; // Berserkers have lower base AP.
+                    def.baseResource = 20.0f;
+                    def.fullRegenTime = 120.0f;
+                    def.energyPerLevel = 0.04f; // 60 at level 50.
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Shield Base HP.
-                    def.baseResourceRegen = 5.0f; // Defender needs higher base regen to keep up with shield HP scaling.
+                    def.fullRegenTime = 25.0f;
                     def.energyPerLevel = 0.08f; // 500 at level 50. Shield HP Scaling.
-                    def.energyRegenPerLevel = 0.06f; // 6% per level.
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Base Shock Rifle battery capacity.
-                    def.baseResourceRegen = 2.0f;
+                    def.fullRegenTime = 120.0f;
                     def.energyPerLevel = 0.08f; // 500 at level 50. Shockrifle battery capacity scaling.
-                    def.energyRegenPerLevel = 0.01f; // 1% per level.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f; // Cloak battery (duration).
-                    def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.02f; // 200 at level 50. Cloak battery scaling.
-                    def.energyRegenPerLevel = 0.2f; // 20% per level.
+                    def.baseResource = 20.0f; // Cloak battery (duration).
+                    def.fullRegenTime = 30.0f;
+                    def.energyPerLevel = 0.04f;
                     break;
-                case PlayerClass::CLASS_DEMOLITIONIST:
+                case PlayerClass::CLASS_POISONER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f; // Energy available to convert into explosive rounds.
-                    def.baseResourceRegen = 1.0f;
-                    def.energyPerLevel = 0.02f; // 200 at level 50. Energy Pool for converting to rounds scaling.
-                    def.energyRegenPerLevel = 0.05f; // 5% per level.
+                    def.baseResource = 1.0f; // Number of charges per full regen rather than duration.
+                    def.fullRegenTime = 120.0f; // Regen time for ALL charges.
+                    def.energyPerLevel = 0.08f;
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
@@ -487,7 +477,7 @@ class PlayerData
                 }
                 break;
 
-            case PlayerClass::CLASS_XENOLOGIST:
+            case PlayerClass::CLASS_XENOMANCER:
                 if(!g_XenologistMinions.exists(steamID))
                 {
                     XenMinionData data;
@@ -523,7 +513,7 @@ class PlayerData
                 }
                 break;
 
-               case PlayerClass::CLASS_DEMOLITIONIST:
+               case PlayerClass::CLASS_POISONER:
                 if(!g_PlayerExplosiveRounds.exists(steamID))
                 {
                     ExplosiveRoundsData data;
@@ -595,7 +585,7 @@ class PlayerData
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     break;
-                case PlayerClass::CLASS_DEMOLITIONIST:
+                case PlayerClass::CLASS_POISONER:
                     break;
             }
 
@@ -668,7 +658,7 @@ class PlayerData
             file.Write(string(int(m_CurrentClass)) + "\n");
             
             // Save each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_DEMOLITIONIST; i++)
+            for(uint i = 1; i <= PlayerClass::CLASS_POISONER; i++)
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
                 if(stats !is null)
@@ -702,7 +692,7 @@ class PlayerData
             g_Game.AlertMessage(at_console, "CARPG: Loaded class: " + GetClassName(m_CurrentClass) + "\n");
             
             // Load each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_DEMOLITIONIST; i++)
+            for(uint i = 1; i <= PlayerClass::CLASS_POISONER; i++)
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
                 if(stats !is null)

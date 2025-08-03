@@ -118,7 +118,7 @@ void RegenClassResource()
                 }
 
                 // Xenologist Minion reserve pool.
-                if(data.GetCurrentClass() == PlayerClass::CLASS_XENOLOGIST)
+                if(data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER)
                 {
                     if(g_XenologistMinions.exists(steamID))
                     {
@@ -161,10 +161,7 @@ void RegenClassResource()
                 BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                 if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && isBarrierActive)
                 {
-                    if(barrier.HasStats() && barrier.GetStats().GetLevel() >= g_iPerk2LvlReq) // Defender Frosted perk.
-                        regen *= 0.50f; // 50% regeneration rate when active instead if we meet the level requirement.
-                    else
-                        regen *= 0.25f; // Otherwise 25% regeneration rate when active.
+                    regen *= 0.50f; // 50% regeneration rate when active.
                 }
 
                 if(current < maximum)
@@ -264,10 +261,10 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         case PlayerClass::CLASS_CLOAKER:
                             resourceName = "Cloak Battery";
                             break;
-                        case PlayerClass::CLASS_DEMOLITIONIST:
-                            resourceName = "Ammo Pack";
+                        case PlayerClass::CLASS_POISONER:
+                            resourceName = "Spore Ammo Packs";
                             break;
-                        case PlayerClass::CLASS_XENOLOGIST:
+                        case PlayerClass::CLASS_XENOMANCER:
                             resourceName = "Creature Reserve";
                             break;
                     }
@@ -382,7 +379,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             }
                             break;
 
-                        case PlayerClass::CLASS_DEMOLITIONIST:
+                        case PlayerClass::CLASS_POISONER:
                         {
                             int rounds = 0;
                             int maxRounds = 0;
@@ -397,7 +394,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 }
                             }
                             
-                            resourceInfo += "[Explosive Rounds: (" + rounds + "/" + maxRounds + ")]";
+                            resourceInfo += "[Spore Rounds: (" + rounds + "/" + maxRounds + ")]";
                             break;
                         }
 
@@ -417,7 +414,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             }
                             break;
                             
-                        case PlayerClass::CLASS_XENOLOGIST:
+                        case PlayerClass::CLASS_XENOMANCER:
                             if(g_XenologistMinions.exists(steamID))
                             {
                                 XenMinionData@ minionData = cast<XenMinionData@>(g_XenologistMinions[steamID]);
