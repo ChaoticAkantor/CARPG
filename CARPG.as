@@ -178,6 +178,7 @@ void PrecacheAll()
 
     g_Game.PrecacheModel(strHealAuraSprite);
     g_Game.PrecacheModel(strHealAuraEffectSprite);
+    g_Game.PrecacheModel(strHealAuraPoisonEffectSprite);
 
     // Shocktrooper Ability Precache.
     g_SoundSystem.PrecacheSound(strShockrifleEquipSound);
@@ -537,7 +538,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
                                     msg.WriteCoord(pAttacker.pev.origin.x);
                                     msg.WriteCoord(pAttacker.pev.origin.y);
                                     msg.WriteCoord(pAttacker.pev.origin.z);
-                                    msg.WriteByte(15); // Radius.
+                                    msg.WriteByte(5); // Radius.
                                     msg.WriteByte(int(BLOODLUST_COLOR.x));
                                     msg.WriteByte(int(BLOODLUST_COLOR.y));
                                     msg.WriteByte(int(BLOODLUST_COLOR.z));

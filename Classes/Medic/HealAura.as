@@ -3,6 +3,7 @@ string strHealAuraActiveSound = "ambience/alien_beacon.wav"; // Aura active loop
 string strHealSound = "player/heartbeat1.wav"; // Aura heal hit sound.
 string strHealAuraSprite = "sprites/zbeam6.spr"; // Aura sprite.
 string strHealAuraEffectSprite = "sprites/saveme.spr"; // Aura healing sprite.
+string strHealAuraPoisonEffectSprite = "sprites/tinyspit.spr"; // Poison damage sprite for enemies
 
 dictionary g_HealingAuras;
 
@@ -42,10 +43,11 @@ void CheckHealAura()
 
 class HealingAura 
 {
+    // Healing Aura variables.
     private bool m_bIsActive = false;
-    private float m_flRadius = 800.0f; // Radius of the aura.
+    private float m_flRadius = 640.0f; // Radius of the aura.
     private float m_flBaseHealAmount = 10.0f; // Base heal amount.
-    private float m_flHealScaling = 0.05; // % per level scaling.
+    private float m_flHealScaling = 0.06f; // % per level scaling.
     private int m_iDrainAmount = 1.0f; // Energy drain per interval.
     private int m_iHealAuraDrainRevive = m_iDrainAmount * 5; // Energy drain per revival.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
@@ -54,22 +56,33 @@ class HealingAura
     private float m_flLastHealTime = 0.0f;
     private float m_flHealInterval = 1.0f;
 
+    // Poison Aura variables.
+    private float m_flPoisonDamagePercent = 0.5f; // Damage as percentage of healing amount.
+    private float m_flPoisonDamageInterval = m_flHealAuraInterval; // Interval for poison damage (same as healing).
+    private float m_flLastPoisonTime = 0.0f; // Track last poison application time.
+
+    // Visual effect variables.
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = m_flHealAuraInterval; // Time between visual updates. Same as heal rate.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
-
     private float m_flGlowDuration = 0.25f;
     private Vector m_vGlowColor = Vector(0, 255, 0);
 
     private ClassStats@ m_pStats = null;
 
     private Vector m_vHealColor = Vector(0, 255, 0);
+    private Vector m_vPoisonColor = Vector(0, 255, 0); // Poison color for enemies
 
     bool IsActive() { return m_bIsActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     float GetHealingRadius() { return m_flRadius; }
     float GetEnergyCost() { return m_iDrainAmount; }
     float GetEnergyCostRevive() { return m_iHealAuraDrainRevive; }
+
+    float GetPoisonDamageAmount()
+    {
+        return GetScaledHealAmount() * m_flPoisonDamagePercent;
+    }
 
     float GetScaledHealAmount()
     {
@@ -139,6 +152,7 @@ class HealingAura
         }
         m_flLastToggleTime = 0.0f;
         m_flLastHealTime = 0.0f;
+        m_flLastPoisonTime = 0.0f;
         m_flNextVisualUpdate = 0.0f;
     }
 
@@ -150,7 +164,7 @@ class HealingAura
             {
                 m_bIsActive = false;
                 UpdateVisualEffect(pPlayer);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Off!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Deactivated!\n");
                 g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
                 RemoveAuraGlow(pPlayer);
             }
@@ -176,7 +190,122 @@ class HealingAura
         if (m_bIsActive) 
         {
             ProcessHealing(pPlayer);
+            ProcessPoisonDamage(pPlayer);
             UpdateVisualEffect(pPlayer);
+        }
+    }
+
+    private void ProcessPoisonDamage(CBasePlayer@ pPlayer)
+    {
+        float currentTime = g_Engine.time;
+        if (currentTime - m_flLastPoisonTime < m_flPoisonDamageInterval)
+            return;
+
+        m_flLastPoisonTime = currentTime;
+        
+        // Only apply poison damage if healing aura is active.
+        if (!m_bIsActive)
+            return;
+
+        Vector playerOrigin = pPlayer.pev.origin;
+        float poisonDamage = GetPoisonDamageAmount();
+        
+        CBaseEntity@ pEntity = null;
+        while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flRadius, "*", "classname")) !is null)
+        {
+            // Skip if not alive or is a player
+            if(!pEntity.IsAlive() || pEntity.IsPlayer())
+                continue;
+                
+            // Skip squadmakers
+            if(pEntity.GetClassname() == "squadmaker")
+                continue;
+                
+            bool isEnemy = false;
+            
+            // Check classification to determine if entity is an enemy
+            int classification = pEntity.Classify();
+            
+            // All these classifications are enemies
+            if(classification == CLASS_ALIEN_MILITARY || 
+               classification == CLASS_ALIEN_MONSTER ||
+               classification == CLASS_ALIEN_PREDATOR ||
+               classification == CLASS_ALIEN_PREY ||
+               classification == CLASS_INSECT ||
+               classification == CLASS_ALIEN_BIOWEAPON ||
+               classification == CLASS_XRACE_PITDRONE ||
+               classification == CLASS_XRACE_SHOCK ||
+               classification == CLASS_HUMAN_MILITARY)
+            {
+                isEnemy = true;
+            }
+            
+            // Special handling for exclusion list entities
+            // For these entities, if they're in the exclusion list and IsPlayerAlly is true
+            // they're actually enemies (contrary to what their classification would suggest)
+            string classname = pEntity.GetClassname();
+            bool isInExclusionList = false;
+            
+            for(uint i = 0; i < ISPLAYERALLY_EXCLUSION.length(); i++)
+            {
+                if(classname == ISPLAYERALLY_EXCLUSION[i])
+                {
+                    CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
+                    if(pMonster !is null && pMonster.IsPlayerAlly())
+                    {
+                        // These are special cases where IsPlayerAlly is true but they're actually enemies
+                        isEnemy = true;
+                    }
+                    break;
+                }
+            }
+            
+            // Only damage if it's an enemy
+            if(isEnemy)
+            {
+                // Apply poison damage to enemy
+                pEntity.TakeDamage(pPlayer.pev, pPlayer.pev, poisonDamage, DMG_POISON);
+                
+                // Apply poison effect
+                ApplyPoisonEffect(pEntity);
+            }
+        }
+    }
+
+    private void ApplyPoisonEffect(CBaseEntity@ target)
+    {
+        if(target is null)
+            return;
+
+        Vector origin = target.pev.origin;
+        origin.z += 32; // Offset to center of entity.
+        
+        // Create several spit splatter effects around the enemy
+        for (int i = 0; i < 3; i++) {
+            Vector startPoint = origin;
+            Vector endPoint = origin;
+            
+            // Random directions for splatter
+            endPoint.x = startPoint.x + Math.RandomFloat(-25, 25);
+            endPoint.y = startPoint.y + Math.RandomFloat(-25, 25);
+            endPoint.z = startPoint.z + Math.RandomFloat(-10, 30);
+            
+            // Create sprite trail effect
+            NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+                msg.WriteByte(TE_SPRITETRAIL);
+                msg.WriteCoord(startPoint.x);
+                msg.WriteCoord(startPoint.y);
+                msg.WriteCoord(startPoint.z);
+                msg.WriteCoord(endPoint.x);
+                msg.WriteCoord(endPoint.y);
+                msg.WriteCoord(endPoint.z);
+                msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
+                msg.WriteByte(8);   // Count
+                msg.WriteByte(1);   // Life in 0.1's
+                msg.WriteByte(3);   // Scale in 0.1's
+                msg.WriteByte(15);  // Velocity along vector in 10's
+                msg.WriteByte(10);  // Random velocity in 10's
+            msg.End();
         }
     }
 
@@ -249,7 +378,7 @@ class HealingAura
         if(current < m_iDrainAmount)
         {
             m_bIsActive = false;
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Off!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Deactivated!\n");
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             RemoveAuraGlow(pPlayer);
             return;
@@ -293,38 +422,61 @@ class HealingAura
                         CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                         if(pMonster !is null)
                         {
-                            // Always skip squadmakers.
+                            // Always skip squadmakers
                             if(pMonster.GetClassname() == "squadmaker")
                                 continue;
                                 
-                            // Only check blacklist if the monster IsPlayerAlly. As their relationships are reversed.
-                            if(pMonster.IsPlayerAlly())
+                            bool shouldRevive = false;
+                            
+                            // Check classification - only revive certain classes
+                            int classification = pMonster.Classify();
+                            
+                            // Only revive player allies and friendly NPCs
+                            if(classification == CLASS_PLAYER_ALLY || 
+                               classification == CLASS_HUMAN_PASSIVE)
                             {
+                                // Skip exclusion list entities
                                 string classname = pMonster.GetClassname();
-                                bool isAllyFlipped = false;
+                                bool isInExclusionList = false;
                                 
-                                // Check list only for allies.
                                 for(uint i = 0; i < ISPLAYERALLY_EXCLUSION.length(); i++)
                                 {
                                     if(classname == ISPLAYERALLY_EXCLUSION[i])
                                     {
-                                        isAllyFlipped = true;
+                                        isInExclusionList = true;
                                         break;
                                     }
                                 }
                                 
-                                // Only revive if not blacklisted
-                                if(!isAllyFlipped)
-                                {
-                                    pMonster.Revive();
-                                    pMonster.pev.health = pMonster.pev.max_health * 0.5;
-                                    current -= reviveCost;
-                                    resources['current'] = current;
-                                    pPlayer.pev.frags += 5;
-                                    ApplyHealEffect(pEntity);
-                                    g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
-                                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
-                                }
+                                // Only revive if not in exclusion list
+                                shouldRevive = !isInExclusionList;
+                            }
+                            
+                            // Never revive known enemy classes
+                            if(classification == CLASS_ALIEN_MILITARY || 
+                               classification == CLASS_ALIEN_MONSTER ||
+                               classification == CLASS_ALIEN_PREDATOR ||
+                               classification == CLASS_ALIEN_PREY ||
+                               classification == CLASS_INSECT ||
+                               classification == CLASS_ALIEN_BIOWEAPON ||
+                               classification == CLASS_XRACE_PITDRONE ||
+                               classification == CLASS_XRACE_SHOCK ||
+                               classification == CLASS_HUMAN_MILITARY)
+                            {
+                                shouldRevive = false;
+                            }
+                            
+                            // Only revive if it's actually friendly
+                            if(shouldRevive)
+                            {
+                                pMonster.Revive();
+                                pMonster.pev.health = pMonster.pev.max_health * 0.5;
+                                current -= reviveCost;
+                                resources['current'] = current;
+                                pPlayer.pev.frags += 5;
+                                ApplyHealEffect(pEntity);
+                                g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
                             }
                         }
                     }
@@ -332,25 +484,70 @@ class HealingAura
                 }
             }
 
-            // Skip if dead or at full health.
-            if(!pEntity.IsAlive() || pEntity.pev.health >= pEntity.pev.max_health)
+            // Skip if entity is dead
+            if(!pEntity.IsAlive())
                 continue;
 
-            // Check if target is friendly.
+            bool shouldHeal = false;
+
+            // Always heal players
             if(pEntity.IsPlayer())
             {
-                // Always heal other players.
                 CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
-                if(pTarget is null)
-                    continue;
+                if(pTarget !is null)
+                    shouldHeal = true;
             }
             else
             {
-                // Only heal friendly NPCs.
-                CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                if(pMonster is null || !pMonster.IsPlayerAlly())
-                    continue;
+                // For non-players, check classification
+                int classification = pEntity.Classify();
+                
+                // Only heal player allies, friendly monsters, and neutral entities
+                // CLASS_PLAYER_ALLY = player allies
+                // CLASS_HUMAN_PASSIVE = scientists, civilians
+                // CLASS_BARNACLE = neutral
+                if(classification == CLASS_PLAYER_ALLY || 
+                   classification == CLASS_HUMAN_PASSIVE)
+                {
+                    // Skip exclusion list entities
+                    string classname = pEntity.GetClassname();
+                    bool isInExclusionList = false;
+                    
+                    for(uint i = 0; i < ISPLAYERALLY_EXCLUSION.length(); i++)
+                    {
+                        if(classname == ISPLAYERALLY_EXCLUSION[i])
+                        {
+                            isInExclusionList = true;
+                            break;
+                        }
+                    }
+                    
+                    // Do not heal entities in the exclusion list
+                    shouldHeal = !isInExclusionList;
+                }
+                
+                // Skip known enemy classes entirely
+                if(classification == CLASS_ALIEN_MILITARY || 
+                   classification == CLASS_ALIEN_MONSTER ||
+                   classification == CLASS_ALIEN_PREDATOR ||
+                   classification == CLASS_ALIEN_PREY ||
+                   classification == CLASS_INSECT ||
+                   classification == CLASS_ALIEN_BIOWEAPON ||
+                   classification == CLASS_XRACE_PITDRONE ||
+                   classification == CLASS_XRACE_SHOCK ||
+                   classification == CLASS_HUMAN_MILITARY)
+                {
+                    shouldHeal = false;
+                }
             }
+            
+            // Skip if not determined as friendly
+            if(!shouldHeal)
+                continue;
+                
+            // Skip if at full health
+            if(pEntity.pev.health >= pEntity.pev.max_health)
+                continue;
 
             float healAmount = GetScaledHealAmount();
             
@@ -358,14 +555,11 @@ class HealingAura
                 healAmount *= 1.5f; // NPC's get healing modifier.
 
             // Process healing, effects and sounds.
-            if(pEntity.pev.health < pEntity.pev.max_health)
-            {
-                pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
-                pPlayer.pev.frags += 2; // Award frags for healing.
-                
-                ApplyHealEffect(pEntity);
-                g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
-            }
+            pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
+            pPlayer.pev.frags += 2; // Award frags for healing.
+            
+            ApplyHealEffect(pEntity);
+            g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
         }
     }
 

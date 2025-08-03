@@ -59,9 +59,9 @@ class ClassDefinition
     float baseResource = 100.0f; // Base max ability charge/duration.
     float fullRegenTime = 60.0f; // Default time in seconds to regenerate from empty to full if not specified.
 
-    float healthPerLevel = 0.02f; // 2% of base health per level.
-    float armorPerLevel = 0.01f; // 1% of base armor per level.
-    float energyPerLevel = 0.1f; // 10% of base energy per level.
+    float healthPerLevel = 0.02f; // Base health raise per level.
+    float armorPerLevel = 0.02f; // Base armor raise per level.
+    float energyPerLevel = 0.1f; // Base energy raise per level if not specified.
 
     ClassDefinition(string _name) 
     {
@@ -72,18 +72,20 @@ class ClassDefinition
     {
         return baseHP * (1.0f + (level * healthPerLevel));
     }
+
     float GetPlayerArmor(int level)
     {
         return baseAP * (1.0f + (level * armorPerLevel));
     }
+
     float GetPlayerEnergy(int level)
     {
         float maxEnergy = baseResource;
         return maxEnergy * (1.0f + (level * energyPerLevel));
     }
+
     float GetPlayerEnergyRegen(int level, float maxEnergy)
     {
-        // Use the class-specific fullRegenTime to calculate regen rate
         // This ensures it always takes fullRegenTime seconds to fully regenerate.
         return maxEnergy / fullRegenTime;
     }
@@ -111,64 +113,64 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 10.0f;
-                    def.fullRegenTime = 60.0f;
-                    def.energyPerLevel = 0.04f; // 30 at level 50.
+                    def.fullRegenTime = 45.0f;
+                    def.energyPerLevel = 0.04f; // 30s at level 50.
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 20.0f;
-                    def.fullRegenTime = 45.0f;
-                    def.energyPerLevel = 0.08f; // 200 at level 50.
+                    def.fullRegenTime = 30.0f;
+                    def.energyPerLevel = 0.07f; // 100s at level 50.
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 25.0f;
-                    def.fullRegenTime = 90.0f; // Slower regeneration for balance
-                    def.energyPerLevel = 0.08f; // 100 at level 50.
+                    def.baseResource = 1.0f;
+                    def.fullRegenTime = 90.0f;
+                    def.energyPerLevel = 0.18f; // 10 points at level 50.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 25.0f;
+                    def.baseResource = 1.0f;
                     def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.06f; // 100 at level 50.
+                    def.energyPerLevel = 0.18f; // 10 points at level 50.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 150.0f; // Berserkers have higher base HP.
                     def.baseAP = 50.0f; // Berserkers have lower base AP.
                     def.baseResource = 20.0f;
-                    def.fullRegenTime = 120.0f;
-                    def.energyPerLevel = 0.04f; // 60 at level 50.
+                    def.fullRegenTime = 90.0f;
+                    def.energyPerLevel = 0.04f; // 60s at level 50.
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Shield Base HP.
                     def.fullRegenTime = 25.0f;
-                    def.energyPerLevel = 0.08f; // 500 at level 50. Shield HP Scaling.
+                    def.energyPerLevel = 0.08f; // 500 HP at level 50.
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f; // Base Shock Rifle battery capacity.
-                    def.fullRegenTime = 120.0f;
-                    def.energyPerLevel = 0.08f; // 500 at level 50. Shockrifle battery capacity scaling.
+                    def.baseResource = 100.0f; // Base Shock Rifle Battery capacity.
+                    def.fullRegenTime = 90.0f;
+                    def.energyPerLevel = 0.08f; // 500 ammo at level 50. Shockrifle battery capacity scaling.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 20.0f; // Cloak battery (duration).
-                    def.fullRegenTime = 30.0f;
-                    def.energyPerLevel = 0.04f;
+                    def.fullRegenTime = 25.0f;
+                    def.energyPerLevel = 0.04f; // 60s at level 50.
                     break;
                 case PlayerClass::CLASS_POISONER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 1.0f; // Number of charges per full regen rather than duration.
                     def.fullRegenTime = 120.0f; // Regen time for ALL charges.
-                    def.energyPerLevel = 0.08f;
+                    def.energyPerLevel = 0.08f; // 5 charges at level 50.
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;

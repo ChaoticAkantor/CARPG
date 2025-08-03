@@ -46,8 +46,8 @@ namespace Menu
             string BaseStatsText = "=== Basic Stats: ===\n" +
                 "Max Health: " + int(pPlayer.pev.max_health) + " HP\n" + 
                 "Max Armor: " + int(pPlayer.pev.armortype) + " AP\n" + 
-                "Max Ability Charge: " + int(maxEnergy) + "\n" + 
-                "Ability Recharge: " + energyRegen + "/s\n\n";
+                "Ability Duration/Charges: " + int(maxEnergy) + "\n" + 
+                "Ability Recharge Rate: " + energyRegen + "/s\n\n";
 
                 BaseStatsText += "=== Class Perks: ===\n";
             
@@ -227,11 +227,11 @@ namespace Menu
                     HealingAura@ healingAura = cast<HealingAura@>(g_HealingAuras[steamID]);
                     if(healingAura !is null)
                     {
-                        string MedicStatsText = "=== Medic Stats: ===" + "\n" + 
-                            "Healing Aura Restoration: " + int(healingAura.GetScaledHealAmount()) + " HP/s\n" + 
-                            "Healing Aura Radius: " + int(healingAura.GetHealingRadius() / 16) + "ft\n" + 
-                            "Healing Aura Cost: " + int(healingAura.GetEnergyCost()) + "/s\n" +
-                            "Healing Aura Revive Cost: " + int(healingAura.GetEnergyCostRevive()) + "/s\n\n";
+                        string MedicStatsText = "=== Heal Aura Stats: ===" + "\n" + 
+                            "Restoration: " + int(healingAura.GetScaledHealAmount()) + " HP/s\n" + 
+                            "Radius: " + int(healingAura.GetHealingRadius() / 16) + "ft\n" + 
+                            "Revive Cost: " + int(healingAura.GetEnergyCostRevive()) + "/s\n" +
+                            "Poison Damage: " + int(healingAura.GetPoisonDamageAmount()) + "/s\n\n";
 
                         m_pMenu.AddItem(MedicStatsText, null);
                     }
@@ -242,11 +242,10 @@ namespace Menu
                     BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                     if(bloodlust !is null)
                     {
-                        string BerserkerStatsText = "=== Berserker Stats: ===" + "\n" +
-                        "Damage as Ability Charge: " + int(bloodlust.GetEnergySteal()) + "%\n" +
-                        "Bloodlust Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
-                        "Bloodlust health scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n" + 
-                        "Bloodlust Cost: " + int(bloodlust.GetEnergyCost()) + " / 0.15s\n\n";
+                        string BerserkerStatsText = "=== Bloodlust Stats: ===" + "\n" +
+                        "Ability Charge Steal: " + int(bloodlust.GetEnergySteal()) + "%\n" +
+                        "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
+                        "Health scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
@@ -257,9 +256,9 @@ namespace Menu
                     MinionData@ roboMinion = cast<MinionData@>(g_PlayerMinions[steamID]);
                     if(roboMinion !is null)
                     {
-                        string EngineerStatsText = "=== Engineer Stats: ===" + "\n" + 
-                        "Robot Minions Health: " + int(roboMinion.GetScaledHealth()) + "HP\n" + 
-                        "Robot Minions Damage: +" + int(roboMinion.GetScaledDamage() * 100) + "%\n\n";
+                        string EngineerStatsText = "=== Robogrunt Stats: ===" + "\n" + 
+                        "Health: " + int(roboMinion.GetScaledHealth()) + "HP\n" + 
+                        "Damage: " + int(roboMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
@@ -270,9 +269,9 @@ namespace Menu
                     XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
                     if(xenMinion !is null)
                     {
-                        string XenologistStatsText = "=== Xenologist Stats: ===" + "\n" + 
-                        "Xen Creatures Health: " + int(xenMinion.GetScaledHealth()) + "HP\n" + 
-                        "Xen Creatures Damage: +" + int(xenMinion.GetScaledDamage() * 100) + "%\n\n";
+                        string XenologistStatsText = "=== Creature Stats: ===" + "\n" + 
+                        "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
+                        "Damage: " + int(xenMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(XenologistStatsText, null);
                     }
@@ -283,9 +282,9 @@ namespace Menu
                     ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
                     if(shockRifle !is null)
                     {
-                        string ShocktrooperStatsText = "=== Shocktrooper Stats: ===" + "\n" + 
-                            "Shockrifle Battery Capacity: " + int(maxEnergy + 100) + "\n" +
-                            "Shockrifle Damage Bonus: +" + int((shockRifle.GetScaledDamage() - 1.0f) * 100) + "%\n\n";
+                        string ShocktrooperStatsText = "=== Shockroach Stats: ===" + "\n" + 
+                            "Battery Capacity: " + int(maxEnergy) + "\n" +
+                            "Damage: " + int((shockRifle.GetScaledDamage() - 1.0f) * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(ShocktrooperStatsText, null);
                     }
@@ -296,10 +295,10 @@ namespace Menu
                     BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                     if(barrier !is null)
                     {
-                        string DefenderStatsText = "=== Defender Stats: ===" + "\n" + 
-                            "Ice Shield Durability: " + int(maxEnergy) + "HP\n" + 
-                            "Ice Shield Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
-                            "Ice Shield Regen Whilst Active: " + (m_pStats.GetLevel() >= g_iPerk2LvlReq ? (energyRegen * 0.75) : (energyRegen * 0.5)) + "/s\n\n";
+                        string DefenderStatsText = "=== Ice Shield Stats: ===" + "\n" + 
+                            "Durability: " + int(maxEnergy) + " HP\n" + 
+                            "Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
+                            "Active Recharge Rate: " + (energyRegen * 0.5) + "/s\n\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }
@@ -310,10 +309,9 @@ namespace Menu
                     CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
                     if(cloak !is null)
                     {
-                        string CloakerStatsText = "=== Cloaker Stats: ===" + "\n" +  
-                            "Cloak Battery Drain: " + int(cloak.GetEnergyCost()) + " / 0.15s\n" +
-                            "Cloak Battery Drain Per Shot: " + int(cloak.GetEnergyCostPerShot()) + "\n" +
-                            "Cloak Damage Bonus at 100% Battery: +" + int(cloak.GetDamageBonus() * 100) + "%\n\n";
+                        string CloakerStatsText = "=== Cloak Stats: ===" + "\n" +  
+                            "Battery Cost Per Shot: " + int(cloak.GetEnergyCostPerShot()) + "\n" +
+                            "Damage Bonus at 100% Battery: " + int(cloak.GetDamageBonus() * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(CloakerStatsText, null);
                     }
@@ -324,10 +322,10 @@ namespace Menu
                     SporeRoundsData@ sporeRounds = cast<SporeRoundsData@>(g_PlayerSporeRounds[steamID]);
                     if(sporeRounds !is null)
                     {
-                        string DemolitionistStatsText = "=== Poisoner Stats: ===" + "\n" + 
-                            "Spore Ammo Damage Bonus: " + int(sporeRounds.GetScaledDamage()) + "%\n" + 
-                            "Spore Ammo Max Capacity: " + int(sporeRounds.GetMaxRounds()) + "\n" +
-                            "Spore Ammo Per Pack: " + int(sporeRounds.GetAmmoPerPack()) + "\n\n";
+                        string DemolitionistStatsText = "=== Spore Ammo Stats: ===" + "\n" + 
+                            "Radius Damage: " + int(sporeRounds.GetScaledDamage()) + "%\n" + 
+                            "Max Ammo Capacity: " + int(sporeRounds.GetMaxRounds()) + "\n" +
+                            "Ammo Per Pack: " + int(sporeRounds.GetAmmoPerPack()) + "\n\n";
 
                         m_pMenu.AddItem(DemolitionistStatsText, null);
                     }
@@ -338,12 +336,10 @@ namespace Menu
                     SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
                     if(sentry !is null)
                     {
-                        string EngineerStatsText = "=== Engineer Stats: ===" + "\n" + 
-                            "Sentry Health: " + int(sentry.GetScaledHealth()) + "HP\n" +
-                            "Sentry Damage: +" + int(sentry.GetScaledDamage() * 100) + "%\n" + 
-                            "Regeneration Buff: " + int(sentry.GetHealAmount()) + " HP/s\n" +
-                            //"Healing Radius: " + int(sentry.GetHealRadius() / 16) + "ft\n" +
-                            "Energy Drain: " + int(sentry.GetEnergyDrain()) + "/s\n\n";
+                        string EngineerStatsText = "=== Sentry Stats: ===" + "\n" + 
+                            "Health: " + int(sentry.GetScaledHealth()) + " HP\n" +
+                            "Damage: " + int(sentry.GetScaledDamage() * 100 + 100) + "%\n" + 
+                            "Regeneration Aura: " + sentry.GetHealAmount() + " HP/s\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }

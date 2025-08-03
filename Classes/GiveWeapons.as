@@ -7,9 +7,6 @@ some weapon models/sounds/sprites might not be precached for that map or globaly
 dictionary g_ClassWeapons = {
     {PlayerClass::CLASS_MEDIC, array<string> = {
         "weapon_medkit",
-    }},
-    {PlayerClass::CLASS_ENGINEER, array<string> = {
-        "weapon_pipewrench",
     }}
 };
 

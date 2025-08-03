@@ -92,9 +92,9 @@ const array<string> XEN_ENTITIES =
 
 const array<int> XEN_COSTS = 
 {
-    25,  // Pitdrone.
-    50,  // Gonome.
-    50   // Alien Grunt.
+    1,  // Pitdrone.
+    2,  // Gonome.
+    2   // Alien Grunt.
 };
 
 // Health modifiers for each Xen creature type, applied AFTER scaling.
@@ -113,8 +113,8 @@ class XenMinionData
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0;
     private float m_flHealthScale = 0.12; // Health % scaling per level.
-    private float m_flHealthRegen = 0.005; // // Health recovery % per second of Minions.
-    private float m_flDamageScale = 0.08; // Damage % scaling per level.
+    private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
+    private float m_flDamageScale = 0.1; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;

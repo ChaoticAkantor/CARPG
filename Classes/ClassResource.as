@@ -176,7 +176,7 @@ void RegenClassResource()
     }
 }
 
-string GetResourceBar(float current, float maximum, int barLength = 30)
+string GetResourceBar(float current, float maximum, int barLength = 20)
 {
     float ratio = current / maximum;
     float segmentSize = 1.0f / barLength;
@@ -241,7 +241,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                     switch(currentClass)
                     {
                         case PlayerClass::CLASS_ROBOMANCER:
-                            resourceName = "Robot Reserve";
+                            resourceName = "Robots";
                             break;
                         case PlayerClass::CLASS_ENGINEER:
                             resourceName = "Sentry Battery";
@@ -265,7 +265,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             resourceName = "Spore Ammo Packs";
                             break;
                         case PlayerClass::CLASS_XENOMANCER:
-                            resourceName = "Creature Reserve";
+                            resourceName = "Creatures";
                             break;
                     }
                 }
@@ -353,7 +353,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
                             int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
                             
-                            resourceInfo += "[Shock Rifle: " + (hasShockRifleEquipped ? " EQUIPPED" : " STORED") + "] "; // Shockrifle battery.
+                            resourceInfo += "[" + (hasShockRifleEquipped ? "EQUIPPED" : "STORED") + "]"; // Shockrifle battery.
                             break;
                         }
 

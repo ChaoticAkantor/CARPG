@@ -114,7 +114,7 @@ class SporeRoundsData
             return;
         }
 
-        // Calculate rounds to add based on percentage of max pool
+        // Calculate rounds to add based on percentage of max pool.
         int maxRounds = GetMaxRounds();
         int roundsToAdd = int(maxRounds * m_flRoundsFillPercentage);
         roundsToAdd = Math.max(1, roundsToAdd); // Always add at least 1 round.
