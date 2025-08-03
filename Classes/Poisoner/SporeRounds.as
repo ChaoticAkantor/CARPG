@@ -1,12 +1,12 @@
 // Sounds and sprites.
-string strExplosiveRoundsActivateSound = "weapons/reload3.wav";
-string strExplosiveRoundsImpactSound = "weapons/splauncher_impact.wav"; // Actual spore grenade impact sound.
-string strExplosiveRoundsExplosionSprite = "sprites/spore_exp_01.spr"; // Actual spore explosion sprite.
-string strExplosiveRoundsExplosionCoreSprite = "sprites/spore_exp_c_01.spr"; // Core explosion sprite.
-string strExplosiveRoundsGlowSprite = "sprites/glow01.spr"; // Glow effect.
-string strExplosiveRoundsSplatterSprite = "sprites/tinyspit.spr"; // Splatter effect.
+string strSporeRoundsActivateSound = "weapons/reload3.wav";
+string strSporeRoundsImpactSound = "weapons/splauncher_impact.wav"; // Actual spore grenade impact sound.
+string strSporeRoundsExplosionSprite = "sprites/spore_exp_01.spr"; // Actual spore explosion sprite.
+string strSporeRoundsExplosionCoreSprite = "sprites/spore_exp_c_01.spr"; // Core explosion sprite.
+string strSporeRoundsGlowSprite = "sprites/glow01.spr"; // Glow effect.
+string strSporeRoundsSplatterSprite = "sprites/tinyspit.spr"; // Splatter effect.
 
-dictionary g_AmmoTypeDamageMultipliers = // Our multipliers for explosive damage based on ammo type.
+dictionary g_AmmoTypeDamageMultipliers = // Our multipliers for spore damage based on ammo type.
 {
     {"9mm", 1.15f},
     {"357", 1.0f},
@@ -18,15 +18,15 @@ dictionary g_AmmoTypeDamageMultipliers = // Our multipliers for explosive damage
     {"m40a1", 1.0f}
 };
 
-dictionary g_PlayerExplosiveRounds;
+dictionary g_PlayerSporeRounds;
 
-class ExplosiveRoundsData
+class SporeRoundsData
 {
-    private float m_flExplosiveRoundsDamage = 6.0f;
-    private float m_flExplosiveRoundsDamageScaling = 0.1f; // % Damage increase per level.
-    private float m_flExplosiveRoundsPoolScaling = 0.06f; // % Pool size increase per level.
-    private float m_flExplosiveRoundsRadius = 96.0f; // Radius of explosion.
-    private int m_iExplosiveRoundsPoolBase = 30;
+    private float m_flSporeRoundsDamage = 6.0f;
+    private float m_flSporeRoundsDamageScaling = 0.1f; // % Damage increase per level.
+    private float m_flSporeRoundsPoolScaling = 0.06f; // % Pool size increase per level.
+    private float m_flSporeRoundsRadius = 96.0f; // Radius of explosion.
+    private int m_iSporeRoundsPoolBase = 30;
     private float m_flEnergyCostPerActivation = 1.0f;
     private float m_flRoundsFillPercentage = 0.33f; // Fill 33% of max pool per activation
     private float m_flRoundsInPool = 0.0f;
@@ -44,9 +44,9 @@ class ExplosiveRoundsData
     float GetScaledDamage()
     {
         if(m_pStats is null)
-            return m_flExplosiveRoundsDamage;
+            return m_flSporeRoundsDamage;
 
-        return m_flExplosiveRoundsDamage * (1.0f + (m_pStats.GetLevel() * m_flExplosiveRoundsDamageScaling));
+        return m_flSporeRoundsDamage * (1.0f + (m_pStats.GetLevel() * m_flSporeRoundsDamageScaling));
 
     }
 
@@ -54,7 +54,7 @@ class ExplosiveRoundsData
 
     float GetAmmoPerPack() { return m_flRoundsFillPercentage; }
 
-    float GetRadius() { return m_flExplosiveRoundsRadius; }
+    float GetRadius() { return m_flSporeRoundsRadius; }
 
     void ApplyRadiusDamage(CBasePlayer@ pPlayer, Vector impactPoint, float damageMultiplier, int damageType = DMG_POISON | DMG_BLAST)
     {
@@ -81,12 +81,12 @@ class ExplosiveRoundsData
     int GetMaxRounds()
     {
         if(m_pStats is null)
-            return m_iExplosiveRoundsPoolBase;
+            return m_iSporeRoundsPoolBase;
 
-        return int(m_iExplosiveRoundsPoolBase * (1.0f + (m_pStats.GetLevel() * m_flExplosiveRoundsPoolScaling)));
+        return int(m_iSporeRoundsPoolBase * (1.0f + (m_pStats.GetLevel() * m_flSporeRoundsPoolScaling)));
     }
 
-    void ActivateExplosiveRounds(CBasePlayer@ pPlayer)
+    void ActivateSporeRounds(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
@@ -125,13 +125,13 @@ class ExplosiveRoundsData
 
         resources['current'] = Math.max(0, current - m_flEnergyCostPerActivation); // Deduct fixed energy cost.
 
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strExplosiveRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strSporeRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + actualAdded + " Spore Rounds\n");
 
         m_flLastToggleTime = currentTime;
     }
 
-    void FireExplosiveRounds(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon)
+    void FireSporeRounds(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon)
     {
         if(pPlayer is null || pWeapon is null || !HasRounds())
             return;
@@ -191,7 +191,7 @@ class ExplosiveRoundsData
                 }
 
                 // Play impact sound (quieter for shotgun pellets)
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strSporeRoundsImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
                 
                 // Create smaller spore grenade-like effects for shotgun pellets
                 // 1. Main explosion sprite (spore_exp_01) - smaller scale
@@ -200,7 +200,7 @@ class ExplosiveRoundsData
                 msgExp.WriteCoord(impactPoint.x);
                 msgExp.WriteCoord(impactPoint.y);
                 msgExp.WriteCoord(impactPoint.z);
-                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsExplosionSprite));
                 msgExp.WriteByte(6); // Smaller scale for shotgun
                 msgExp.WriteByte(180); // Brightness
                 msgExp.End();
@@ -211,7 +211,7 @@ class ExplosiveRoundsData
                 msgCore.WriteCoord(impactPoint.x);
                 msgCore.WriteCoord(impactPoint.y);
                 msgCore.WriteCoord(impactPoint.z);
-                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsExplosionCoreSprite));
                 msgCore.WriteByte(4); // Smaller scale for shotgun
                 msgCore.WriteByte(180); // Brightness
                 msgCore.End();
@@ -222,7 +222,7 @@ class ExplosiveRoundsData
                 msgGlow.WriteCoord(impactPoint.x);
                 msgGlow.WriteCoord(impactPoint.y);
                 msgGlow.WriteCoord(impactPoint.z);
-                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsGlowSprite));
                 msgGlow.WriteByte(2); // Life
                 msgGlow.WriteByte(1); // Scale
                 msgGlow.WriteByte(180); // Brightness
@@ -247,7 +247,7 @@ class ExplosiveRoundsData
                 msgTrail.WriteCoord(endPoint.x);
                 msgTrail.WriteCoord(endPoint.y);
                 msgTrail.WriteCoord(endPoint.z);
-                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsSplatterSprite));
                 msgTrail.WriteByte(8);  // Count - fewer sprites for smaller effect
                 msgTrail.WriteByte(2);  // Life in 0.1's
                 msgTrail.WriteByte(1);  // Scale in 0.1's
@@ -299,7 +299,7 @@ class ExplosiveRoundsData
                 }
 
                 // Play impact sound (quieter for burst fire)
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.4f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-10, 10), 0, true, impactPoint);
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strSporeRoundsImpactSound, 0.4f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-10, 10), 0, true, impactPoint);
                 
                 // Create very small spore grenade-like effects for burst fire
                 // 1. Main explosion sprite (spore_exp_01) - smaller scale
@@ -308,7 +308,7 @@ class ExplosiveRoundsData
                 msgExp.WriteCoord(impactPoint.x);
                 msgExp.WriteCoord(impactPoint.y);
                 msgExp.WriteCoord(impactPoint.z);
-                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsExplosionSprite));
                 msgExp.WriteByte(4); // Smaller scale for burst fire
                 msgExp.WriteByte(160); // Brightness
                 msgExp.End();
@@ -319,7 +319,7 @@ class ExplosiveRoundsData
                 msgCore.WriteCoord(impactPoint.x);
                 msgCore.WriteCoord(impactPoint.y);
                 msgCore.WriteCoord(impactPoint.z);
-                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsExplosionCoreSprite));
                 msgCore.WriteByte(3); // Smaller scale for burst fire
                 msgCore.WriteByte(160); // Brightness
                 msgCore.End();
@@ -330,7 +330,7 @@ class ExplosiveRoundsData
                 msgGlow.WriteCoord(impactPoint.x);
                 msgGlow.WriteCoord(impactPoint.y);
                 msgGlow.WriteCoord(impactPoint.z);
-                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsGlowSprite));
                 msgGlow.WriteByte(1); // Life
                 msgGlow.WriteByte(1); // Scale
                 msgGlow.WriteByte(160); // Brightness
@@ -355,7 +355,7 @@ class ExplosiveRoundsData
                 msgTrail.WriteCoord(endPoint.x);
                 msgTrail.WriteCoord(endPoint.y);
                 msgTrail.WriteCoord(endPoint.z);
-                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsSplatterSprite));
                 msgTrail.WriteByte(3);  // Count
                 msgTrail.WriteByte(1);  // Life in 0.1's
                 msgTrail.WriteByte(1);  // Scale in 0.1's
@@ -396,7 +396,7 @@ class ExplosiveRoundsData
             }
 
             // Play impact sound
-            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.7f, ATTN_NORM, 0, PITCH_NORM, 0, true, impactPoint);
+            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strSporeRoundsImpactSound, 0.7f, ATTN_NORM, 0, PITCH_NORM, 0, true, impactPoint);
             
             // Create spore grenade-like explosion effects
             // 1. Main explosion sprite (spore_exp_01)
@@ -405,7 +405,7 @@ class ExplosiveRoundsData
             msgExp.WriteCoord(impactPoint.x);
             msgExp.WriteCoord(impactPoint.y);
             msgExp.WriteCoord(impactPoint.z);
-            msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+            msgExp.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsExplosionSprite));
             msgExp.WriteByte(10); // Scale
             msgExp.WriteByte(200); // Brightness
             msgExp.End();
@@ -416,7 +416,7 @@ class ExplosiveRoundsData
             msgCore.WriteCoord(impactPoint.x);
             msgCore.WriteCoord(impactPoint.y);
             msgCore.WriteCoord(impactPoint.z);
-            msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+            msgCore.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsExplosionCoreSprite));
             msgCore.WriteByte(8); // Scale
             msgCore.WriteByte(200); // Brightness
             msgCore.End();
@@ -427,7 +427,7 @@ class ExplosiveRoundsData
             msgGlow.WriteCoord(impactPoint.x);
             msgGlow.WriteCoord(impactPoint.y);
             msgGlow.WriteCoord(impactPoint.z);
-            msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+            msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsGlowSprite));
             msgGlow.WriteByte(3); // Life
             msgGlow.WriteByte(2); // Scale
             msgGlow.WriteByte(200); // Brightness
@@ -452,7 +452,7 @@ class ExplosiveRoundsData
             msgTrail.WriteCoord(endPoint.x);
             msgTrail.WriteCoord(endPoint.y);
             msgTrail.WriteCoord(endPoint.z);
-            msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+            msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strSporeRoundsSplatterSprite));
             msgTrail.WriteByte(16);  // Count - more sprites for a denser burst
             msgTrail.WriteByte(3);   // Life in 0.1's
             msgTrail.WriteByte(3);   // Scale in 0.1's

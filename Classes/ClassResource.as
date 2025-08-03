@@ -384,13 +384,13 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             int rounds = 0;
                             int maxRounds = 0;
                             
-                            if(g_PlayerExplosiveRounds.exists(steamID))
+                            if(g_PlayerSporeRounds.exists(steamID))
                             {
-                                ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-                                if(explosiveRounds !is null)
+                                SporeRoundsData@ sporeRounds = cast<SporeRoundsData@>(g_PlayerSporeRounds[steamID]);
+                                if(sporeRounds !is null)
                                 {
-                                    rounds = int(explosiveRounds.GetRounds());
-                                    maxRounds = explosiveRounds.GetMaxRounds();
+                                    rounds = int(sporeRounds.GetRounds());
+                                    maxRounds = sporeRounds.GetMaxRounds();
                                 }
                             }
                             

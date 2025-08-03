@@ -321,13 +321,13 @@ namespace Menu
                 }
                 case PlayerClass::CLASS_POISONER:
                 {
-                    ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-                    if(explosiveRounds !is null)
+                    SporeRoundsData@ sporeRounds = cast<SporeRoundsData@>(g_PlayerSporeRounds[steamID]);
+                    if(sporeRounds !is null)
                     {
                         string DemolitionistStatsText = "=== Poisoner Stats: ===" + "\n" + 
-                            "Spore Ammo Damage Bonus: " + int(explosiveRounds.GetScaledDamage()) + "%\n" + 
-                            "Spore Ammo Max Capacity: " + int(explosiveRounds.GetMaxRounds()) + "\n" +
-                            "Spore Ammo Per Pack: " + int(explosiveRounds.GetAmmoPerPack()) + "\n\n";
+                            "Spore Ammo Damage Bonus: " + int(sporeRounds.GetScaledDamage()) + "%\n" + 
+                            "Spore Ammo Max Capacity: " + int(sporeRounds.GetMaxRounds()) + "\n" +
+                            "Spore Ammo Per Pack: " + int(sporeRounds.GetAmmoPerPack()) + "\n\n";
 
                         m_pMenu.AddItem(DemolitionistStatsText, null);
                     }
@@ -360,7 +360,7 @@ namespace Menu
             {
                 AmmoType@ ammoType = g_AmmoTypes[i];
                 
-                // Skip special ammo types that belong in the explosives category.
+                // Skip special ammo types that belong in the spores category.
                 if (ammoType.hasThreshold && ammoType.name != "health") 
                     continue;
                     
@@ -371,7 +371,7 @@ namespace Menu
                 m_pMenu.AddItem(ammoInfo, null);
             }
             
-            m_pMenu.AddItem("\n=== Explosives Regeneration ===", null);
+            m_pMenu.AddItem("\n=== Spores Regeneration ===", null);
             
             // Display threshold-based ammo types.
             for (uint i = 0; i < g_AmmoTypes.length(); i++) 
@@ -382,7 +382,7 @@ namespace Menu
                 if (!ammoType.hasThreshold)
                     continue;
 
-                // Skip health since it's not explosives.
+                // Skip health since it's not spores.
                 if (ammoType.name == "health")
                     continue;
                     
@@ -392,9 +392,9 @@ namespace Menu
                     thresholdInfo = " (max " + ammoType.threshold + ")";
                 }
                 
-                string explosiveInfo = ammoType.name + ": " + ammoType.amount + " per " + 
+                string sporeInfo = ammoType.name + ": " + ammoType.amount + " per " + 
                                       (ammoType.delay * flAmmoTick) + "s" + thresholdInfo;
-                m_pMenu.AddItem(explosiveInfo, null);
+                m_pMenu.AddItem(sporeInfo, null);
             }
             */
             

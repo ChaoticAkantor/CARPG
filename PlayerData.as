@@ -514,11 +514,11 @@ class PlayerData
                 break;
 
                case PlayerClass::CLASS_POISONER:
-                if(!g_PlayerExplosiveRounds.exists(steamID))
+                if(!g_PlayerSporeRounds.exists(steamID))
                 {
-                    ExplosiveRoundsData data;
+                    SporeRoundsData data;
                     data.Initialize(GetCurrentClassStats());
-                    g_PlayerExplosiveRounds[steamID] = data;
+                    g_PlayerSporeRounds[steamID] = data;
                 }
                 break;
 

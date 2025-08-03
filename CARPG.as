@@ -89,7 +89,7 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_PlayerBarriers.deleteAll();
     g_PlayerBloodlusts.deleteAll();
     g_PlayerCloaks.deleteAll();
-    g_PlayerExplosiveRounds.deleteAll();
+    g_PlayerSporeRounds.deleteAll();
     g_ShockRifleData.deleteAll();
     g_PlayerClassResources.deleteAll();
     
@@ -321,14 +321,14 @@ void PrecacheAll()
     //g_Game.PrecacheModel(strMortarStrikeSmokeSprite);
     //g_Game.PrecacheModel(strMortarStrikeGlowSprite);
 
-    // Explosive Rounds.
-    g_SoundSystem.PrecacheSound(strExplosiveRoundsActivateSound);
-    g_SoundSystem.PrecacheSound(strExplosiveRoundsImpactSound);
+    // Spore Rounds.
+    g_SoundSystem.PrecacheSound(strSporeRoundsActivateSound);
+    g_SoundSystem.PrecacheSound(strSporeRoundsImpactSound);
 
-    g_Game.PrecacheModel(strExplosiveRoundsExplosionSprite);
-    g_Game.PrecacheModel(strExplosiveRoundsExplosionCoreSprite);
-    g_Game.PrecacheModel(strExplosiveRoundsGlowSprite);
-    g_Game.PrecacheModel(strExplosiveRoundsSplatterSprite);
+    g_Game.PrecacheModel(strSporeRoundsExplosionSprite);
+    g_Game.PrecacheModel(strSporeRoundsExplosionCoreSprite);
+    g_Game.PrecacheModel(strSporeRoundsGlowSprite);
+    g_Game.PrecacheModel(strSporeRoundsSplatterSprite);
     
 }
 
@@ -339,12 +339,12 @@ HookReturnCode OnWeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pW
         return HOOK_CONTINUE;
     
     string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    if(g_PlayerExplosiveRounds.exists(steamId))
+    if(g_PlayerSporeRounds.exists(steamId))
     {
-        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamId]);
-        if(explosiveRounds !is null && explosiveRounds.HasRounds())
+        SporeRoundsData@ sporeRounds = cast<SporeRoundsData@>(g_PlayerSporeRounds[steamId]);
+        if(sporeRounds !is null && sporeRounds.HasRounds())
         {
-            explosiveRounds.FireExplosiveRounds(pPlayer, pWeapon); // Consume rounds and fire explosive shots if active.
+            sporeRounds.FireSporeRounds(pPlayer, pWeapon); // Consume rounds and fire spore shots if active.
         }
     }
     
@@ -361,12 +361,12 @@ HookReturnCode OnWeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ 
     string SecondaryWeaponName = pWeapon.pev.classname;
     if(SecondaryWeaponName == "weapon_shotgun" || SecondaryWeaponName == "weapon_9mmhandgun" || SecondaryWeaponName == "weapon_sawedoff")
     {
-        if(g_PlayerExplosiveRounds.exists(steamId))
+        if(g_PlayerSporeRounds.exists(steamId))
         {
-            ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamId]);
-            if(explosiveRounds !is null && explosiveRounds.HasRounds())
+            SporeRoundsData@ sporeRounds = cast<SporeRoundsData@>(g_PlayerSporeRounds[steamId]);
+            if(sporeRounds !is null && sporeRounds.HasRounds())
             {
-                explosiveRounds.FireExplosiveRounds(pPlayer, pWeapon); // Consume rounds and fire explosive shots if active.
+                sporeRounds.FireSporeRounds(pPlayer, pWeapon); // Consume rounds and fire spore shots if active.
             }
         }
     }
@@ -896,15 +896,15 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                     // Demolitionist ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_POISONER)
                     {
-                        if(!g_PlayerExplosiveRounds.exists(steamID))
+                        if(!g_PlayerSporeRounds.exists(steamID))
                         {
-                            ExplosiveRoundsData explosiveRounds;
-                            @g_PlayerExplosiveRounds[steamID] = explosiveRounds;
-                            explosiveRounds.Initialize(data.GetCurrentClassStats());
+                            SporeRoundsData sporeRounds;
+                            @g_PlayerSporeRounds[steamID] = sporeRounds;
+                            sporeRounds.Initialize(data.GetCurrentClassStats());
                         }
-                        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-                        if(explosiveRounds !is null)
-                            explosiveRounds.ActivateExplosiveRounds(pPlayer);
+                        SporeRoundsData@ sporeRounds = cast<SporeRoundsData@>(g_PlayerSporeRounds[steamID]);
+                        if(sporeRounds !is null)
+                            sporeRounds.ActivateSporeRounds(pPlayer);
                     }
                     // Xenologist ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER)
@@ -1085,13 +1085,13 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
 
-    // Reset Explosive Rounds.
-    if(g_PlayerExplosiveRounds.exists(steamID))
+    // Reset Spore Rounds.
+    if(g_PlayerSporeRounds.exists(steamID))
     {
-        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-        if(explosiveRounds !is null)
+        SporeRoundsData@ sporeRounds = cast<SporeRoundsData@>(g_PlayerSporeRounds[steamID]);
+        if(sporeRounds !is null)
         {
-            explosiveRounds.ResetRounds();
+            sporeRounds.ResetRounds();
         }
     }
 
