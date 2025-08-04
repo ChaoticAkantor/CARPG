@@ -250,7 +250,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             resourceName = "Ice Shield";
                             break;
                         case PlayerClass::CLASS_MEDIC:
-                            resourceName = "Healing Aura";
+                            resourceName = "Heal Aura";
                             break;
                         case PlayerClass::CLASS_SHOCKTROOPER:
                             resourceName = "Shockrifle Battery";
@@ -261,8 +261,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         case PlayerClass::CLASS_CLOAKER:
                             resourceName = "Cloak Battery";
                             break;
-                        case PlayerClass::CLASS_POISONER:
-                            resourceName = "Spore Ammo Packs";
+                        case PlayerClass::CLASS_VANQUISHER:
+                            resourceName = "Explosive Ammo Pack";
                             break;
                         case PlayerClass::CLASS_XENOMANCER:
                             resourceName = "Creatures";
@@ -379,22 +379,22 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             }
                             break;
 
-                        case PlayerClass::CLASS_POISONER:
+                        case PlayerClass::CLASS_VANQUISHER:
                         {
                             int rounds = 0;
                             int maxRounds = 0;
                             
-                            if(g_PlayerSporeRounds.exists(steamID))
+                            if(g_PlayerExplosiveRounds.exists(steamID))
                             {
-                                SporeRoundsData@ sporeRounds = cast<SporeRoundsData@>(g_PlayerSporeRounds[steamID]);
-                                if(sporeRounds !is null)
+                                ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
+                                if(explosiveRounds !is null)
                                 {
-                                    rounds = int(sporeRounds.GetRounds());
-                                    maxRounds = sporeRounds.GetMaxRounds();
+                                    rounds = int(explosiveRounds.GetRounds());
+                                    maxRounds = explosiveRounds.GetMaxRounds();
                                 }
                             }
                             
-                            resourceInfo += "[Spore Rounds: (" + rounds + "/" + maxRounds + ")]";
+                            resourceInfo += "[Explosive Rounds: (" + rounds + "/" + maxRounds + ")]";
                             break;
                         }
 

@@ -117,16 +117,16 @@ Battery drains by a large amount when dealing damage.
 
 Has a faster recharge rate.
 
-# Poisoner - AoE Damage Dealer
-Can consume Spore Ammo Packs to grant Spore Ammo to all bullet-type weapons, adding extra radius poison damage.
+# Vanquisher - AoE Damage Dealer
+Can consume Explosive Ammo Packs to grant Explosive Ammo to all bullet-type weapons, adding extra radius explosive damage.
 
-One Spore Ammo Pack fills 25% of your maximum capacity.
+One Explosive Ammo Pack fills 20% of your maximum capacity.
 
-Slow-firing weapons get a radius damage multiplier with Spore Ammo.
+Slow-firing weapons get a radius damage multiplier with Explosive Ammo.
 
-Maximum Spore Ammo capacity, radius damage and Spore Ammo Pack charges increase with level.
+Maximum Explosive Ammo capacity, radius damage and Explosive Ammo Pack charges increase with level.
 
-Has a very slow recharge rate.
+Has a slow recharge rate.
 
 # Stat Scaling/Leveling
  Max HP/AP/Energy and certain ability features will scale with your level. Max level is 50.

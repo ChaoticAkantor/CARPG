@@ -36,6 +36,6 @@
 // Cloaker.
 #include "Classes/Cloaker/Cloak"
 
-// Poisoner.
-#include "Classes/Poisoner/SporeRounds"
-//#include "Classes/Poisoner/MortarStrike" // Unused mortar strike ability, may be reused for another class.
+// Vanquisher.
+#include "Classes/Vanquisher/ExplosiveRounds"
+//#include "Classes/Vanquisher/MortarStrike" // Unused mortar strike ability, may be reused for another class.

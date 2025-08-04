@@ -202,7 +202,7 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
             break;
         }
             
-        case PlayerClass::CLASS_POISONER:
+        case PlayerClass::CLASS_VANQUISHER:
         {
             // Adjust explosive ammo capacities.
             AmmoType@ grenadeAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "hand grenade");

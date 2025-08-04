@@ -19,7 +19,7 @@ dictionary g_ClassNames =
     {PlayerClass::CLASS_DEFENDER, "Warden"},
     {PlayerClass::CLASS_SHOCKTROOPER, "Shocktrooper"},
     {PlayerClass::CLASS_CLOAKER, "Cloaker"},
-    {PlayerClass::CLASS_POISONER, "Poisoner"}
+    {PlayerClass::CLASS_VANQUISHER, "Vanquisher"}
 };
 
 array<PlayerClass> g_ClassList = 
@@ -32,7 +32,7 @@ array<PlayerClass> g_ClassList =
     PlayerClass::CLASS_DEFENDER,
     PlayerClass::CLASS_SHOCKTROOPER,
     PlayerClass::CLASS_CLOAKER,
-    PlayerClass::CLASS_POISONER
+    PlayerClass::CLASS_VANQUISHER
 };
 
 enum PlayerClass 
@@ -46,7 +46,7 @@ enum PlayerClass
     CLASS_DEFENDER,
     CLASS_SHOCKTROOPER,
     CLASS_CLOAKER,
-    CLASS_POISONER
+    CLASS_VANQUISHER
 }
 
 // --- Per-class stat definitions. ---
@@ -165,12 +165,12 @@ void InitializeClassDefinitions()
                     def.fullRegenTime = 25.0f;
                     def.energyPerLevel = 0.04f; // 60s at level 50.
                     break;
-                case PlayerClass::CLASS_POISONER:
+                case PlayerClass::CLASS_VANQUISHER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 1.0f; // Number of charges per full regen rather than duration.
-                    def.fullRegenTime = 120.0f; // Regen time for ALL charges.
-                    def.energyPerLevel = 0.08f; // 5 charges at level 50.
+                    def.baseResource = 1.0f;
+                    def.fullRegenTime = 90.0f;
+                    def.energyPerLevel = 0.00f; // 1 charge at level 50. No increase.
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
@@ -515,12 +515,12 @@ class PlayerData
                 }
                 break;
 
-               case PlayerClass::CLASS_POISONER:
-                if(!g_PlayerSporeRounds.exists(steamID))
+               case PlayerClass::CLASS_VANQUISHER:
+                if(!g_PlayerExplosiveRounds.exists(steamID))
                 {
-                    SporeRoundsData data;
+                    ExplosiveRoundsData data;
                     data.Initialize(GetCurrentClassStats());
-                    g_PlayerSporeRounds[steamID] = data;
+                    g_PlayerExplosiveRounds[steamID] = data;
                 }
                 break;
 
@@ -587,7 +587,7 @@ class PlayerData
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     break;
-                case PlayerClass::CLASS_POISONER:
+                case PlayerClass::CLASS_VANQUISHER:
                     break;
             }
 
@@ -660,7 +660,7 @@ class PlayerData
             file.Write(string(int(m_CurrentClass)) + "\n");
             
             // Save each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_POISONER; i++)
+            for(uint i = 1; i <= PlayerClass::CLASS_VANQUISHER; i++)
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
                 if(stats !is null)
@@ -694,7 +694,7 @@ class PlayerData
             g_Game.AlertMessage(at_console, "CARPG: Loaded class: " + GetClassName(m_CurrentClass) + "\n");
             
             // Load each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_POISONER; i++)
+            for(uint i = 1; i <= PlayerClass::CLASS_VANQUISHER; i++)
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
                 if(stats !is null)

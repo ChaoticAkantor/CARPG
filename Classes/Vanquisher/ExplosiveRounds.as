@@ -28,7 +28,6 @@ string strExplosiveRoundsActivateSound = "weapons/reload3.wav";
 string strExplosiveRoundsImpactSound = "weapons/explode3.wav"; // Explosion sound
 string strExplosiveRoundsExplosionSprite = "sprites/zerogxplode.spr"; // Explosion sprite
 string strExplosiveRoundsExplosionCoreSprite = "sprites/explode1.spr"; // Core explosion sprite
-string strExplosiveRoundsGlowSprite = "sprites/glow01.spr"; // Glow effect
 string strExplosiveRoundsSplatterSprite = "sprites/fire.spr"; // Fire effect
 
 class ExplosiveRoundsData
@@ -72,7 +71,7 @@ class ExplosiveRoundsData
 
     float GetRadius() { return m_flExplosiveRoundsRadius; }
 
-    void ApplyRadiusDamage(CBasePlayer@ pPlayer, Vector impactPoint, float damageMultiplier, int damageType = DMG_BLAST | DMG_BURN | DMG_SLOWBURN | DMG_ALWAYSGIB)
+    void ApplyRadiusDamage(CBasePlayer@ pPlayer, Vector impactPoint, float damageMultiplier, int damageType = DMG_BLAST | DMG_POISON | DMG_ALWAYSGIB)
     {
         if(pPlayer is null)
             return;
@@ -195,15 +194,17 @@ class ExplosiveRoundsData
                 Vector impactPoint = tr.vecEndPos;
                 
                 // If we hit an entity, make sure the explosion happens at the surface
-                if (tr.pHit !is null) {
+                if (tr.pHit !is null) 
+                {
                     CBaseEntity@ hitEntity = g_EntityFuncs.Instance(tr.pHit);
-                    if (hitEntity !is null) {
+                    if (hitEntity !is null) 
+                    {
                         // Adjust the impact point to be slightly in front of the hit surface
                         impactPoint = tr.vecEndPos - (vecAiming * 2);
                     }
                 }
 
-                // Play impact sound (for shotgun pellets)
+                // IMPORTANT: Always play the explosion sound for each shotgun pellet
                 g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
                 
                 // Create smaller explosion effects for shotgun pellets
@@ -229,18 +230,6 @@ class ExplosiveRoundsData
                 msgCore.WriteByte(180); // Brightness
                 msgCore.End();
                 
-                // 3. Small glow effect
-                NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
-                msgGlow.WriteByte(TE_GLOWSPRITE);
-                msgGlow.WriteCoord(impactPoint.x);
-                msgGlow.WriteCoord(impactPoint.y);
-                msgGlow.WriteCoord(impactPoint.z);
-                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
-                msgGlow.WriteByte(2); // Life
-                msgGlow.WriteByte(1); // Scale
-                msgGlow.WriteByte(180); // Brightness
-                msgGlow.End();
-                
                 // 4. Sprite trail burst effect for shotgun
                 // Create endpoints with impact point as the start point
                 Vector startPoint = impactPoint;
@@ -261,7 +250,7 @@ class ExplosiveRoundsData
                 msgTrail.WriteCoord(endPoint.y);
                 msgTrail.WriteCoord(endPoint.z);
                 msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
-                msgTrail.WriteByte(8);  // Count - fewer sprites for smaller effect
+                msgTrail.WriteByte(2);  // Count - fewer sprites for smaller effect
                 msgTrail.WriteByte(2);  // Life in 0.1's
                 msgTrail.WriteByte(1);  // Scale in 0.1's
                 msgTrail.WriteByte(15); // Velocity along vector in 10's
@@ -310,9 +299,9 @@ class ExplosiveRoundsData
                         impactPoint = tr.vecEndPos - (vecAiming * 2);
                     }
                 }
-
-                // Play impact sound (quieter for burst fire)
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.4f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-10, 10), 0, true, impactPoint);
+                
+                // IMPORTANT: Always play the explosion sound for each M16 burst round
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-10, 10), 0, true, impactPoint);
                 
                 // Create very small explosion effects for burst fire
                 // 1. Main explosion sprite
@@ -337,18 +326,6 @@ class ExplosiveRoundsData
                 msgCore.WriteByte(160); // Brightness
                 msgCore.End();
                 
-                // 3. Tiny glow effect
-                NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
-                msgGlow.WriteByte(TE_GLOWSPRITE);
-                msgGlow.WriteCoord(impactPoint.x);
-                msgGlow.WriteCoord(impactPoint.y);
-                msgGlow.WriteCoord(impactPoint.z);
-                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
-                msgGlow.WriteByte(1); // Life
-                msgGlow.WriteByte(1); // Scale
-                msgGlow.WriteByte(160); // Brightness
-                msgGlow.End();
-                
                 // 4. Just 1 sprite trail effect for M16 burst (very small)
                 // Create endpoints with impact point as the start point
                 Vector startPoint = impactPoint;
@@ -369,7 +346,7 @@ class ExplosiveRoundsData
                 msgTrail.WriteCoord(endPoint.y);
                 msgTrail.WriteCoord(endPoint.z);
                 msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
-                msgTrail.WriteByte(3);  // Count
+                msgTrail.WriteByte(2);  // Count
                 msgTrail.WriteByte(1);  // Life in 0.1's
                 msgTrail.WriteByte(1);  // Scale in 0.1's
                 msgTrail.WriteByte(10); // Velocity along vector in 10's
@@ -408,8 +385,8 @@ class ExplosiveRoundsData
                 }
             }
 
-            // Play impact sound
-            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.7f, ATTN_NORM, 0, PITCH_NORM, 0, true, impactPoint);
+            // Always play impact sound for standard weapons - this is crucial for consistent feedback
+            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strExplosiveRoundsImpactSound, 0.6f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-3, 3), 0, true, impactPoint);
             
             // Create explosion effects
             // 1. Main explosion sprite
@@ -434,18 +411,6 @@ class ExplosiveRoundsData
             msgCore.WriteByte(200); // Brightness
             msgCore.End();
             
-            // 3. Glow effect
-            NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
-            msgGlow.WriteByte(TE_GLOWSPRITE);
-            msgGlow.WriteCoord(impactPoint.x);
-            msgGlow.WriteCoord(impactPoint.y);
-            msgGlow.WriteCoord(impactPoint.z);
-            msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
-            msgGlow.WriteByte(3); // Life
-            msgGlow.WriteByte(2); // Scale
-            msgGlow.WriteByte(200); // Brightness
-            msgGlow.End();
-            
             // 4. Sprite trail burst effect for fire
             // Create endpoints with impact point as the start point
             Vector startPoint = impactPoint;
@@ -466,9 +431,9 @@ class ExplosiveRoundsData
             msgTrail.WriteCoord(endPoint.y);
             msgTrail.WriteCoord(endPoint.z);
             msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
-            msgTrail.WriteByte(16);  // Count - more sprites for a denser burst
-            msgTrail.WriteByte(3);   // Life in 0.1's
-            msgTrail.WriteByte(3);   // Scale in 0.1's
+            msgTrail.WriteByte(3);  // Count - more sprites for a denser burst
+            msgTrail.WriteByte(2);   // Life in 0.1's
+            msgTrail.WriteByte(2);   // Scale in 0.1's
             msgTrail.WriteByte(25);  // Velocity along vector in 10's
             msgTrail.WriteByte(15);  // Random velocity in 10's - higher for more spread
             msgTrail.End();
