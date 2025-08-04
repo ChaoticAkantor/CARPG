@@ -4,71 +4,129 @@
  https://discord.gg/JN6umuAt7H
 
 # What is it?
- This plugin takes the basic principals of SCXPM but in an attempt to simplify features and ensure balance and has many more ingrained features and alterations.
+ This plugin takes the basic principals of SCXPM but in an attempt to simplify features and turn it into a class-based mod similar to Killing Floor.
 
 # Classes?!
-Rather than having lots of skills, most of the old SCXPM skills were coalested into auto-increasing stats on level up and regen was merged into it's own recovery system, so technically you start stronger but progress more steadily with a lower-ceiling for power instead of everyone ending up immortal.
+Rather than having lots of skills, most of the old SCXPM skills were coalested into auto-increasing stats on level up and regen was merged into it's own recovery system.
+
+All abilities gain increased duration or extra charges as they level.
+All abilities require full charge to activate, but can be ended early to either refund cost or start recharging.
+Most ability features or strength scale with level.
 
 1 Frag/score = 1 XP, no nonsence calculations and bloated numbers.
-All XP is shared between players! And minion classes share XP with their master. No more hogging.
+All XP is shared between players! And minion classes share XP with their team. No more hogging. Even in whilst dead or in observer mode you continue to earn XP!
 
 # How do I use Skills?
- Pressing Tertiary Fire (M3 by default) will activate your class ability. 
+ Typing useability in chat, or binding a button to it and pressing it will activate your class ability.
+ Type bind mouse3 say "useability" in console and replace mouse3 with the key you want to use. 
  
- Most if not all abilities are togglable and will drain class resource (default is called Energy) in some way. But some can only be activated whilst energy is full.
+ Most if not all abilities are togglable, but can only be activated when full.
 
 # Current Classes
 # Medic - Healer
-Toggles a healing aura with a very large radius, can heal yourself as well as friendly players and friendly NPC's. The minion class' best friend!
-Can also revive players and NPC's at double the normal drain rate when triggered.
+Whilst active creates a Healing aura with a large radius, can heal yourself as well as friendly players and friendly NPC's every second, this includes other player's minions. Can also revive players for an increased cost.
+
+Deals equivalent poison damage as heal value to all enemies caught in the aura.
+
 NPC healing is 50% stronger.
 
+Has a moderate recharge rate.
+
 # Berserker - HP/Lifesteal Tank
-Toggles a Bloodlust rage state, giving % damage dealt as lifesteal. Bloodlust recharges very slowly and drains very quickly. It relies on dealing damage to gain charge and maintain it when active.
-20% of damage dealt as energy steal, does not scale with level.
-Gain a damage bonus the lower your current HP, that scales with level.
-Can be activated regardless of charge level.
+Toggles a Bloodlust rage state, giving % damage dealt as lifesteal. It relies on dealing damage to gain charge and maintain it whilst active as it recharges very slowly on it's own.
 
-# Engineer - Robot Minions
-Can summon friendly robots based on maximum reserve power via a menu.
-Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. 
-They can be also be killed or teleported from the menu. 
-Teleporting pulls them around you in a circle and updates their HP from any gained levels. 
-Manually killing them does not refund any cost, only reserve. 
-Their health and damage scales with level. Robots have thick armor and are resistant to bullets.
+Also gain a damage bonus the lower your current HP, that scales with level.
+
+Has a slow recharge rate.
+
+# Engineer - Healer/Minion Hybrid
+Can summon a single friendly Sentry that heals all allies every second, has an extremely large radius. Activating the ability again will recall the Sentry. Uses duration rather than minion points system. 
+
+Health, damage and heal amount scales with level. Sentry turrets are very brittle, so it has very high base health to compensate.
+
+Sentry heal affects itself at 20x strength. Can also hit it with the wrench to heal it by a large amount.
+
+Triggers detonation sequence on death! Medium damage.
+
+Any XP (frags/score) it gains is sent to you instead.
+
+Has a moderate recharge rate.
+
+# Robomancer - Robogrunt Minions
+Can summon friendly robogrunts based on points remaining via a menu, robots with stronger weapons cost more points.
+
+Points regenerate very slowly when not in use, number of points increase with level.
+
+They can be be killed or teleported from the menu.
+
+Can be controlled with Sven NPC keybinds.  
+
+Their health and damage scales with level. Robogrunts have thick armor and are resistant to bullets.
+
+Robogrunts regenerate 1% health per second. Can hit them with the wrench to heal them by a large amount.
+
+Triggers detonation sequence on death! High damage.
+
 Any XP (frags/score) they gain is sent to you instead.
-Always gets a pipewrench, can hit them with the wrench to heal them. Can potentially be revived, but triggers detonation sequence on death!
 
-# Xenologist - Xen Minions
-Can summon friendly Xen Creatures based on maximum bio reserve via a menu. 
-Can be controlled with Sven NPC keybinds and teleported to you or destroyed on command. 
-They can be also be killed or teleported from the menu. 
-Teleporting pulls them around you in a circle. 
-Manually killing them does not refund any cost, only restores reserve.
-All three minion types should attempt to eat dead enemies to regain their lost health when not in combat.
+Has a slow recharge rate.
+
+# Xenomancer - Xen Minions
+Can summon friendly creatures based on points remaining via a menu, larger creature types cost more points but have more health.
+
+Points regenerate very slowly when not in use, number of points increase with level.
+
+They can be be killed or teleported from the menu.
+
+Can be controlled with Sven NPC keybinds.  
+
 Their health and damage scales with level.
+
+Creatures regenerate 1% health per second. Can heal them with the medkit, but it is not very effective.
+
+Can be revived if they die, is only considered truly dead once their corpse has faded. Can be teleported to you in revivable state.
+
 Any XP (frags/score) they gain is sent to you instead.
-Can be healed with medkit. Can be revived.
+
+Has a slow recharge rate.
 
 # Warden - Ice Shield Tank
-Can form an Ice Shield that layers over health and armor that has it's own health pool, making you functionally immortal against all damage types. Works best when used strategically to negate extreme burst damage such as fall damage and explosions.
-Whilst active it absorbs all incoming damage until it shatters, there is no bleed-through.
+Whilst active it absorbs all incoming damage until it shatters, there is no bleed-through, making you functionally immortal against all damage types, but does not stop recovery delay from triggering.
+
 Whilst active it will still recover over time, but 50% slower.
-Has to fully recover between uses, but can be ended early to start recovering at 100%.
-If ended early, any remaining health will be refunded over 5s.
+
+Has a faster recharge rate.
 
 # Shocktrooper - Power Weapon Damage Dealer
-Always has a Shockrifle available, can stow it to regain Battery charge, meaning picked up shock roaches can be consumed to restore a large chunk of battery, stowing restores half of current ammo to battery.
-Damage of Shockrifle scales with level.
-Battery Capacity increases with level, allowing you to use it for longer.
-Has to fully recharge between uses.
+Can equip a Shockrifle, can re-stow it by pressing ability button whilst holding one. Even if you throw it away, you will always get another.
+
+Picked up Shockroaches can also be stowed to restore a battery, stowing restores half of current ammo to battery.
+
+Damage of Shockrifle increases with level, this damage bonus counts for any Shockroach you hold.
+
+Battery Capacity increases with level, far beyond a normal Shockroach.
+
+Has a slow recharge rate.
 
 # Cloaker - Stealthy Damage Dealer 
-Invisiblity cloak that gains a damage bonus, that drops as your battery loses charge.
+Invisiblity cloak that gains a damage bonus, based on how full the battery is.
+
 Becomes completely invisible to AI.
-Battery drains very quickly.
-Battery is drained a signifiant amount per shot.
-Has to fully recover between uses, but can be deactivated early to start recharging.
+
+Battery drains by a large amount when dealing damage.
+
+Has a faster recharge rate.
+
+# Poisoner - AoE Damage Dealer
+Can consume Spore Ammo Packs to grant Spore Ammo to all bullet-type weapons, adding extra radius poison damage.
+
+One Spore Ammo Pack fills 25% of your maximum capacity.
+
+Slow-firing weapons get a radius damage multiplier with Spore Ammo.
+
+Maximum Spore Ammo capacity, radius damage and Spore Ammo Pack charges increase with level.
+
+Has a very slow recharge rate.
 
 # Stat Scaling/Leveling
  Max HP/AP/Energy and certain ability features will scale with your level. Max level is 50.
@@ -88,14 +146,14 @@ Has to fully recover between uses, but can be deactivated early to start recharg
 
 # Recovery
  The mod also features it's own recovery system. 
- Regeneration will halt for a delay after taking damage, displaying an icon in the hud.
+ Regeneration will halt for a 2s delay after taking damage, displaying an icon in the hud.
  HP restores 1% of Max HP every 1.0s.
  AP restores 1% of Max AP every 0.5s.
 
 # Difficulty
- The mod also features it's own difficulty setting system.
+ The mod also features it's own difficulty normalising system.
  Damage dealt by players is slightly increased, most weapons are rebalanced.
- Zombies and headcrabs specifically are more dangerous.
+ Zombies and headcrabs specifically hit harder.
 
 # Installation instructions:
 
@@ -114,3 +172,5 @@ Svencoop/scripts/plugins/CARPG should be what the structure looks like.
 	}
 
 3. Go into Sven Co-op/svencoop/scripts/plugins and ensure you have a folder called "store" without the quotes, if you do not, you will need to create a blank folder and name it "store". If not, the plugin will not have the required access to store player data, as I don't think Angelscript has permission or functions to create folders, only text files.
+
+ENSURE THE PLUGIN FOLDER IS NAMED AS ABOVE, OR IT WON'T LOAD!
