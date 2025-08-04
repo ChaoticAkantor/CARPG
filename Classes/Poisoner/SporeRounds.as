@@ -22,13 +22,13 @@ dictionary g_PlayerSporeRounds;
 
 class SporeRoundsData
 {
-    private float m_flSporeRoundsDamage = 6.0f;
-    private float m_flSporeRoundsDamageScaling = 0.1f; // % Damage increase per level.
+    private float m_flSporeRoundsDamage = 8.0f;
+    private float m_flSporeRoundsDamageScaling = 0.15f; // % Damage increase per level.
     private float m_flSporeRoundsPoolScaling = 0.06f; // % Pool size increase per level.
     private float m_flSporeRoundsRadius = 96.0f; // Radius of explosion.
     private int m_iSporeRoundsPoolBase = 30;
     private float m_flEnergyCostPerActivation = 1.0f;
-    private float m_flRoundsFillPercentage = 0.33f; // Fill 33% of max pool per activation
+    private float m_flRoundsFillPercentage = 0.25f; // Give % of max pool per activation.
     private float m_flRoundsInPool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.10f;
