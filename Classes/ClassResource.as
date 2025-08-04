@@ -453,8 +453,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                         if(pSentry !is null)
                                         {
                                             float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
-                                            resourceInfo += "[Sentry HP: " + int(healthPercent) + "%]";
-                                            resourceInfo += " [Regeneration Buff: " + sentryData.GetScaledHealAmount() + " HP/s]";
+                                            resourceInfo += "[Sentry: " + int(healthPercent) + "%]";
+                                            resourceInfo += " [Heal: " + sentryData.GetScaledHealAmount() + " HP/s]";
                                         }
                                     }
                                 }

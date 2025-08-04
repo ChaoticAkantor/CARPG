@@ -339,7 +339,7 @@ namespace Menu
                         string EngineerStatsText = "=== Sentry Stats: ===" + "\n" + 
                             "Health: " + int(sentry.GetScaledHealth()) + " HP\n" +
                             "Damage: " + int(sentry.GetScaledDamage() * 100 + 100) + "%\n" + 
-                            "Regeneration Aura: " + sentry.GetHealAmount() + " HP/s\n\n";
+                            "Heal: " + sentry.GetHealAmount() + " HP/s\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
