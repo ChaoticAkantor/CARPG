@@ -11,10 +11,12 @@ class BarrierData
 {
     private ClassStats@ m_pStats = null;
     private bool m_bActive = false;
-    private float m_flBaseDamageReduction = 1.00f; // Base damage reduction.
+    private float m_flBarrierDamageReduction = 1.00f; // Base damage reduction.
     private float m_flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
-    private float m_flBarrierDamageToEnergyMult = 1.0f; // Damage taken to energy drain factor. % damage dealt to shield, lower = tougher shield.
+    private float m_flBarrierDurabilityMultiplier = 1.0f; // % of total damage dealt to shield, lower = tougher.
     private float m_flLastDrainTime = 0.0f;
+    private float m_flBarrierReflectDamageMultiplier = 0.5f; // Base damage reflect multiplier, how much of the damage is reflected back to attacker.
+    private float m_flBarrierReflectDamageScaling = 0.06f; // How much % to scale damage reflection per level.
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
 
@@ -28,9 +30,71 @@ class BarrierData
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
     ClassStats@ GetStats() {return m_pStats;}
-    float GetBaseDamageReduction() { return m_flBaseDamageReduction; }
-    float GetDamageToEnergyMultiplier() { return m_flBarrierDamageToEnergyMult; }
+    float GetBaseDamageReduction() { return m_flBarrierDamageReduction; }
+    float GetBarrierDurabilityMultiplier() { return m_flBarrierDurabilityMultiplier; }
+
+    float GetScaledDamageReflection()
+    {
+        if(m_pStats is null)
+            return m_flBarrierReflectDamageMultiplier; // Return base if no stats.
+        
+        // Scale reflect damage based on level.
+        return m_flBarrierReflectDamageMultiplier * (1.0f + (m_pStats.GetLevel() * m_flBarrierReflectDamageScaling));
+    }
     
+    void HandleBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker, float incomingDamage, float& out modifiedDamage)
+    {
+        if(pPlayer is null || attacker is null)
+            return;
+            
+        // Calculate damage reduction
+        float reduction = GetDamageReduction();
+        float blockedDamage = incomingDamage * reduction;
+        modifiedDamage = incomingDamage - blockedDamage;
+        
+        // Apply damage reflection
+        float reflectDamage = incomingDamage * GetScaledDamageReflection();
+        attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_SLOWFREEZE); // Apply the damage as slow freeze type.
+        
+        // Play hit sound with random pitch
+        int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+        g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
+        
+        // Visual effects
+        Vector origin = pPlayer.pev.origin; // Player as origin.
+        
+        // Create ricochet effect.
+        NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+        ricMsg.WriteByte(TE_ARMOR_RICOCHET);
+        ricMsg.WriteCoord(origin.x);
+        ricMsg.WriteCoord(origin.y);
+        ricMsg.WriteCoord(origin.z);
+        ricMsg.WriteByte(1); // Scale.
+        ricMsg.End();
+        
+        // Add effect to chip off chunks as barrier takes damage
+        NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+        breakMsg.WriteByte(TE_BREAKMODEL);
+        breakMsg.WriteCoord(origin.x);
+        breakMsg.WriteCoord(origin.y);
+        breakMsg.WriteCoord(origin.z);
+        breakMsg.WriteCoord(3); // Size.
+        breakMsg.WriteCoord(3); // Size.
+        breakMsg.WriteCoord(3); // Size.
+        breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+        breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+        breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
+        breakMsg.WriteByte(20); // Gib random speed and direction.
+        breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+        breakMsg.WriteByte(2); // Count.
+        breakMsg.WriteByte(10); // Lifetime.
+        breakMsg.WriteByte(1); // Sound Flags.
+        breakMsg.End();
+        
+        // Drain barrier energy
+        DrainEnergy(pPlayer, blockedDamage);
+    }
+
     void Initialize(ClassStats@ stats)
     {
         @m_pStats = stats;
@@ -103,7 +167,7 @@ class BarrierData
         if(m_pStats is null)
             return 0.0f;
             
-        return m_flBaseDamageReduction; // Now always 100% damage reduction to player.
+        return m_flBarrierDamageReduction; // Now always 100% damage reduction to player.
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -137,7 +201,7 @@ class BarrierData
         float current = float(resources['current']);
         
         // Drain energy proportional to damage blocked.
-        float energyCost = (blockedDamage * m_flBarrierDamageToEnergyMult); // Damage taken to energy drain scale factor.
+        float energyCost = (blockedDamage * m_flBarrierDurabilityMultiplier); // Damage taken to energy drain scale factor.
         current -= energyCost;
         
         if(current <= 0)
@@ -161,7 +225,7 @@ class BarrierData
             EffectBarrierShatter(pPlayer.pev.origin);
         }
         
-        // Cancel any ongoing refunds
+        // Cancel any ongoing refunds.
         if(pPlayer !is null)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -176,8 +240,8 @@ class BarrierData
     
     void CancelRefunds(string steamID)
     {
-        // Update the last refund start time to invalidate any current refunds
-        m_flLastRefundStartTime = g_Engine.time + 0.1f; // Add a small buffer to ensure all new refunds have a newer timestamp
+        // Update the last refund start time to invalidate any current refunds.
+        m_flLastRefundStartTime = g_Engine.time + 0.1f; // Add a small buffer to ensure all new refunds have a newer timestamp.
     }
 
     private void ToggleGlow(CBasePlayer@ pPlayer)
@@ -211,17 +275,17 @@ class BarrierData
             breakMsg.WriteCoord(origin.x);
             breakMsg.WriteCoord(origin.y);
             breakMsg.WriteCoord(origin.z);
-            breakMsg.WriteCoord(5); // Size
-            breakMsg.WriteCoord(5); // Size
-            breakMsg.WriteCoord(5); // Size
-            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back
-            breakMsg.WriteCoord(0); // Gib vel pos Left/Right
-            breakMsg.WriteCoord(5); // Gib vel pos Up/Down
-            breakMsg.WriteByte(25); // Gib random speed and direction
+            breakMsg.WriteCoord(5); // Size.
+            breakMsg.WriteCoord(5); // Size.
+            breakMsg.WriteCoord(5); // Size.
+            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+            breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+            breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
+            breakMsg.WriteByte(25); // Gib random speed and direction.
             breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-            breakMsg.WriteByte(15); // Count
-            breakMsg.WriteByte(10); // Lifetime
-            breakMsg.WriteByte(1); // Sound Flags
+            breakMsg.WriteByte(15); // Count.
+            breakMsg.WriteByte(10); // Lifetime.
+            breakMsg.WriteByte(1); // Sound Flags.
             breakMsg.End();
     }
 
@@ -232,17 +296,17 @@ class BarrierData
             breakMsg.WriteCoord(origin.x);
             breakMsg.WriteCoord(origin.y);
             breakMsg.WriteCoord(origin.z);
-            breakMsg.WriteCoord(3); // Size
-            breakMsg.WriteCoord(3); // Size
-            breakMsg.WriteCoord(3); // Size
-            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back
-            breakMsg.WriteCoord(0); // Gib vel pos Left/Right
-            breakMsg.WriteCoord(0); // Gib vel pos Up/Down
-            breakMsg.WriteByte(10); // Gib random speed and direction
+            breakMsg.WriteCoord(3); // Size.
+            breakMsg.WriteCoord(3); // Size.
+            breakMsg.WriteCoord(3); // Size.
+            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+            breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+            breakMsg.WriteCoord(0); // Gib vel pos Up/Down.
+            breakMsg.WriteByte(10); // Gib random speed and direction.
             breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-            breakMsg.WriteByte(3); // Count
-            breakMsg.WriteByte(10); // Lifetime
-            breakMsg.WriteByte(1); // Sound Flags
+            breakMsg.WriteByte(3); // Count.
+            breakMsg.WriteByte(10); // Lifetime.
+            breakMsg.WriteByte(1); // Sound Flags.
             breakMsg.End();
     }
 
@@ -253,10 +317,10 @@ class BarrierData
             return;
             
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        m_flRefundAmount = float(resources['current']); // Store current energy
-        resources['current'] = 0; // Empty energy
+        m_flRefundAmount = float(resources['current']); // Store current energy.
+        resources['current'] = 0; // Empty energy.
         
-        // Update the refund start time
+        // Update the refund start time.
         m_flLastRefundStartTime = g_Engine.time;
         
         if(m_flRefundAmount > 0)
@@ -269,13 +333,13 @@ class BarrierData
 
 void BarrierRefund(string steamID, float refundAmount, float startTime)
 {
-    // Check if this refund is still valid
+    // Check if this refund is still valid.
     if(g_PlayerBarriers.exists(steamID))
     {
         BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
         if(barrier !is null && barrier.IsRefundValid(startTime))
         {
-            // Check if the player is still playing as Defender
+            // Check if the player is still playing as Defender.
             if(g_PlayerRPGData.exists(steamID))
             {        
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -297,6 +361,6 @@ void BarrierRefund(string steamID, float refundAmount, float startTime)
         }
     }
     
-    // If we get here, the refund should be canceled
+    // If we get here, the refund should be canceled.
     g_Scheduler.RemoveTimer(g_Scheduler.GetCurrentFunction());
 }

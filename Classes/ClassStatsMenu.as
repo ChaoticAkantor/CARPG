@@ -147,9 +147,9 @@ namespace Menu
                     case PlayerClass::CLASS_DEFENDER:
                     {
                         if(m_pStats.GetLevel() >= g_iPerk1LvlReq)
-                            BaseStatsText += "Reflective Ice - Ice Shield reflects 50% of damage to attacker.\n";
+                            BaseStatsText += "N/A - WIP.\n";
                         else
-                            BaseStatsText += "Reflective Ice - < LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "N/A - WIP. - < LOCKED - Lv. 10 >\n";
 
                         if(m_pStats.GetLevel() >= g_iPerk2LvlReq)
                             BaseStatsText += "Frosted - WIP.\n";
@@ -297,7 +297,8 @@ namespace Menu
                     {
                         string DefenderStatsText = "=== Ice Shield Stats: ===" + "\n" + 
                             "Durability: " + int(maxEnergy) + " HP\n" + 
-                            "Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
+                            //"Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
+                            "Damage Reflection: " + int(barrier.GetScaledDamageReflection() * 100) + "%\n" +
                             "Active Recharge Rate: " + (energyRegen * 0.5) + "/s\n\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
@@ -323,7 +324,7 @@ namespace Menu
                     if(explosiveRounds !is null)
                     {
                         // Display the base damage first.
-                        string VanquisherStatsText = "=== Explosive Ammo Stats: ===" + "\n" + 
+                        string VanquisherStatsText = "=== Dragon's Breath Ammo Stats: ===" + "\n" + 
                             "Base Damage: " + int(explosiveRounds.GetScaledDamage()) + "\n";
                         
                         // Define the order we want to display ammo types in.

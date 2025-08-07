@@ -262,7 +262,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             resourceName = "Cloak Battery";
                             break;
                         case PlayerClass::CLASS_VANQUISHER:
-                            resourceName = "Explosive Ammo Pack";
+                            resourceName = "Dragon's Breath Ammo Pack";
                             break;
                         case PlayerClass::CLASS_XENOMANCER:
                             resourceName = "Creatures";
@@ -316,7 +316,12 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(barrierData !is null)
                                 {
                                     bool isActive = barrierData.IsActive();
-                                    resourceInfo += "[" + (isActive ? " 50% Recovery " : " 100% Recovery ") + "] ";
+                                        resourceInfo += "[" + (isActive ? " 50% Recovery " : " 100% Recovery ") + "] ";
+                                        
+                                    if(isActive)
+                                    {
+                                        resourceInfo += "[Damage Reflect: " + int(barrierData.GetScaledDamageReflection() * 100) + "%]";
+                                    }
                                 }
                             }
                             break;
@@ -394,7 +399,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 }
                             }
                             
-                            resourceInfo += "[Explosive Rounds: (" + rounds + "/" + maxRounds + ")]";
+                            resourceInfo += "[Dragon's Breath Rounds: (" + rounds + "/" + maxRounds + ")]";
                             break;
                         }
 

@@ -328,7 +328,6 @@ void PrecacheAll()
 
     g_Game.PrecacheModel(strExplosiveRoundsExplosionSprite);
     g_Game.PrecacheModel(strExplosiveRoundsExplosionCoreSprite);
-    g_Game.PrecacheModel(strExplosiveRoundsGlowSprite);
     g_Game.PrecacheModel(strExplosiveRoundsSplatterSprite);
     
 }
@@ -608,68 +607,25 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         }
     }
 
-    // Handle barrier checks
-    if(!g_PlayerBarriers.exists(steamID)) 
-        return HOOK_CONTINUE;
-
-    BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-    if(barrier is null || !barrier.IsActive())
-        return HOOK_CONTINUE;
-
-    // Get attacker before any damage calculations
-    CBaseEntity@ attacker = pDamageInfo.pAttacker;
-    if(attacker is null)
-        return HOOK_CONTINUE;
-
-    float incomingDamage = pDamageInfo.flDamage;
-    float reduction = barrier.GetDamageReduction();
-    float blockedDamage = incomingDamage * reduction;
-    pDamageInfo.flDamage = incomingDamage - blockedDamage;
-
-    // Apply Reflect perk if at the required level.
-    if(barrier.HasStats() && barrier.GetStats().GetLevel() >= g_iPerk1LvlReq) // Level req.
+    // Only run barrier checks for Defender class with an active barrier.
+    if(g_PlayerRPGData.exists(steamID))
     {
-        float reflectDamage = incomingDamage * 0.5f;
-        attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_SLOWFREEZE); // Apply the damage as slow freeze type.
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && g_PlayerBarriers.exists(steamID))
+        {
+            BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+            if(barrier !is null && barrier.IsActive())
+            {
+                // Get attacker before any damage calculations
+                CBaseEntity@ attacker = pDamageInfo.pAttacker;
+                if(attacker is null)
+                    return HOOK_CONTINUE;
+
+                // Let the barrier handle all damage reflection logic.
+                barrier.HandleBarrier(pPlayer, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
+            }
+        }
     }
-
-    // Play hit sound with random pitch.
-    int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
-    g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
-
-    Vector origin = pPlayer.pev.origin; // Player as origin.
-
-    //origin.z += 32; // Offset to center of entity
-
-    // Create ricochet effect.
-    NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-        ricMsg.WriteByte(TE_ARMOR_RICOCHET);
-        ricMsg.WriteCoord(origin.x);
-        ricMsg.WriteCoord(origin.y);
-        ricMsg.WriteCoord(origin.z);
-        ricMsg.WriteByte(1); // Scale.
-        ricMsg.End();
-
-    // Add effect to chip off chunks as barrier takes damage.
-    NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
-        breakMsg.WriteByte(TE_BREAKMODEL);
-        breakMsg.WriteCoord(origin.x);
-        breakMsg.WriteCoord(origin.y);
-        breakMsg.WriteCoord(origin.z);
-        breakMsg.WriteCoord(3); // Size.
-        breakMsg.WriteCoord(3); // Size.
-        breakMsg.WriteCoord(3); // Size.
-        breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
-        breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
-        breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
-        breakMsg.WriteByte(20); // Gib random speed and direction.
-        breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-        breakMsg.WriteByte(2); // Count.
-        breakMsg.WriteByte(10); // Lifetime.
-        breakMsg.WriteByte(1); // Sound Flags.
-        breakMsg.End();
-
-    barrier.DrainEnergy(pPlayer, blockedDamage); // Apply energy drain to the barrier health.
 
     return HOOK_CONTINUE;
 }
