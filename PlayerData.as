@@ -116,23 +116,23 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 20.0f;
+                    def.baseResource = 25.0f;
                     def.fullRegenTime = 30.0f;
-                    def.energyPerLevel = 0.07f; // 100s at level 50.
+                    def.energyPerLevel = 0.08f; // 100s at level 50.
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 1.0f;
                     def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.18f; // 10 points at level 50.
+                    def.energyPerLevel = 0.06f; // 4 points at level 50.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 1.0f;
                     def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.18f; // 10 points at level 50.
+                    def.energyPerLevel = 0.06f; // 4 points at level 50.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 150.0f; // Berserkers have higher base HP.
@@ -186,9 +186,9 @@ class ClassStats
     private string m_szSteamID; // Store player's SteamID.
     
     // Ability enhancement level requirements.
-    private int m_iAbilityEnhancement1LvReq = 10; // Level required to unlock first enhancement
-    private int m_iAbilityEnhancement2LvReq = 20; // Level required to unlock second enhancement
-    private int m_iAbilityEnhancement3LvReq = 30; // Level required to unlock third enhancement
+    private int m_iAbilityEnhancement1LvReq = 15; // Level required to unlock first enhancement.
+    private int m_iAbilityEnhancement2LvReq = 30; // Level required to unlock second enhancement.
+    private int m_iAbilityEnhancement3LvReq = 45; // Level required to unlock third enhancement.
     
     int GetLevel() { return m_iLevel; }
     int GetXP() { return m_iXP; }
