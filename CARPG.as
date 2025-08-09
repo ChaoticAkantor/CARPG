@@ -197,6 +197,8 @@ void PrecacheAll()
     g_SoundSystem.PrecacheSound(strBarrierBreakSound);
     g_SoundSystem.PrecacheSound(strBarrierActiveSound);
 
+    g_Game.PrecacheModel(strBarrierBeamSprite);
+
     // Cloaker Ability Precache.
     g_SoundSystem.PrecacheSound(strCloakActivateSound);
     g_SoundSystem.PrecacheSound(strCloakActiveSound);
@@ -457,6 +459,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageXenMultiplier = 1.0f + xenMinion.GetScaledDamage();
         info.flDamage *= damageXenMultiplier;
 
+        // Process lifesteal - when xenminion deals damage, give health to owner
+        xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
+
         //g_Game.AlertMessage(at_console, "Damage: " + info.flDamage + "\n"); // Debug to see damage value.
     }
 
@@ -487,6 +492,8 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                             {
                                 float damageMultiplier = shockRifle.GetScaledDamage();
                                 info.flDamage *= damageMultiplier; // Scaling damage multiplier for shocktroopers.
+
+                                info.bitsDamageType |= DMG_ALWAYSGIB; // Add always gib for feelgood effect.
                             }
                         }
                     }
@@ -592,6 +599,11 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     if(pPlayer is null || pDamageInfo.flDamage <= 0) 
         return HOOK_CONTINUE;
 
+    // Get attacker before any damage calculations.
+    CBaseEntity@ attacker = pDamageInfo.pAttacker;
+    if(attacker is null)
+        return HOOK_CONTINUE;
+
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     
     // Add hurt delay when player takes damage.
@@ -606,7 +618,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         }
     }
 
-    // Only run barrier checks for Defender class with an active barrier.
+    // Check for personal barrier protection first.
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -615,15 +627,19 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
             BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
             if(barrier !is null && barrier.IsActive())
             {
-                // Get attacker before any damage calculations.
-                CBaseEntity@ attacker = pDamageInfo.pAttacker;
-                if(attacker is null)
-                    return HOOK_CONTINUE;
-
                 // Let the barrier handle all damage reflection logic.
                 barrier.HandleBarrier(pPlayer, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
+                return HOOK_CONTINUE;
             }
         }
+    }
+    
+    // If player doesn't have their own barrier, check if they're being protected by someone else's.
+    if(IsPlayerProtectedByBarrier(pPlayer, attacker))
+    {
+        // Let the protection system handle the damage.
+        HandleProtectedPlayerDamage(pPlayer, attacker, pDamageInfo);
+        return HOOK_CONTINUE;
     }
 
     return HOOK_CONTINUE;
@@ -707,6 +723,9 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
             barrier.CancelRefunds(steamID);
         }
     }
+    
+    // Clean up any barrier protection relationships
+    CleanupPlayerBarrierProtection(steamID);
     
     ClearMinions();
     return HOOK_CONTINUE;
@@ -989,6 +1008,9 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         return;
         
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    
+    // Clean up any barrier protection relationships
+    CleanupPlayerBarrierProtection(steamID);
     
     // Reset Heal Aura.
     if (g_HealingAuras.exists(steamID))
