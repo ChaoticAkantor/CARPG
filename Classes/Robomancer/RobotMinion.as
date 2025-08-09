@@ -63,7 +63,7 @@ class MinionData
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
-    private float m_flHealthScale = 0.08; // Health % scaling per level. Robogrunts have natural armor and don't get health increases per tier like Xeno.
+    private float m_flHealthScale = 0.1; // Health % scaling per level. Robogrunts have natural armor and don't get health increases per tier like Xeno.
     private float m_flHealthRegen = 0.01; // Health recovery % per second of Robogrunts.
     private float m_flDamageScale = 0.1; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Cost to summon 1 minion. Init.
@@ -75,17 +75,8 @@ class MinionData
 
     bool IsActive() 
     { 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(g_EntityFuncs.Instance(0).edict());
-        if(g_PlayerClassResources.exists(steamID))
-        {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if(resources !is null)
-            {
-                float maxReserve = float(resources['max']) - m_flReservePool;
-                return maxReserve <= 0;
-            }
-        }
-        return false;
+        // The minions are active if there are any in the list
+        return m_hMinions.length() > 0;
     }
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -142,7 +133,7 @@ class MinionData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }
@@ -184,9 +175,11 @@ class MinionData
             pNewMinion.pev.rendercolor = Vector(20, 180, 20); // Green.
 
             g_EntityFuncs.DispatchSpawn(pNewMinion.edict()); // Dispatch the entity.
+            
+            // Debug print the actual health after spawning
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Robot spawned with health: " + pNewMinion.pev.health + " / " + pNewMinion.pev.max_health + "\n");
 
             m_hMinions.insertLast(EHandle(pNewMinion)); //Insert into minion list.
-            m_bActive = true; // Set ability as "active".
             
             m_flReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
             current -= MINION_COSTS[minionType]; // Subtract from current resources.
@@ -210,7 +203,7 @@ class MinionData
 
     void Update(CBasePlayer@ pPlayer)
     {
-        if(!m_bActive || pPlayer is null)
+        if(pPlayer is null)
             return;
 
         // Remove invalid Minions and check frags.
@@ -248,8 +241,6 @@ class MinionData
             }
         }
 
-        m_bActive = (m_hMinions.length() > 0);
-
         // Update stats reference for stat menu.
         if(m_pStats is null)
         {
@@ -257,7 +248,7 @@ class MinionData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }
@@ -267,7 +258,7 @@ class MinionData
 
     void DestroyAllMinions(CBasePlayer@ pPlayer)
     {
-        if(pPlayer is null || !m_bActive)
+        if(pPlayer is null || m_hMinions.length() == 0)
             return;
 
         uint MinionCount = m_hMinions.length();
@@ -293,7 +284,6 @@ class MinionData
         m_flReservePool = 0.0f;
         
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
-        m_bActive = false;
     }
 
     void MinionRegen()
@@ -322,8 +312,14 @@ class MinionData
             return m_flBaseHealth;
 
         float level = m_pStats.GetLevel();
-        float flScaledHealth = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
-        return flScaledHealth + m_flBaseHealth;
+        // Base health * (1 + level*scale) - Only add base health once
+        float health = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
+        
+        // Ensure health is never less than base health
+        if(health < m_flBaseHealth)
+            health = m_flBaseHealth;
+            
+        return health;
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
@@ -456,10 +452,10 @@ void CheckEngineerMinions()
                     PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                     if(data !is null)
                     {
-                        if(data.GetCurrentClass() != PlayerClass::CLASS_ENGINEER)
+                        if(data.GetCurrentClass() != PlayerClass::CLASS_ROBOMANCER)
                         {
                             // Player is not Engineer, destroy active minions.
-                            if(Minion.IsActive())
+                            if(Minion.GetMinionCount() > 0)
                             {
                                 Minion.DestroyAllMinions(pPlayer);
                                 continue;  // Skip rest of updates
@@ -475,7 +471,7 @@ void CheckEngineerMinions()
 
                 Minion.MinionRegen(); // Minion Regeneration.
 
-                // Always update scaling values for stats menu
+                // Always update scaling values for stats menu.
                 Minion.GetScaledHealth();
                 Minion.GetScaledDamage();
 
