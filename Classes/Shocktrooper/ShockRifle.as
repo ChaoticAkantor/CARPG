@@ -7,7 +7,7 @@ class ShockRifleData
     private ClassStats@ m_pStats = null;
     private float m_flLastUseTime = 0.0f;
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
-    private float m_flDamageScalePerLevel = 0.06f; // Damage increase % for shockrifle per level.
+    private float m_flDamageScalePerLevel = 0.04f; // Damage increase % for shockrifle per level.
 
     bool HasStats() { return m_pStats !is null; }    
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
