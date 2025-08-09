@@ -4,9 +4,6 @@ dictionary g_PlayerRPGData;
 
 // Used for debug menu.
 int g_iMaxLevel = 50;
-int g_iPerk1LvlReq = 10; // Level required to unlock first perk.
-int g_iPerk2LvlReq = 20;
-int g_iPerk3LvlReq = 30;
 
 dictionary g_ClassNames = 
 {
@@ -188,11 +185,26 @@ class ClassStats
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
     
+    // Ability enhancement level requirements.
+    private int m_iAbilityEnhancement1LvReq = 10; // Level required to unlock first enhancement
+    private int m_iAbilityEnhancement2LvReq = 20; // Level required to unlock second enhancement
+    private int m_iAbilityEnhancement3LvReq = 30; // Level required to unlock third enhancement
+    
     int GetLevel() { return m_iLevel; }
     int GetXP() { return m_iXP; }
     int GetNextLevelXP() { return GetXPForLevel(m_iLevel); }
     int GetCurrentLevelXP() { return m_iCurrentLevelXP; }
     int GetNeededXP() { return GetXPForLevel(m_iLevel); }
+    
+    // Accessor methods for enhancement level requirements.
+    int GetEnhancement1LevelReq() { return m_iAbilityEnhancement1LvReq; }
+    int GetEnhancement2LevelReq() { return m_iAbilityEnhancement2LvReq; }
+    int GetEnhancement3LevelReq() { return m_iAbilityEnhancement3LvReq; }
+    
+    // Method to check if a player has unlocked a specific enhancement.
+    bool HasUnlockedEnhancement1() { return m_iLevel >= m_iAbilityEnhancement1LvReq; }
+    bool HasUnlockedEnhancement2() { return m_iLevel >= m_iAbilityEnhancement2LvReq; }
+    bool HasUnlockedEnhancement3() { return m_iLevel >= m_iAbilityEnhancement3LvReq; }
 
     bool IsMaxLevel() { return m_iLevel >= MAX_LEVEL; }
     
@@ -343,6 +355,7 @@ class PlayerData
     {
         return cast<ClassStats@>(m_ClassData[pClass]);
     }
+    
     
     void ShowClassMenu(CBasePlayer@ pPlayer)
     {

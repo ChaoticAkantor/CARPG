@@ -97,6 +97,7 @@ class MinionData
     float GetMinionRegen() { return m_flHealthRegen; }
 
     bool HasStats() { return m_pStats !is null; }
+    
     array<EHandle>@ GetMinions() { return m_hMinions; }
 
     MinionData() 

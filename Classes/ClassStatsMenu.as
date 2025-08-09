@@ -49,171 +49,171 @@ namespace Menu
                 "Ability Duration/Charges: " + int(maxEnergy) + "\n" + 
                 "Ability Recharge Rate: " + energyRegen + "/s\n\n";
 
-                BaseStatsText += "=== Class Perks: ===\n";
+                BaseStatsText += "=== Ability Enhancements: ===\n";
             
-                // Display perks based on class and level
+                // Display perks based on class and level.
                 switch(m_pOwner.GetCurrentClass())
                 {
                     case PlayerClass::CLASS_MEDIC:
                     {
-                        if(m_pStats.GetLevel() >= 10)
+                        if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
+                        if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
+                        if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_BERSERKER:
                     {
-                        if(m_pStats.GetLevel() >= 10)
+                        if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
+                        if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
+                        if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_ROBOMANCER:
                     {
-                        if(m_pStats.GetLevel() >= 10)
+                        if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
+                        if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
+                        if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_XENOMANCER:
                     {
-                        if(m_pStats.GetLevel() >= 10)
+                        if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
+                        if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
+                        if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_SHOCKTROOPER:
                     {
-                        if(m_pStats.GetLevel() >= 10)
+                        if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
+                        if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
+                        if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_DEFENDER:
                     {
-                        if(m_pStats.GetLevel() >= g_iPerk1LvlReq)
-                            BaseStatsText += "N/A - WIP.\n";
+                        if(m_pStats.HasUnlockedEnhancement1())
+                            BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "N/A - WIP. - < LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= g_iPerk2LvlReq)
-                            BaseStatsText += "Frosted - WIP.\n";
+                        if(m_pStats.HasUnlockedEnhancement2())
+                            BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "Frosted - < LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= g_iPerk3LvlReq)
-                            BaseStatsText += "N/A - WIP.\n";
+                        if(m_pStats.HasUnlockedEnhancement3())
+                            BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_CLOAKER:
                     {
-                        if(m_pStats.GetLevel() >= 10)
+                        if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
+                        if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
+                        if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_VANQUISHER:
                     {
-                        if(m_pStats.GetLevel() >= 10)
+                        if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 20)
+                        if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= 30)
+                        if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_ENGINEER:
                     {
-                        if(m_pStats.GetLevel() >= g_iPerk1LvlReq)
-                            BaseStatsText += "N/A - \n";
+                        if(m_pStats.HasUnlockedEnhancement1())
+                            BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "N/A - < LOCKED - Lv. 10 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= g_iPerk2LvlReq)
-                            BaseStatsText += "N/A - \n";
+                        if(m_pStats.HasUnlockedEnhancement2())
+                            BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "N/A - < LOCKED - Lv. 20 >\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " >\n";
 
-                        if(m_pStats.GetLevel() >= g_iPerk3LvlReq)
-                            BaseStatsText += "AP Sentry Ammo - Sentry bullets penetrate armor.\n";
+                        if(m_pStats.HasUnlockedEnhancement3())
+                            BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "AP Sentry Ammo - < LOCKED - Lv. 30 >\n\n";
+                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " >\n\n";
                         break;
                     }
                 }
@@ -227,7 +227,7 @@ namespace Menu
                     HealingAura@ healingAura = cast<HealingAura@>(g_HealingAuras[steamID]);
                     if(healingAura !is null)
                     {
-                        string MedicStatsText = "=== Heal Aura Stats: ===" + "\n" + 
+                        string MedicStatsText = "=== Heal Aura: ===" + "\n" + 
                             "Restoration: " + int(healingAura.GetScaledHealAmount()) + " HP/s\n" + 
                             "Radius: " + int(healingAura.GetHealingRadius() / 16) + "ft\n" + 
                             "Revive Cost: " + int(healingAura.GetEnergyCostRevive()) + "/s\n" +
@@ -242,7 +242,7 @@ namespace Menu
                     BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                     if(bloodlust !is null)
                     {
-                        string BerserkerStatsText = "=== Bloodlust Stats: ===" + "\n" +
+                        string BerserkerStatsText = "=== Bloodlust: ===" + "\n" +
                         "Ability Charge Steal: " + int(bloodlust.GetEnergySteal()) + "%\n" +
                         "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
                         "Health scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n\n";
@@ -256,7 +256,7 @@ namespace Menu
                     MinionData@ roboMinion = cast<MinionData@>(g_PlayerMinions[steamID]);
                     if(roboMinion !is null)
                     {
-                        string EngineerStatsText = "=== Robogrunt Stats: ===" + "\n" + 
+                        string EngineerStatsText = "=== Robogrunts: ===" + "\n" + 
                         "Health: " + int(roboMinion.GetScaledHealth()) + "HP\n" + 
                         "Damage: " + int(roboMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
 
@@ -269,7 +269,7 @@ namespace Menu
                     XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
                     if(xenMinion !is null)
                     {
-                        string XenologistStatsText = "=== Creature Stats: ===" + "\n" + 
+                        string XenologistStatsText = "=== Creatures: ===" + "\n" + 
                         "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
                         "Damage: " + int(xenMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
 
@@ -282,7 +282,7 @@ namespace Menu
                     ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
                     if(shockRifle !is null)
                     {
-                        string ShocktrooperStatsText = "=== Shockroach Stats: ===" + "\n" + 
+                        string ShocktrooperStatsText = "=== Shockroach: ===" + "\n" + 
                             "Battery Capacity: " + int(maxEnergy) + "\n" +
                             "Damage: " + int((shockRifle.GetScaledDamage() - 1.0f) * 100 + 100) + "%\n\n";
 
@@ -295,7 +295,7 @@ namespace Menu
                     BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                     if(barrier !is null)
                     {
-                        string DefenderStatsText = "=== Ice Shield Stats: ===" + "\n" + 
+                        string DefenderStatsText = "=== Ice Shield: ===" + "\n" + 
                             "Durability: " + int(maxEnergy) + " HP\n" + 
                             //"Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
                             "Damage Reflection: " + int(barrier.GetScaledDamageReflection() * 100) + "%\n" +
@@ -310,7 +310,7 @@ namespace Menu
                     CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
                     if(cloak !is null)
                     {
-                        string CloakerStatsText = "=== Cloak Stats: ===" + "\n" +  
+                        string CloakerStatsText = "=== Cloak: ===" + "\n" +  
                             "Battery Cost Per Shot: " + int(cloak.GetEnergyCostPerShot()) + "\n" +
                             "Damage Bonus at 100% Battery: " + int(cloak.GetDamageBonus() * 100 + 100) + "%\n\n";
 
@@ -324,7 +324,7 @@ namespace Menu
                     if(explosiveRounds !is null)
                     {
                         // Display the base damage first.
-                        string VanquisherStatsText = "=== Dragon's Breath Ammo Stats: ===" + "\n" + 
+                        string VanquisherStatsText = "=== Dragon's Breath Ammo: ===" + "\n" + 
                             "Base Damage: " + int(explosiveRounds.GetScaledDamage()) + "\n";
                         
                         // Define the order we want to display ammo types in.
@@ -370,7 +370,7 @@ namespace Menu
                     SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
                     if(sentry !is null)
                     {
-                        string EngineerStatsText = "=== Sentry Stats: ===" + "\n" + 
+                        string EngineerStatsText = "=== Sentry: ===" + "\n" + 
                             "Health: " + int(sentry.GetScaledHealth()) + " HP\n" +
                             "Damage: " + int(sentry.GetScaledDamage() * 100 + 100) + "%\n" + 
                             "Heal: " + sentry.GetHealAmount() + " HP/s\n\n";

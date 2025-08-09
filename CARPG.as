@@ -374,16 +374,15 @@ HookReturnCode OnWeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ 
     return HOOK_CONTINUE;
 }
 
-HookReturnCode MonsterTakeDamage(DamageInfo@ info)
+HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion damage scaling is done here.
 {
     if(info is null || info.pVictim is null || info.pAttacker is null)
         return HOOK_CONTINUE;
 
-    // Check if attacker is a minion
+    // Check if attacker is a minion.
     CBaseEntity@ attacker = info.pAttacker;
     string targetname = string(attacker.pev.targetname);
 
-    // Engineer Sentry Damage Scaling
     if(targetname.StartsWith("_sentry_"))
     {
         string ownerIndex = targetname.SubString(8);
@@ -402,62 +401,63 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         if(sentry is null)
             return HOOK_CONTINUE;
 
-        // Apply damage multiplier
+        // Apply damage multiplier.
         float damageSentryMultiplier = 1.0f + sentry.GetScaledDamage();
         info.flDamage *= damageSentryMultiplier;
 
-        // AP Sentry Ammo Perk
-        if(sentry.HasStats() && sentry.GetStats().GetLevel() >= g_iPerk3LvlReq)
-        {
-            info.bitsDamageType |= DMG_RADIATION; // Add AP damage type.
-        }
+        // Sentry enhancement, change damage type. Doesn't seem to make armor damagable.
+        //if(sentry.HasStats() && sentry.GetStats().HasUnlockedEnhancement3())
+        //{
+        //    info.bitsDamageType |= DMG_RADIATION; // Add AP damage type.
+        //}
     }
-
-    // RobotMinion Damage Scaling.
     else if(targetname.StartsWith("_minion_"))
     {
         // Find owner's MinionData by the index in targetname.
         string ownerIndex = targetname.SubString(8); // Look specifically for only targetnames with indexes added.
+        if(ownerIndex.IsEmpty())
+            return HOOK_CONTINUE;
+            
         CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
-        if(pOwner !is null)
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
-            if(g_PlayerMinions.exists(steamID))
-            {
-                MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
-                if(minion !is null)
-                {
-                    // Apply the damage multiplier.
-                    float damageRoboMultiplier = 1.0f + minion.GetScaledDamage();
-                    info.flDamage *= damageRoboMultiplier;
-
-                    //g_Game.AlertMessage(at_console, "Damage: " + info.flDamage + "\n"); // Debug.
-                }
-            }
-        }
+        if(pOwner is null || !pOwner.IsConnected())
+            return HOOK_CONTINUE;
+            
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+        if(steamID.IsEmpty() || !g_PlayerMinions.exists(steamID))
+            return HOOK_CONTINUE;
+            
+        MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+        if(minion is null)
+            return HOOK_CONTINUE;
+            
+        // Apply the damage multiplier.
+        float damageRoboMultiplier = 1.0f + minion.GetScaledDamage();
+        info.flDamage *= damageRoboMultiplier;
     }
-    // Xenologist Minion Damage Scaling.
     else if(targetname.StartsWith("_xenminion_"))
     {
         // Find owner's XenMinionData by the index in targetname
         string ownerIndex = targetname.SubString(11); // Look specifically for only targetnames with indexes added.
+        if(ownerIndex.IsEmpty())
+            return HOOK_CONTINUE;
+            
         CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
-        if(pOwner !is null)
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
-            if(g_XenologistMinions.exists(steamID))
-            {
-                XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
-                if(xenMinion !is null)
-                {
-                    // Apply the damage multiplier
-                    float damageXenMultiplier = 1.0f + xenMinion.GetScaledDamage();
-                    info.flDamage *= damageXenMultiplier;
+        if(pOwner is null || !pOwner.IsConnected())
+            return HOOK_CONTINUE;
+            
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+        if(steamID.IsEmpty() || !g_XenologistMinions.exists(steamID))
+            return HOOK_CONTINUE;
+            
+        XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+        if(xenMinion is null)
+            return HOOK_CONTINUE;
+            
+        // Apply the damage multiplier.
+        float damageXenMultiplier = 1.0f + xenMinion.GetScaledDamage();
+        info.flDamage *= damageXenMultiplier;
 
-                    //g_Game.AlertMessage(at_console, "Damage: " + info.flDamage + "\n"); // Debug.
-                }
-            }
-        }
+        //g_Game.AlertMessage(at_console, "Damage: " + info.flDamage + "\n"); // Debug to see damage value.
     }
 
     if(info.pAttacker is null || !info.pAttacker.IsPlayer())
@@ -466,13 +466,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
     CBasePlayer@ pAttacker = cast<CBasePlayer@>(info.pAttacker);
     string steamID = g_EngineFuncs.GetPlayerAuthId(pAttacker.edict());
     
-    // Handle all class-specific damage conversions.
+    // Handle all class-specific damage scaling.
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null)
         {
-            // Then handle class-specific damage types
             switch(data.GetCurrentClass())
             {
                 case PlayerClass::CLASS_SHOCKTROOPER:
@@ -568,7 +567,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info)
         }
     }
 
-    // Handle Cloak damage multiplier (existing code)
+    // Handle Cloak damage multiplier.
     if(g_PlayerCloaks.exists(steamID))
     {
         CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
@@ -595,7 +594,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
 
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     
-    // Add hurt delay when player takes damage
+    // Add hurt delay when player takes damage.
     if(g_PlayerRecoveryData.exists(steamID))
     {
         RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
@@ -616,7 +615,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
             BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
             if(barrier !is null && barrier.IsActive())
             {
-                // Get attacker before any damage calculations
+                // Get attacker before any damage calculations.
                 CBaseEntity@ attacker = pDamageInfo.pAttacker;
                 if(attacker is null)
                     return HOOK_CONTINUE;

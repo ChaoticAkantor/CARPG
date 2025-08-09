@@ -420,7 +420,8 @@ class SentryData
         if(m_pStats is null)
             return 1.0f;
 
-        return 1.0f + (m_pStats.GetLevel() * m_flDamageScale);
+        // Return just the multiplier part, not including the base 1.0f, since that gets added in the MonsterTakeDamage hook.
+        return (m_pStats.GetLevel() * m_flDamageScale);
     }
 }
 
