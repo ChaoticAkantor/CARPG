@@ -111,7 +111,7 @@ namespace Menu
                     case PlayerClass::CLASS_XENOMANCER:
                     {
                         if(m_pStats.HasUnlockedEnhancement1())
-                            BaseStatsText += "N/A.\n";
+                            BaseStatsText += "Xen Pact: Creatures return 10% of damage dealt as health to owner.\n";
                         else
                             BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
@@ -147,7 +147,7 @@ namespace Menu
                     case PlayerClass::CLASS_DEFENDER:
                     {
                         if(m_pStats.HasUnlockedEnhancement1())
-                            BaseStatsText += "N/A.\n";
+                            BaseStatsText += "Protector - Ice Shield also shields nearby teammates, transfering damage taken to you.\n";
                         else
                             BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
@@ -257,7 +257,7 @@ namespace Menu
                     if(roboMinion !is null)
                     {
                         string EngineerStatsText = "=== Robogrunts: ===" + "\n" + 
-                        "Health: " + int(roboMinion.GetScaledHealth()) + "HP\n" + 
+                        "Health: " + int(roboMinion.GetScaledHealth()) + " HP\n" + 
                         "Damage: " + int(roboMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
@@ -271,7 +271,14 @@ namespace Menu
                     {
                         string XenologistStatsText = "=== Creatures: ===" + "\n" + 
                         "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage: " + int(xenMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
+                        "Damage: " + int(xenMinion.GetScaledDamage() * 100 + 100) + "%\n";
+                        
+                        // Show lifesteal percentage only if Enhancement 1 is unlocked
+                        float lifestealPercent = xenMinion.GetLifestealPercent();
+                        if(lifestealPercent > 0)
+                            XenologistStatsText += "Lifesteal: " + int(lifestealPercent * 100) + "% of damage\n";
+                            
+                        XenologistStatsText += "\n";
 
                         m_pMenu.AddItem(XenologistStatsText, null);
                     }
@@ -283,7 +290,7 @@ namespace Menu
                     if(shockRifle !is null)
                     {
                         string ShocktrooperStatsText = "=== Shockroach: ===" + "\n" + 
-                            "Battery Capacity: " + int(maxEnergy) + "\n" +
+                            "Capacity: " + int(maxEnergy) + "\n" +
                             "Damage: " + int((shockRifle.GetScaledDamage() - 1.0f) * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(ShocktrooperStatsText, null);
