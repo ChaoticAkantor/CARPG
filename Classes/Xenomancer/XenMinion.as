@@ -101,8 +101,8 @@ const array<int> XEN_COSTS =
 const array<float> XEN_HEALTH_MODS = 
 {
     1.0f,    // Pitdrone.
-    1.25f,    // Gonome.
-    1.25f     // Alien Grunt.
+    1.30f,    // Gonome.
+    1.30f     // Alien Grunt.
 };
 
 class XenMinionData
@@ -112,9 +112,10 @@ class XenMinionData
     private array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0;
-    private float m_flHealthScale = 0.12; // Health % scaling per level.
+    private float m_flHealthScale = 0.15; // Health % scaling per level.
     private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.1; // Damage % scaling per level.
+    private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement 1)
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -124,17 +125,8 @@ class XenMinionData
 
     bool IsActive() 
     { 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(g_EntityFuncs.Instance(0).edict());
-        if(g_PlayerClassResources.exists(steamID))
-        {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if(resources !is null)
-            {
-                float maxReserve = float(resources['max']) - m_flReservePool;
-                return maxReserve <= 0;
-            }
-        }
-        return false;
+        // The minions are active if there are any in the list
+        return m_hMinions.length() > 0;
     }
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -144,6 +136,12 @@ class XenMinionData
     float GetReservePool() { return m_flReservePool; }
     
     float GetMinionRegen() { return m_flHealthRegen; }
+
+    float GetLifestealPercent() 
+    { 
+        // Only return lifesteal percent if Enhancement 1 is unlocked
+        return (m_pStats !is null && m_pStats.HasUnlockedEnhancement1()) ? m_flLifestealPercent : 0.0f;
+    }
 
     bool HasStats() { return m_pStats !is null; }
     array<EHandle>@ GetMinions() { return m_hMinions; }
@@ -190,7 +188,7 @@ class XenMinionData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER) // Changed from ENGINEER
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER)
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }
@@ -231,8 +229,7 @@ class XenMinionData
             g_EntityFuncs.DispatchSpawn(pNewMinion.edict()); // Dispatch the entity.
             m_hMinions.insertLast(EHandle(pNewMinion)); // Insert into minion list.
             m_CreatureTypes.insertLast(minionType); // Store type alongside handle.
-            m_bActive = true;
-
+            
             m_flReservePool += XEN_COSTS[minionType]; // Add to reserve pool when minion is created.
             current -= XEN_COSTS[minionType]; // Subtract from current resources.
             resources['current'] = current;
@@ -255,7 +252,7 @@ class XenMinionData
 
     void XenUpdate(CBasePlayer@ pPlayer)
     {
-        if(!m_bActive || pPlayer is null)
+        if(pPlayer is null)
             return;
 
         // Remove invalid Minions and check frags.
@@ -281,8 +278,6 @@ class XenMinionData
             }
         }
 
-        m_bActive = (m_hMinions.length() > 0);
-
         // Update stats reference for stat menu.
         if(m_pStats is null)
         {
@@ -290,7 +285,7 @@ class XenMinionData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER) // Changed from ENGINEER
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER)
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }
@@ -300,7 +295,7 @@ class XenMinionData
 
     void DestroyAllMinions(CBasePlayer@ pPlayer)
     {
-        if(pPlayer is null || !m_bActive)
+        if(pPlayer is null || m_hMinions.length() == 0)
             return;
 
         uint MinionCount = m_hMinions.length();
@@ -327,7 +322,6 @@ class XenMinionData
         m_flReservePool = 0.0f;
         
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures destroyed!\n");
-        m_bActive = false;
     }
 
     void MinionRegen()
@@ -368,6 +362,44 @@ class XenMinionData
         float level = m_pStats.GetLevel();
         float flScaledDamage = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level as there is no base damage.
         return flScaledDamage;
+    }
+
+    // Called when a minion deals damage to an enemy
+    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+            return;
+            
+        // Check if the enhancement is unlocked
+        if(m_pStats is null || !m_pStats.HasUnlockedEnhancement1())
+            return;
+
+        // Calculate health to return to player
+        float flHealthToGive = flDamageDealt * m_flLifestealPercent;
+        
+        // Apply the healing if the player isn't already at max health
+        if(pPlayer.pev.health < pPlayer.pev.max_health)
+        {
+            pPlayer.pev.health = Math.min(pPlayer.pev.health + flHealthToGive, pPlayer.pev.max_health);
+            
+            // Optional: Provide visual feedback for the lifesteal effect
+            if(flHealthToGive >= 5.0f) // Only show for significant healing
+            {
+                // Display small green glow effect on player to indicate healing
+                NetworkMessage healEffect(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
+                healEffect.WriteByte(TE_DLIGHT);
+                healEffect.WriteCoord(pPlayer.pev.origin.x);
+                healEffect.WriteCoord(pPlayer.pev.origin.y);
+                healEffect.WriteCoord(pPlayer.pev.origin.z);
+                healEffect.WriteByte(8); // Radius
+                healEffect.WriteByte(0); // Red
+                healEffect.WriteByte(255); // Green
+                healEffect.WriteByte(0); // Blue
+                healEffect.WriteByte(1); // Life in 0.1s
+                healEffect.WriteByte(200); // Decay rate in 0.1s
+                healEffect.End();
+            }
+        }
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)
@@ -473,13 +505,13 @@ void CheckXenologistMinions()
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             
             // Initialize MinionData if it doesn't exist.
-            if(!g_XenologistMinions.exists(steamID)) // Changed from g_PlayerMinions
+            if(!g_XenologistMinions.exists(steamID))
             {
                 XenMinionData data;
                 @g_XenologistMinions[steamID] = data;
             }
 
-            XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]); // Changed cast type
+            XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
             if(xenMinion !is null)
             {
                 // Check if player switched class.
@@ -491,11 +523,8 @@ void CheckXenologistMinions()
                         if(data.GetCurrentClass() != PlayerClass::CLASS_XENOMANCER)
                         {
                             // Player is no longer this class, destroy active minions.
-                            if(xenMinion.IsActive())
-                            {
-                                xenMinion.DestroyAllMinions(pPlayer);
-                                continue;  // Skip rest of updates.
-                            }
+                            xenMinion.DestroyAllMinions(pPlayer);
+                            continue;  // Skip rest of updates.
                         }
                         else if(!xenMinion.HasStats())
                         {
@@ -511,7 +540,8 @@ void CheckXenologistMinions()
                 xenMinion.GetScaledHealth();
                 xenMinion.GetScaledDamage();
 
-                xenMinion.XenUpdate(pPlayer); // Normal update for active minions.
+                // Always run XenUpdate for proper minion tracking
+                xenMinion.XenUpdate(pPlayer);
             }
         }
     }
