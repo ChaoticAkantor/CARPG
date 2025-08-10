@@ -265,7 +265,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             resourceName = "Dragon's Breath Ammo Pack";
                             break;
                         case PlayerClass::CLASS_XENOMANCER:
-                            resourceName = "Creatures";
+                            resourceName = "Creature Points";
                             break;
                     }
                 }

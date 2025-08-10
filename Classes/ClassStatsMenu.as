@@ -276,7 +276,7 @@ namespace Menu
                         // Show lifesteal percentage only if Enhancement 1 is unlocked
                         float lifestealPercent = xenMinion.GetLifestealPercent();
                         if(lifestealPercent > 0)
-                            XenologistStatsText += "Lifesteal: " + int(lifestealPercent * 100) + "% of damage\n";
+                            XenologistStatsText += "Lifesteal to Owner: " + int(lifestealPercent * 100) + "%\n";
                             
                         XenologistStatsText += "\n";
 
