@@ -111,7 +111,7 @@ namespace Menu
                     case PlayerClass::CLASS_XENOMANCER:
                     {
                         if(m_pStats.HasUnlockedEnhancement1())
-                            BaseStatsText += "Xen Pact: Creatures heal you for 10% of their damage.\n";
+                            BaseStatsText += "Xen Pact: Creatures gain 10% lifesteal self and owner.\n";
                         else
                             BaseStatsText += "Xen Pact - < LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
@@ -276,7 +276,7 @@ namespace Menu
                         // Show lifesteal percentage only if Enhancement 1 is unlocked
                         float lifestealPercent = xenMinion.GetLifestealPercent();
                         if(lifestealPercent > 0)
-                            XenologistStatsText += "Lifesteal to Owner: " + int(lifestealPercent * 100) + "%\n";
+                            XenologistStatsText += "Lifesteal (Self and Owner): " + int(lifestealPercent * 100) + "%\n";
                             
                         XenologistStatsText += "\n";
 
