@@ -59,9 +59,9 @@ class MinionData
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
-    private float m_flHealthScale = 0.1; // Health % scaling per level. Robogrunts are armored.
+    private float m_flHealthScale = 0.15; // Health % scaling per level. Robogrunts are armored.
     private float m_flHealthRegen = 0.01; // Health recovery % per second of Robogrunts.
-    private float m_flDamageScale = 0.1; // Damage % scaling per level.
+    private float m_flDamageScale = 0.10; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -170,12 +170,9 @@ class MinionData
             pRoboMinion.pev.renderamt = 1; // Shell thickness.
             pRoboMinion.pev.rendercolor = Vector(20, 180, 20); // Green.
 
-            @pRoboMinion.pev.owner = @pPlayer.edict();
-
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
-            
-            // Debug print the actual health after spawning
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Robot spawned with health: " + pRoboMinion.pev.health + " / " + pRoboMinion.pev.max_health + "\n");
+
+            @pRoboMinion.pev.owner = @pPlayer.edict();
 
             m_hMinions.insertLast(EHandle(pRoboMinion)); //Insert into minion list.
             
@@ -289,7 +286,7 @@ class MinionData
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
             CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
-            if(pMinion !is null)
+            if(pMinion !is null && pMinion.pev.health > 0) // Only regenerate if not "dead".
             {
                 float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
 
