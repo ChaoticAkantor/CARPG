@@ -137,9 +137,9 @@ class SentryData
             pSentry.pev.renderamt = 1;
             pSentry.pev.rendercolor = Vector(20, 255, 255);
 
-            @pSentry.pev.owner = @pPlayer.edict(); // Set sentry owner to player, but it seems to lose collision and targetinfo.
-
             g_EntityFuncs.DispatchSpawn(pSentry.edict());
+
+            @pSentry.pev.owner = @pPlayer.edict();
 
             // Sentry won't wake unless touched or damaged, regardless of spawnflags. Gently encourage it.
             pSentry.TakeDamage(pPlayer.pev, pPlayer.pev, 0.0f, DMG_GENERIC);
