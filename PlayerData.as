@@ -123,14 +123,14 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 2.0f; // 2 Minions max. Has access to 3 different weapon types and all have grenades.
+                    def.baseResource = 2.0f; // Minion Point Max. Has access to 3 different weapon types and all have grenades.
                     def.fullRegenTime = 120.0f;
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 2.0f; // 2 Minions max. Has access to many monster types!
+                    def.baseResource = 2.0f; // Minion Point Max. Has access to many monster types!
                     def.fullRegenTime = 120.0f;
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
