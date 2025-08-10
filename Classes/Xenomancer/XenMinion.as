@@ -1,116 +1,243 @@
 string strXenMinionSoundCreate = "debris/beamstart7.wav";
 
-// models, sounds, and sprites for Xen creatures. (Yawn)
-string strPitdroneModel = "models/pit_drone.mdl";
-string strPitdroneModelGibs = "models/pit_drone_gibs.mdl";
-string strPitdroneModelSpike = "models/pit_drone_spike.mdl";
-string strPitdroneSpikeTrail = "sprites/spike_trail.spr";
-string strPitdroneSoundAttackSpike1 = "pitdrone/pit_drone_attack_spike1.wav";
-string strPitdroneSoundAlert1 = "pitdrone/pit_drone_alert1.wav";
-string strPitdroneSoundAlert2 = "pitdrone/pit_drone_alert2.wav"; 
-string strPitdroneSoundAlert3 = "pitdrone/pit_drone_alert3.wav"; 
-string strPitdroneSoundIdle1 = "pitdrone/pit_drone_idle1.wav";
-string strPitdroneSoundIdle2 = "pitdrone/pit_drone_idle2.wav";
-string strPitdroneSoundIdle3 = "pitdrone/pit_drone_idle3.wav";
-string strPitdroneSoundDie1 = "pitdrone/pit_drone_die1.wav";
-string strPitdroneSoundDie2 = "pitdrone/pit_drone_die2.wav";
-string strPitdroneSoundDie3 = "pitdrone/pit_drone_die3.wav";
-string strPitdroneSoundBite2 = "bullchicken/bc_bite2.wav";
-string strPitdroneSoundPain1 = "pitdrone/pit_drone_pain1.wav";
-string strPitdroneSoundPain2 = "pitdrone/pit_drone_pain2.wav";
-string strPitdroneSoundPain3 = "pitdrone/pit_drone_pain3.wav";
-string strPitdroneSoundPain4 = "pitdrone/pit_drone_pain4.wav";
-string strPitdroneSoundMelee1 = "pitdrone/pit_drone_melee_attack1.wav";
-string strPitdroneSoundMelee2 = "pitdrone/pit_drone_melee_attack2.wav";
-string strPitdroneSoundEat = "pitdrone/pit_drone_eat.wav";
+// Precache strings for monsters. (Yawn)
+// Houndeye.
+    // Models/Sprites.
+    string strHoundeyeModel = "models/houndeye.mdl";
+    string strHoundeyeSpriteShockwave = "sprites/shockwave.spr";
 
-string strGonomeModel = "models/gonome.mdl";
-string strGonomeSpriteSpit = "sprites/blood_chnk.spr";
-string strGonomeSoundSpit1 = "bullchicken/bc_spithit1.wav";
-string strGonomeSoundDeath2 = "gonome/gonome_death2.wav";
-string strGonomeSoundDeath3 = "gonome/gonome_death3.wav";
-string strGonomeSoundDeath4 = "gonome/gonome_death4.wav";
-string strGonomeSoundIdle1 = "gonome/gonome_idle1.wav";
-string strGonomeSoundIdle2 = "gonome/gonome_idle2.wav";
-string strGonomeSoundIdle3 = "gonome/gonome_idle3.wav";
-string strGonomeSoundPain1 = "gonome/gonome_pain1.wav";
-string strGonomeSoundPain2 = "gonome/gonome_pain2.wav";
-string strGonomeSoundPain3 = "gonome/gonome_pain3.wav";
-string strGonomeSoundPain4 = "gonome/gonome_pain4.wav";
-string strGonomeSoundMelee1 = "gonome/gonome_melee1.wav";
-string strGonomeSoundMelee2 = "gonome/gonome_melee2.wav";
-string strGonomeSoundRun = "gonome/gonome_run.wav";
-string strGonomeSoundEat = "gonome/gonome_eat.wav";
+    // Sounds.
+    string strHoundeyeSoundAlert1 = "houndeye/he_alert1.wav";
+    string strHoundeyeSoundAlert2 = "houndeye/he_alert2.wav";
+    string strHoundeyeSoundAlert3 = "houndeye/he_alert3.wav";
+    string strHoundeyeSoundAttack1 = "houndeye/he_attack1.wav";
+    string strHoundeyeSoundAttack2 = "houndeye/he_attack2.wav";
+    string strHoundeyeSoundAttack3 = "houndeye/he_attack3.wav";
+    string strHoundeyeSoundBlast1 = "houndeye/he_blast1.wav";
+    string strHoundeyeSoundBlast2 = "houndeye/he_blast2.wav";
+    string strHoundeyeSoundBlast3 = "houndeye/he_blast3.wav";
+    string strHoundeyeSoundDie1 = "houndeye/he_die1.wav";
+    string strHoundeyeSoundDie2 = "houndeye/he_die2.wav";
+    string strHoundeyeSoundDie3 = "houndeye/he_die3.wav";
+    string strHoundeyeSoundHunt1 = "houndeye/he_hunt1.wav";
+    string strHoundeyeSoundHunt2 = "houndeye/he_hunt2.wav";
+    string strHoundeyeSoundHunt3 = "houndeye/he_hunt3.wav";
+    string strHoundeyeSoundHunt4 = "houndeye/he_hunt4.wav";
+    string strHoundeyeSoundIdle1 = "houndeye/he_idle1.wav";
+    string strHoundeyeSoundIdle2 = "houndeye/he_idle2.wav";
+    string strHoundeyeSoundIdle3 = "houndeye/he_idle3.wav";
+    string strHoundeyeSoundIdle4 = "houndeye/he_idle4.wav";
+    string strHoundeyeSoundPain1 = "houndeye/he_pain1.wav";
+    string strHoundeyeSoundPain2 = "houndeye/he_pain2.wav";
+    string strHoundeyeSoundPain3 = "houndeye/he_pain3.wav";
+    string strHoundeyeSoundPain4 = "houndeye/he_pain4.wav";
+    string strHoundeyeSoundPain5 = "houndeye/he_pain5.wav";
 
-string strAlienGruntModel = "models/agruntf.mdl";
-string strAlienGruntModelGibs = "models/fleshgibs.mdl";
-string strAlienGruntMuzzleFlash = "sprites/muz4.spr";
-string strAlienGruntSoundIdle1 = "agrunt/ag_idle1.wav";
-string strAlienGruntSoundIdle2 = "agrunt/ag_idle2.wav";
-string strAlienGruntSoundIdle3 = "agrunt/ag_idle3.wav";
-string strAlienGruntSoundIdle4 = "agrunt/ag_idle4.wav";
-string strAlienGruntSoundDie1 = "agrunt/ag_die1.wav";
-string strAlienGruntSoundDie4 = "agrunt/ag_die4.wav";
-string strAlienGruntSoundDie5 = "agrunt/ag_die5.wav";
-string strAlienGruntSoundPain1 = "agrunt/ag_pain1.wav";
-string strAlienGruntSoundPain2 = "agrunt/ag_pain2.wav";
-string strAlienGruntSoundPain3 = "agrunt/ag_pain3.wav";
-string strAlienGruntSoundPain4 = "agrunt/ag_pain4.wav";
-string strAlienGruntSoundPain5 = "agrunt/ag_pain5.wav";
-string strAlienGruntSoundAttack1 = "agrunt/ag_attack1.wav";
-string strAlienGruntSoundAttack2 = "agrunt/ag_attack2.wav";
-string strAlienGruntSoundAttack3 = "agrunt/ag_attack3.wav";
-string strAlienGruntSoundAlert1 = "agrunt/ag_alert1.wav";
-string strAlienGruntSoundAlert3 = "agrunt/ag_alert3.wav";
-string strAlienGruntSoundAlert4 = "agrunt/ag_alert4.wav";
-string strAlienGruntSoundAlert5 = "agrunt/ag_alert5.wav";
+// Pitdrone.
+    // Models/Sprites.
+    string strPitdroneModel = "models/pit_drone.mdl";
+    string strPitdroneModelGibs = "models/pit_drone_gibs.mdl";
+    string strPitdroneModelSpike = "models/pit_drone_spike.mdl";
+
+    // Sounds.
+    string strPitdroneSpikeTrail = "sprites/spike_trail.spr";
+    string strPitdroneSoundAttackSpike1 = "pitdrone/pit_drone_attack_spike1.wav";
+    string strPitdroneSoundAlert1 = "pitdrone/pit_drone_alert1.wav";
+    string strPitdroneSoundAlert2 = "pitdrone/pit_drone_alert2.wav"; 
+    string strPitdroneSoundAlert3 = "pitdrone/pit_drone_alert3.wav"; 
+    string strPitdroneSoundIdle1 = "pitdrone/pit_drone_idle1.wav";
+    string strPitdroneSoundIdle2 = "pitdrone/pit_drone_idle2.wav";
+    string strPitdroneSoundIdle3 = "pitdrone/pit_drone_idle3.wav";
+    string strPitdroneSoundDie1 = "pitdrone/pit_drone_die1.wav";
+    string strPitdroneSoundDie2 = "pitdrone/pit_drone_die2.wav";
+    string strPitdroneSoundDie3 = "pitdrone/pit_drone_die3.wav";
+    string strPitdroneSoundBite2 = "bullchicken/bc_bite2.wav";
+    string strPitdroneSoundPain1 = "pitdrone/pit_drone_pain1.wav";
+    string strPitdroneSoundPain2 = "pitdrone/pit_drone_pain2.wav";
+    string strPitdroneSoundPain3 = "pitdrone/pit_drone_pain3.wav";
+    string strPitdroneSoundPain4 = "pitdrone/pit_drone_pain4.wav";
+    string strPitdroneSoundMelee1 = "pitdrone/pit_drone_melee_attack1.wav";
+    string strPitdroneSoundMelee2 = "pitdrone/pit_drone_melee_attack2.wav";
+    string strPitdroneSoundEat = "pitdrone/pit_drone_eat.wav";
+
+// Bullsquid
+    // Models/Sprites.
+    string strBullsquidModel = "models/bullsquid.mdl";
+    string strBullsquidSpriteTinyspit = "sprites/tinyspit.spr";
+    string strBullsquidSpriteBigspit = "sprites/bigspit.spr";
+
+    // Sounds.
+    string strBullsquidAcid1 = "bullchicken/bc_acid1.wav";
+    string strBullsquidAcid2 = "bullchicken/bc_acid2.wav";
+    string strBullsquidAttack1 = "bullchicken/bc_attack1.wav";
+    string strBullsquidAttack2 = "bullchicken/bc_attack2.wav";
+    string strBullsquidAttack3 = "bullchicken/bc_attack3.wav";
+    string strBullsquidAttackGrowl = "bullchicken/bc_attackgrowl.wav";
+    string strBullsquidAttackGrowl2 = "bullchicken/bc_attackgrowl2.wav";
+    string strBullsquidAttackGrowl3 = "bullchicken/bc_attackgrowl3.wav";
+    string strBullsquidBite1 = "bullchicken/bc_bite1.wav";
+    string strBullsquidBite2 = "bullchicken/bc_bite2.wav";
+    string strBullsquidBite3 = "bullchicken/bc_bite3.wav";
+    string strBullsquidDie1 = "bullchicken/bc_die1.wav";
+    string strBullsquidDie2 = "bullchicken/bc_die2.wav";
+    string strBullsquidDie3 = "bullchicken/bc_die3.wav";
+    string strBullsquidIdle1 = "bullchicken/bc_idle1.wav";
+    string strBullsquidIdle2 = "bullchicken/bc_idle2.wav";
+    string strBullsquidIdle3 = "bullchicken/bc_idle3.wav";
+    string strBullsquidIdle4 = "bullchicken/bc_idle4.wav";
+    string strBullsquidIdle5 = "bullchicken/bc_idle5.wav";
+    string strBullsquidSoundPain1 = "bullchicken/bc_pain1.wav";
+    string strBullsquidSoundPain2 = "bullchicken/bc_pain2.wav";
+    string strBullsquidSoundPain3 = "bullchicken/bc_pain3.wav";
+    string strBullsquidSoundPain4 = "bullchicken/bc_pain4.wav";
+    string strBullsquidSpithit1 = "bullchicken/bc_spithit1.wav";
+    string strBullsquidSpithit2 = "bullchicken/bc_spithit2.wav";
+    string strBullsquidSpithit3 = "bullchicken/bc_spithit3.wav";
+
+// Shocktrooper.
+    // Models/Sprites.
+    string strShocktrooperModel = "models/strooper.mdl";
+    string strShocktrooperModelGibs = "models/strooper_gibs.mdl";
+    string strShocktrooperSpriteMuzzleshock = "sprites/muzzle_shock.spr";
+
+    // Sounds.
+    string strShocktrooperBlis = "shocktrooper/blis.wav";
+    string strShocktrooperDit = "shocktrooper/dit.wav";
+    string strShocktrooperDup = "shocktrooper/dup.wav";
+    string strShocktrooperGa = "shocktrooper/ga.wav";
+    string strShocktrooperHyu = "shocktrooper/hyu.wav";
+    string strShocktrooperKa = "shocktrooper/ka.wav";
+    string strShocktrooperKiml = "shocktrooper/kiml.wav";
+    string strShocktrooperKss = "shocktrooper/kss.wav";
+    string strShocktrooperKu = "shocktrooper/ku.wav";
+    string strShocktrooperKur = "shocktrooper/kur.wav";
+    string strShocktrooperKyur = "shocktrooper/kyur.wav";
+    string strShocktrooperMub = "shocktrooper/mub.wav";
+    string strShocktrooperPuh = "shocktrooper/puh.wav";
+    string strShocktrooperPur = "shocktrooper/pur.wav";
+    string strShocktrooperRas = "shocktrooper/ras.wav";
+    string strShocktrooperThirv = "shocktrooper/thirv.wav";
+    string strShocktrooperWirt = "shocktrooper/wirt.wav";
+    string strShocktrooperFire = "shocktrooper/shock_fire.wav";
+    string strShocktrooperAttack = "shocktrooper/shock_trooper_die1.wav";
+    string strShocktrooperDie1 = "shocktrooper/shock_trooper_die1.wav";
+    string strShocktrooperDie2 = "shocktrooper/shock_trooper_die2.wav";
+    string strShocktrooperDie3 = "shocktrooper/shock_trooper_die3.wav";
+    string strShocktrooperDie4 = "shocktrooper/shock_trooper_die4.wav";
+    string strShocktrooperPain1 = "shocktrooper/shock_trooper_pain1.wav";
+    string strShocktrooperPain2 = "shocktrooper/shock_trooper_pain2.wav";
+    string strShocktrooperPain3 = "shocktrooper/shock_trooper_pain3.wav";
+    string strShocktrooperPain4 = "shocktrooper/shock_trooper_pain4.wav";
+    string strShocktrooperPain5 = "shocktrooper/shock_trooper_pain5.wav";
+
+// Alien Grunt (Friendly). DISABLED FOR NOW.
+    // Models/Sprites.
+    string strAlienGruntModel = "models/agruntf.mdl";
+    string strAlienGruntModelGibs = "models/fleshgibs.mdl";
+    string strAlienGruntMuzzleFlash = "sprites/muz4.spr";
+
+    // Sounds.
+    string strAlienGruntSoundIdle1 = "agrunt/ag_idle1.wav";
+    string strAlienGruntSoundIdle2 = "agrunt/ag_idle2.wav";
+    string strAlienGruntSoundIdle3 = "agrunt/ag_idle3.wav";
+    string strAlienGruntSoundIdle4 = "agrunt/ag_idle4.wav";
+    string strAlienGruntSoundDie1 = "agrunt/ag_die1.wav";
+    string strAlienGruntSoundDie4 = "agrunt/ag_die4.wav";
+    string strAlienGruntSoundDie5 = "agrunt/ag_die5.wav";
+    string strAlienGruntSoundPain1 = "agrunt/ag_pain1.wav";
+    string strAlienGruntSoundPain2 = "agrunt/ag_pain2.wav";
+    string strAlienGruntSoundPain3 = "agrunt/ag_pain3.wav";
+    string strAlienGruntSoundPain4 = "agrunt/ag_pain4.wav";
+    string strAlienGruntSoundPain5 = "agrunt/ag_pain5.wav";
+    string strAlienGruntSoundAttack1 = "agrunt/ag_attack1.wav";
+    string strAlienGruntSoundAttack2 = "agrunt/ag_attack2.wav";
+    string strAlienGruntSoundAttack3 = "agrunt/ag_attack3.wav";
+    string strAlienGruntSoundAlert1 = "agrunt/ag_alert1.wav";
+    string strAlienGruntSoundAlert3 = "agrunt/ag_alert3.wav";
+    string strAlienGruntSoundAlert4 = "agrunt/ag_alert4.wav";
+    string strAlienGruntSoundAlert5 = "agrunt/ag_alert5.wav";
+
+/* -- Will be used on a zombie focused minion class.
+// Gonome.
+    // Models/Sprites.
+    string strGonomeModel = "models/gonome.mdl";
+    string strGonomeSpriteSpit = "sprites/blood_chnk.spr";
+
+    // Sounds.
+    string strGonomeSoundSpit1 = "bullchicken/bc_spithit1.wav";
+    string strGonomeSoundDeath2 = "gonome/gonome_death2.wav";
+    string strGonomeSoundDeath3 = "gonome/gonome_death3.wav";
+    string strGonomeSoundDeath4 = "gonome/gonome_death4.wav";
+    string strGonomeSoundIdle1 = "gonome/gonome_idle1.wav";
+    string strGonomeSoundIdle2 = "gonome/gonome_idle2.wav";
+    string strGonomeSoundIdle3 = "gonome/gonome_idle3.wav";
+    string strGonomeSoundPain1 = "gonome/gonome_pain1.wav";
+    string strGonomeSoundPain2 = "gonome/gonome_pain2.wav";
+    string strGonomeSoundPain3 = "gonome/gonome_pain3.wav";
+    string strGonomeSoundPain4 = "gonome/gonome_pain4.wav";
+    string strGonomeSoundMelee1 = "gonome/gonome_melee1.wav";
+    string strGonomeSoundMelee2 = "gonome/gonome_melee2.wav";
+    string strGonomeSoundRun = "gonome/gonome_run.wav";
+    string strGonomeSoundEat = "gonome/gonome_eat.wav";
+*/
 
 dictionary g_XenologistMinions;
 
 enum XenType
 {
-    XEN_PITDRONE = 0,
-    XEN_GONOME = 1,
-    XEN_ALIENGRUNT = 2
+    XEN_HOUNDEYE = 0,
+    XEN_PITDRONE = 1,
+    XEN_BULLSQUID = 2,
+    XEN_SHOCKTROOPER = 3,
+    //XEN_ALIENGRUNT = 4
 }
 
 const array<string> XEN_NAMES = 
 {
+    "Houndeye",
     "Pit Drone",
-    "Gonome",
-    "Alien Grunt"
+    "Bullsquid",
+    "Shocktrooper"
+    //"Alien Grunt"
     
 };
 
 const array<string> XEN_ENTITIES = 
 {
+    "monster_houndeye",
     "monster_pitdrone",
-    "monster_gonome",
-    "monster_alien_grunt"
+    "monster_bullchicken",
+    "monster_shocktrooper"
+    //"monster_alien_grunt"
     
 };
 
 const array<int> XEN_COSTS = // Going to leave this in just incase it becomes useful later on.
 {
-    1,  // Pitdrone.
-    1,  // Gonome.
-    1   // Alien Grunt.
+    1, // Houndeye.
+    1, // Pit Drone.
+    1, // Bullsquid.
+    1  // Shocktrooper.
 };
 
 // Health modifiers for each monster type, applied AFTER scaling, since we aren't using real monster base healths.
 const array<float> XEN_HEALTH_MODS = 
 {
-    1.0f,    // Pitdrone.
-    1.30f,    // Gonome.
-    1.30f     // Alien Grunt.
+    1.50f,    // Houndeye. Not very effective. fast.
+    1.25f,    // Pitdrone. Very effective. fast.
+    1.50f,    // Bullsquid. Very effective, slow.
+    1.15f    // Shocktrooper. Effective, medium.
+    //1.20f     // Alien Grunt. Effective, medium.
 };
 
-// Level requirements for each Xen creature type
+// Level requirements for each Xen creature type.
 const array<int> XEN_LEVEL_REQUIREMENTS = 
 {
-    1,    // Pitdrone.
-    15,   // Gonome.
-    20    // Alien Grunt.
+    1,    // Houndeye.
+    2,    // Pitdrone.
+    5,    // Bullsquid.
+    10   // Shocktrooper.
+//    20    // Alien Grunt.
 };
 
 class XenMinionData
@@ -120,9 +247,9 @@ class XenMinionData
     array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0;
-    private float m_flHealthScale = 0.15; // Health % scaling per level.
+    private float m_flHealthScale = 0.30; // Health % scaling per level.
     private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
-    private float m_flDamageScale = 0.1; // Damage % scaling per level.
+    private float m_flDamageScale = 0.10; // Damage % scaling per level.
     private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement 1)
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
@@ -250,9 +377,15 @@ class XenMinionData
             pXenMinion.pev.renderamt = 1; // Shell thickness.
             pXenMinion.pev.rendercolor = Vector(25, 100, 25); // Green.
 
+            g_EntityFuncs.DispatchSpawn(pXenMinion.edict()); // Dispatch the entity.
             @pXenMinion.pev.owner = @pPlayer.edict();
 
-            g_EntityFuncs.DispatchSpawn(pXenMinion.edict()); // Dispatch the entity.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pXenMinion);
+            if(pMonster !is null)
+            {
+                pMonster.m_flFieldOfView = -1.0; // -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
+            }
+
             m_hMinions.insertLast(EHandle(pXenMinion)); // Insert into minion list.
             m_CreatureTypes.insertLast(minionType); // Store type alongside handle.
             
@@ -357,14 +490,26 @@ class XenMinionData
             CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
             if(pMinion !is null)
             {
-                float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
+                // Cast to CBaseMonster to check monster-specific properties
+                CBaseMonster@ pMonster = cast<CBaseMonster@>(pMinion);
 
-                if(pMinion.pev.health < pMinion.pev.max_health)
+                // Check if minion is actually "alive". Deadflag of 0 means the monster is alive.
+                if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO)
                 {
-                    pMinion.pev.health = Math.min(pMinion.pev.health + flHealAmount, pMinion.pev.max_health); // Add health.
+                    float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
 
-                    if(pMinion.pev.health > pMinion.pev.max_health) 
-                        pMinion.pev.health = pMinion.pev.max_health; // Clamp to max health.
+                    if(pMinion.pev.health < pMinion.pev.max_health)
+                    {
+                        pMinion.pev.health = Math.min(pMinion.pev.health + flHealAmount, pMinion.pev.max_health); // Add health.
+
+                        if(pMinion.pev.health > pMinion.pev.max_health) 
+                            pMinion.pev.health = pMinion.pev.max_health; // Clamp to max health.
+                    }
+                }
+                else
+                {
+                    if(pMinion.pev.health > 0)
+                        pMinion.pev.health = 0; // Make sure their health is set to 0 if they are actually dead.
                 }
             }
         }
@@ -390,40 +535,82 @@ class XenMinionData
         return flScaledDamage;
     }
 
-    // Called when a minion deals damage to an enemy
+    // Called when a minion deals damage to an enemy.
     void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
             
-        // Check if the enhancement is unlocked
+        // Check if the enhancement is unlocked.
         if(m_pStats is null || !m_pStats.HasUnlockedEnhancement1())
             return;
 
-        // Calculate health to return to player
+        // Calculate health to return to player and minion.
         float flHealthToGive = flDamageDealt * m_flLifestealPercent;
         
-        // Apply the healing if the player isn't already at max health
+        // Apply the healing if the player isn't already at max health.
         if(pPlayer.pev.health < pPlayer.pev.max_health)
         {
             pPlayer.pev.health = Math.min(pPlayer.pev.health + flHealthToGive, pPlayer.pev.max_health);
             
-            // Optional: Provide visual feedback for the lifesteal effect
-            if(flHealthToGive >= 5.0f) // Only show for significant healing
+            // Visual feedback for the lifesteal effect - Heal sprites - Player.
+            Vector pos = pPlayer.pev.origin;
+            Vector mins = pos - Vector(16, 16, 0);
+            Vector maxs = pos + Vector(16, 16, 64);
+
+            NetworkMessage healeffect(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            healeffect.WriteByte(TE_BUBBLES);
+            healeffect.WriteCoord(mins.x);
+            healeffect.WriteCoord(mins.y);
+            healeffect.WriteCoord(mins.z);
+            healeffect.WriteCoord(maxs.x);
+            healeffect.WriteCoord(maxs.y);
+            healeffect.WriteCoord(maxs.z);
+            healeffect.WriteCoord(80.0f); // Height of the bubble effect
+            healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            healeffect.WriteByte(18); // Count
+            healeffect.WriteCoord(6.0f); // Speed
+            healeffect.End();
+        }
+        
+        // Find the active minion that dealt the damage (most likely the last one that dealt damage).
+        // Needs better tracking, currently heals all minions.
+        for(uint i = 0; i < m_hMinions.length(); i++)
+        {
+            CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
+            if(pMinion !is null)
             {
-                // Display small green glow effect on player to indicate healing
-                NetworkMessage healEffect(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
-                healEffect.WriteByte(TE_DLIGHT);
-                healEffect.WriteCoord(pPlayer.pev.origin.x);
-                healEffect.WriteCoord(pPlayer.pev.origin.y);
-                healEffect.WriteCoord(pPlayer.pev.origin.z);
-                healEffect.WriteByte(8); // Radius
-                healEffect.WriteByte(0); // Red
-                healEffect.WriteByte(255); // Green
-                healEffect.WriteByte(0); // Blue
-                healEffect.WriteByte(1); // Life in 0.1s
-                healEffect.WriteByte(200); // Decay rate in 0.1s
-                healEffect.End();
+                // Cast to CBaseMonster to check monster-specific properties.
+                CBaseMonster@ pMonster = cast<CBaseMonster@>(pMinion);
+                
+                // Only heal if the monster is alive.
+                if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO && pMinion.pev.health > 0)
+                {
+                    // Apply healing to the minion if it's not at max health.
+                    if(pMinion.pev.health < pMinion.pev.max_health)
+                    {
+                        pMinion.pev.health = Math.min(pMinion.pev.health + flHealthToGive, pMinion.pev.max_health);
+
+                        // Visual feedback for the lifesteal effect - Heal sprites - Minion.
+                        Vector pos = pMinion.pev.origin;
+                        Vector mins = pos - Vector(16, 16, 0);
+                        Vector maxs = pos + Vector(16, 16, 64);
+
+                        NetworkMessage healeffect(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                        healeffect.WriteByte(TE_BUBBLES);
+                        healeffect.WriteCoord(mins.x);
+                        healeffect.WriteCoord(mins.y);
+                        healeffect.WriteCoord(mins.z);
+                        healeffect.WriteCoord(maxs.x);
+                        healeffect.WriteCoord(maxs.y);
+                        healeffect.WriteCoord(maxs.z);
+                        healeffect.WriteCoord(80.0f); // Height of the bubble effect.
+                        healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+                        healeffect.WriteByte(18); // Count.
+                        healeffect.WriteCoord(6.0f); // Speed.
+                        healeffect.End();
+                    }
+                }
             }
         }
     }
@@ -457,8 +644,8 @@ class XenMinionData
             }
         }
 
-    g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
-    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creatures teleported!\n");
+        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creatures teleported!\n");
     }
 }
 
