@@ -14,7 +14,7 @@ namespace Menu
             @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
             m_pMenu.SetTitle("Dev Debug Menu\n");
             
-            m_pMenu.AddItem("Add 100 XP\n", any(0));
+            m_pMenu.AddItem("Add 1000 XP\n", any(0));
             m_pMenu.AddItem("Set Max Level\n", any(1));
             m_pMenu.AddItem("Reset Level\n", any(2));
             m_pMenu.AddItem("Fill Class Resource\n", any(3));
@@ -42,7 +42,7 @@ namespace Menu
                     
                     if(choice == 0 && stats !is null)
                     {
-                        stats.AddXP(100, pPlayer, data);
+                        stats.AddXP(1000, pPlayer, data);
                         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Added 100 XP to current class.\n");
                     }
                     else if(choice == 1 && stats !is null)
