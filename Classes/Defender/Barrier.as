@@ -4,13 +4,12 @@ string strBarrierBreakSound = "debris/bustglass2.wav";
 string strBarrierActiveSound = "ambience/alien_powernode.wav";
 
 string strBarrierBeamSprite = "sprites/zbeam4.spr";
-// Using global strRobogruntModelChromegibs from RobotMinion.as
 
-const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B
-const float BARRIER_PROTECTION_RANGE = 2400.0f; // Range in units for the barrier protection to work
+const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B.
+const float BARRIER_PROTECTION_RANGE = 2400.0f; // Range in units for the barrier protection to work.
 
 dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
-dictionary g_ProtectedPlayers; // Dictionary to track which players are currently protected by barriers and by whom
+dictionary g_ProtectedPlayers; // Dictionary to track which players are currently protected by barriers and by who.
 
 class BarrierData
 {
@@ -21,20 +20,20 @@ class BarrierData
     private float m_flBarrierDurabilityMultiplier = 1.0f; // % of total damage dealt to shield, lower = tougher.
     private float m_flLastDrainTime = 0.0f;
     private float m_flBarrierReflectDamageMultiplier = 0.5f; // Base damage reflect multiplier, how much of the damage is reflected back to attacker.
-    private float m_flBarrierReflectDamageScaling = 0.06f; // How much % to scale damage reflection per level.
+    private float m_flBarrierReflectDamageScaling = 0.04f; // How much % to scale damage reflection per level.
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
     private float m_flLastProtectionUpdateTime = 0.0f;
-    private float m_flProtectionUpdateInterval = 0.5f; // How often to update which players are protected
+    private float m_flProtectionUpdateInterval = 0.5f; // How often to update which players are protected.
 
     private float m_flRefundAmount = 0.0f;
     private float m_flRefundTimeLeft = 0.0f;
     private float m_flStoredEnergy = 0.0f;
     private float m_flRefundTime = 5.0f; // Time to refund energy, total / this.
     private float m_flRefundInterval = 1.0f; // Intervals to give refunded energy.
-    private float m_flLastRefundStartTime = 0.0f; // Track when the last refund started
+    private float m_flLastRefundStartTime = 0.0f; // Track when the last refund started.
 
-    private array<string> m_ProtectedPlayers; // Array of steamIDs for players this barrier is protecting
+    private array<string> m_ProtectedPlayers; // Array of steamIDs for players this barrier is protecting.
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
@@ -42,16 +41,16 @@ class BarrierData
     float GetBaseDamageReduction() { return m_flBarrierDamageReduction; }
     float GetBarrierDurabilityMultiplier() { return m_flBarrierDurabilityMultiplier; }
     
-    // Check if the barrier can protect teammates
+    // Check if the barrier can protect teammates.
     bool CanProtectTeammates() 
     { 
         return HasStats() && m_pStats.HasUnlockedEnhancement1();
     }
     
-    // Get all players currently protected by this barrier
+    // Get all players currently protected by this barrier.
     array<string>@ GetProtectedPlayers() { return m_ProtectedPlayers; }
     
-    // Check if this barrier is protecting a specific player
+    // Check if this barrier is protecting a specific player.
     bool IsProtectingPlayer(string steamID)
     {
         if (!m_bActive || !CanProtectTeammates())
@@ -81,7 +80,7 @@ class BarrierData
         
         // Apply damage reflection as a specific damage type.
         float reflectDamage = incomingDamage * GetScaledDamageReflection();
-        attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_SLOWFREEZE); // Apply the damage with the player as the attacker.
+        attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_TIMEBASED); // Apply the damage with the player as the attacker.
         
         // Play hit sound with random pitch.
         int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
@@ -141,7 +140,7 @@ class BarrierData
         int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
         g_SoundSystem.PlaySound(protectedPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
         
-        // Visual effects for the protected player - just ricochet effect, no glass break
+        // Origin for visual effects, direct towards protected, not barrier owner.
         Vector origin = protectedPlayer.pev.origin;
         
         // Create ricochet effect.
@@ -153,6 +152,7 @@ class BarrierData
         ricMsg.WriteByte(1); // Scale.
         ricMsg.End();
         
+        /* - Disabled this for now, not quite sure if it fits.
         // Draw a beam effect connecting the protected player to the barrier owner.
         NetworkMessage beamMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
         beamMsg.WriteByte(TE_BEAMENTPOINT);
@@ -172,6 +172,26 @@ class BarrierData
         beamMsg.WriteByte(128); // brightness.
         beamMsg.WriteByte(0); // speed.
         beamMsg.End();
+        */
+
+        // Add effect to chip off chunks as barrier takes damage for protected player.
+        NetworkMessage protectedbreakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+        protectedbreakMsg.WriteByte(TE_BREAKMODEL);
+        protectedbreakMsg.WriteCoord(origin.x);
+        protectedbreakMsg.WriteCoord(origin.y);
+        protectedbreakMsg.WriteCoord(origin.z);
+        protectedbreakMsg.WriteCoord(3); // Size.
+        protectedbreakMsg.WriteCoord(3); // Size.
+        protectedbreakMsg.WriteCoord(3); // Size.
+        protectedbreakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+        protectedbreakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+        protectedbreakMsg.WriteCoord(5); // Gib vel pos Up/Down.
+        protectedbreakMsg.WriteByte(20); // Gib random speed and direction.
+        protectedbreakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+        protectedbreakMsg.WriteByte(2); // Count.
+        protectedbreakMsg.WriteByte(10); // Lifetime.
+        protectedbreakMsg.WriteByte(1); // Sound Flags.
+        protectedbreakMsg.End();
         
         // Drain energy from the barrier owner.
         DrainEnergy(barrierOwner, blockedDamage);
@@ -210,7 +230,7 @@ class BarrierData
 
         if(!m_bActive)
         {
-            // Check energy - require FULL energy to activate
+            // Check energy - require FULL energy to activate,
             float currentEnergy = float(resources['current']);
             float maxEnergy = float(resources['max']);
             
@@ -220,8 +240,8 @@ class BarrierData
                 return;
             }
             
-            // Check if this player was being protected by someone else's barrier
-            // and remove that protection since they're activating their own
+            // Check if this player was being protected by someone else's barrier,
+            // and remove that protection since they're activating their own,
             string playerSteamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             HandlePlayerActivatedOwnBarrier(playerSteamID);
 
@@ -245,8 +265,8 @@ class BarrierData
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Refunded!\n"); // MANUALLY SHATTERED.
             EffectBarrierShatter(pPlayer.pev.origin);
             
-            // Remove protection from all protected players with visual effects
-            RemoveAllProtections(pPlayer, false); // false means show visual effects
+            // Remove protection from all protected players with visual effects.
+            RemoveAllProtections(pPlayer, false); // false means show visual effects.
         }
 
         m_flLastToggleTime = currentTime;
@@ -368,7 +388,7 @@ class BarrierData
             {
                 // Player went out of range, remove protection
                 g_ProtectedPlayers.delete(targetSteamID);
-                RemoveProtectionGlow(pTarget);
+                RemoveProtectionEffects(pTarget);
             }
         }
     }
@@ -418,7 +438,7 @@ class BarrierData
         }
     }
     
-    // Remove all protected players when barrier is deactivated
+    // Remove all protected players when barrier is deactivated.
     void RemoveAllProtections(CBasePlayer@ barrierOwner, bool useQuiet = true)
     {
         if (!CanProtectTeammates() || m_ProtectedPlayers.length() == 0)
@@ -432,16 +452,16 @@ class BarrierData
             if (g_ProtectedPlayers.exists(targetSteamID))
                 g_ProtectedPlayers.delete(targetSteamID);
                 
-            // Remove visual effect with break animation
+            // Remove visual effect with break animation.
             for (int j = 1; j <= g_Engine.maxClients; j++)
             {
                 CBasePlayer@ pTarget = g_PlayerFuncs.FindPlayerByIndex(j);
                 if (pTarget !is null && g_EngineFuncs.GetPlayerAuthId(pTarget.edict()) == targetSteamID)
                 {
                     if (useQuiet)
-                        RemoveProtectionGlowQuiet(pTarget);
+                        RemoveProtectionEffectsQuiet(pTarget);
                     else
-                        RemoveProtectionGlow(pTarget);
+                        RemoveProtectionEffects(pTarget);
                     break;
                 }
             }
@@ -496,92 +516,70 @@ class BarrierData
             breakMsg.End();
     }
     
-    // Remove barrier glow effect from protected player with visual effect
-    private void RemoveProtectionGlow(CBasePlayer@ pPlayer)
+    // Remove barrier effects from protected player with shield breaking effect.
+    private void RemoveProtectionEffects(CBasePlayer@ pPlayer)
     {
         if (pPlayer is null)
             return;
             
-        // Reset rendering
+        // Reset rendering.
         pPlayer.pev.renderfx = kRenderFxNone;
         pPlayer.pev.rendermode = kRenderNormal;
         pPlayer.pev.renderamt = 255;
         pPlayer.pev.rendercolor = Vector(255, 255, 255);
         
-        // Apply barrier break visual effect
-        EffectProtectionBreak(pPlayer.pev.origin);
+        // Apply barrier break visual effect.
+        EffectBarrierShatter(pPlayer.pev.origin);
         
-        // Play break sound with lower volume for protection
+        // Play break sound with lower volume for protection.
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 0.7f, ATTN_NORM, 0, PITCH_NORM);
         
-        // Notify player that protection is gone
+        // Notify player that protection is gone.
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No longer protected by Ice Shield!\n");
     }
     
-    // Remove barrier glow effect without visual effects (for routine checks)
-    private void RemoveProtectionGlowQuiet(CBasePlayer@ pPlayer)
+    // Remove barrier glow effect without barrier break effect (for checks).
+    private void RemoveProtectionEffectsQuiet(CBasePlayer@ pPlayer)
     {
         if (pPlayer is null)
             return;
             
-        // Reset rendering
+        // Reset rendering.
         pPlayer.pev.renderfx = kRenderFxNone;
         pPlayer.pev.rendermode = kRenderNormal;
         pPlayer.pev.renderamt = 255;
         pPlayer.pev.rendercolor = Vector(255, 255, 255);
         
-        // Notify player that protection is gone
+        // Notify player that protection is gone.
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No longer protected by Ice Shield!\n");
     }
     
-    // Effect for when protection ends
-    private void EffectProtectionBreak(Vector origin)
-    {
-        NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
-            breakMsg.WriteByte(TE_BREAKMODEL);
-            breakMsg.WriteCoord(origin.x);
-            breakMsg.WriteCoord(origin.y);
-            breakMsg.WriteCoord(origin.z);
-            breakMsg.WriteCoord(3); // Size - smaller than full barrier
-            breakMsg.WriteCoord(3); // Size
-            breakMsg.WriteCoord(3); // Size
-            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back
-            breakMsg.WriteCoord(0); // Gib vel pos Left/Right
-            breakMsg.WriteCoord(5); // Gib vel pos Up/Down
-            breakMsg.WriteByte(15); // Gib random speed and direction - less than full barrier
-            breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-            breakMsg.WriteByte(8); // Count - fewer particles than full barrier
-            breakMsg.WriteByte(10); // Lifetime
-            breakMsg.WriteByte(1); // Sound Flags
-            breakMsg.End();
-    }
-    
-    // Remove a specific player from protection
+    // Remove a specific player from protection.
     void RemovePlayerFromProtection(string playerSteamID)
     {
-        // Find and remove player from the protection list
+        // Find and remove player from the protection list.
         int index = m_ProtectedPlayers.find(playerSteamID);
         if (index >= 0)
         {
             m_ProtectedPlayers.removeAt(index);
             
-            // Find player and remove visual effects
+            // Find player and remove visual effects.
             for (int i = 1; i <= g_Engine.maxClients; i++)
             {
                 CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
                 if (pPlayer !is null && g_EngineFuncs.GetPlayerAuthId(pPlayer.edict()) == playerSteamID)
                 {
-                    RemoveProtectionGlow(pPlayer);
+                    RemoveProtectionEffects(pPlayer);
                     break;
                 }
             }
         }
     }
     
-    // Handle a player activating their own barrier
+    // Handle a player activating their own barrier.
     void HandlePlayerActivatedOwnBarrier(string playerSteamID)
     {
-        // If this player is being protected by someone else, remove that protection
+        // If this player is being protected by someone else, remove that protection.
         if (g_ProtectedPlayers.exists(playerSteamID))
         {
             string protectorSteamID = string(g_ProtectedPlayers[playerSteamID]);
@@ -594,7 +592,7 @@ class BarrierData
                 }
             }
             
-            // Remove from global protection list
+            // Remove from global protection list.
             g_ProtectedPlayers.delete(playerSteamID);
         }
     }
@@ -655,27 +653,6 @@ class BarrierData
             breakMsg.End();
     }
 
-    private void EffectBarrierToggle(Vector origin)
-    {
-        NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
-            breakMsg.WriteByte(TE_BREAKMODEL);
-            breakMsg.WriteCoord(origin.x);
-            breakMsg.WriteCoord(origin.y);
-            breakMsg.WriteCoord(origin.z);
-            breakMsg.WriteCoord(3); // Size.
-            breakMsg.WriteCoord(3); // Size.
-            breakMsg.WriteCoord(3); // Size.
-            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
-            breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
-            breakMsg.WriteCoord(0); // Gib vel pos Up/Down.
-            breakMsg.WriteByte(10); // Gib random speed and direction.
-            breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-            breakMsg.WriteByte(3); // Count.
-            breakMsg.WriteByte(10); // Lifetime.
-            breakMsg.WriteByte(1); // Sound Flags.
-            breakMsg.End();
-    }
-
     void StartResourceRefund(CBasePlayer@ pPlayer)
     {
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -731,19 +708,19 @@ void BarrierRefund(string steamID, float refundAmount, float startTime)
     g_Scheduler.RemoveTimer(g_Scheduler.GetCurrentFunction());
 }
 
-// Remove barrier glow effect from protected player without visual effects (for routine checks)
-void RemoveProtectionGlowQuiet(CBasePlayer@ pPlayer)
+// Remove barrier glow effect from protected player without visual effects (used for checks).
+void RemoveProtectionEffectsQuiet(CBasePlayer@ pPlayer)
 {
     if (pPlayer is null)
         return;
         
-    // Reset rendering
+    // Reset rendering.
     pPlayer.pev.renderfx = kRenderFxNone;
     pPlayer.pev.rendermode = kRenderNormal;
     pPlayer.pev.renderamt = 255;
     pPlayer.pev.rendercolor = Vector(255, 255, 255);
     
-    // Notify player that protection is gone
+    // Notify player that protection is gone.
     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No longer protected by Ice Shield!\n");
 }
 
@@ -755,7 +732,7 @@ bool IsPlayerProtectedByBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker)
         
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     
-    // If player has an active barrier, they can't be protected by others
+    // If player has an active barrier, they can't be protected by others.
     if(g_PlayerBarriers.exists(steamID))
     {
         BarrierData@ ownBarrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
@@ -763,12 +740,12 @@ bool IsPlayerProtectedByBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker)
             return false;
     }
     
-    // Check if player is being protected
+    // Check if player is being protected.
     if(g_ProtectedPlayers.exists(steamID))
     {
         string protectorSteamID = string(g_ProtectedPlayers[steamID]);
         
-        // Verify the protector still has an active barrier
+        // Verify the protector still has an active barrier.
         if(g_PlayerBarriers.exists(protectorSteamID))
         {
             BarrierData@ protectorBarrier = cast<BarrierData@>(g_PlayerBarriers[protectorSteamID]);
@@ -776,17 +753,17 @@ bool IsPlayerProtectedByBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker)
                 return true;
         }
         
-        // If we reached here, the protection is no longer valid, so remove it
+        // If we reached here, the protection is no longer valid, so remove it.
         g_ProtectedPlayers.delete(steamID);
         
-        // Find player and remove visual effects without showing break effect
+        // Find player and remove visual effects without showing break effect.
         for(int i = 1; i <= g_Engine.maxClients; i++)
         {
             CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
             if(tempPlayer !is null && g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict()) == steamID)
             {
-                // Use the quiet version that doesn't play visual effects
-                RemoveProtectionGlowQuiet(tempPlayer);
+                // Use the quiet version that doesn't play visual effects.
+                RemoveProtectionEffectsQuiet(tempPlayer);
                 break;
             }
         }
@@ -795,7 +772,7 @@ bool IsPlayerProtectedByBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker)
     return false;
 }
 
-// Handle damage for a player protected by someone else's barrier
+// Handle damage for a player protected by someone else's barrier.
 void HandleProtectedPlayerDamage(CBasePlayer@ pPlayer, CBaseEntity@ attacker, DamageInfo@ pDamageInfo)
 {
     if(pPlayer is null || attacker is null || pDamageInfo is null)
@@ -809,7 +786,7 @@ void HandleProtectedPlayerDamage(CBasePlayer@ pPlayer, CBaseEntity@ attacker, Da
     if(!g_PlayerBarriers.exists(protectorSteamID))
         return;
         
-    // Find the protector player
+    // Find the protector player.
     CBasePlayer@ protector = null;
     for(int i = 1; i <= g_Engine.maxClients; i++)
     {
@@ -827,15 +804,15 @@ void HandleProtectedPlayerDamage(CBasePlayer@ pPlayer, CBaseEntity@ attacker, Da
     BarrierData@ protectorBarrier = cast<BarrierData@>(g_PlayerBarriers[protectorSteamID]);
     if(protectorBarrier !is null && protectorBarrier.IsActive() && protectorBarrier.CanProtectTeammates())
     {
-        // Let the barrier handle protection for this player
+        // Let the barrier handle protection for this player.
         protectorBarrier.HandleProtectedDamage(pPlayer, protector, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
     }
 }
 
-// Utility function to remove protection effects from a player by steamID
+// Utility function to remove protection effects from a player by steamID.
 void RemoveProtectionFromPlayer(string playerSteamID)
 {
-    // Find the player and remove the visual effects
+    // Find the player and remove the visual effects.
     for(int i = 1; i <= g_Engine.maxClients; i++)
     {
         CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
@@ -853,39 +830,39 @@ void RemoveProtectionFromPlayer(string playerSteamID)
                 breakMsg.WriteCoord(pPlayer.pev.origin.x);
                 breakMsg.WriteCoord(pPlayer.pev.origin.y);
                 breakMsg.WriteCoord(pPlayer.pev.origin.z);
-                breakMsg.WriteCoord(3); // Size - smaller than full barrier
-                breakMsg.WriteCoord(3); // Size
-                breakMsg.WriteCoord(3); // Size
-                breakMsg.WriteCoord(0); // Gib vel pos Forward/Back
-                breakMsg.WriteCoord(0); // Gib vel pos Left/Right
-                breakMsg.WriteCoord(5); // Gib vel pos Up/Down
-                breakMsg.WriteByte(15); // Gib random speed and direction - less than full barrier
+                breakMsg.WriteCoord(3); // Size - smaller than full barrier.
+                breakMsg.WriteCoord(3); // Size.
+                breakMsg.WriteCoord(3); // Size.
+                breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
+                breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
+                breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
+                breakMsg.WriteByte(15); // Gib random speed and direction - less than full barrier.
                 breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
-                breakMsg.WriteByte(8); // Count - fewer particles than full barrier
-                breakMsg.WriteByte(10); // Lifetime
-                breakMsg.WriteByte(1); // Sound Flags
+                breakMsg.WriteByte(8); // Count - fewer particles than full barrier.
+                breakMsg.WriteByte(10); // Lifetime.
+                breakMsg.WriteByte(1); // Sound Flags.
                 breakMsg.End();
                 
-            // Play break sound with lower volume
+            // Play break sound with lower volume.
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierBreakSound, 0.7f, ATTN_NORM, 0, PITCH_NORM);
             
-            // Notify player
+            // Notify player.
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No longer protected by Ice Shield!\n");
             break;
         }
     }
 }
 
-// Clean up protection for a player who disconnected or changed class
+// Clean up protection for a player who disconnected or changed class.
 void CleanupPlayerBarrierProtection(string playerSteamID)
 {
-    // If they were protecting others, remove that protection
+    // If they were protecting others, remove that protection.
     if(g_PlayerBarriers.exists(playerSteamID))
     {
         BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[playerSteamID]);
         if(barrier !is null)
         {
-            // Find the player object if possible (might be null if disconnected)
+            // Find the player object if possible (might be null if disconnected).
             CBasePlayer@ pPlayer = null;
             for(int i = 1; i <= g_Engine.maxClients; i++)
             {
@@ -901,7 +878,7 @@ void CleanupPlayerBarrierProtection(string playerSteamID)
         }
     }
     
-    // If they were being protected by someone else, remove that protection
+    // If they were being protected by someone else, remove that protection.
     if(g_ProtectedPlayers.exists(playerSteamID))
     {
         string protectorSteamID = string(g_ProtectedPlayers[playerSteamID]);
@@ -916,14 +893,14 @@ void CleanupPlayerBarrierProtection(string playerSteamID)
             }
         }
         
-        // Find player and reset rendering if they're still connected
+        // Find player and reset rendering if they're still connected.
         for(int i = 1; i <= g_Engine.maxClients; i++)
         {
             CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
             if(tempPlayer !is null && g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict()) == playerSteamID)
             {
-                // Use the quiet version without effects for cleanup
-                RemoveProtectionGlowQuiet(tempPlayer);
+                // Use the quiet version without effects for cleanup.
+                RemoveProtectionEffectsQuiet(tempPlayer);
                 break;
             }
         }

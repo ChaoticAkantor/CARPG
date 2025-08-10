@@ -287,8 +287,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 MinionData@ minionData = cast<MinionData@>(g_PlayerMinions[steamID]);
                                 if(minionData !is null)
                                 {
-                                    // Show the robot count.
-                                    resourceInfo += "[Robogrunts: " + minionData.GetMinionCount() + "]";
+                                    // Show the minion count.
+                                    //resourceInfo += "[Robogrunts: " + minionData.GetMinionCount() + "]";
                                     
                                     // Add individual minion health info.
                                     array<EHandle>@ minions = minionData.GetMinions();
@@ -300,8 +300,12 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                             CBaseEntity@ pMinion = minions[minionIndex].GetEntity();
                                             if(pMinion !is null)
                                             {
-                                                float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
-                                                resourceInfo += "[" + int(healthPercent) + "%] ";
+                                                // Changed it from a percentage to a flat value display for now.
+                                                //float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
+                                                //resourceInfo += "[" + int(healthPercent) + "%] ";
+
+                                                float healthFlat = (pMinion.pev.health);
+                                                resourceInfo += "[Robogrunt: " + int(healthFlat) + " HP] "; // Don't need minion names for this one.
                                             }
                                         }
                                     }
@@ -424,8 +428,9 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             {
                                 XenMinionData@ minionData = cast<XenMinionData@>(g_XenologistMinions[steamID]);
                                 if(minionData !is null)
-                                {
-                                    resourceInfo += "[Creatures: " + minionData.GetMinionCount() + "]";
+                                {   
+                                    // Show the minion count.
+                                    //resourceInfo += "[Creatures: " + minionData.GetMinionCount() + "]";
                                     
                                     array<EHandle>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
@@ -436,8 +441,25 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                             CBaseEntity@ pMinion = minions[minionIndex].GetEntity();
                                             if(pMinion !is null)
                                             {
-                                                float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
-                                                resourceInfo += "[" + int(healthPercent) + "%] ";
+                                                // Changed it from a percentage to a flat value display for now.
+                                                //float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
+                                                //resourceInfo += "[" + int(healthPercent) + "%] ";
+
+                                                // Get the minion type from the stored array, need this for Xenomancer but not for Robomancer.
+                                                int minionType = -1;
+                                                if(minionIndex < minionData.m_CreatureTypes.length())
+                                                {
+                                                    minionType = minionData.m_CreatureTypes[minionIndex];
+                                                }
+                                                
+                                                string minionName = "Xen Creature"; // Fallback.
+                                                if(minionType >= 0 && uint(minionType) < XEN_NAMES.length())
+                                                {
+                                                    minionName = XEN_NAMES[minionType];
+                                                }
+                                                
+                                                float healthFlat = (pMinion.pev.health);
+                                                resourceInfo += "[" + minionName + ": " + int(healthFlat) + " HP] ";
                                             }
                                         }
                                     }

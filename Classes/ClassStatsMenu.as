@@ -111,9 +111,9 @@ namespace Menu
                     case PlayerClass::CLASS_XENOMANCER:
                     {
                         if(m_pStats.HasUnlockedEnhancement1())
-                            BaseStatsText += "Xen Pact: Creatures return 10% of damage dealt as health to owner.\n";
+                            BaseStatsText += "Xen Pact: Creatures heal you for 10% of their damage.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
+                            BaseStatsText += "Xen Pact - < LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
@@ -147,9 +147,9 @@ namespace Menu
                     case PlayerClass::CLASS_DEFENDER:
                     {
                         if(m_pStats.HasUnlockedEnhancement1())
-                            BaseStatsText += "Protector - Ice Shield also shields nearby teammates, transfering damage taken to you.\n";
+                            BaseStatsText += "Protector - Your Ice shield also protects nearby teammates.\n";
                         else
-                            BaseStatsText += "< LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
+                            BaseStatsText += "Protector - < LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " >\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
@@ -257,8 +257,8 @@ namespace Menu
                     if(roboMinion !is null)
                     {
                         string EngineerStatsText = "=== Robogrunts: ===" + "\n" + 
-                        "Health: " + int(roboMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage: " + int(roboMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
+                        "Base Health: " + int(roboMinion.GetScaledHealth()) + " HP\n" + 
+                        "Damage Multiplier: " + int(roboMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
@@ -270,8 +270,8 @@ namespace Menu
                     if(xenMinion !is null)
                     {
                         string XenologistStatsText = "=== Creatures: ===" + "\n" + 
-                        "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage: " + int(xenMinion.GetScaledDamage() * 100 + 100) + "%\n";
+                        "Base Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
+                        "Damage Multiplier: " + int(xenMinion.GetScaledDamage() * 100 + 100) + "%\n";
                         
                         // Show lifesteal percentage only if Enhancement 1 is unlocked
                         float lifestealPercent = xenMinion.GetLifestealPercent();

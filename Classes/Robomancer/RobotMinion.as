@@ -8,22 +8,21 @@ string strRobogruntRope = "sprites/rope.spr";
 string strRobogruntModelChromegibs = "models/chromegibs.mdl";
 string strRobogruntModelComputergibs = "models/computergibs.mdl";
 
-// Minion Sounds.
-//  Death.
+//  Death Sounds.
 string strRobogruntSoundDeath = "turret/tu_die.wav";
 string strRobogruntSoundDeath2 = "turret/tu_die2.wav";
 
-// Interaction.
+// Interaction Sounds.
 string strRobogruntSoundButton2 = "buttons/button2.wav";
 string strRobogruntSoundButton3 = "buttons/button3.wav";
 
-//  Alert.
+//  Alert Sounds.
 string strRobogruntSoundBeam = "debris/beamstart14.wav";
 
-// Repair (Wrench heal).
+// Repair (Wrench heal) Sound.
 string strRobogruntSoundRepair = "debris/metal6.wav";
 
-// Weapons.
+// Weapons Sounds.
 string strRobogruntSoundMP5 = "hgrunt/gr_mgun1.wav";
 string strRobogruntSoundM16 = "weapons/m16_3round.wav";
 string strRobogruntSoundReload = "hgrunt/gr_reload1.wav";
@@ -31,30 +30,27 @@ string strRobogruntSoundReload = "hgrunt/gr_reload1.wav";
 // Kick. 
 string strRobogruntSoundKick = "zombie/claw_miss2.wav";
 
-// Flags
-const int SF_MONSTER_START_ACTIVE = 32;  // Start active without trigger
-
 dictionary g_PlayerMinions;
 
 enum MinionType // Minion gun type. Not all are supported.
 {
-    MINION_MP5 = 3, // MP5 + HG
-    MINION_SHOTGUN = 10, // Shotgun + HG
-    MINION_M16 = 5 // M16 + GL
+    MINION_MP5 = 3, // MP5 + HG.
+    MINION_SHOTGUN = 10, // Shotgun + HG.
+    MINION_M16 = 5 // M16 + GL.
 }
 
 const array<string> MINION_NAMES = 
 {
-    "MP5 Robogrunt",      // Keyvalue weapons(0)
-    "Shotgun Robogrunt",  // Keyvalue weapons(8)
-    "M16 Robogrunt"       // Keyvalue weapons(4)
+    "MP5 Robogrunt",      // Keyvalue weapons(0).
+    "Shotgun Robogrunt",  // Keyvalue weapons(8).
+    "M16 Robogrunt"       // Keyvalue weapons(4).
 };
 
 const array<int> MINION_COSTS = 
 {
-    1,  // MP5
-    2,  // Shotgun
-    2   // M16
+    1,  // MP5.
+    1,  // Shotgun.
+    2   // M16.
 };
 
 class MinionData
@@ -63,10 +59,10 @@ class MinionData
     private array<EHandle> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
-    private float m_flHealthScale = 0.1; // Health % scaling per level. Robogrunts have natural armor and don't get health increases per tier like Xeno.
+    private float m_flHealthScale = 0.1; // Health % scaling per level. Robogrunts are armored.
     private float m_flHealthRegen = 0.01; // Health recovery % per second of Robogrunts.
     private float m_flDamageScale = 0.1; // Damage % scaling per level.
-    private int m_iMinionResourceCost = 1; // Cost to summon 1 minion. Init.
+    private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
@@ -165,21 +161,23 @@ class MinionData
         keys["is_player_ally"] = "1";
         keys["skin"] = "2";
 
-        CBaseEntity@ pNewMinion = g_EntityFuncs.CreateEntity("monster_robogrunt", keys, true);
-        if(pNewMinion !is null)
+        CBaseEntity@ pRoboMinion = g_EntityFuncs.CreateEntity("monster_robogrunt", keys, true);
+        if(pRoboMinion !is null)
         {
             // Make them glow green.
-            pNewMinion.pev.renderfx = kRenderFxGlowShell; // Effect.
-            pNewMinion.pev.rendermode = kRenderNormal; // Render mode.
-            pNewMinion.pev.renderamt = 1; // Shell thickness.
-            pNewMinion.pev.rendercolor = Vector(20, 180, 20); // Green.
+            pRoboMinion.pev.renderfx = kRenderFxGlowShell; // Effect.
+            pRoboMinion.pev.rendermode = kRenderNormal; // Render mode.
+            pRoboMinion.pev.renderamt = 1; // Shell thickness.
+            pRoboMinion.pev.rendercolor = Vector(20, 180, 20); // Green.
 
-            g_EntityFuncs.DispatchSpawn(pNewMinion.edict()); // Dispatch the entity.
+            @pRoboMinion.pev.owner = @pPlayer.edict();
+
+            g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
             
             // Debug print the actual health after spawning
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Robot spawned with health: " + pNewMinion.pev.health + " / " + pNewMinion.pev.max_health + "\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Robot spawned with health: " + pRoboMinion.pev.health + " / " + pRoboMinion.pev.max_health + "\n");
 
-            m_hMinions.insertLast(EHandle(pNewMinion)); //Insert into minion list.
+            m_hMinions.insertLast(EHandle(pRoboMinion)); //Insert into minion list.
             
             m_flReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
             current -= MINION_COSTS[minionType]; // Subtract from current resources.

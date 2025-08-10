@@ -123,16 +123,16 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 1.0f;
-                    def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.06f; // 4 points at level 50.
+                    def.baseResource = 2.0f; // 2 Minions max. Has access to 3 different weapon types and all have grenades.
+                    def.fullRegenTime = 120.0f;
+                    def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 1.0f;
-                    def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.06f; // 4 points at level 50.
+                    def.baseResource = 2.0f; // 2 Minions max. Has access to many monster types!
+                    def.fullRegenTime = 120.0f;
+                    def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 150.0f; // Berserkers have higher base HP.
@@ -159,7 +159,7 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 20.0f; // Cloak battery (duration).
-                    def.fullRegenTime = 25.0f;
+                    def.fullRegenTime = 15.0f;
                     def.energyPerLevel = 0.04f; // 60s at level 50.
                     break;
                 case PlayerClass::CLASS_VANQUISHER:

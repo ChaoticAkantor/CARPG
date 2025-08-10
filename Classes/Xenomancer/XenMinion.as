@@ -90,14 +90,14 @@ const array<string> XEN_ENTITIES =
     
 };
 
-const array<int> XEN_COSTS = 
+const array<int> XEN_COSTS = // Going to leave this in just incase it becomes useful later on.
 {
     1,  // Pitdrone.
-    2,  // Gonome.
-    2   // Alien Grunt.
+    1,  // Gonome.
+    1   // Alien Grunt.
 };
 
-// Health modifiers for each Xen creature type, applied AFTER scaling.
+// Health modifiers for each monster type, applied AFTER scaling, since we aren't using real monster base healths.
 const array<float> XEN_HEALTH_MODS = 
 {
     1.0f,    // Pitdrone.
@@ -105,11 +105,19 @@ const array<float> XEN_HEALTH_MODS =
     1.30f     // Alien Grunt.
 };
 
+// Level requirements for each Xen creature type
+const array<int> XEN_LEVEL_REQUIREMENTS = 
+{
+    1,    // Pitdrone.
+    15,   // Gonome.
+    20    // Alien Grunt.
+};
+
 class XenMinionData
 {
     private XenMinionMenu@ m_pMenu;
     private array<EHandle> m_hMinions;
-    private array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
+    array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0;
     private float m_flHealthScale = 0.15; // Health % scaling per level.
@@ -125,7 +133,7 @@ class XenMinionData
 
     bool IsActive() 
     { 
-        // The minions are active if there are any in the list
+        // The minions are active if there are any in the list.
         return m_hMinions.length() > 0;
     }
 
@@ -139,11 +147,21 @@ class XenMinionData
 
     float GetLifestealPercent() 
     { 
-        // Only return lifesteal percent if Enhancement 1 is unlocked
+        // Only return lifesteal percent if Enhancement 1 is unlocked.
         return (m_pStats !is null && m_pStats.HasUnlockedEnhancement1()) ? m_flLifestealPercent : 0.0f;
     }
 
     bool HasStats() { return m_pStats !is null; }
+    
+    bool IsMinionTypeUnlocked(int minionType)
+    {
+        if(m_pStats is null)
+            return minionType == XEN_PITDRONE; // Only allow Pitdrones if no stats
+            
+        int playerLevel = m_pStats.GetLevel();
+        return playerLevel >= XEN_LEVEL_REQUIREMENTS[minionType];
+    }
+    
     array<EHandle>@ GetMinions() { return m_hMinions; }
 
     XenMinionData() 
@@ -178,11 +196,11 @@ class XenMinionData
         // Check resources for spawning new minion.
         if(current < XEN_COSTS[minionType])
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough reserve for " + XEN_NAMES[minionType] + "!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + XEN_NAMES[minionType] + "!\n");
             return;
         }
 
-        // Initialize stats if needed
+        // Initialize stats if needed.
         if(m_pStats is null)
         {
             if(g_PlayerRPGData.exists(steamID))
@@ -194,6 +212,13 @@ class XenMinionData
                 }
             }
         }
+        
+        // Check if the minion type is unlocked based on player level
+        if(!IsMinionTypeUnlocked(minionType))
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + XEN_NAMES[minionType] + " requires Lv. " + XEN_LEVEL_REQUIREMENTS[minionType] + "!\n");
+            return;
+        }
 
         Vector vecSrc = pPlayer.GetGunPosition();
         Vector spawnForward, spawnRight, spawnUp;
@@ -202,7 +227,6 @@ class XenMinionData
         vecSrc = vecSrc + (spawnForward * 64);
         vecSrc.z -= 32;
 
-        // Keep existing health/damage multipliers
         float scaledHealth = GetScaledHealth(minionType);
         float scaledDamage = GetScaledDamage();
         
@@ -217,17 +241,19 @@ class XenMinionData
         keys["spawnflag"] = "32";
         keys["is_player_ally"] = "1";
 
-        CBaseEntity@ pNewMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
-        if(pNewMinion !is null)
+        CBaseEntity@ pXenMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
+        if(pXenMinion !is null)
         {
             // Make them glow green.
-            pNewMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
-            pNewMinion.pev.rendermode = kRenderNormal; // Render mode.
-            pNewMinion.pev.renderamt = 1; // Shell thickness.
-            pNewMinion.pev.rendercolor = Vector(25, 100, 25); // Green.
+            pXenMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
+            pXenMinion.pev.rendermode = kRenderNormal; // Render mode.
+            pXenMinion.pev.renderamt = 1; // Shell thickness.
+            pXenMinion.pev.rendercolor = Vector(25, 100, 25); // Green.
 
-            g_EntityFuncs.DispatchSpawn(pNewMinion.edict()); // Dispatch the entity.
-            m_hMinions.insertLast(EHandle(pNewMinion)); // Insert into minion list.
+            @pXenMinion.pev.owner = @pPlayer.edict();
+
+            g_EntityFuncs.DispatchSpawn(pXenMinion.edict()); // Dispatch the entity.
+            m_hMinions.insertLast(EHandle(pXenMinion)); // Insert into minion list.
             m_CreatureTypes.insertLast(minionType); // Store type alongside handle.
             
             m_flReservePool += XEN_COSTS[minionType]; // Add to reserve pool when minion is created.
@@ -455,7 +481,19 @@ class XenMinionMenu
         
         for(uint i = 0; i < XEN_NAMES.length(); i++) 
         {
-            m_pMenu.AddItem("Summon " + XEN_NAMES[i] + " (Cost: " + XEN_COSTS[i] + ")\n", any(i));
+            string menuText = "";
+
+            // Check if this minion type is unlocked.
+            if(!m_pOwner.IsMinionTypeUnlocked(i))
+            {
+                menuText += "Summon " + XEN_NAMES[i] + " (Lv. " + XEN_LEVEL_REQUIREMENTS[i] + ")";
+            }
+            else
+            {
+                menuText += "Summon " + XEN_NAMES[i] + " (Cost: " + XEN_COSTS[i] + ")";
+            }
+            
+            m_pMenu.AddItem(menuText + "\n", any(i));
         }
         
         if(m_pOwner.GetMinionCount() > 0) 
@@ -487,6 +525,13 @@ class XenMinionMenu
             }
             else if(choice >= 0 && uint(choice) < XEN_NAMES.length())
             {
+                // Check if this minion type is unlocked
+                if(!m_pOwner.IsMinionTypeUnlocked(choice))
+                {
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + XEN_NAMES[choice] + " requires Lv. " + XEN_LEVEL_REQUIREMENTS[choice] + "!\n");
+                    return;
+                }
+                
                 // Spawn new minion.
                 m_pOwner.SpawnSpecificMinion(pPlayer, choice);
             }
