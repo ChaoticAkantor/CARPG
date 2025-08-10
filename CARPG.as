@@ -396,6 +396,14 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strShocktrooperPain4);
         g_SoundSystem.PrecacheSound(strShocktrooperPain5);
 
+    // Baby Gargantua.
+        //Models/Sprites.
+        g_Game.PrecacheModel(strBabyGargModel);
+        g_Game.PrecacheModel(strBabyGargSpriteEye);
+        g_Game.PrecacheModel(strBabyGargSpriteBeam);
+
+        // Sounds.
+
 /*  Had to disable Alien Grunt for now as the hornets it fires aren't owned by it, 
     so you gain no XP from score transfer as it doesn't gain any score.
     Known bug, hopefully fixed in the next Sven update.
@@ -801,6 +809,7 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
     {
         data.CalculateStats(pPlayer);
         ResetPlayer(pPlayer);
+        RefillHealthArmor(pPlayer);
     }
     
     // Show class menu if no class selected.
@@ -822,6 +831,7 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
         {
             data.CalculateStats(pPlayer); // Re-calculate stats if we respawn.
             ResetPlayer(pPlayer); // We respawned, so re-initialize defaults.
+            RefillHealthArmor(pPlayer);
 
             // Show class menu if no class selected.
             if(data.GetCurrentClass() == PlayerClass::CLASS_NONE)
@@ -1243,10 +1253,6 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         if (data !is null)
         {
             data.CalculateStats(pPlayer);
-
-            // Refill HP/AP.
-            //pPlayer.pev.health = pPlayer.pev.max_health;
-            //pPlayer.pev.armorvalue = pPlayer.pev.armortype;
         }
     }
 }
@@ -1405,4 +1411,13 @@ void AdjustAmmoForClass(CBasePlayer@ pPlayer)
 void ShowHints()
 {
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Welcome to CARPG! Type 'class' to select your class. Bind say UseAbility to a button to use your Class Ability.\n");
+}
+
+void RefillHealthArmor(CBasePlayer@ pPlayer)
+{
+    {
+        // Refill HP/AP.
+        pPlayer.pev.health = pPlayer.pev.max_health;
+        pPlayer.pev.armorvalue = pPlayer.pev.armortype;
+    }
 }

@@ -1,6 +1,7 @@
 string strXenMinionSoundCreate = "debris/beamstart7.wav";
 
 // Precache strings for monsters. (Yawn)
+
 // Houndeye.
     // Models/Sprites.
     string strHoundeyeModel = "models/houndeye.mdl";
@@ -157,6 +158,14 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
     string strAlienGruntSoundAlert4 = "agrunt/ag_alert4.wav";
     string strAlienGruntSoundAlert5 = "agrunt/ag_alert5.wav";
 
+    // Baby Gargantua. Adult one is way too strong :P.
+    // Models/Sprites.
+    string strBabyGargModel = "models/babygarg.mdl";
+    string strBabyGargSpriteEye = "sprites/gargeye1.spr";
+    string strBabyGargSpriteBeam = "sprites/xbeam3.spr";
+
+    // Sounds.
+
 /* -- Will be used on a zombie focused minion class.
 // Gonome.
     // Models/Sprites.
@@ -184,12 +193,12 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
 dictionary g_XenologistMinions;
 
 enum XenType
-{
+{   
     XEN_HOUNDEYE = 0,
     XEN_PITDRONE = 1,
     XEN_BULLSQUID = 2,
     XEN_SHOCKTROOPER = 3,
-    //XEN_ALIENGRUNT = 4
+    XEN_BABYGARG = 4
 }
 
 const array<string> XEN_NAMES = 
@@ -197,7 +206,8 @@ const array<string> XEN_NAMES =
     "Houndeye",
     "Pit Drone",
     "Bullsquid",
-    "Shocktrooper"
+    "Shocktrooper",
+    "Baby Gargantua"
     //"Alien Grunt"
     
 };
@@ -207,7 +217,8 @@ const array<string> XEN_ENTITIES =
     "monster_houndeye",
     "monster_pitdrone",
     "monster_bullchicken",
-    "monster_shocktrooper"
+    "monster_shocktrooper",
+    "monster_babygarg"
     //"monster_alien_grunt"
     
 };
@@ -217,27 +228,18 @@ const array<int> XEN_COSTS = // Going to leave this in just incase it becomes us
     1, // Houndeye.
     1, // Pit Drone.
     1, // Bullsquid.
-    1  // Shocktrooper.
-};
-
-// Health modifiers for each monster type, applied AFTER scaling, since we aren't using real monster base healths.
-const array<float> XEN_HEALTH_MODS = 
-{
-    1.50f,    // Houndeye. Not very effective. fast.
-    1.25f,    // Pitdrone. Very effective. fast.
-    1.50f,    // Bullsquid. Very effective, slow.
-    1.15f    // Shocktrooper. Effective, medium.
-    //1.20f     // Alien Grunt. Effective, medium.
+    1, // Shocktrooper.
+    2  // Baby Garg.
 };
 
 // Level requirements for each Xen creature type.
 const array<int> XEN_LEVEL_REQUIREMENTS = 
-{
+{   
     1,    // Houndeye.
     2,    // Pitdrone.
     5,    // Bullsquid.
-    10   // Shocktrooper.
-//    20    // Alien Grunt.
+    10,   // Shocktrooper.
+    30    // Baby Garg.
 };
 
 class XenMinionData
@@ -246,7 +248,7 @@ class XenMinionData
     private array<EHandle> m_hMinions;
     array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
-    private float m_flBaseHealth = 100.0;
+    private float m_flBaseHealth = 300.0;
     private float m_flHealthScale = 0.30; // Health % scaling per level.
     private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.10; // Damage % scaling per level.
@@ -515,14 +517,14 @@ class XenMinionData
         }
     }
 
-    float GetScaledHealth(int creatureType = 0) // Default to Pitdrone health mod.
+    float GetScaledHealth(int creatureType = 0)
     {
         if(m_pStats is null)
-            return m_flBaseHealth * XEN_HEALTH_MODS[creatureType];
+            return m_flBaseHealth; // Base health without scaling if no stats.
 
         float level = m_pStats.GetLevel();
         float flScaledHealth = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
-        return (flScaledHealth) * XEN_HEALTH_MODS[creatureType] + m_flBaseHealth;
+        return flScaledHealth;
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
