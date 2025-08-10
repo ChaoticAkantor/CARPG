@@ -168,170 +168,303 @@ void SetupTimers()
 void PrecacheAll()
 {
     // CARPG Systems Precache.
-    g_SoundSystem.PrecacheSound(strLevelUpSound);
-    g_SoundSystem.PrecacheSound(strClassChangeSound);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strLevelUpSound);
+        g_SoundSystem.PrecacheSound(strClassChangeSound);
 
     // Medic Ability Precache.
-    g_SoundSystem.PrecacheSound(strHealAuraToggleSound);
-    g_SoundSystem.PrecacheSound(strHealAuraActiveSound);
-    g_SoundSystem.PrecacheSound(strHealSound);
+        // Models/Sprites.
+        g_Game.PrecacheModel(strHealAuraSprite);
+        g_Game.PrecacheModel(strHealAuraEffectSprite);
+        g_Game.PrecacheModel(strHealAuraPoisonEffectSprite);
 
-    g_Game.PrecacheModel(strHealAuraSprite);
-    g_Game.PrecacheModel(strHealAuraEffectSprite);
-    g_Game.PrecacheModel(strHealAuraPoisonEffectSprite);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strHealAuraToggleSound);
+        g_SoundSystem.PrecacheSound(strHealAuraActiveSound);
+        g_SoundSystem.PrecacheSound(strHealSound);
+
+
+    // Xenomancer Ability Precache.
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
 
     // Shocktrooper Ability Precache.
-    g_SoundSystem.PrecacheSound(strShockrifleEquipSound);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strShockrifleEquipSound);
 
     // Berserker Ability Precache.
-    g_SoundSystem.PrecacheSound(strBloodlustStartSound);
-    g_SoundSystem.PrecacheSound(strBloodlustEndSound);
-    g_SoundSystem.PrecacheSound(strBloodlustActiveSound);
-    g_SoundSystem.PrecacheSound(strBloodlustHitSound);
+        // Models/Sprites.
+        g_Game.PrecacheModel(strBloodlustSprite);
 
-    g_Game.PrecacheModel(strBloodlustSprite);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strBloodlustStartSound);
+        g_SoundSystem.PrecacheSound(strBloodlustEndSound);
+        g_SoundSystem.PrecacheSound(strBloodlustActiveSound);
+        g_SoundSystem.PrecacheSound(strBloodlustHitSound);
 
     // Defender Ability Precache.
-    g_SoundSystem.PrecacheSound(strBarrierToggleSound);
-    g_SoundSystem.PrecacheSound(strBarrierHitSound);
-    g_SoundSystem.PrecacheSound(strBarrierBreakSound);
-    g_SoundSystem.PrecacheSound(strBarrierActiveSound);
-
-    g_Game.PrecacheModel(strBarrierBeamSprite);
+        // Models/Sprites.
+        g_Game.PrecacheModel(strBarrierBeamSprite);
+        
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strBarrierToggleSound);
+        g_SoundSystem.PrecacheSound(strBarrierHitSound);
+        g_SoundSystem.PrecacheSound(strBarrierBreakSound);
+        g_SoundSystem.PrecacheSound(strBarrierActiveSound);
 
     // Cloaker Ability Precache.
-    g_SoundSystem.PrecacheSound(strCloakActivateSound);
-    g_SoundSystem.PrecacheSound(strCloakActiveSound);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strCloakActivateSound);
+        g_SoundSystem.PrecacheSound(strCloakActiveSound);
 
-    // Minion Precache for any/all minion class monsters.
+    // Vanquisher Class Precache.
+        // Models/Sprites.
+    g_Game.PrecacheModel(strExplosiveRoundsExplosionSprite);
+    g_Game.PrecacheModel(strExplosiveRoundsExplosionCoreSprite);
+    g_Game.PrecacheModel(strExplosiveRoundsSplatterSprite);
 
+        // Sounds.
+    g_SoundSystem.PrecacheSound(strExplosiveRoundsActivateSound);
+    g_SoundSystem.PrecacheSound(strExplosiveRoundsImpactSound);
+
+    // Precache for all spawnable NPC's.
     // Sentry.
-    g_SoundSystem.PrecacheSound(strSentryCreate);
-    g_SoundSystem.PrecacheSound(strSentryRecall);
-    g_SoundSystem.PrecacheSound(strSentryFire);
-    g_SoundSystem.PrecacheSound(strSentryPing);
-    g_SoundSystem.PrecacheSound(strSentryActive);
-    g_SoundSystem.PrecacheSound(strSentryDie);
-    g_SoundSystem.PrecacheSound(strSentryDeploy);
-    g_SoundSystem.PrecacheSound(strSentrySpinUp);
-    g_SoundSystem.PrecacheSound(strSentrySpinDown);
-    g_SoundSystem.PrecacheSound(strSentrySearch);
-    g_SoundSystem.PrecacheSound(strSentryAlert);
+        // Models/Sprites.
+        g_Game.PrecacheModel(strSentryModel);
+        g_Game.PrecacheModel(strSentryGibs);
 
-    g_Game.PrecacheModel(strSentryModel);
-    g_Game.PrecacheModel(strSentryGibs);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strSentryCreate);
+        g_SoundSystem.PrecacheSound(strSentryRecall);
+        g_SoundSystem.PrecacheSound(strSentryFire);
+        g_SoundSystem.PrecacheSound(strSentryPing);
+        g_SoundSystem.PrecacheSound(strSentryActive);
+        g_SoundSystem.PrecacheSound(strSentryDie);
+        g_SoundSystem.PrecacheSound(strSentryDeploy);
+        g_SoundSystem.PrecacheSound(strSentrySpinUp);
+        g_SoundSystem.PrecacheSound(strSentrySpinDown);
+        g_SoundSystem.PrecacheSound(strSentrySearch);
+        g_SoundSystem.PrecacheSound(strSentryAlert);
 
     // Robogrunt.
-    g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundDeath2);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundButton2);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundButton3);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundBeam);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundCreate);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundRepair);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundKick);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundMP5);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundM16);
-    g_SoundSystem.PrecacheSound(strRobogruntSoundReload);
+        // Models/Sprites.
+        g_Game.PrecacheModel(strRobogruntModel);
+        g_Game.PrecacheModel(strRobogruntModelF);
+        g_Game.PrecacheModel(strRobogruntRope);
+        g_Game.PrecacheModel(strRobogruntModelChromegibs);
+        g_Game.PrecacheModel(strRobogruntModelComputergibs);
 
-    g_Game.PrecacheModel(strRobogruntModel);
-    g_Game.PrecacheModel(strRobogruntModelF);
-    g_Game.PrecacheModel(strRobogruntRope);
-    g_Game.PrecacheModel(strRobogruntModelChromegibs);
-    g_Game.PrecacheModel(strRobogruntModelComputergibs);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundDeath2);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundButton2);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundButton3);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundBeam);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundCreate);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundRepair);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundKick);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundMP5);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundM16);
+        g_SoundSystem.PrecacheSound(strRobogruntSoundReload);
 
-    g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
+    // Houndeye.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strHoundeyeModel);
+        g_Game.PrecacheModel(strHoundeyeSpriteShockwave);
+
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert1);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert2);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert3);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundAttack1);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundAttack2);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundAttack3);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundBlast1);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundBlast2);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundBlast3);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundDie1);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundDie2);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundDie3);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt1);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt2);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt3);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundHunt4);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle1);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle2);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle3);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundIdle4);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundPain1);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundPain2);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundPain3);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundPain4);
+        g_SoundSystem.PrecacheSound(strHoundeyeSoundPain5);
 
     // Pitdrone.
-    g_Game.PrecacheModel(strPitdroneModel);
-    g_Game.PrecacheModel(strPitdroneModelGibs);
-    g_Game.PrecacheModel(strPitdroneModelSpike);
-    g_Game.PrecacheModel(strPitdroneSpikeTrail);
+        // Models/Sprites.
+        g_Game.PrecacheModel(strPitdroneModel);
+        g_Game.PrecacheModel(strPitdroneModelGibs);
+        g_Game.PrecacheModel(strPitdroneModelSpike);
+        g_Game.PrecacheModel(strPitdroneSpikeTrail);
 
-    g_SoundSystem.PrecacheSound(strPitdroneSoundAttackSpike1);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundAlert1);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundAlert2);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundAlert3);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundIdle1);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundIdle2);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundIdle3);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundDie1);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundDie2);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundDie3);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundBite2);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundPain1);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundPain2);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundPain3);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundPain4);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundMelee1);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundMelee2);
-    g_SoundSystem.PrecacheSound(strPitdroneSoundEat);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strPitdroneSoundAttackSpike1);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundAlert1);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundAlert2);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundAlert3);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundIdle1);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundIdle2);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundIdle3);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundDie1);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundDie2);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundDie3);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundBite2);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundPain1);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundPain2);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundPain3);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundPain4);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundMelee1);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundMelee2);
+        g_SoundSystem.PrecacheSound(strPitdroneSoundEat);
 
+    // Bullsquid
+        // Models/Sprites.
+        g_Game.PrecacheModel(strBullsquidModel);
+        g_Game.PrecacheModel(strBullsquidSpriteTinyspit);
+        g_Game.PrecacheModel(strBullsquidSpriteBigspit);
+
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strBullsquidAcid1);
+        g_SoundSystem.PrecacheSound(strBullsquidAcid2);
+        g_SoundSystem.PrecacheSound(strBullsquidAttack1);
+        g_SoundSystem.PrecacheSound(strBullsquidAttack2);
+        g_SoundSystem.PrecacheSound(strBullsquidAttack3);
+        g_SoundSystem.PrecacheSound(strBullsquidAttackGrowl);
+        g_SoundSystem.PrecacheSound(strBullsquidAttackGrowl2);
+        g_SoundSystem.PrecacheSound(strBullsquidAttackGrowl3);
+        g_SoundSystem.PrecacheSound(strBullsquidBite1);
+        g_SoundSystem.PrecacheSound(strBullsquidBite2);
+        g_SoundSystem.PrecacheSound(strBullsquidBite3);
+        g_SoundSystem.PrecacheSound(strBullsquidDie1);
+        g_SoundSystem.PrecacheSound(strBullsquidDie2);
+        g_SoundSystem.PrecacheSound(strBullsquidDie3);
+        g_SoundSystem.PrecacheSound(strBullsquidIdle1);
+        g_SoundSystem.PrecacheSound(strBullsquidIdle2);
+        g_SoundSystem.PrecacheSound(strBullsquidIdle3);
+        g_SoundSystem.PrecacheSound(strBullsquidIdle4);
+        g_SoundSystem.PrecacheSound(strBullsquidIdle5);
+        g_SoundSystem.PrecacheSound(strBullsquidSoundPain1);
+        g_SoundSystem.PrecacheSound(strBullsquidSoundPain2);
+        g_SoundSystem.PrecacheSound(strBullsquidSoundPain3);
+        g_SoundSystem.PrecacheSound(strBullsquidSoundPain4);
+        g_SoundSystem.PrecacheSound(strBullsquidSpithit1);
+        g_SoundSystem.PrecacheSound(strBullsquidSpithit2);
+        g_SoundSystem.PrecacheSound(strBullsquidSpithit3);
+
+    // Shocktrooper.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strShocktrooperModel);
+        g_Game.PrecacheModel(strShocktrooperModelGibs);
+        g_Game.PrecacheModel(strShocktrooperSpriteMuzzleshock);
+
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strShocktrooperBlis);
+        g_SoundSystem.PrecacheSound(strShocktrooperDit);
+        g_SoundSystem.PrecacheSound(strShocktrooperDup);
+        g_SoundSystem.PrecacheSound(strShocktrooperGa);
+        g_SoundSystem.PrecacheSound(strShocktrooperHyu);
+        g_SoundSystem.PrecacheSound(strShocktrooperKa);
+        g_SoundSystem.PrecacheSound(strShocktrooperKiml);
+        g_SoundSystem.PrecacheSound(strShocktrooperKss);
+        g_SoundSystem.PrecacheSound(strShocktrooperKu);
+        g_SoundSystem.PrecacheSound(strShocktrooperKur);
+        g_SoundSystem.PrecacheSound(strShocktrooperKyur);
+        g_SoundSystem.PrecacheSound(strShocktrooperMub);
+        g_SoundSystem.PrecacheSound(strShocktrooperPuh);
+        g_SoundSystem.PrecacheSound(strShocktrooperPur);
+        g_SoundSystem.PrecacheSound(strShocktrooperRas);
+        g_SoundSystem.PrecacheSound(strShocktrooperThirv);
+        g_SoundSystem.PrecacheSound(strShocktrooperWirt);
+        g_SoundSystem.PrecacheSound(strShocktrooperFire);
+        g_SoundSystem.PrecacheSound(strShocktrooperAttack);
+        g_SoundSystem.PrecacheSound(strShocktrooperDie1);
+        g_SoundSystem.PrecacheSound(strShocktrooperDie2);
+        g_SoundSystem.PrecacheSound(strShocktrooperDie3);
+        g_SoundSystem.PrecacheSound(strShocktrooperDie4);
+        g_SoundSystem.PrecacheSound(strShocktrooperPain1);
+        g_SoundSystem.PrecacheSound(strShocktrooperPain2);
+        g_SoundSystem.PrecacheSound(strShocktrooperPain3);
+        g_SoundSystem.PrecacheSound(strShocktrooperPain4);
+        g_SoundSystem.PrecacheSound(strShocktrooperPain5);
+
+/*  Had to disable Alien Grunt for now as the hornets it fires aren't owned by it, 
+    so you gain no XP from score transfer as it doesn't gain any score.
+    Known bug, hopefully fixed in the next Sven update.
+
+    // Alien Grunt.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strAlienGruntModel);
+        g_Game.PrecacheModel(strAlienGruntModelGibs);
+        g_Game.PrecacheModel(strAlienGruntMuzzleFlash);
+
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle1);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle2);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle3);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle4);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundDie1);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundDie4);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundDie5);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundPain1);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundPain2);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundPain3);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundPain4);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundPain5);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack1);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack2);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack3);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert1);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert3);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert4);
+        g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert5);
+*/
+
+/* -- Will be used on a seperate class for zombie family.
     // Gonome.
-    g_Game.PrecacheModel(strGonomeModel);
-    g_Game.PrecacheModel(strGonomeSpriteSpit);
+        // Models/Sprites.
+        g_Game.PrecacheModel(strGonomeModel);
+        g_Game.PrecacheModel(strGonomeSpriteSpit);
 
-    g_SoundSystem.PrecacheSound(strGonomeSoundSpit1);
-    g_SoundSystem.PrecacheSound(strGonomeSoundDeath2);
-    g_SoundSystem.PrecacheSound(strGonomeSoundDeath3);
-    g_SoundSystem.PrecacheSound(strGonomeSoundDeath4);
-    g_SoundSystem.PrecacheSound(strGonomeSoundIdle1);
-    g_SoundSystem.PrecacheSound(strGonomeSoundIdle2);
-    g_SoundSystem.PrecacheSound(strGonomeSoundIdle3);
-    g_SoundSystem.PrecacheSound(strGonomeSoundPain1);
-    g_SoundSystem.PrecacheSound(strGonomeSoundPain3);
-    g_SoundSystem.PrecacheSound(strGonomeSoundPain4);
-    g_SoundSystem.PrecacheSound(strGonomeSoundMelee1);
-    g_SoundSystem.PrecacheSound(strGonomeSoundMelee2);
-    g_SoundSystem.PrecacheSound(strGonomeSoundRun);
-    g_SoundSystem.PrecacheSound(strGonomeSoundEat);
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strGonomeSoundSpit1);
+        g_SoundSystem.PrecacheSound(strGonomeSoundDeath2);
+        g_SoundSystem.PrecacheSound(strGonomeSoundDeath3);
+        g_SoundSystem.PrecacheSound(strGonomeSoundDeath4);
+        g_SoundSystem.PrecacheSound(strGonomeSoundIdle1);
+        g_SoundSystem.PrecacheSound(strGonomeSoundIdle2);
+        g_SoundSystem.PrecacheSound(strGonomeSoundIdle3);
+        g_SoundSystem.PrecacheSound(strGonomeSoundPain1);
+        g_SoundSystem.PrecacheSound(strGonomeSoundPain3);
+        g_SoundSystem.PrecacheSound(strGonomeSoundPain4);
+        g_SoundSystem.PrecacheSound(strGonomeSoundMelee1);
+        g_SoundSystem.PrecacheSound(strGonomeSoundMelee2);
+        g_SoundSystem.PrecacheSound(strGonomeSoundRun);
+        g_SoundSystem.PrecacheSound(strGonomeSoundEat);
+    */
 
-    // Alient Grunt.
-    g_Game.PrecacheModel(strAlienGruntModel);
-    g_Game.PrecacheModel(strAlienGruntModelGibs);
-    g_Game.PrecacheModel(strAlienGruntMuzzleFlash);
-
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle1);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle2);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle3);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle4);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundDie1);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundDie4);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundDie5);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain1);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain2);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain3);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain4);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundPain5);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack1);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack2);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundAttack3);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert1);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert3);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert4);
-    g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert5);
-
-    // Demo Ability Precache.
-    // Mortar Strike.
+    /* -- Unused Mortar Strike Ability.
+        // Sounds.
     //g_SoundSystem.PrecacheSound(strMortarStrikeLaunchSound);
     //g_SoundSystem.PrecacheSound(strMortarStrikeAirSound);
     //g_SoundSystem.PrecacheSound(strMortarStrikeSetSound);
     //g_SoundSystem.PrecacheSound(strMortarStrikeChargeSound);
     //g_SoundSystem.PrecacheSound(strMortarStrikeImpactSound);
 
+        // Models/Sprites.
     //g_Game.PrecacheModel(strMortarStrikeTargetSprite);
     //g_Game.PrecacheModel(strMortarStrikeImpactSprite);
     //g_Game.PrecacheModel(strMortarStrikeSmokeSprite);
     //g_Game.PrecacheModel(strMortarStrikeGlowSprite);
-
-    // Explosive Rounds.
-    g_SoundSystem.PrecacheSound(strExplosiveRoundsActivateSound);
-    g_SoundSystem.PrecacheSound(strExplosiveRoundsImpactSound);
-
-    g_Game.PrecacheModel(strExplosiveRoundsExplosionSprite);
-    g_Game.PrecacheModel(strExplosiveRoundsExplosionCoreSprite);
-    g_Game.PrecacheModel(strExplosiveRoundsSplatterSprite);
-    
+    */
 }
 
 // Hook handler for Primary Attack.
