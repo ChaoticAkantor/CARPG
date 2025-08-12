@@ -373,19 +373,24 @@ class XenMinionData
         CBaseEntity@ pXenMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
         if(pXenMinion !is null)
         {
-            // Make them glow green.
+            // Stuff to set before dispatch.
+            // Make creatures glow green.
             pXenMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
             pXenMinion.pev.rendermode = kRenderNormal; // Render mode.
             pXenMinion.pev.renderamt = 1; // Shell thickness.
             pXenMinion.pev.rendercolor = Vector(25, 100, 25); // Green.
 
             g_EntityFuncs.DispatchSpawn(pXenMinion.edict()); // Dispatch the entity.
-            @pXenMinion.pev.owner = @pPlayer.edict();
 
+            // Stuff to set after dispatch.
+            @pXenMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
+
+            // Cast so we can alter monster float variables.
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pXenMinion);
             if(pMonster !is null)
             {
-                pMonster.m_flFieldOfView = -1.0; // -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
+                pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+                                                //  -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
             }
 
             m_hMinions.insertLast(EHandle(pXenMinion)); // Insert into minion list.

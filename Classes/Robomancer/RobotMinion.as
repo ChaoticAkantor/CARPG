@@ -163,7 +163,8 @@ class MinionData
 
         CBaseEntity@ pRoboMinion = g_EntityFuncs.CreateEntity("monster_robogrunt", keys, true);
         if(pRoboMinion !is null)
-        {
+        {   
+            // Stuff to set before dispatch.
             // Make them glow green.
             pRoboMinion.pev.renderfx = kRenderFxGlowShell; // Effect.
             pRoboMinion.pev.rendermode = kRenderNormal; // Render mode.
@@ -172,7 +173,16 @@ class MinionData
 
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
 
-            @pRoboMinion.pev.owner = @pPlayer.edict();
+            // Stuff to set after dispatch.
+            @pRoboMinion.pev.owner = @pPlayer.edict(); // Set owner to spawning player.
+
+            // Cast so we can alter monster float variables.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pRoboMinion);
+            if(pMonster !is null)
+            {
+                pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+                                                //  -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
+            }
 
             m_hMinions.insertLast(EHandle(pRoboMinion)); //Insert into minion list.
             
