@@ -238,8 +238,8 @@ const array<int> XEN_LEVEL_REQUIREMENTS =
     1,    // Houndeye.
     2,    // Pitdrone.
     5,    // Bullsquid.
-    10,   // Shocktrooper.
-    30    // Baby Garg.
+    8,   // Shocktrooper.
+    15    // Baby Garg.
 };
 
 class XenMinionData
@@ -248,7 +248,7 @@ class XenMinionData
     private array<EHandle> m_hMinions;
     array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
     private bool m_bActive = false;
-    private float m_flBaseHealth = 300.0;
+    private float m_flBaseHealth = 200.0;
     private float m_flHealthScale = 0.30; // Health % scaling per level.
     private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.10; // Damage % scaling per level.
