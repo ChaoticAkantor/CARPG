@@ -35,7 +35,7 @@ class ExplosiveRoundsData
     private float m_flExplosiveRoundsDamage = 5.0f;
     private float m_flExplosiveRoundsDamageScaling = 0.11f; // % Damage increase per level.
     private float m_flExplosiveRoundsPoolScaling = 0.06f; // % Pool size increase per level.
-    private float m_flExplosiveRoundsRadius = 320.0f; // Radius of explosion.
+    private float m_flExplosiveRoundsRadius = 96.0f; // Radius of explosion.
     private int m_iExplosiveRoundsPoolBase = 15;
     private float m_flEnergyCostPerActivation = 1.0f;
     private float m_flRoundsFillPercentage = 1.0f; // Give % of max pool per activation.
