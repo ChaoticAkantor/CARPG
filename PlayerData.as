@@ -402,6 +402,46 @@ class PlayerData
     {
         if(m_CurrentClass == newClass) return;
         
+        // Clean up previous class abilities if necessary.
+        if (m_CurrentClass != PlayerClass::CLASS_NONE)
+        {
+            // Handle class-specific cleanup
+            switch(m_CurrentClass) 
+            {
+                case PlayerClass::CLASS_DEFENDER:
+                    // Clean up barrier data when switching away from Defender.
+                    if (g_PlayerBarriers.exists(m_szSteamID)) 
+                    {
+                        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[m_szSteamID]);
+                        if (barrier !is null && barrier.IsActive()) 
+                        {
+                            // Find the player
+                            CBasePlayer@ pPlayer = null;
+                            for(int i = 1; i <= g_Engine.maxClients; ++i) 
+                            {
+                                CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+                                if(tempPlayer !is null && g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict()) == m_szSteamID) 
+                                {
+                                    @pPlayer = tempPlayer;
+                                    break;
+                                }
+                            }
+                            
+                            if (pPlayer !is null) 
+                            {
+                                barrier.DeactivateBarrier(pPlayer);
+                            }
+                        }
+                        
+                        // Remove from dictionaries to ensure clean start when switching back.
+                        g_PlayerBarriers.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                // Add other class cleanups as needed.
+            }
+        }
+        
         m_CurrentClass = newClass;
     
         // Find the player and update their stats.
@@ -413,7 +453,7 @@ class PlayerData
             {
                 string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
                 
-                // Initialize base resources once
+                // Initialize base resources once.
                 if(!g_PlayerClassResources.exists(steamID))
                 {
                     dictionary resources = 

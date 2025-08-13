@@ -78,9 +78,44 @@ class BarrierData
         float blockedDamage = incomingDamage * reduction;
         modifiedDamage = incomingDamage - blockedDamage;
         
-        // Apply damage reflection as a specific damage type.
-        float reflectDamage = incomingDamage * GetScaledDamageReflection();
-        attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_TIMEBASED); // Apply the damage with the player as the attacker.
+        // Don't apply damage reflection if the attacker is the player themselves
+        // or another player protected by this barrier
+        bool skipReflection = false;
+        
+        // Check if attacker is the barrier owner (self-damage)
+        if(attacker is pPlayer)
+        {
+            skipReflection = true;
+        }
+        else 
+        {
+            // Check if attacker is another player protected by this barrier
+            CBasePlayer@ attackerPlayer = cast<CBasePlayer@>(attacker);
+            if(attackerPlayer !is null)
+            {
+                string attackerSteamID = g_EngineFuncs.GetPlayerAuthId(attackerPlayer.edict());
+                
+                if(g_ProtectedPlayers.exists(attackerSteamID))
+                {
+                    string barrierOwnerSteamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+                    string protectorSteamID = string(g_ProtectedPlayers[attackerSteamID]);
+                    
+                    if(protectorSteamID == barrierOwnerSteamID)
+                    {
+                        // Attacker is protected by this player's barrier
+                        skipReflection = true;
+                    }
+                }
+            }
+        }
+        
+        // Only apply damage reflection if it's not self or protected player
+        if(!skipReflection)
+        {
+            // Apply damage reflection as a specific damage type.
+            float reflectDamage = incomingDamage * GetScaledDamageReflection();
+            attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_TIMEBASED); // Apply the damage with the player as the attacker.
+        }
         
         // Play hit sound with random pitch.
         int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
@@ -132,7 +167,67 @@ class BarrierData
         float blockedDamage = incomingDamage * reduction;
         modifiedDamage = incomingDamage - blockedDamage;
         
-        // Apply damage reflection.
+        // Check if the attacker is the barrier owner or another protected player before applying reflection
+        string attackerSteamID = "";
+        CBasePlayer@ attackerPlayer = cast<CBasePlayer@>(attacker);
+        
+        if(attackerPlayer !is null)
+        {
+            attackerSteamID = g_EngineFuncs.GetPlayerAuthId(attackerPlayer.edict());
+            
+            // Don't reflect damage if the attacker is the barrier owner.
+            if(attackerSteamID == g_EngineFuncs.GetPlayerAuthId(barrierOwner.edict()))
+            {
+                // Still play visual/sound effects to show barrier is working.
+                int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+                g_SoundSystem.PlaySound(protectedPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
+                
+                // Drain energy from the barrier owner (still costs energy to block friendly fire).
+                DrainEnergy(barrierOwner, blockedDamage * 0.5); // Reduce energy cost for friendly fire.
+                
+                // Create ricochet effect
+                Vector origin = protectedPlayer.pev.origin;
+                NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+                ricMsg.WriteByte(TE_ARMOR_RICOCHET);
+                ricMsg.WriteCoord(origin.x);
+                ricMsg.WriteCoord(origin.y);
+                ricMsg.WriteCoord(origin.z);
+                ricMsg.WriteByte(1); // Scale.
+                ricMsg.End();
+                
+                return; // Skip reflection.
+            }
+            
+            // Check if attacker is also protected by this barrier.
+            if(g_ProtectedPlayers.exists(attackerSteamID))
+            {
+                string protectorSteamID = string(g_ProtectedPlayers[attackerSteamID]);
+                if(protectorSteamID == g_EngineFuncs.GetPlayerAuthId(barrierOwner.edict()))
+                {
+                    // Attacker is also protected by the same barrier, don't reflect damage.
+                    // Still play effects.
+                    int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+                    g_SoundSystem.PlaySound(protectedPlayer.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
+                    
+                    // Still drain energy.
+                    DrainEnergy(barrierOwner, blockedDamage * 0.5);
+                    
+                    // Create ricochet effect.
+                    Vector origin = protectedPlayer.pev.origin;
+                    NetworkMessage ricMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+                    ricMsg.WriteByte(TE_ARMOR_RICOCHET);
+                    ricMsg.WriteCoord(origin.x);
+                    ricMsg.WriteCoord(origin.y);
+                    ricMsg.WriteCoord(origin.z);
+                    ricMsg.WriteByte(1); // Scale.
+                    ricMsg.End();
+                    
+                    return; // Skip reflection.
+                }
+            }
+        }
+
+        // Apply damage reflection for non-friendly attackers.
         float reflectDamage = incomingDamage * GetScaledDamageReflection();
         attacker.TakeDamage(protectedPlayer.pev, barrierOwner.pev, reflectDamage, DMG_SLOWFREEZE);
         
@@ -660,6 +755,9 @@ class BarrierData
             return;
             
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        if(resources is null)
+            return;
+            
         m_flRefundAmount = float(resources['current']); // Store current energy.
         resources['current'] = 0; // Empty energy.
         
@@ -695,7 +793,8 @@ void BarrierRefund(string steamID, float refundAmount, float startTime)
                         {
                             float current = float(resources['current']);
                             float maxEnergy = float(resources['max']);
-                            resources['current'] = Math.min(current + refundAmount, maxEnergy);
+                            float newAmount = Math.min(current + refundAmount, maxEnergy);
+                            resources['current'] = newAmount;
                             return;
                         }
                     }

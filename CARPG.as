@@ -975,14 +975,14 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         if(!g_PlayerBarriers.exists(steamID))
                         {
                             BarrierData barrier;
-                            @g_PlayerBarriers[steamID] = barrier;
                             barrier.Initialize(data.GetCurrentClassStats());
+                            @g_PlayerBarriers[steamID] = barrier;
                         }
                         
-                        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                        if(barrier !is null)
+                        BarrierData@ barrierRef = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                        if(barrierRef !is null)
                         {
-                            barrier.ToggleBarrier(pPlayer);
+                            barrierRef.ToggleBarrier(pPlayer);
                         }
                     }
                     // Berserker ability handling.
