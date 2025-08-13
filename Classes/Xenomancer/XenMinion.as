@@ -342,7 +342,7 @@ class XenMinionData
             }
         }
         
-        // Check if the minion type is unlocked based on player level
+        // Check if the minion type is unlocked based on player level.
         if(!IsMinionTypeUnlocked(minionType))
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + XEN_NAMES[minionType] + " requires Lv. " + XEN_LEVEL_REQUIREMENTS[minionType] + "!\n");
@@ -442,6 +442,20 @@ class XenMinionData
                 pPlayer.pev.frags += 1;
                 pExistingMinion.pev.frags = 0;
             }
+            
+            // Ensure max_health is properly set during updates.
+            if(pExistingMinion.pev.max_health <= 0)
+            {
+                // Find the creature type index for this minion.
+                int creatureTypeIndex = -1;
+                if(i >= 0 && uint(i) < m_CreatureTypes.length())
+                {
+                    creatureTypeIndex = m_CreatureTypes[uint(i)];
+                }
+                
+                // Use our scaled health formula that accounts for player level.
+                pExistingMinion.pev.max_health = GetScaledHealth(creatureTypeIndex);
+            }
         }
 
         // Update stats reference for stat menu.
@@ -503,6 +517,20 @@ class XenMinionData
                 // Check if minion is actually "alive". Deadflag of 0 means the monster is alive.
                 if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO)
                 {
+                    // Ensure max_health is properly set
+                    if(pMinion.pev.max_health <= 0) 
+                    {
+                        // Find the creature type index for this minion
+                        int creatureTypeIndex = -1;
+                        if(i < m_CreatureTypes.length())
+                        {
+                            creatureTypeIndex = m_CreatureTypes[i];
+                        }
+                        
+                        // Use our scaled health formula that accounts for player level
+                        pMinion.pev.max_health = GetScaledHealth(creatureTypeIndex);
+                    }
+
                     float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
 
                     if(pMinion.pev.health < pMinion.pev.max_health)

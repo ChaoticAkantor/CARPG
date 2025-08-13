@@ -71,6 +71,15 @@ class MinionData
 
     bool IsActive() 
     { 
+        // Clean invalid minions first
+        for(int i = m_hMinions.length() - 1; i >= 0; i--)
+        {
+            if(!m_hMinions[i].IsValid())
+            {
+                m_hMinions.removeAt(i);
+            }
+        }
+        
         // The minions are active if there are any in the list
         return m_hMinions.length() > 0;
     }
@@ -115,11 +124,28 @@ class MinionData
 
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
         int current = int(resources['current']);
+        
+        // First clean up invalid minions to make sure we have an accurate count
+        for(int i = m_hMinions.length() - 1; i >= 0; i--)
+        {
+            if(!m_hMinions[i].IsValid())
+            {
+                m_hMinions.removeAt(i);
+            }
+        }
 
         // Check resources for spawning new minion.
         if(current < MINION_COSTS[minionType])
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough reserve for " + MINION_NAMES[minionType] + "!\n");
+            return;
+        }
+        
+        // Calculate max resources and ensure we're within limits
+        float maxEnergy = float(resources['max']);
+        if(m_flReservePool + MINION_COSTS[minionType] > maxEnergy)
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum robot capacity reached!\n");
             return;
         }
 
@@ -244,6 +270,12 @@ class MinionData
                 // Reset minion's frag counter.
                 pExistingMinion.pev.frags = 0;
             }
+            
+            // Ensure max_health is properly set during updates
+            if(pExistingMinion.pev.max_health <= 0)
+            {
+                pExistingMinion.pev.max_health = GetScaledHealth();
+            }
         }
 
         // Update stats reference for stat menu.
@@ -298,6 +330,12 @@ class MinionData
             CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
             if(pMinion !is null && pMinion.pev.health > 0) // Only regenerate if not "dead".
             {
+                // Ensure max_health is properly set
+                if(pMinion.pev.max_health <= 0)
+                {
+                    pMinion.pev.max_health = GetScaledHealth();
+                }
+                
                 float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
 
                 if(pMinion.pev.health < pMinion.pev.max_health)
@@ -470,6 +508,21 @@ void CheckEngineerMinions()
                         {
                             // Update stats for Engineer
                             Minion.Initialize(data.GetCurrentClassStats());
+                        }
+                    }
+                }
+                
+                // Make sure resource limits are enforced
+                if(g_PlayerClassResources.exists(steamID))
+                {
+                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                    if(resources !is null)
+                    {
+                        float maxEnergy = float(resources['max']);
+                        if(Minion.GetReservePool() > maxEnergy)
+                        {
+                            // Over the limit, destroy minions until we're within limits
+                            Minion.DestroyAllMinions(pPlayer);
                         }
                     }
                 }

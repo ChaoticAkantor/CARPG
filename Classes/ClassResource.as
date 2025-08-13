@@ -8,6 +8,7 @@ float flClassResourceRegenDelay = 1.0; // Delay between class resource regen tic
 void RegenClassResource()
 { 
     const int iMaxPlayers = g_Engine.maxClients;
+    
     for(int i = 1; i <= iMaxPlayers; ++i)
     {
         CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
@@ -294,18 +295,14 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     array<EHandle>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
-                                        resourceInfo += "\n";
                                         for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                         {
                                             CBaseEntity@ pMinion = minions[minionIndex].GetEntity();
                                             if(pMinion !is null)
                                             {
-                                                // Changed it from a percentage to a flat value display for now.
-                                                //float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
-                                                //resourceInfo += "[" + int(healthPercent) + "%] ";
-
+                                                // Flat HP display.
                                                 float healthFlat = (pMinion.pev.health);
-                                                resourceInfo += "[Robogrunt: " + int(healthFlat) + " HP] "; // Don't need minion names for this one.
+                                                resourceInfo += "[Robogrunt " + (minionIndex + 1) + ": " + int(healthFlat) + " HP] ";
                                             }
                                         }
                                     }
@@ -320,8 +317,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(barrierData !is null)
                                 {
                                     bool isActive = barrierData.IsActive();
-                                        resourceInfo += "[" + (isActive ? " 50% Recovery " : " 100% Recovery ") + "] ";
-                                        
+                                    resourceInfo += "[" + (isActive ? " 50% Recovery " : " 100% Recovery ") + "] ";
+                                    
                                     if(isActive)
                                     {
                                         resourceInfo += "[Damage Reflect: " + int(barrierData.GetScaledDamageReflection() * 100) + "%]";
@@ -435,31 +432,33 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     array<EHandle>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
-                                        resourceInfo += "\n";
                                         for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                         {
                                             CBaseEntity@ pMinion = minions[minionIndex].GetEntity();
                                             if(pMinion !is null)
                                             {
-                                                // Changed it from a percentage to a flat value display for now.
-                                                //float healthPercent = (pMinion.pev.health / pMinion.pev.max_health) * 100;
-                                                //resourceInfo += "[" + int(healthPercent) + "%] ";
-
-                                                // Get the minion type from the stored array, need this for Xenomancer but not for Robomancer.
-                                                int minionType = -1;
-                                                if(minionIndex < minionData.m_CreatureTypes.length())
-                                                {
-                                                    minionType = minionData.m_CreatureTypes[minionIndex];
-                                                }
-                                                
-                                                string minionName = "Xen Creature"; // Fallback.
-                                                if(minionType >= 0 && uint(minionType) < XEN_NAMES.length())
-                                                {
-                                                    minionName = XEN_NAMES[minionType];
-                                                }
-                                                
+                                                // Show flat HP with monster name.
                                                 float healthFlat = (pMinion.pev.health);
-                                                resourceInfo += "[" + minionName + ": " + int(healthFlat) + " HP] ";
+                                                
+                                                // Get creature type from entity classname instead of relying on arrays
+                                                string creatureName = "Creature"; // Default fallback
+                                                
+                                                // Get classname directly from the entity
+                                                string classname = pMinion.pev.classname;
+                                                
+                                                // Map classnames to readable names - more reliable than array indexes
+                                                if(classname == "monster_houndeye")
+                                                    creatureName = "Houndeye";
+                                                else if(classname == "monster_pitdrone") 
+                                                    creatureName = "Pit Drone";
+                                                else if(classname == "monster_bullchicken")
+                                                    creatureName = "Bullsquid";
+                                                else if(classname == "monster_shocktrooper")
+                                                    creatureName = "Shocktrooper";
+                                                else if(classname == "monster_babygarg")
+                                                    creatureName = "Baby Garg";
+                                                    
+                                                resourceInfo += "[" + creatureName + ": " + int(healthFlat) + " HP] ";
                                             }
                                         }
                                     }
@@ -486,7 +485,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     }
                                 }
                             }
-                            break;
+                        break;
                     }
                 }
             }
