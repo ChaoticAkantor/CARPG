@@ -65,7 +65,7 @@ namespace Menu
                     }
                 }
                 
-                // Cancel any barrier refunds in progress
+                // Cancel any barrier refunds in progress.
                 if(g_PlayerBarriers.exists(steamID))
                 {
                     BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);

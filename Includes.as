@@ -39,3 +39,6 @@
 // Vanquisher.
 #include "Classes/Vanquisher/ExplosiveRounds"
 //#include "Classes/Vanquisher/MortarStrike" // Unused mortar strike ability, may be reused for another class.
+
+// Swarmer.
+#include "Classes/Swarmer/SnarkSwarm"

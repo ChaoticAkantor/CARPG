@@ -268,6 +268,9 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         case PlayerClass::CLASS_XENOMANCER:
                             resourceName = "Creature Points";
                             break;
+                        case PlayerClass::CLASS_SWARMER:
+                            resourceName = "Snark Swarms";
+                            break;
                     }
                 }
             }
@@ -483,6 +486,18 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                             resourceInfo += " [Heal: " + sentryData.GetScaledHealAmount() + " HP/s]";
                                         }
                                     }
+                                }
+                            }
+                        break;
+                        
+                        case PlayerClass::CLASS_SWARMER:
+                            if(g_PlayerSnarkNests.exists(steamID))
+                            {
+                                SnarkNestData@ snarkData = cast<SnarkNestData@>(g_PlayerSnarkNests[steamID]);
+                                if(snarkData !is null)
+                                {
+                                    int snarkCount = snarkData.GetSnarkCount();
+                                    resourceInfo += "[Snarks Per Swarm: " + snarkCount + "]";
                                 }
                             }
                         break;

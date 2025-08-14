@@ -16,7 +16,8 @@ dictionary g_ClassNames =
     {PlayerClass::CLASS_DEFENDER, "Warden"},
     {PlayerClass::CLASS_SHOCKTROOPER, "Shocktrooper"},
     {PlayerClass::CLASS_CLOAKER, "Cloaker"},
-    {PlayerClass::CLASS_VANQUISHER, "Vanquisher"}
+    {PlayerClass::CLASS_VANQUISHER, "Vanquisher"},
+    {PlayerClass::CLASS_SWARMER, "Swarmer"}
 };
 
 array<PlayerClass> g_ClassList = 
@@ -29,7 +30,8 @@ array<PlayerClass> g_ClassList =
     PlayerClass::CLASS_DEFENDER,
     PlayerClass::CLASS_SHOCKTROOPER,
     PlayerClass::CLASS_CLOAKER,
-    PlayerClass::CLASS_VANQUISHER
+    PlayerClass::CLASS_VANQUISHER,
+    PlayerClass::CLASS_SWARMER
 };
 
 enum PlayerClass 
@@ -43,7 +45,8 @@ enum PlayerClass
     CLASS_DEFENDER,
     CLASS_SHOCKTROOPER,
     CLASS_CLOAKER,
-    CLASS_VANQUISHER
+    CLASS_VANQUISHER,
+    CLASS_SWARMER
 }
 
 // --- Per-class stat definitions. ---
@@ -168,6 +171,13 @@ void InitializeClassDefinitions()
                     def.baseResource = 1.0f;
                     def.fullRegenTime = 90.0f;
                     def.energyPerLevel = 0.00f; // 1 charge at level 50. No increase.
+                    break;
+                case PlayerClass::CLASS_SWARMER:
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 1.0f; // Base charges.
+                    def.fullRegenTime = 90.0f;
+                    def.energyPerLevel = 0.05f; // 5 Max at level 50.
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
@@ -577,6 +587,15 @@ class PlayerData
                 }
                 break;
 
+               case PlayerClass::CLASS_SWARMER:
+                if(!g_PlayerSnarkNests.exists(steamID))
+                {
+                    SnarkNestData data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_PlayerSnarkNests[steamID] = data;
+                }
+                break;
+
             case PlayerClass::CLASS_ENGINEER:
                 if(!g_PlayerSentries.exists(steamID))
                 {
@@ -641,6 +660,8 @@ class PlayerData
                 case PlayerClass::CLASS_CLOAKER:
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
+                    break;
+                case PlayerClass::CLASS_SWARMER:
                     break;
             }
 
@@ -713,7 +734,7 @@ class PlayerData
             file.Write(string(int(m_CurrentClass)) + "\n");
             
             // Save each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_VANQUISHER; i++)
+            for(uint i = 1; i <= PlayerClass::CLASS_SWARMER; i++) // Last class in list needs to go here!
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
                 if(stats !is null)
@@ -747,7 +768,7 @@ class PlayerData
             g_Game.AlertMessage(at_console, "CARPG: Loaded class: " + GetClassName(m_CurrentClass) + "\n");
             
             // Load each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_VANQUISHER; i++)
+            for(uint i = 1; i <= PlayerClass::CLASS_SWARMER; i++) // Updated to include Swarmer class
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
                 if(stats !is null)

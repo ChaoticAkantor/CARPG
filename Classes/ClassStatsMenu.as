@@ -216,6 +216,24 @@ namespace Menu
                             BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
+                    case PlayerClass::CLASS_SWARMER:
+                    {
+                        if(m_pStats.HasUnlockedEnhancement1())
+                            BaseStatsText += "N/A. \n";
+                        else
+                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+
+                        if(m_pStats.HasUnlockedEnhancement2())
+                            BaseStatsText += "N/A. \n";
+                        else
+                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+
+                        if(m_pStats.HasUnlockedEnhancement3())
+                            BaseStatsText += "N/A. \n";
+                        else
+                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                        break;
+                    }
                 }
 
             m_pMenu.AddItem(BaseStatsText, null);
@@ -385,6 +403,19 @@ namespace Menu
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
                     break;
+                }
+                case PlayerClass::CLASS_SWARMER:
+                {
+                    SnarkNestData@ snarkNest = cast<SnarkNestData@>(g_PlayerSnarkNests[steamID]);
+                    if(snarkNest !is null)
+                    {
+                        string SwarmerStatsText = "=== Snark Swarm: ===" + "\n" + 
+                            "Snark Health: " + int(snarkNest.GetScaledHealth()) + " HP\n" +
+                            "Snark Damage Multiplier: " + int(snarkNest.GetScaledDamage() * 100 + 100) + "%\n" +
+                            "Snarks Per Swarm: " + snarkNest.GetSnarkCount() + "\n";
+
+                        m_pMenu.AddItem(SwarmerStatsText, null);
+                    }
                 }
             }
             

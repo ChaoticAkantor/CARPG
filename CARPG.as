@@ -92,6 +92,7 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_PlayerExplosiveRounds.deleteAll();
     g_ShockRifleData.deleteAll();
     g_PlayerClassResources.deleteAll();
+    g_PlayerSnarkNests.deleteAll();
     
     RegisterHooks(); // Re-register Hooks.
     InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
@@ -163,6 +164,9 @@ void SetupTimers()
 
     // Cloaker.
     g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
+    
+    // Swarmer.
+    g_Scheduler.SetInterval("CheckSnarkNests", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
 }
 
 void PrecacheAll()
@@ -602,8 +606,34 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
         // Process lifesteal - when xenminion deals damage, give health to owner
         xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
-
-        //g_Game.AlertMessage(at_console, "Damage: " + info.flDamage + "\n"); // Debug to see damage value.
+    }
+    else if(targetname.StartsWith("_snark_"))
+    {
+        // Find owner's player index from targetname.
+        string targetStr = targetname.SubString(7); // Skip "_snark_".
+        int delimPos = targetStr.Find("_");
+        if(delimPos == -1)
+            return HOOK_CONTINUE;
+            
+        string ownerIndex = targetStr.SubString(0, delimPos);
+        if(ownerIndex.IsEmpty())
+            return HOOK_CONTINUE;
+            
+        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
+        if(pOwner is null || !pOwner.IsConnected())
+            return HOOK_CONTINUE;
+        
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+        if(steamID.IsEmpty() || !g_PlayerSnarkNests.exists(steamID))
+            return HOOK_CONTINUE;
+            
+        SnarkNestData@ snarkNest = cast<SnarkNestData@>(g_PlayerSnarkNests[steamID]);
+        if(snarkNest is null)
+            return HOOK_CONTINUE;
+            
+        // Apply the damage multiplier
+        float damageSnarkMultiplier = 1.0f + snarkNest.GetScaledDamage();
+        info.flDamage *= damageSnarkMultiplier;
     }
 
     if(info.pAttacker is null || !info.pAttacker.IsPlayer())
@@ -1036,6 +1066,19 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         if(xenMinion !is null)
                             xenMinion.SpawnXenMinion(pPlayer);
                     }
+                    // Swarmer ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_SWARMER)
+                    {
+                        if(!g_PlayerSnarkNests.exists(steamID))
+                        {
+                            SnarkNestData snarkNestData;
+                            @g_PlayerSnarkNests[steamID] = snarkNestData;
+                            snarkNestData.Initialize(data.GetCurrentClassStats());
+                        }
+                        SnarkNestData@ snarkNest = cast<SnarkNestData@>(g_PlayerSnarkNests[steamID]);
+                        if(snarkNest !is null)
+                            snarkNest.SummonSnarks(pPlayer);
+                    }
                     
                     pParams.ShouldHide = true;
                     return HOOK_HANDLED;
@@ -1243,6 +1286,16 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         if(xenMinion !is null)
         {
             xenMinion.DestroyAllMinions(pPlayer);
+        }
+    }
+    
+    // Reset Swarmer's Snark Nests
+    if(g_PlayerSnarkNests.exists(steamID))
+    {
+        SnarkNestData@ snarkNestData = cast<SnarkNestData@>(g_PlayerSnarkNests[steamID]);
+        if(snarkNestData !is null)
+        {
+            snarkNestData.Reset();
         }
     }
 
