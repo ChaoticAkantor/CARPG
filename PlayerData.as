@@ -415,7 +415,19 @@ class PlayerData
         // Clean up previous class abilities if necessary.
         if (m_CurrentClass != PlayerClass::CLASS_NONE)
         {
-            // Handle class-specific cleanup
+            // Find the player for cleanup operations.
+            CBasePlayer@ pPlayer = null;
+            for(int i = 1; i <= g_Engine.maxClients; ++i) 
+            {
+                CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+                if(tempPlayer !is null && g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict()) == m_szSteamID) 
+                {
+                    @pPlayer = tempPlayer;
+                    break;
+                }
+            }
+            
+            // Handle class-specific cleanup.
             switch(m_CurrentClass) 
             {
                 case PlayerClass::CLASS_DEFENDER:
@@ -423,34 +435,164 @@ class PlayerData
                     if (g_PlayerBarriers.exists(m_szSteamID)) 
                     {
                         BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[m_szSteamID]);
-                        if (barrier !is null && barrier.IsActive()) 
+                        if (barrier !is null && barrier.IsActive() && pPlayer !is null) 
                         {
-                            // Find the player
-                            CBasePlayer@ pPlayer = null;
-                            for(int i = 1; i <= g_Engine.maxClients; ++i) 
-                            {
-                                CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-                                if(tempPlayer !is null && g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict()) == m_szSteamID) 
-                                {
-                                    @pPlayer = tempPlayer;
-                                    break;
-                                }
-                            }
-                            
-                            if (pPlayer !is null) 
-                            {
-                                barrier.DeactivateBarrier(pPlayer);
-                            }
+                            barrier.DeactivateBarrier(pPlayer);
                         }
                         
                         // Remove from dictionaries to ensure clean start when switching back.
                         g_PlayerBarriers.delete(m_szSteamID);
                     }
+                    
+                    // Also clean up any barrier protection being provided to others.
+                    CleanupPlayerBarrierProtection(m_szSteamID);
                     break;
                     
-                // Add other class cleanups as needed.
+                case PlayerClass::CLASS_MEDIC:
+                    // Clean up healing aura data.
+                    if (g_HealingAuras.exists(m_szSteamID)) 
+                    {
+                        g_HealingAuras.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                case PlayerClass::CLASS_BERSERKER:
+                    // Clean up bloodlust data.
+                    if (g_PlayerBloodlusts.exists(m_szSteamID)) 
+                    {
+                        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[m_szSteamID]);
+                        if (bloodlust !is null && bloodlust.IsActive() && pPlayer !is null) 
+                        {
+                            bloodlust.DeactivateBloodlust(pPlayer);
+                        }
+                        g_PlayerBloodlusts.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                case PlayerClass::CLASS_ENGINEER:
+                    // Clean up sentry data
+                    if (g_PlayerSentries.exists(m_szSteamID)) 
+                    {
+                        SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[m_szSteamID]);
+                        if (sentry !is null) 
+                        {
+                            sentry.Reset(); // Remove all sentries.
+                        }
+                        g_PlayerSentries.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                case PlayerClass::CLASS_ROBOMANCER:
+                    // Clean up minion data
+                    if (g_PlayerMinions.exists(m_szSteamID)) 
+                    {
+                        MinionData@ minions = cast<MinionData@>(g_PlayerMinions[m_szSteamID]);
+                        if (minions !is null) 
+                        {
+                            minions.Reset(); // Remove all robo minions.
+                        }
+                        g_PlayerMinions.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                case PlayerClass::CLASS_XENOMANCER:
+                    // Clean up xen minion data
+                    if (g_XenologistMinions.exists(m_szSteamID)) 
+                    {
+                        XenMinionData@ xenMinions = cast<XenMinionData@>(g_XenologistMinions[m_szSteamID]);
+                        if (xenMinions !is null) 
+                        {
+                            xenMinions.Reset(); // Remove all xen minions.
+                        }
+                        g_XenologistMinions.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                case PlayerClass::CLASS_SHOCKTROOPER:
+                    // Clean up shock rifle data.
+                    if (g_ShockRifleData.exists(m_szSteamID)) 
+                    {
+                        g_ShockRifleData.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                case PlayerClass::CLASS_CLOAKER:
+                    // Clean up cloak data.
+                    if (g_PlayerCloaks.exists(m_szSteamID)) 
+                    {
+                        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[m_szSteamID]);
+                        if (cloak !is null && cloak.IsActive() && pPlayer !is null) 
+                        {
+                            cloak.DeactivateCloak(pPlayer);
+                        }
+                        g_PlayerCloaks.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                case PlayerClass::CLASS_VANQUISHER:
+                    // Clean up explosive rounds data.
+                    if (g_PlayerExplosiveRounds.exists(m_szSteamID)) 
+                    {
+                        g_PlayerExplosiveRounds.delete(m_szSteamID);
+                    }
+                    break;
+                    
+                case PlayerClass::CLASS_SWARMER:
+                    // Clean up snark nest data.
+                    if (g_PlayerSnarkNests.exists(m_szSteamID)) 
+                    {
+                        SnarkNestData@ snarkNest = cast<SnarkNestData@>(g_PlayerSnarkNests[m_szSteamID]);
+                        if (snarkNest !is null) 
+                        {
+                            snarkNest.Reset(); // Remove all snarks.
+                        }
+                        g_PlayerSnarkNests.delete(m_szSteamID);
+                    }
+                    break;
             }
         }
+        
+        m_CurrentClass = newClass;
+    
+        // Find the player and update their stats.
+        const int iMaxPlayers = g_Engine.maxClients;
+        for(int i = 1; i <= iMaxPlayers; ++i)
+        {
+            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+            if(pPlayer !is null && g_EngineFuncs.GetPlayerAuthId(pPlayer.edict()) == m_szSteamID)
+            {
+                string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+                
+                // Initialize base resources once.
+                if(!g_PlayerClassResources.exists(steamID))
+                {
+                    dictionary resources = 
+                    {
+                        {'current', 0.0f}, // Start at 0 or set to max after CalculateStats.
+                        {'max', 0.0f},
+                        {'regen', 0.0f}
+                    };
+                    @g_PlayerClassResources[steamID] = resources;
+                }
+                
+                CalculateStats(pPlayer);
+                
+                // Update resource caps after stats calculation.
+                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                if(resources !is null)
+                {   
+                    float currentEnergy = float(resources['current']);
+                    float maxEnergy = float(resources['max']);
+                    if(currentEnergy > maxEnergy)
+                        resources['current'] = maxEnergy;
+                }
+
+                break;
+            }
+        }
+        
+        SaveToFile();
+    }
         
         m_CurrentClass = newClass;
     
