@@ -11,13 +11,13 @@ dictionary g_PlayerBloodlusts;
 class BloodlustData
 {
     private bool m_bActive = false;
-    private float m_flBloodlustEnergyDrainInterval = 1.0f; // Interval to remove energy.
+    private float m_flBloodlustEnergyDrainInterval = 0.5f; // Interval to remove energy.
     private float m_flBloodlustEnergyCost = 1.0f; // Energy drain per interval.
-    private float m_flBaseDamageBonus = 0.5f; // Base damage increase at lowest health.
-    private float m_flDamageBonusPerLevel = 0.05f; // Bonus damage scaling per level.
-    private float m_flBaseDamageLifesteal = 0.20f; // % base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
-    private float m_flLifestealPerLevel = 0.02f; // % bonus lifesteal per level.
-    private float m_flEnergysteal = 0.05f; // % Energy steal.
+    private float m_flBaseDamageBonus = 0.40f; // Base damage increase at lowest health.
+    private float m_flDamageBonusPerLevel = 0.04f; // Bonus damage scaling per level.
+    private float m_flBaseDamageLifesteal = 0.25f; // % Base damage dealt returned as health. Total lifesteal is doubled when bloodlust is active.
+    private float m_flLifestealPerLevel = 0.02f; // % Increase lifesteal per level.
+    private float m_flEnergysteal = 0.02f; // % Energy steal.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -45,7 +45,7 @@ class BloodlustData
             bonus *= (1.0f + (level * m_flDamageBonusPerLevel));
         }
         
-        // Calculate missing health percentage
+        // Calculate missing health percentage.
         float maxHealth = pPlayer.pev.max_health;
         float missingHealth = maxHealth - pPlayer.pev.health;
         float missingHealthPercent = (missingHealth / maxHealth) * 100.0f;
