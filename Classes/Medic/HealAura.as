@@ -279,7 +279,7 @@ class HealingAura
             return;
 
         Vector origin = target.pev.origin;
-        origin.z += 32; // Offset to center of entity.
+        origin.z += 16; // Offset to center of entity.
 
         Vector endPoint = origin;
         endPoint.z += 10; // Trail moves upward.
