@@ -142,7 +142,7 @@ void InitializeClassDefinitions()
                     def.baseAP = 50.0f; // Berserkers have lower base AP.
                     def.baseResource = 20.0f;
                     def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.04f; // 60s at level 50.
+                    def.energyPerLevel = 0.04f; // 30s at level 50. (Drains 2/s).
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseHP = 100.0f;
@@ -734,8 +734,8 @@ class PlayerData
             resources['max'] = maxResource;
             resources['regen'] = resourceRegen;
             
-            // If we heal over max, set it back (except for Berserkers).
-            if(pPlayer.pev.health > maxHealth && m_CurrentClass != PlayerClass::CLASS_BERSERKER)
+            // If we heal over max, set it back.
+            if(pPlayer.pev.health > maxHealth)
                 pPlayer.pev.health = maxHealth;
                 
             // Same for armor.
