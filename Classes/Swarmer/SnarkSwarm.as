@@ -1,5 +1,3 @@
-string strSnarkSpawnSound = "weapons/explode3.wav";
-
 dictionary g_PlayerSnarkNests;
 
 class SnarkNestData
@@ -124,22 +122,8 @@ class SnarkNestData
         // Get player's gun position for effects.
         Vector gunPos = pPlayer.GetGunPosition();
         
-        // Create visual effect.
-        NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
-        message.WriteByte(TE_DLIGHT);
-        message.WriteCoord(gunPos.x);
-        message.WriteCoord(gunPos.y);
-        message.WriteCoord(gunPos.z);
-        message.WriteByte(32);  // Radius.
-        message.WriteByte(255);   // R.
-        message.WriteByte(255); // G.
-        message.WriteByte(0);   // B.
-        message.WriteByte(5);   // Life (1/10th seconds).
-        message.WriteByte(64);  // Decay rate.
-        message.End();
-        
-        // Play sound.
-        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSnarkSpawnSound, 1.0f, ATTN_NORM);
+        // Play sound (Use from bloodlust).
+        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strBloodlustHitSound, 1.0f, ATTN_NORM);
         
         // Spawn snarks from the player's gun.
         int snarkCount = GetSnarkCount();
@@ -153,18 +137,6 @@ class SnarkNestData
     {
         if(pPlayer is null || !pPlayer.IsConnected())
             return;
-        
-        // Create an explosion effect for dramatic effect.
-        NetworkMessage explosionMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
-        explosionMsg.WriteByte(TE_EXPLOSION);
-        explosionMsg.WriteCoord(position.x);
-        explosionMsg.WriteCoord(position.y);
-        explosionMsg.WriteCoord(position.z);
-        explosionMsg.WriteShort(g_EngineFuncs.ModelIndex("sprites/zerogxplode.spr"));
-        explosionMsg.WriteByte(10); // Scale.
-        explosionMsg.WriteByte(15); // Framerate.
-        explosionMsg.WriteByte(TE_EXPLFLAG_NOPARTICLES | TE_EXPLFLAG_NODLIGHTS | TE_EXPLFLAG_NOSOUND);
-        explosionMsg.End();
         
         // Start the simple sequential spawning.
         dictionary spawnParams;
@@ -186,14 +158,14 @@ class SnarkNestData
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
             
-        // Get current player gun position
+        // Get current player gun position.
         Vector gunPos = pPlayer.GetGunPosition();
             
-        // Get player's aim direction using AngleVectors
+        // Get player's aim direction using AngleVectors.
         Vector aimDir, right, up;
         g_EngineFuncs.AngleVectors(pPlayer.pev.v_angle, aimDir, right, up);
         
-        // Create variation around the player's view direction
+        // Create variation around the player's view direction.
         float horizontalVariation = Math.RandomFloat(-0.3f, 0.3f); // +/- 0.3 radians (~17 degrees)
         float verticalVariation = Math.RandomFloat(-0.3f, 0.3f);   // +/- 0.3 radians (~17 degrees)
         
@@ -203,14 +175,39 @@ class SnarkNestData
         finalDir = finalDir + (up * verticalVariation);
         finalDir = finalDir.Normalize();
         
-        // Calculate spawn position with offset to prevent collisions
+        // Calculate spawn position with offset to prevent collisions.
         Vector spawnPos = gunPos + (finalDir * 15.0f);
         
-        // Calculate velocity in the aim direction with variation
+        // Calculate velocity in the aim direction with variation.
         Vector velocity = finalDir * m_flLaunchForce;
-        
-        // Add a slight upward component to help clear obstacles
+
+        // Add a slight upward component to throw them in an arch.
         velocity.z += Math.RandomFloat(20.0f, 50.0f);
+
+        // Create visual effect on player per snark.
+        // Use gun position for effect start
+        Vector origin = gunPos;
+        
+        // Use finalDir (aim direction with variation) to calculate endpoint.
+        // This makes the trail shoot out in front of the player along their view direction.
+        Vector endPoint = origin + (finalDir * 100.0f); // Trail shoots out X units in front.
+
+        // Create sprite trail effect. (Same as the one from HealAura poison splatter).
+        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+            msg.WriteByte(TE_SPRITETRAIL);
+            msg.WriteCoord(origin.x);
+            msg.WriteCoord(origin.y);
+            msg.WriteCoord(origin.z);
+            msg.WriteCoord(endPoint.x);
+            msg.WriteCoord(endPoint.y);
+            msg.WriteCoord(endPoint.z);
+            msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
+            msg.WriteByte(2);   // Count.
+            msg.WriteByte(1);   // Life in 0.1's.
+            msg.WriteByte(5);   // Scale in 0.1's.
+            msg.WriteByte(25);  // Velocity along vector in 10's.
+            msg.WriteByte(10);  // Random velocity in 10's - already adds randomness to particles.
+        msg.End();
         
         // Create the snark.
         dictionary keys;
