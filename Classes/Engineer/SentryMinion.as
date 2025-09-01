@@ -196,6 +196,62 @@ class SentryData
         m_bActive = false;
         m_hSentry = null;
     }
+    
+    // Reset function to clean up any active sentries
+    void Reset()
+    {
+        // Find the player index
+        int playerIndex = -1;
+        CBasePlayer@ pPlayer = null;
+        
+        if(m_hSentry.IsValid())
+        {
+            CBaseEntity@ pSentry = m_hSentry.GetEntity();
+            if(pSentry !is null && pSentry.pev.owner !is null)
+            {
+                @pPlayer = cast<CBasePlayer@>(g_EntityFuncs.Instance(pSentry.pev.owner));
+            }
+        }
+        
+        // If we couldn't find the player from the sentry, try to find from stats
+        if(pPlayer is null && m_pStats !is null)
+        {
+            for(int i = 1; i <= g_Engine.maxClients; i++)
+            {
+                CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+                if(tempPlayer !is null && tempPlayer.IsConnected())
+                {
+                    string steamID = g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict());
+                    PlayerData@ playerData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                    if(playerData !is null && playerData.GetCurrentClassStats() is m_pStats)
+                    {
+                        @pPlayer = tempPlayer;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if(pPlayer !is null)
+        {
+            DestroySentry(pPlayer);
+        }
+        else
+        {
+            // If we can't find the player, just remove the sentry directly
+            if(m_hSentry.IsValid())
+            {
+                CBaseEntity@ pSentry = m_hSentry.GetEntity();
+                if(pSentry !is null)
+                {
+                    g_EntityFuncs.Remove(pSentry);
+                }
+            }
+            
+            m_bActive = false;
+            m_hSentry = null;
+        }
+    }
 
     void Update(CBasePlayer@ pPlayer)
     {

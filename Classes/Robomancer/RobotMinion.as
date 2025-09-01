@@ -322,6 +322,51 @@ class MinionData
         
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
     }
+    
+    // Reset function to clean up all active minions
+    void Reset()
+    {
+        // Find the player if possible
+        CBasePlayer@ pPlayer = null;
+        
+        if(m_pStats !is null)
+        {
+            for(int i = 1; i <= g_Engine.maxClients; i++)
+            {
+                CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+                if(tempPlayer !is null && tempPlayer.IsConnected())
+                {
+                    string steamID = g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict());
+                    PlayerData@ playerData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                    if(playerData !is null && playerData.GetCurrentClassStats() is m_pStats)
+                    {
+                        @pPlayer = tempPlayer;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if(pPlayer !is null)
+        {
+            DestroyAllMinions(pPlayer);
+        }
+        else
+        {
+            // If we can't find the player, just remove all minions directly
+            for(int i = m_hMinions.length() - 1; i >= 0; i--)
+            {
+                CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
+                if(pExistingMinion !is null)
+                {
+                    g_EntityFuncs.Remove(pExistingMinion);
+                }
+            }
+            
+            m_hMinions.resize(0);
+            m_flReservePool = 0.0f;
+        }
+    }
 
     void MinionRegen()
     {
