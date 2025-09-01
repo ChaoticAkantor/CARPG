@@ -150,6 +150,7 @@ class HealingAura
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             UpdateVisualEffect(pPlayer);
         }
+
         m_flLastToggleTime = 0.0f;
         m_flLastHealTime = 0.0f;
         m_flLastPoisonTime = 0.0f;
@@ -223,7 +224,7 @@ class HealingAura
                 
             bool isEnemy = false;
             
-            // Check classification to determine if entity is an enemy
+            // Check classification to determine if entity is an enemy.
             int classification = pEntity.Classify();
             
             // All these classifications are enemies
@@ -240,9 +241,9 @@ class HealingAura
                 isEnemy = true;
             }
             
-            // Special handling for exclusion list entities
-            // For these entities, if they're in the exclusion list and IsPlayerAlly is true
-            // they're actually enemies (contrary to what their classification would suggest)
+            // Special handling for exclusion list entities.
+            // For these entities, if they're in the exclusion list and IsPlayerAlly is true.
+            // they're actually enemies (contrary to what their classification would suggest).
             string classname = pEntity.GetClassname();
             bool isInExclusionList = false;
             
@@ -253,20 +254,20 @@ class HealingAura
                     CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                     if(pMonster !is null && pMonster.IsPlayerAlly())
                     {
-                        // These are special cases where IsPlayerAlly is true but they're actually enemies
+                        // These are special cases where IsPlayerAlly is true but they're actually enemies.
                         isEnemy = true;
                     }
                     break;
                 }
             }
             
-            // Only damage if it's an enemy
+            // Only damage if it's an enemy.
             if(isEnemy)
             {
-                // Apply poison damage to enemy
+                // Apply poison damage to enemy.
                 pEntity.TakeDamage(pPlayer.pev, pPlayer.pev, poisonDamage, DMG_POISON);
                 
-                // Apply poison effect
+                // Apply poison effect.
                 ApplyPoisonEffect(pEntity);
             }
         }
@@ -279,34 +280,26 @@ class HealingAura
 
         Vector origin = target.pev.origin;
         origin.z += 32; // Offset to center of entity.
-        
-        // Create several spit splatter effects around the enemy
-        for (int i = 0; i < 3; i++) {
-            Vector startPoint = origin;
-            Vector endPoint = origin;
-            
-            // Random directions for splatter
-            endPoint.x = startPoint.x + Math.RandomFloat(-25, 25);
-            endPoint.y = startPoint.y + Math.RandomFloat(-25, 25);
-            endPoint.z = startPoint.z + Math.RandomFloat(-10, 30);
-            
-            // Create sprite trail effect
-            NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-                msg.WriteByte(TE_SPRITETRAIL);
-                msg.WriteCoord(startPoint.x);
-                msg.WriteCoord(startPoint.y);
-                msg.WriteCoord(startPoint.z);
-                msg.WriteCoord(endPoint.x);
-                msg.WriteCoord(endPoint.y);
-                msg.WriteCoord(endPoint.z);
-                msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
-                msg.WriteByte(8);   // Count
-                msg.WriteByte(1);   // Life in 0.1's
-                msg.WriteByte(3);   // Scale in 0.1's
-                msg.WriteByte(15);  // Velocity along vector in 10's
-                msg.WriteByte(10);  // Random velocity in 10's
-            msg.End();
-        }
+
+        Vector endPoint = origin;
+        endPoint.z += 10; // Trail moves upward.
+
+        // Create sprite trail effect.
+        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+            msg.WriteByte(TE_SPRITETRAIL);
+            msg.WriteCoord(origin.x);
+            msg.WriteCoord(origin.y);
+            msg.WriteCoord(origin.z);
+            msg.WriteCoord(endPoint.x);
+            msg.WriteCoord(endPoint.y);
+            msg.WriteCoord(endPoint.z);
+            msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
+            msg.WriteByte(8);   // Count.
+            msg.WriteByte(1);   // Life in 0.1's.
+            msg.WriteByte(3);   // Scale in 0.1's.
+            msg.WriteByte(15);  // Velocity along vector in 10's.
+            msg.WriteByte(10);  // Random velocity in 10's.
+        msg.End();
     }
 
     private void UpdateVisualEffect(CBasePlayer@ pPlayer)
@@ -332,7 +325,7 @@ class HealingAura
             auramsg.WriteCoord(pos.z);
             auramsg.WriteCoord(pos.x);
             auramsg.WriteCoord(pos.y);
-            auramsg.WriteCoord(pos.z + m_flRadius); // Height
+            auramsg.WriteCoord(pos.z + m_flRadius); // Height.
             auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame.
             auramsg.WriteByte(16); // Frame rate.
