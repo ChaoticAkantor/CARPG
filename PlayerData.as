@@ -593,48 +593,6 @@ class PlayerData
         
         SaveToFile();
     }
-        
-        m_CurrentClass = newClass;
-    
-        // Find the player and update their stats.
-        const int iMaxPlayers = g_Engine.maxClients;
-        for(int i = 1; i <= iMaxPlayers; ++i)
-        {
-            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-            if(pPlayer !is null && g_EngineFuncs.GetPlayerAuthId(pPlayer.edict()) == m_szSteamID)
-            {
-                string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-                
-                // Initialize base resources once.
-                if(!g_PlayerClassResources.exists(steamID))
-                {
-                    dictionary resources = 
-                    {
-                        {'current', 0.0f}, // Start at 0 or set to max after CalculateStats.
-                        {'max', 0.0f},
-                        {'regen', 0.0f}
-                    };
-                    @g_PlayerClassResources[steamID] = resources;
-                }
-                
-                CalculateStats(pPlayer);
-                
-                // Update resource caps after stats calculation.
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                if(resources !is null)
-                {   
-                    float currentEnergy = float(resources['current']);
-                    float maxEnergy = float(resources['max']);
-                    if(currentEnergy > maxEnergy)
-                        resources['current'] = maxEnergy;
-                }
-
-                break;
-            }
-        }
-        
-        SaveToFile();
-    }
     
     PlayerClass GetCurrentClass() { return m_CurrentClass; }
     
