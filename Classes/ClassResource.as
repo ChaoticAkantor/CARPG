@@ -298,15 +298,33 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     array<MinionInfo>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
+                                        bool hasValidMinions = false;
+                                        
                                         for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                         {
+                                            // First check if the handle is valid before trying to get the entity.
+                                            if(!minions[minionIndex].hMinion.IsValid())
+                                                continue;
+                                                
                                             CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
                                             if(pMinion !is null)
                                             {
-                                                // Flat HP display.
-                                                float healthFlat = (pMinion.pev.health);
+                                                hasValidMinions = true;
+                                                
+                                                // Make sure we have a valid health value.
+                                                float healthFlat = pMinion.pev.health;
+                                                if(healthFlat <= 0)
+                                                    healthFlat = 1; // Default to 1 if health is invalid.
+                                                    
+                                                // Flat HP display
                                                 resourceInfo += "[Robogrunt " + (minionIndex + 1) + ": " + int(healthFlat) + " HP] ";
                                             }
+                                        }
+                                        
+                                        // If we didn't find any valid minions but the array has entries, that suggests the minions are invalid after a map change.
+                                        if(!hasValidMinions)
+                                        {
+                                            resourceInfo += "[No Robogrunts] ";
                                         }
                                     }
                                 }
@@ -435,16 +453,26 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     array<XenMinionInfo>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
+                                        bool hasValidMinions = false;
+                                        
                                         for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                         {
+                                            // First check if the handle is valid before trying to get the entity
+                                            if(!minions[minionIndex].hMinion.IsValid())
+                                                continue;
+                                                
                                             CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
                                             if(pMinion !is null)
                                             {
-                                                // Show flat HP with monster name.
-                                                float healthFlat = (pMinion.pev.health);
+                                                hasValidMinions = true;
                                                 
-                                                // Get creature type from entity classname instead of relying on arrays
-                                                string creatureName = "Creature"; // Default fallback
+                                                // Make sure we have a valid health value.
+                                                float healthFlat = pMinion.pev.health;
+                                                if(healthFlat <= 0)
+                                                    healthFlat = 1; // Default to 1 if health is invalid.
+                                                
+                                                // Get creature type from entity classname instead of relying on arrays.
+                                                string creatureName = "Creature"; // Default fallback.
                                                 
                                                 // Get classname directly from the entity
                                                 string classname = pMinion.pev.classname;
@@ -463,6 +491,12 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                                     
                                                 resourceInfo += "[" + creatureName + ": " + int(healthFlat) + " HP] ";
                                             }
+                                        }
+                                        
+                                        // If we didn't find any valid minions but the array has entries, that suggests the minions are invalid after a map change.
+                                        if(!hasValidMinions)
+                                        {
+                                            resourceInfo += "[No Creatures] ";
                                         }
                                     }
                                 }

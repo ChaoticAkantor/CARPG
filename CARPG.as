@@ -73,6 +73,9 @@ void MapStart() // Called after 0.1 seconds of game activity, this is used to si
 
     // Hints to play on map load.
     g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
+    
+    // Force clearing invalid minion references on map change
+    g_Scheduler.SetTimeout("ClearInvalidMinions", 1.0f);
 }
 
 void PluginReset() // Used to reset anything important to the plugin on reload.
@@ -98,6 +101,46 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
     SetupTimers(); // Re-setup timers.
     ApplyDifficultySettings(); // Re-apply difficulty settings.
+}
+
+// Function to clear all invalid minion references after map changes
+void ClearInvalidMinions()
+{
+    g_Game.AlertMessage(at_console, "CARPG: Checking for invalid minions after map change...\n");
+
+    // Loop through all players
+    for(int i = 1; i <= g_Engine.maxClients; i++)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer is null || !pPlayer.IsConnected())
+            continue;
+            
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        
+        // Clear Robot Minions
+        if(g_PlayerMinions.exists(steamID))
+        {
+            MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+            if(minion !is null)
+            {
+                // Force clear all minions after map change - they can't exist in the new map
+                minion.Reset();
+                g_Game.AlertMessage(at_console, "CARPG: Cleared Robomancer minions for player " + steamID + "\n");
+            }
+        }
+        
+        // Clear Xen Minions
+        if(g_XenologistMinions.exists(steamID))
+        {
+            XenMinionData@ minion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+            if(minion !is null)
+            {
+                // Force clear all minions after map change - they can't exist in the new map
+                minion.Reset();
+                g_Game.AlertMessage(at_console, "CARPG: Cleared Xenomancer minions for player " + steamID + "\n");
+            }
+        }
+    }
 }
 
 void RegisterHooks()
