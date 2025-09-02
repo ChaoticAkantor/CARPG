@@ -5,9 +5,22 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
 // Houndeye.
     // Models/Sprites.
     string strHoundeyeModel = "models/houndeye.mdl";
-    string strHoundeyeSpriteShockwave = "sprites/shockwave.spr";
-
-    // Sounds.
+    string strHoundeyeSpriteShockwave = "sprites/shockwave.spr";class XenMinionData
+{
+    private XenMinionMenu@ m_pMenu;
+    private array<XenMinionInfo> m_hMinions;
+    private bool m_bActive = false;
+    private float m_flBaseHealth = 200.0;
+    private float m_flHealthScale = 0.30; // Health % scaling per level.
+    private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
+    private float m_flDamageScale = 0.10; // Damage % scaling per level.
+    private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement 1)
+    private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
+    private float m_flReservePool = 0.0f;
+    private float m_flLastToggleTime = 0.0f;
+    private float m_flLastMessageTime = 0.0f;
+    private float m_flToggleCooldown = 1.0f;
+    private ClassStats@ m_pStats = null;
     string strHoundeyeSoundAlert1 = "houndeye/he_alert1.wav";
     string strHoundeyeSoundAlert2 = "houndeye/he_alert2.wav";
     string strHoundeyeSoundAlert3 = "houndeye/he_alert3.wav";
@@ -242,17 +255,26 @@ const array<int> XEN_LEVEL_REQUIREMENTS =
     15    // Baby Garg.
 };
 
+// Structure to track minion type
+class XenMinionInfo
+{
+    EHandle hMinion;
+    int type;
+    
+    XenMinionInfo() { type = 0; }
+    XenMinionInfo(EHandle h, int t) { hMinion = h; type = t; }
+}
+
 class XenMinionData
 {
     private XenMinionMenu@ m_pMenu;
-    private array<EHandle> m_hMinions;
-    array<int> m_CreatureTypes; // Store type of each minion. Since we have to use a different method here than in RobotMinion.
+    private array<MinionInfo> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 200.0;
-    private float m_flHealthScale = 0.30; // Health % scaling per level.
-    private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
+    private float m_flHealthScale = 0.36; // Health % scaling per level.
+    private float m_flHealthRegen = 0.005; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.10; // Damage % scaling per level.
-    private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement 1)
+    private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -291,7 +313,7 @@ class XenMinionData
         return playerLevel >= XEN_LEVEL_REQUIREMENTS[minionType];
     }
     
-    array<EHandle>@ GetMinions() { return m_hMinions; }
+    array<XenMinionInfo>@ GetMinions() { return m_hMinions; }
 
     XenMinionData() 
     {
@@ -393,8 +415,11 @@ class XenMinionData
                                                 //  -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
             }
 
-            m_hMinions.insertLast(EHandle(pXenMinion)); // Insert into minion list.
-            m_CreatureTypes.insertLast(minionType); // Store type alongside handle.
+            // Store both the minion handle and its type
+            XenMinionInfo info;
+            info.hMinion = EHandle(pXenMinion);
+            info.type = minionType;
+            m_hMinions.insertLast(info);
             
             m_flReservePool += XEN_COSTS[minionType]; // Add to reserve pool when minion is created.
             current -= XEN_COSTS[minionType]; // Subtract from current resources.
@@ -424,14 +449,13 @@ class XenMinionData
         // Remove invalid Minions and check frags.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
-            CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
             
             if(pExistingMinion is null)
             {
                 // Return costs to individual reserve pool.
-                m_flReservePool -= XEN_COSTS[m_CreatureTypes[i]];
+                m_flReservePool -= XEN_COSTS[m_hMinions[i].type];
                 m_hMinions.removeAt(i);
-                m_CreatureTypes.removeAt(i);
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creature bled out!\n");
                 continue;
             }
@@ -446,15 +470,11 @@ class XenMinionData
             // Ensure max_health is properly set during updates.
             if(pExistingMinion.pev.max_health <= 0)
             {
-                // Find the creature type index for this minion.
-                int creatureTypeIndex = -1;
-                if(i >= 0 && uint(i) < m_CreatureTypes.length())
-                {
-                    creatureTypeIndex = m_CreatureTypes[uint(i)];
-                }
+                // Get the creature type from our stored information
+                int creatureType = m_hMinions[i].type;
                 
                 // Use our scaled health formula that accounts for player level.
-                pExistingMinion.pev.max_health = GetScaledHealth(creatureTypeIndex);
+                pExistingMinion.pev.max_health = GetScaledHealth(creatureType);
             }
         }
 
@@ -488,13 +508,12 @@ class XenMinionData
         // Destroy all Minions from last to first
         for(int i = MinionCount - 1; i >= 0; i--)
         {
-            CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
             if(pExistingMinion !is null)
             {
                 // Use Killed to destroy active minions naturally.
                 pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing, incase they are in dying state and revivable.
                 m_hMinions.removeAt(i);
-                m_CreatureTypes.removeAt(i);
             }
         }
 
@@ -537,7 +556,7 @@ class XenMinionData
             // If we can't find the player, just remove all minions directly
             for(int i = m_hMinions.length() - 1; i >= 0; i--)
             {
-                CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
+                CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
                 if(pExistingMinion !is null)
                 {
                     g_EntityFuncs.Remove(pExistingMinion);
@@ -545,7 +564,6 @@ class XenMinionData
             }
             
             m_hMinions.resize(0);
-            m_CreatureTypes.resize(0);
             m_flReservePool = 0.0f;
         }
     }
@@ -554,7 +572,7 @@ class XenMinionData
     {
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
-            CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion !is null)
             {
                 // Cast to CBaseMonster to check monster-specific properties
@@ -566,15 +584,11 @@ class XenMinionData
                     // Ensure max_health is properly set
                     if(pMinion.pev.max_health <= 0) 
                     {
-                        // Find the creature type index for this minion
-                        int creatureTypeIndex = -1;
-                        if(i < m_CreatureTypes.length())
-                        {
-                            creatureTypeIndex = m_CreatureTypes[i];
-                        }
+                        // Get the creature type from our stored information
+                        int creatureType = m_hMinions[i].type;
                         
                         // Use our scaled health formula that accounts for player level
-                        pMinion.pev.max_health = GetScaledHealth(creatureTypeIndex);
+                        pMinion.pev.max_health = GetScaledHealth(creatureType);
                     }
 
                     float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
@@ -658,7 +672,7 @@ class XenMinionData
         // Needs better tracking, currently heals all minions.
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
-            CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion !is null)
             {
                 // Cast to CBaseMonster to check monster-specific properties.
@@ -714,7 +728,7 @@ class XenMinionData
 
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
-            CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion !is null)
             {
                 float angle = angleStep * i;

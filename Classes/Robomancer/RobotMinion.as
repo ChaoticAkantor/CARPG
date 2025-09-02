@@ -53,14 +53,24 @@ const array<int> MINION_COSTS =
     2   // M16.
 };
 
+// Structure to track minion type.
+class MinionInfo
+{
+    EHandle hMinion;
+    int type;
+    
+    MinionInfo() { type = 0; }
+    MinionInfo(EHandle h, int t) { hMinion = h; type = t; }
+}
+
 class MinionData
 {
     private MinionMenu@ m_pMenu;
-    private array<EHandle> m_hMinions;
+    private array<MinionInfo> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
-    private float m_flHealthScale = 0.50; // Health % scaling per level. Robogrunts are armored.
-    private float m_flHealthRegen = 0.01; // Health recovery % per second of Robogrunts.
+    private float m_flHealthScale = 0.18; // Health % scaling per level. Robogrunts are armored.
+    private float m_flHealthRegen = 0.005; // Health recovery % per second of Robogrunts.
     private float m_flDamageScale = 0.10; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
     private float m_flReservePool = 0.0f;
@@ -71,16 +81,16 @@ class MinionData
 
     bool IsActive() 
     { 
-        // Clean invalid minions first
+        // Clean invalid minions first.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
-            if(!m_hMinions[i].IsValid())
+            if(!m_hMinions[i].hMinion.IsValid())
             {
                 m_hMinions.removeAt(i);
             }
         }
         
-        // The minions are active if there are any in the list
+        // The minions are active if there are any in the list.
         return m_hMinions.length() > 0;
     }
 
@@ -94,7 +104,7 @@ class MinionData
 
     bool HasStats() { return m_pStats !is null; }
     
-    array<EHandle>@ GetMinions() { return m_hMinions; }
+    array<MinionInfo>@ GetMinions() { return m_hMinions; }
 
     MinionData() 
     {
@@ -125,10 +135,10 @@ class MinionData
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
         int current = int(resources['current']);
         
-        // First clean up invalid minions to make sure we have an accurate count
+        // First clean up invalid minions to make sure we have an accurate count.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
-            if(!m_hMinions[i].IsValid())
+            if(!m_hMinions[i].hMinion.IsValid())
             {
                 m_hMinions.removeAt(i);
             }
@@ -141,7 +151,7 @@ class MinionData
             return;
         }
         
-        // Calculate max resources and ensure we're within limits
+        // Calculate max resources and ensure we're within limits.
         float maxEnergy = float(resources['max']);
         if(m_flReservePool + MINION_COSTS[minionType] > maxEnergy)
         {
@@ -210,7 +220,11 @@ class MinionData
                                                 //  -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
             }
 
-            m_hMinions.insertLast(EHandle(pRoboMinion)); //Insert into minion list.
+            // Store both the minion handle and its type
+            MinionInfo info;
+            info.hMinion = EHandle(pRoboMinion);
+            info.type = minionType;
+            m_hMinions.insertLast(info);
             
             m_flReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
             current -= MINION_COSTS[minionType]; // Subtract from current resources.
@@ -237,28 +251,29 @@ class MinionData
         if(pPlayer is null)
             return;
 
+        // Used to track whether we need to update the reserve pool.
+        bool hasRemovedMinions = false;
+
         // Remove invalid Minions and check frags.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
-            CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
             
-            // First get the name while minion still exists.
-            string name = pExistingMinion !is null ? string(pExistingMinion.pev.targetname) : "";
-            
-            if(pExistingMinion is null) // Only count them if truly dead and not in revivable state.
+            // If the minion no longer exists in the game world.
+            if(pExistingMinion is null)
             {
-                // Find minion type and reduce pool before removing from array.
-                for(uint j = 0; j < MINION_NAMES.length(); j++)
-                {
-                    if(name.Find(MINION_NAMES[j]) >= 0)
-                    {
-                        m_flReservePool -= MINION_COSTS[j];
-                        break;
-                    }
-                }
-                
+                // Remove from our list and update reserve pool.
                 m_hMinions.removeAt(i);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robot destroyed!\n");
+                hasRemovedMinions = true;
+                continue;
+            }
+            
+            // Check if minion is at zero health but not yet destroyed by the engine.
+            if(pExistingMinion.pev.health <= 0)
+            {
+                // Use Killed to properly destroy the minion.
+                pExistingMinion.Killed(pPlayer.pev, GIB_NORMAL);
+                
                 continue;
             }
 
@@ -271,11 +286,29 @@ class MinionData
                 pExistingMinion.pev.frags = 0;
             }
             
-            // Ensure max_health is properly set during updates
+            // Ensure max_health is properly set during updates.
             if(pExistingMinion.pev.max_health <= 0)
             {
                 pExistingMinion.pev.max_health = GetScaledHealth();
             }
+        }
+
+        // If we've removed minions, recalculate the reserve pool.
+        if(hasRemovedMinions)
+        {
+            // Recalculate the reserve pool based on current minions.
+            float newReservePool = 0.0f;
+            for(uint i = 0; i < m_hMinions.length(); i++)
+            {
+                int minionType = m_hMinions[i].type;
+                if(minionType >= 0 && uint(minionType) < MINION_COSTS.length())
+                {
+                    newReservePool += MINION_COSTS[minionType];
+                }
+            }
+            
+            // Update the reserve pool.
+            m_flReservePool = newReservePool;
         }
 
         // Update stats reference for stat menu.
@@ -308,7 +341,7 @@ class MinionData
         // Destroy all Minions from last to first.
         for(int i = MinionCount - 1; i >= 0; i--)
         {
-            CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
             if(pExistingMinion !is null)
             {
                 // Use Killed to destroy active minions naturally.
@@ -317,16 +350,16 @@ class MinionData
             }
         }
 
-        // Reset reserve pool after destroying all minions
+        // Reset reserve pool after destroying all minions.
         m_flReservePool = 0.0f;
         
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
     }
     
-    // Reset function to clean up all active minions
+    // Reset function to clean up all active minions.
     void Reset()
     {
-        // Find the player if possible
+        // Find the player if possible.
         CBasePlayer@ pPlayer = null;
         
         if(m_pStats !is null)
@@ -353,10 +386,10 @@ class MinionData
         }
         else
         {
-            // If we can't find the player, just remove all minions directly
+            // If we can't find the player, just remove all minions directly.
             for(int i = m_hMinions.length() - 1; i >= 0; i--)
             {
-                CBaseEntity@ pExistingMinion = m_hMinions[i].GetEntity();
+                CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
                 if(pExistingMinion !is null)
                 {
                     g_EntityFuncs.Remove(pExistingMinion);
@@ -372,10 +405,10 @@ class MinionData
     {
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
-            CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion !is null && pMinion.pev.health > 0) // Only regenerate if not "dead".
             {
-                // Ensure max_health is properly set
+                // Ensure max_health is properly set.
                 if(pMinion.pev.max_health <= 0)
                 {
                     pMinion.pev.max_health = GetScaledHealth();
@@ -400,10 +433,9 @@ class MinionData
             return m_flBaseHealth;
 
         float level = m_pStats.GetLevel();
-        // Base health * (1 + level*scale) - Only add base health once
         float health = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
         
-        // Ensure health is never less than base health
+        // Ensure health is never less than base health.
         if(health < m_flBaseHealth)
             health = m_flBaseHealth;
             
@@ -438,7 +470,7 @@ class MinionData
 
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
-            CBaseEntity@ pMinion = m_hMinions[i].GetEntity();
+            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion !is null)
             {
                 float angle = angleStep * i;
@@ -497,17 +529,17 @@ class MinionMenu
             
             if(choice == 99) 
             {
-                // Destroy all minions
+                // Destroy all minions.
                 m_pOwner.DestroyAllMinions(pPlayer);
             }
             else if(choice == 98)
             {
-                // Teleport existing minions
+                // Teleport existing minions.
                 m_pOwner.TeleportMinions(pPlayer);
             }
             else if(choice >= 0 && uint(choice) < MINION_NAMES.length())
             {
-                // Spawn new minion with selected weapon
+                // Spawn new minion with selected weapon.
                 m_pOwner.SpawnSpecificMinion(pPlayer, choice);
             }
         }
@@ -524,7 +556,7 @@ void CheckEngineerMinions()
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             
-            // Initialize MinionData if it doesn't exist
+            // Initialize MinionData if it doesn't exist.
             if(!g_PlayerMinions.exists(steamID))
             {
                 MinionData data;
@@ -534,7 +566,7 @@ void CheckEngineerMinions()
             MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
             if(Minion !is null)
             {
-                // Check if player switched away from Engineer
+                // Check if player switched away from Engineer.
                 if(g_PlayerRPGData.exists(steamID))
                 {
                     PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -546,7 +578,7 @@ void CheckEngineerMinions()
                             if(Minion.GetMinionCount() > 0)
                             {
                                 Minion.DestroyAllMinions(pPlayer);
-                                continue;  // Skip rest of updates
+                                continue;  // Skip rest of updates.
                             }
                         }
                         else if(!Minion.HasStats())
@@ -566,7 +598,7 @@ void CheckEngineerMinions()
                         float maxEnergy = float(resources['max']);
                         if(Minion.GetReservePool() > maxEnergy)
                         {
-                            // Over the limit, destroy minions until we're within limits
+                            // Over the limit, destroy minions until we're within limits.
                             Minion.DestroyAllMinions(pPlayer);
                         }
                     }
@@ -578,7 +610,7 @@ void CheckEngineerMinions()
                 Minion.GetScaledHealth();
                 Minion.GetScaledDamage();
 
-                // Normal update for active minions
+                // Normal update for active minions.
                 Minion.Update(pPlayer);
             }
         }
