@@ -5,22 +5,7 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
 // Houndeye.
     // Models/Sprites.
     string strHoundeyeModel = "models/houndeye.mdl";
-    string strHoundeyeSpriteShockwave = "sprites/shockwave.spr";class XenMinionData
-{
-    private XenMinionMenu@ m_pMenu;
-    private array<XenMinionInfo> m_hMinions;
-    private bool m_bActive = false;
-    private float m_flBaseHealth = 200.0;
-    private float m_flHealthScale = 0.30; // Health % scaling per level.
-    private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
-    private float m_flDamageScale = 0.10; // Damage % scaling per level.
-    private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement 1)
-    private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
-    private float m_flReservePool = 0.0f;
-    private float m_flLastToggleTime = 0.0f;
-    private float m_flLastMessageTime = 0.0f;
-    private float m_flToggleCooldown = 1.0f;
-    private ClassStats@ m_pStats = null;
+    string strHoundeyeSpriteShockwave = "sprites/shockwave.spr";
     string strHoundeyeSoundAlert1 = "houndeye/he_alert1.wav";
     string strHoundeyeSoundAlert2 = "houndeye/he_alert2.wav";
     string strHoundeyeSoundAlert3 = "houndeye/he_alert3.wav";
@@ -268,7 +253,7 @@ class XenMinionInfo
 class XenMinionData
 {
     private XenMinionMenu@ m_pMenu;
-    private array<MinionInfo> m_hMinions;
+    private array<XenMinionInfo> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 200.0;
     private float m_flHealthScale = 0.36; // Health % scaling per level.
