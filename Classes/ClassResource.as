@@ -295,12 +295,12 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     //resourceInfo += "[Robogrunts: " + minionData.GetMinionCount() + "]";
                                     
                                     // Add individual minion health info.
-                                    array<EHandle>@ minions = minionData.GetMinions();
+                                    array<MinionInfo>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
                                         for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                         {
-                                            CBaseEntity@ pMinion = minions[minionIndex].GetEntity();
+                                            CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
                                             if(pMinion !is null)
                                             {
                                                 // Flat HP display.
@@ -432,12 +432,12 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     // Show the minion count.
                                     //resourceInfo += "[Creatures: " + minionData.GetMinionCount() + "]";
                                     
-                                    array<EHandle>@ minions = minionData.GetMinions();
+                                    array<XenMinionInfo>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
                                         for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                         {
-                                            CBaseEntity@ pMinion = minions[minionIndex].GetEntity();
+                                            CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
                                             if(pMinion !is null)
                                             {
                                                 // Show flat HP with monster name.
@@ -449,7 +449,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                                 // Get classname directly from the entity
                                                 string classname = pMinion.pev.classname;
                                                 
-                                                // Map classnames to readable names - more reliable than array indexes
+                                                // Map classnames to readable names - more reliable than array indexes.
                                                 if(classname == "monster_houndeye")
                                                     creatureName = "Houndeye";
                                                 else if(classname == "monster_pitdrone") 
