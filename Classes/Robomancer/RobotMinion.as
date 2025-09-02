@@ -147,7 +147,7 @@ class MinionData
         // Check resources for spawning new minion.
         if(current < MINION_COSTS[minionType])
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough reserve for " + MINION_NAMES[minionType] + "!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + MINION_NAMES[minionType] + "!\n");
             return;
         }
         
@@ -155,7 +155,7 @@ class MinionData
         float maxEnergy = float(resources['max']);
         if(m_flReservePool + MINION_COSTS[minionType] > maxEnergy)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum robot capacity reached!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Robot Capacity reached!\n");
             return;
         }
 

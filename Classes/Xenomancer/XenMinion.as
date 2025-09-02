@@ -328,11 +328,28 @@ class XenMinionData
 
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
         int current = int(resources['current']);
+        
+        // First clean up invalid minions to make sure we have an accurate count.
+        for(int i = m_hMinions.length() - 1; i >= 0; i--)
+        {
+            if(!m_hMinions[i].hMinion.IsValid())
+            {
+                m_hMinions.removeAt(i);
+            }
+        }
 
         // Check resources for spawning new minion.
         if(current < XEN_COSTS[minionType])
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + XEN_NAMES[minionType] + "!\n");
+            return;
+        }
+        
+        // Calculate max resources and ensure we're within limits.
+        float maxEnergy = float(resources['max']);
+        if(m_flReservePool + XEN_COSTS[minionType] > maxEnergy)
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Creature Capacity reached!\n");
             return;
         }
 
@@ -431,17 +448,29 @@ class XenMinionData
         if(pPlayer is null)
             return;
 
+        // Used to track whether we need to update the reserve pool.
+        bool hasRemovedMinions = false;
+
         // Remove invalid Minions and check frags.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
             
+            // If the minion no longer exists in the game world.
             if(pExistingMinion is null)
             {
-                // Return costs to individual reserve pool.
-                m_flReservePool -= XEN_COSTS[m_hMinions[i].type];
+                // Remove from our list and update reserve pool.
                 m_hMinions.removeAt(i);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creature bled out!\n");
+                hasRemovedMinions = true;
+                continue;
+            }
+            
+            // Check if minion is at zero health but not yet destroyed by the engine.
+            if(pExistingMinion.pev.health <= 0)
+            {
+                // Use Killed to properly destroy the minion.
+                pExistingMinion.Killed(pPlayer.pev, GIB_NORMAL);
+                
                 continue;
             }
 
@@ -461,6 +490,24 @@ class XenMinionData
                 // Use our scaled health formula that accounts for player level.
                 pExistingMinion.pev.max_health = GetScaledHealth(creatureType);
             }
+        }
+
+        // If we've removed minions, recalculate the reserve pool.
+        if(hasRemovedMinions)
+        {
+            // Recalculate the reserve pool based on current minions.
+            float newReservePool = 0.0f;
+            for(uint i = 0; i < m_hMinions.length(); i++)
+            {
+                int minionType = m_hMinions[i].type;
+                if(minionType >= 0 && uint(minionType) < XEN_COSTS.length())
+                {
+                    newReservePool += XEN_COSTS[minionType];
+                }
+            }
+            
+            // Update the reserve pool.
+            m_flReservePool = newReservePool;
         }
 
         // Update stats reference for stat menu.
@@ -490,6 +537,16 @@ class XenMinionData
             return;
         }
 
+        // Calculate total refund amount
+        int totalRefund = 0;
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        dictionary@ resources = null;
+        
+        if(g_PlayerClassResources.exists(steamID))
+        {
+            @resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        }
+
         // Destroy all Minions from last to first
         for(int i = MinionCount - 1; i >= 0; i--)
         {
@@ -498,14 +555,26 @@ class XenMinionData
             {
                 // Use Killed to destroy active minions naturally.
                 pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing, incase they are in dying state and revivable.
+                
+                // Add to refund total
+                totalRefund += XEN_COSTS[m_hMinions[i].type];
                 m_hMinions.removeAt(i);
             }
         }
-
-        // Reset individual reserve pool
-        m_flReservePool = 0.0f;
         
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures destroyed!\n");
+        // Refund resources
+        if(resources !is null && totalRefund > 0)
+        {
+            int current = int(resources['current']);
+            current += totalRefund;
+            resources['current'] = current;
+            
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures destroyed! " + totalRefund + " points refunded!\n");
+        }
+        else
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures destroyed!\n");
+        }
     }
     
     // Reset function to clean up all active minions
@@ -538,7 +607,7 @@ class XenMinionData
         }
         else
         {
-            // If we can't find the player, just remove all minions directly
+            // If we can't find the player, just remove all minions directly without refunding.
             for(int i = m_hMinions.length() - 1; i >= 0; i--)
             {
                 CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
@@ -549,7 +618,6 @@ class XenMinionData
             }
             
             m_hMinions.resize(0);
-            m_flReservePool = 0.0f;
         }
     }
 
@@ -560,19 +628,19 @@ class XenMinionData
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion !is null)
             {
-                // Cast to CBaseMonster to check monster-specific properties
+                // Cast to CBaseMonster to check monster-specific properties.
                 CBaseMonster@ pMonster = cast<CBaseMonster@>(pMinion);
 
                 // Check if minion is actually "alive". Deadflag of 0 means the monster is alive.
                 if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO)
                 {
-                    // Ensure max_health is properly set
+                    // Ensure max_health is properly set.
                     if(pMinion.pev.max_health <= 0) 
                     {
-                        // Get the creature type from our stored information
+                        // Get the creature type from our stored information.
                         int creatureType = m_hMinions[i].type;
                         
-                        // Use our scaled health formula that accounts for player level
+                        // Use our scaled health formula that accounts for player level.
                         pMinion.pev.max_health = GetScaledHealth(creatureType);
                     }
 
@@ -792,7 +860,7 @@ class XenMinionMenu
             }
             else if(choice >= 0 && uint(choice) < XEN_NAMES.length())
             {
-                // Check if this minion type is unlocked
+                // Check if this minion type is unlocked.
                 if(!m_pOwner.IsMinionTypeUnlocked(choice))
                 {
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + XEN_NAMES[choice] + " requires Lv. " + XEN_LEVEL_REQUIREMENTS[choice] + "!\n");
@@ -835,13 +903,31 @@ void CheckXenologistMinions()
                         if(data.GetCurrentClass() != PlayerClass::CLASS_XENOMANCER)
                         {
                             // Player is no longer this class, destroy active minions.
-                            xenMinion.DestroyAllMinions(pPlayer);
-                            continue;  // Skip rest of updates.
+                            if(xenMinion.GetMinionCount() > 0)
+                            {
+                                xenMinion.DestroyAllMinions(pPlayer);
+                                continue;  // Skip rest of updates.
+                            }
                         }
                         else if(!xenMinion.HasStats())
                         {
                             // Update stats.
                             xenMinion.Initialize(data.GetCurrentClassStats());
+                        }
+                    }
+                }
+                
+                // Make sure resource limits are enforced
+                if(g_PlayerClassResources.exists(steamID))
+                {
+                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                    if(resources !is null)
+                    {
+                        float maxEnergy = float(resources['max']);
+                        if(xenMinion.GetReservePool() > maxEnergy)
+                        {
+                            // Over the limit, destroy minions until we're within limits.
+                            xenMinion.DestroyAllMinions(pPlayer);
                         }
                     }
                 }
