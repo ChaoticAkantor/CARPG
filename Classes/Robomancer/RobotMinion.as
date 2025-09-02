@@ -99,6 +99,8 @@ class MinionData
     int GetMinionCount() { return m_hMinions.length(); }
 
     float GetReservePool() { return m_flReservePool; }
+    
+    void SetReservePoolZero() { m_flReservePool = 0.0f; }
 
     float GetMinionRegen() { return m_flHealthRegen; }
 
@@ -572,6 +574,32 @@ void CheckEngineerMinions()
             MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
             if(Minion !is null)
             {
+                // Validation check - if this is a new map and we have stale minion references, clear them!
+                if(Minion.IsActive())
+                {
+                    bool hasInvalidMinions = false;
+                    array<MinionInfo>@ minions = Minion.GetMinions();
+                    
+                    // Check for any invalid minion entities
+                    for(uint j = 0; j < minions.length(); j++)
+                    {
+                        CBaseEntity@ pMinion = minions[j].hMinion.GetEntity();
+                        if(pMinion is null)
+                        {
+                            hasInvalidMinions = true;
+                            break;
+                        }
+                    }
+                    
+                    // If we found invalid minions, clear the array completely
+                    if(hasInvalidMinions)
+                    {
+                        minions.resize(0);
+                        Minion.SetReservePoolZero();
+                        g_Game.AlertMessage(at_console, "CARPG: Cleared invalid Robomancer minions for player " + steamID + "\n");
+                    }
+                }
+                
                 // Check if player switched away from Engineer.
                 if(g_PlayerRPGData.exists(steamID))
                 {

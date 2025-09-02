@@ -279,6 +279,8 @@ class XenMinionData
 
     float GetReservePool() { return m_flReservePool; }
     
+    void SetReservePoolZero() { m_flReservePool = 0.0f; }
+    
     float GetMinionRegen() { return m_flHealthRegen; }
 
     float GetLifestealPercent() 
@@ -873,6 +875,32 @@ void CheckXenologistMinions()
             XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
             if(xenMinion !is null)
             {
+                // Validation check - if this is a new map and we have stale minion references, clear them!
+                if(xenMinion.IsActive())
+                {
+                    bool hasInvalidMinions = false;
+                    array<XenMinionInfo>@ minions = xenMinion.GetMinions();
+                    
+                    // Check for any invalid minion entities
+                    for(uint j = 0; j < minions.length(); j++)
+                    {
+                        CBaseEntity@ pMinion = minions[j].hMinion.GetEntity();
+                        if(pMinion is null)
+                        {
+                            hasInvalidMinions = true;
+                            break;
+                        }
+                    }
+                    
+                    // If we found invalid minions, clear the array completely
+                    if(hasInvalidMinions)
+                    {
+                        minions.resize(0);
+                        xenMinion.SetReservePoolZero();
+                        g_Game.AlertMessage(at_console, "CARPG: Cleared invalid Xenomancer minions for player " + steamID + "\n");
+                    }
+                }
+                
                 // Check if player switched class.
                 if(g_PlayerRPGData.exists(steamID))
                 {
