@@ -256,7 +256,7 @@ class XenMinionData
     private array<XenMinionInfo> m_hMinions;
     private bool m_bActive = false;
     private float m_flBaseHealth = 200.0;
-    private float m_flHealthScale = 0.36; // Health % scaling per level.
+    private float m_flHealthScale = 0.18; // Health % scaling per level.
     private float m_flHealthRegen = 0.005; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.10; // Damage % scaling per level.
     private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
@@ -537,17 +537,7 @@ class XenMinionData
             return;
         }
 
-        // Calculate total refund amount
-        int totalRefund = 0;
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        dictionary@ resources = null;
-        
-        if(g_PlayerClassResources.exists(steamID))
-        {
-            @resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        }
-
-        // Destroy all Minions from last to first
+        // Destroy all Minions from last to first.
         for(int i = MinionCount - 1; i >= 0; i--)
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
@@ -555,32 +545,20 @@ class XenMinionData
             {
                 // Use Killed to destroy active minions naturally.
                 pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing, incase they are in dying state and revivable.
-                
-                // Add to refund total
-                totalRefund += XEN_COSTS[m_hMinions[i].type];
                 m_hMinions.removeAt(i);
             }
         }
+
+        // Reset individual reserve pool.
+        m_flReservePool = 0.0f;
         
-        // Refund resources
-        if(resources !is null && totalRefund > 0)
-        {
-            int current = int(resources['current']);
-            current += totalRefund;
-            resources['current'] = current;
-            
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures destroyed! " + totalRefund + " points refunded!\n");
-        }
-        else
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures destroyed!\n");
-        }
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures destroyed!\n");
     }
     
-    // Reset function to clean up all active minions
+    // Reset function to clean up all active minions.
     void Reset()
     {
-        // Find the player if possible
+        // Find the player if possible.
         CBasePlayer@ pPlayer = null;
         
         if(m_pStats !is null)
@@ -607,7 +585,7 @@ class XenMinionData
         }
         else
         {
-            // If we can't find the player, just remove all minions directly without refunding.
+            // If we can't find the player, just remove all minions directly.
             for(int i = m_hMinions.length() - 1; i >= 0; i--)
             {
                 CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
