@@ -268,12 +268,18 @@ class MinionData
                 continue;
             }
             
-            // Check if minion is at zero health but not yet destroyed by the engine.
-            if(pExistingMinion.pev.health <= 0)
+            // Cast to CBaseMonster to check monster-specific properties.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
+            
+            // Check if minion is dead or at very low health.
+            if((pMonster !is null && pMonster.pev.deadflag != DEAD_NO) || pExistingMinion.pev.health <= 0)
             {
                 // Use Killed to properly destroy the minion.
-                pExistingMinion.Killed(pPlayer.pev, GIB_NORMAL);
+                pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing to remove possibility of revival.
                 
+                // Also immediately remove from our list to prevent multiple Killed calls.
+                m_hMinions.removeAt(i);
+                hasRemovedMinions = true;
                 continue;
             }
 

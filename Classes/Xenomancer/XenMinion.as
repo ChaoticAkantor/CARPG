@@ -465,12 +465,18 @@ class XenMinionData
                 continue;
             }
             
-            // Check if minion is at zero health but not yet destroyed by the engine.
-            if(pExistingMinion.pev.health <= 0)
+            // Cast to CBaseMonster to check monster-specific properties.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
+            
+            // Check if minion is dead.
+            if((pMonster !is null && pMonster.pev.deadflag != DEAD_NO) || pExistingMinion.pev.health <= 0)
             {
                 // Use Killed to properly destroy the minion.
-                pExistingMinion.Killed(pPlayer.pev, GIB_NORMAL);
+                pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing to remove possibility of revival.
                 
+                // Also immediately remove from our list to prevent multiple Killed calls.
+                m_hMinions.removeAt(i);
+                hasRemovedMinions = true;
                 continue;
             }
 
@@ -608,9 +614,9 @@ class XenMinionData
             {
                 // Cast to CBaseMonster to check monster-specific properties.
                 CBaseMonster@ pMonster = cast<CBaseMonster@>(pMinion);
-
-                // Check if minion is actually "alive". Deadflag of 0 means the monster is alive.
-                if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO)
+                
+                // Only regenerate if the monster is alive (not in a dying state).
+                if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO && pMinion.pev.health > 0)
                 {
                     // Ensure max_health is properly set.
                     if(pMinion.pev.max_health <= 0) 
@@ -631,11 +637,6 @@ class XenMinionData
                         if(pMinion.pev.health > pMinion.pev.max_health) 
                             pMinion.pev.health = pMinion.pev.max_health; // Clamp to max health.
                     }
-                }
-                else
-                {
-                    if(pMinion.pev.health > 0)
-                        pMinion.pev.health = 0; // Make sure their health is set to 0 if they are actually dead.
                 }
             }
         }
