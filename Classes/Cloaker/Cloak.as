@@ -110,7 +110,7 @@ class CloakData
                     pPlayer.pev.flags |= FL_NOTARGET;
                     
                     // Sounds - activation and loop.
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, 0, PITCH_NORM);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Activated!\n");
                 }
