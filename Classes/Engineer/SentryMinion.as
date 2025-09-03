@@ -22,13 +22,13 @@ class SentryData
 {
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take more damage than other NPC's, so health must scale very high.
-    private float m_flHealthScale = 0.08; // Health scaling % per level.
-    private float m_flDamageScale = 0.08; // Damage scaling % per level.
+    private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
+    private float m_flHealthScale = 0.10; // Health scaling % per level.
+    private float m_flDamageScale = 0.10; // Damage scaling % per level.
     private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
     private float m_flHealScale = 0.18f; // Heal scaling % per level.
-    private float m_flSelfHealModifier = 20.0f; // Sentry self-healing multiplier.
+    private float m_flSelfHealModifier = 10.0f; // Sentry self-healing multiplier.
     private float m_flEnergyDrain = 1.0; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
     private float m_flRecallEnergyCost = 0.0f; // Energy % cost to recall.
