@@ -84,7 +84,9 @@ class MinionData
         // Clean invalid minions first.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
-            if(!m_hMinions[i].hMinion.IsValid())
+            // More thorough validation - not just checking IsValid() but also trying to get the entity
+            EHandle hMinion = m_hMinions[i].hMinion;
+            if(!hMinion.IsValid() || hMinion.GetEntity() is null)
             {
                 m_hMinions.removeAt(i);
             }
@@ -107,6 +109,24 @@ class MinionData
     bool HasStats() { return m_pStats !is null; }
     
     array<MinionInfo>@ GetMinions() { return m_hMinions; }
+
+    CBaseEntity@ GetMinionEntity(uint index)
+    {
+        if(index >= m_hMinions.length())
+            return null;
+            
+        // Validate the entity reference before returning it.
+        CBaseEntity@ pMinion = m_hMinions[index].hMinion.GetEntity();
+        if(pMinion is null || pMinion.pev.health <= 0)
+        {
+            // Entity is invalid or dead, remove it from our list.
+            m_hMinions.removeAt(index);
+            RecalculateReservePool();
+            return null;
+        }
+        
+        return pMinion;
+    }
 
     MinionData() 
     {
@@ -253,9 +273,6 @@ class MinionData
         if(pPlayer is null)
             return;
 
-        // Used to track whether we need to update the reserve pool.
-        bool hasRemovedMinions = false;
-
         // Remove invalid Minions and check frags.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
@@ -266,7 +283,6 @@ class MinionData
             {
                 // Remove from our list and update reserve pool.
                 m_hMinions.removeAt(i);
-                hasRemovedMinions = true;
                 continue;
             }
             
@@ -281,7 +297,6 @@ class MinionData
                 
                 // Also immediately remove from our list to prevent multiple Killed calls.
                 m_hMinions.removeAt(i);
-                hasRemovedMinions = true;
                 continue;
             }
 
@@ -301,23 +316,8 @@ class MinionData
             }
         }
 
-        // If we've removed minions, recalculate the reserve pool.
-        if(hasRemovedMinions)
-        {
-            // Recalculate the reserve pool based on current minions.
-            float newReservePool = 0.0f;
-            for(uint i = 0; i < m_hMinions.length(); i++)
-            {
-                int minionType = m_hMinions[i].type;
-                if(minionType >= 0 && uint(minionType) < MINION_COSTS.length())
-                {
-                    newReservePool += MINION_COSTS[minionType];
-                }
-            }
-            
-            // Update the reserve pool.
-            m_flReservePool = newReservePool;
-        }
+        // Always recalculate the reserve pool to ensure it's accurate
+        RecalculateReservePool();
 
         // Update stats reference for stat menu.
         if(m_pStats is null)
@@ -346,6 +346,8 @@ class MinionData
             return;
         }
 
+        bool anyDestroyed = false;
+        
         // Destroy all Minions from last to first.
         for(int i = MinionCount - 1; i >= 0; i--)
         {
@@ -354,14 +356,19 @@ class MinionData
             {
                 // Use Killed to destroy active minions naturally.
                 pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing, incase they are in dying state and revivable.
-                m_hMinions.removeAt(i);
+                anyDestroyed = true;
             }
+            // Always remove from array, even if entity pointer is null
+            m_hMinions.removeAt(i);
         }
 
         // Reset reserve pool after destroying all minions.
         m_flReservePool = 0.0f;
         
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
+        if(anyDestroyed)
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
+        else
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cleared all Robot references!\n");
     }
     
     // Reset function to clean up all active minions.
@@ -394,7 +401,11 @@ class MinionData
         }
         else
         {
-            // If we can't find the player, just remove all minions directly.
+            // If we can't find the player, just clear minion references.
+            // After a map change, entities from previous map won't exist anyway.
+            g_Game.AlertMessage(at_console, "CARPG: Robomancer Reset - Clearing " + m_hMinions.length() + " minion references\n");
+            
+            // Just in case, try to remove any that might exist
             for(int i = m_hMinions.length() - 1; i >= 0; i--)
             {
                 CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
@@ -404,6 +415,7 @@ class MinionData
                 }
             }
             
+            // Clear the array and reset pool
             m_hMinions.resize(0);
             m_flReservePool = 0.0f;
         }
@@ -458,6 +470,23 @@ class MinionData
         float level = m_pStats.GetLevel();
         float flScaledDamage = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
         return flScaledDamage;
+    }
+    
+    void RecalculateReservePool()
+    {
+        // Recalculate the reserve pool based on current minions.
+        float newReservePool = 0.0f;
+        for(uint i = 0; i < m_hMinions.length(); i++)
+        {
+            int minionType = m_hMinions[i].type;
+            if(minionType >= 0 && uint(minionType) < MINION_COSTS.length())
+            {
+                newReservePool += MINION_COSTS[minionType];
+            }
+        }
+        
+        // Update the reserve pool.
+        m_flReservePool = newReservePool;
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)
@@ -579,6 +608,7 @@ void CheckEngineerMinions()
                 {
                     bool hasInvalidMinions = false;
                     array<MinionInfo>@ minions = Minion.GetMinions();
+                    int invalidCount = 0;
                     
                     // Check for any invalid minion entities
                     for(uint j = 0; j < minions.length(); j++)
@@ -587,16 +617,16 @@ void CheckEngineerMinions()
                         if(pMinion is null)
                         {
                             hasInvalidMinions = true;
-                            break;
+                            invalidCount++;
                         }
                     }
                     
                     // If we found invalid minions, clear the array completely
                     if(hasInvalidMinions)
                     {
+                        g_Game.AlertMessage(at_console, "CARPG: Found " + invalidCount + " invalid Robomancer minions for player " + steamID + ", clearing all\n");
                         minions.resize(0);
                         Minion.SetReservePoolZero();
-                        g_Game.AlertMessage(at_console, "CARPG: Cleared invalid Robomancer minions for player " + steamID + "\n");
                     }
                 }
                 
@@ -608,9 +638,10 @@ void CheckEngineerMinions()
                     {
                         if(data.GetCurrentClass() != PlayerClass::CLASS_ROBOMANCER)
                         {
-                            // Player is not Engineer, destroy active minions.
-                            if(Minion.GetMinionCount() > 0)
+                            // Player is not Engineer, destroy active minions or clear references.
+                            if(Minion.IsActive())
                             {
+                                g_Game.AlertMessage(at_console, "CARPG: Player " + steamID + " is not Robomancer, clearing minions\n");
                                 Minion.DestroyAllMinions(pPlayer);
                                 continue;  // Skip rest of updates.
                             }

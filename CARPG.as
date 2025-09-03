@@ -55,7 +55,7 @@ void PluginInit()
 void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
 {
     PrecacheAll(); // Precache our models, sounds and sprites.
-    PluginReset(); // Reset all plugin data when a new map is loaded.
+    //PluginReset(); // Reset all plugin data when a new map is loaded.
 }
 
 void MapActivate() // Like MapInit, only called after all mapper placed entities have been activated and the sound list has been written.
@@ -65,17 +65,11 @@ void MapActivate() // Like MapInit, only called after all mapper placed entities
 
 void MapStart() // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
 {
+    // Startup console message so we know it is installed.
     g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n");
-    // Force any server related settings.
-    //g_EngineFuncs.ServerCommand("mp_survival_mode 0\n"); // Disable Survival Mode.
-    g_EngineFuncs.ServerCommand("mp_survival_voteallow 1\n"); // Enable Survival Mode voting.
-    //g_EngineFuncs.ServerCommand("mp_survival_minplayers 1\n"); // Survival Mode will turn on even if there is only 1 player.
 
     // Hints to play on map load.
     g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
-    
-    // Force clearing invalid minion references on map change
-    g_Scheduler.SetTimeout("ClearInvalidMinions", 1.0f);
 }
 
 void PluginReset() // Used to reset anything important to the plugin on reload.
@@ -101,46 +95,6 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
     SetupTimers(); // Re-setup timers.
     ApplyDifficultySettings(); // Re-apply difficulty settings.
-}
-
-// Function to clear all invalid minion references after map changes
-void ClearInvalidMinions()
-{
-    g_Game.AlertMessage(at_console, "CARPG: Checking for invalid minions after map change...\n");
-
-    // Loop through all players
-    for(int i = 1; i <= g_Engine.maxClients; i++)
-    {
-        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if(pPlayer is null || !pPlayer.IsConnected())
-            continue;
-            
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        
-        // Clear Robot Minions
-        if(g_PlayerMinions.exists(steamID))
-        {
-            MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
-            if(minion !is null)
-            {
-                // Force clear all minions after map change - they can't exist in the new map
-                minion.Reset();
-                g_Game.AlertMessage(at_console, "CARPG: Cleared Robomancer minions for player " + steamID + "\n");
-            }
-        }
-        
-        // Clear Xen Minions
-        if(g_XenologistMinions.exists(steamID))
-        {
-            XenMinionData@ minion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
-            if(minion !is null)
-            {
-                // Force clear all minions after map change - they can't exist in the new map
-                minion.Reset();
-                g_Game.AlertMessage(at_console, "CARPG: Cleared Xenomancer minions for player " + steamID + "\n");
-            }
-        }
-    }
 }
 
 void RegisterHooks()
@@ -881,6 +835,29 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
     if(data !is null)
     {
         data.CalculateStats(pPlayer);
+        
+        // After a map change, previous minion entities won't exist.
+        // Let's ensure no stale minion data persists.
+        if(g_PlayerMinions.exists(steamID))
+        {
+            MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+            if(minion !is null)
+            {
+                //g_Game.AlertMessage(at_console, "CARPG: OnClientPutInServer - Clearing Robomancer minion data for " + steamID + "\n");
+                minion.RecalculateReservePool(); // Reset the reserve pool.
+            }
+        }
+        
+        if(g_XenologistMinions.exists(steamID))
+        {
+            XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+            if(xenMinion !is null)
+            {
+                //g_Game.AlertMessage(at_console, "CARPG: OnClientPutInServer - Clearing Xenomancer minion data for " + steamID + "\n");
+                xenMinion.RecalculateReservePool(); // Reset the reserve pool.
+            }
+        }
+        
         ResetPlayer(pPlayer);
         RefillHealthArmor(pPlayer);
     }
@@ -904,7 +881,7 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
         {
             data.CalculateStats(pPlayer); // Re-calculate stats if we respawn.
             ResetPlayer(pPlayer); // We respawned, so re-initialize defaults.
-            RefillHealthArmor(pPlayer);
+            RefillHealthArmor(pPlayer); // Refill health and armor to full.
 
             // Show class menu if no class selected.
             if(data.GetCurrentClass() == PlayerClass::CLASS_NONE)
@@ -921,6 +898,27 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
 HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
 {
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    
+    // First ensure all minions are destroyed
+    if(g_PlayerMinions.exists(steamID))
+    {
+        MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+        if(minion !is null)
+        {
+            minion.DestroyAllMinions(pPlayer);
+        }
+    }
+    
+    if(g_XenologistMinions.exists(steamID))
+    {
+        XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+        if(xenMinion !is null)
+        {
+            xenMinion.DestroyAllMinions(pPlayer);
+        }
+    }
+    
+    // Then save player data
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -940,7 +938,7 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
         }
     }
     
-    // Clean up any barrier protection relationships
+    // Clean up any barrier protection relationships.
     CleanupPlayerBarrierProtection(steamID);
     
     ClearMinions();
@@ -1318,6 +1316,8 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
         if(minion !is null)
         {
+            // Log that we're destroying minions from ResetPlayer
+            g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Robomancer minions for " + steamID + "\n");
             minion.DestroyAllMinions(pPlayer);
         }
     }
@@ -1328,6 +1328,8 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
         if(xenMinion !is null)
         {
+            // Log that we're destroying minions from ResetPlayer
+            g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Xenomancer minions for " + steamID + "\n");
             xenMinion.DestroyAllMinions(pPlayer);
         }
     }

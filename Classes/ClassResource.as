@@ -153,7 +153,7 @@ void RegenClassResource()
                     continue;
                 }
 
-                // Normal regen logic with special case for Defender
+                // Normal regen logic with special case for Defender.
                 float current = float(resources['current']);
                 float maximum = float(resources['max']);
                 float regen = float(resources['regen']);
@@ -291,38 +291,42 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 MinionData@ minionData = cast<MinionData@>(g_PlayerMinions[steamID]);
                                 if(minionData !is null)
                                 {
-                                    // Show the minion count.
-                                    //resourceInfo += "[Robogrunts: " + minionData.GetMinionCount() + "]";
-                                    
                                     // Add individual minion health info.
                                     array<MinionInfo>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
-                                        bool hasValidMinions = false;
+                                        int validMinionCount = 0;
                                         
+                                        // First collect all valid minions.
+                                        array<CBaseEntity@> validMinions;
                                         for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                         {
-                                            // First check if the handle is valid before trying to get the entity.
-                                            if(!minions[minionIndex].hMinion.IsValid())
-                                                continue;
-                                                
+                                            // First just check if entity exists without modifying the array.
                                             CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
-                                            if(pMinion !is null)
+                                            if(pMinion !is null && pMinion.pev.health > 0)
                                             {
-                                                hasValidMinions = true;
-                                                
-                                                // Make sure we have a valid health value.
-                                                float healthFlat = pMinion.pev.health;
-                                                if(healthFlat <= 0)
-                                                    healthFlat = 1; // Default to 1 if health is invalid.
-                                                    
-                                                // Flat HP display
-                                                resourceInfo += "[Robogrunt " + (minionIndex + 1) + ": " + int(healthFlat) + " HP] ";
+                                                validMinions.insertLast(pMinion);
                                             }
                                         }
                                         
-                                        // If we didn't find any valid minions but the array has entries, that suggests the minions are invalid after a map change.
-                                        if(!hasValidMinions)
+                                        // Now display the valid minions.
+                                        for(uint j = 0; j < validMinions.length(); j++)
+                                        {
+                                            CBaseEntity@ pMinion = validMinions[j];
+                                            validMinionCount++;
+                                            
+                                            // Make sure we have a valid health value.
+                                            float healthFlat = pMinion.pev.health;
+                                            if(healthFlat <= 0)
+                                                healthFlat = 0; // Default to 0 if health is invalid.
+
+                                            // Flat HP display.
+                                            int healthFlatInt = int(healthFlat);
+                                            resourceInfo += "[Robogrunt " + validMinionCount + ": " + healthFlatInt + " HP] ";
+                                        }
+                                        
+                                        // Only show "No Robogrunts" if there are no valid ones found.
+                                        if(validMinionCount == 0)
                                         {
                                             resourceInfo += "[No Robogrunts] ";
                                         }
@@ -447,35 +451,39 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 XenMinionData@ minionData = cast<XenMinionData@>(g_XenologistMinions[steamID]);
                                 if(minionData !is null)
                                 {   
-                                    // Show the minion count.
-                                    //resourceInfo += "[Creatures: " + minionData.GetMinionCount() + "]";
-                                    
                                     array<XenMinionInfo>@ minions = minionData.GetMinions();
                                     if(minions !is null && minions.length() > 0)
                                     {
-                                        bool hasValidMinions = false;
+                                        int validMinionCount = 0;
                                         
+                                        // First collect all valid minions.
+                                        array<CBaseEntity@> validMinions;
                                         for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                         {
-                                            // First check if the handle is valid before trying to get the entity
-                                            if(!minions[minionIndex].hMinion.IsValid())
-                                                continue;
-                                                
+                                            // First just check if entity exists without modifying the array.
                                             CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
-                                            if(pMinion !is null)
+                                            if(pMinion !is null && pMinion.pev.health > 0)
                                             {
-                                                hasValidMinions = true;
-                                                
-                                                // Make sure we have a valid health value.
-                                                float healthFlat = pMinion.pev.health;
-                                                if(healthFlat <= 0)
-                                                    healthFlat = 1; // Default to 1 if health is invalid.
-                                                
-                                                // Get creature type from entity classname instead of relying on arrays.
-                                                string creatureName = "Creature"; // Default fallback.
-                                                
-                                                // Get classname directly from the entity
-                                                string classname = pMinion.pev.classname;
+                                                validMinions.insertLast(pMinion);
+                                            }
+                                        }
+                                        
+                                        // Now display the valid minions.
+                                        for(uint j = 0; j < validMinions.length(); j++)
+                                        {
+                                            CBaseEntity@ pMinion = validMinions[j];
+                                            validMinionCount++;
+                                            
+                                            // Make sure we have a valid health value.
+                                            float healthFlat = pMinion.pev.health;
+                                            if(healthFlat <= 0)
+                                                healthFlat = 1; // Default to 1 if health is invalid.
+                                            
+                                            // Get creature type from entity classname instead of relying on arrays.
+                                            string creatureName = "Creature"; // Default fallback.
+                                            
+                                            // Get classname directly from the entity
+                                            string classname = pMinion.pev.classname;
                                                 
                                                 // Map classnames to readable names - more reliable than array indexes.
                                                 if(classname == "monster_houndeye")
@@ -489,12 +497,12 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                                 else if(classname == "monster_babygarg")
                                                     creatureName = "Baby Garg";
                                                     
-                                                resourceInfo += "[" + creatureName + ": " + int(healthFlat) + " HP] ";
-                                            }
+                                                int healthFlatInt = int(healthFlat);
+                                                resourceInfo += "[" + creatureName + ": " + healthFlatInt + " HP] ";
                                         }
                                         
-                                        // If we didn't find any valid minions but the array has entries, that suggests the minions are invalid after a map change.
-                                        if(!hasValidMinions)
+                                        // Only show "No Creatures" if there are no valid ones found
+                                        if(validMinionCount == 0)
                                         {
                                             resourceInfo += "[No Creatures] ";
                                         }
@@ -516,8 +524,9 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                         if(pSentry !is null)
                                         {
                                             float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
-                                            resourceInfo += "[Sentry: " + int(healthPercent) + "%]";
-                                            resourceInfo += " [Heal: " + sentryData.GetScaledHealAmount() + " HP/s]";
+                                            int healthPercentInt = int(healthPercent);
+                                            resourceInfo += "[Sentry HP: " + healthPercentInt + "%]";
+                                            resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]";
                                         }
                                     }
                                 }

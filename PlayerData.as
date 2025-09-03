@@ -470,39 +470,39 @@ class PlayerData
                     break;
                     
                 case PlayerClass::CLASS_ENGINEER:
-                    // Clean up sentry data
+                    // Clean up sentry data.
                     if (g_PlayerSentries.exists(m_szSteamID)) 
                     {
                         SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[m_szSteamID]);
                         if (sentry !is null) 
                         {
-                            sentry.Reset(); // Remove all sentries.
+                            sentry.Reset(); // Delete minions of this type.
                         }
                         g_PlayerSentries.delete(m_szSteamID);
                     }
                     break;
                     
                 case PlayerClass::CLASS_ROBOMANCER:
-                    // Clean up minion data
+                    // Clean up minion data.
                     if (g_PlayerMinions.exists(m_szSteamID)) 
                     {
                         MinionData@ minions = cast<MinionData@>(g_PlayerMinions[m_szSteamID]);
-                        if (minions !is null) 
+                        if (minions !is null && pPlayer !is null) 
                         {
-                            minions.Reset(); // Remove all robo minions.
+                            minions.DestroyAllMinions(pPlayer); // Delete minions of this type.
                         }
                         g_PlayerMinions.delete(m_szSteamID);
                     }
                     break;
                     
                 case PlayerClass::CLASS_XENOMANCER:
-                    // Clean up xen minion data
+                    // Clean up xen minion data.
                     if (g_XenologistMinions.exists(m_szSteamID)) 
                     {
                         XenMinionData@ xenMinions = cast<XenMinionData@>(g_XenologistMinions[m_szSteamID]);
-                        if (xenMinions !is null) 
+                        if (xenMinions !is null && pPlayer !is null) 
                         {
-                            xenMinions.Reset(); // Remove all xen minions.
+                            xenMinions.DestroyAllMinions(pPlayer); // Delete minions of this type.
                         }
                         g_XenologistMinions.delete(m_szSteamID);
                     }

@@ -309,7 +309,7 @@ namespace Menu
                     {
                         string ShocktrooperStatsText = "=== Shockroach: ===" + "\n" + 
                             "Capacity: " + int(maxEnergy) + "\n" +
-                            "Damage: " + int((shockRifle.GetScaledDamage() - 1.0f) * 100 + 100) + "%\n\n";
+                            "Damage Multiplier: " + int((shockRifle.GetScaledDamage() - 1.0f) * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(ShocktrooperStatsText, null);
                     }
@@ -397,8 +397,8 @@ namespace Menu
                     {
                         string EngineerStatsText = "=== Sentry: ===" + "\n" + 
                             "Health: " + int(sentry.GetScaledHealth()) + " HP\n" +
-                            "Damage: " + int(sentry.GetScaledDamage() * 100 + 100) + "%\n" + 
-                            "Heal: " + sentry.GetHealAmount() + " HP/s\n\n";
+                            "Damage Multiplier: " + int(sentry.GetScaledDamage() * 100 + 100) + "%\n" + 
+                            "Healing: " + sentry.GetHealAmount() + " HP/s\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }

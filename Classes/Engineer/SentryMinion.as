@@ -49,6 +49,13 @@ class SentryData
         // First check if we think we're active.
         if(!m_bActive)
             return false;
+        
+        // Check if the handle is valid
+        if(!m_hSentry.IsValid())
+        {
+            m_bActive = false;
+            return false;
+        }
             
         // Then verify sentry exists and is alive.
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
@@ -239,6 +246,9 @@ class SentryData
         else
         {
             // If we can't find the player, just remove the sentry directly
+            // After a map change, the entity reference may be invalid
+            g_Game.AlertMessage(at_console, "CARPG: Engineer Reset - Clearing sentry reference\n");
+            
             if(m_hSentry.IsValid())
             {
                 CBaseEntity@ pSentry = m_hSentry.GetEntity();
@@ -499,6 +509,17 @@ void CheckSentries()
             SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
             if(sentry !is null)
             {
+                // Check for invalid entity references first
+                if(sentry.IsActive())
+                {
+                    // Check if sentry entity is valid (this will reset active state if not)
+                    if(!sentry.IsActive())
+                    {
+                        g_Game.AlertMessage(at_console, "CARPG: Found invalid Engineer sentry for player " + steamID + ", clearing reference\n");
+                    }
+                }
+                
+                // Check if player switched class
                 if(g_PlayerRPGData.exists(steamID))
                 {
                     PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
