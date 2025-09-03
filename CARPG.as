@@ -1317,7 +1317,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         if(minion !is null)
         {
             // Log that we're destroying minions from ResetPlayer
-            g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Robomancer minions for " + steamID + "\n");
+            //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Robomancer minions for " + steamID + "\n");
             minion.DestroyAllMinions(pPlayer);
         }
     }
@@ -1329,7 +1329,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         if(xenMinion !is null)
         {
             // Log that we're destroying minions from ResetPlayer
-            g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Xenomancer minions for " + steamID + "\n");
+            //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Xenomancer minions for " + steamID + "\n");
             xenMinion.DestroyAllMinions(pPlayer);
         }
     }
