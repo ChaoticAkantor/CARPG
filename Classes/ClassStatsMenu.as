@@ -246,10 +246,10 @@ namespace Menu
                     if(healingAura !is null)
                     {
                         string MedicStatsText = "=== Heal Aura: ===" + "\n" + 
-                            "Restoration: " + int(healingAura.GetScaledHealAmount()) + " HP/s\n" + 
+                            "Healing: " + int(healingAura.GetScaledHealAmount()) + " HP/s\n" + 
+                            "Poison Damage: " + int(healingAura.GetPoisonDamageAmount()) + "/s\n" +
                             "Radius: " + int(healingAura.GetHealingRadius() / 16) + "ft\n" + 
-                            "Revive Cost: " + int(healingAura.GetEnergyCostRevive()) + "/s\n" +
-                            "Poison Damage: " + int(healingAura.GetPoisonDamageAmount()) + "/s\n\n";
+                            "Ally Revival Duration Cost: " + int(healingAura.GetEnergyCostRevive()) + "s\n\n";
 
                         m_pMenu.AddItem(MedicStatsText, null);
                     }
@@ -275,7 +275,7 @@ namespace Menu
                     if(roboMinion !is null)
                     {
                         string EngineerStatsText = "=== Robogrunts: ===" + "\n" + 
-                        "Base Health: " + int(roboMinion.GetScaledHealth()) + " HP\n" + 
+                        "Health: " + int(roboMinion.GetScaledHealth()) + " HP\n" + 
                         "Damage Multiplier: " + int(roboMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
@@ -288,7 +288,7 @@ namespace Menu
                     if(xenMinion !is null)
                     {
                         string XenologistStatsText = "=== Creatures: ===" + "\n" + 
-                        "Base Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
+                        "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
                         "Damage Multiplier: " + int(xenMinion.GetScaledDamage() * 100 + 100) + "%\n";
                         
                         // Show lifesteal percentage only if Enhancement 1 is unlocked
