@@ -24,6 +24,9 @@
 // Xenologist.
 #include "Classes/Xenomancer/XenMinion"
 
+// Necromancer.
+#include "Classes/Necromancer/NecroMinion"
+
 // Defender
 #include "Classes/Defender/Barrier"
 

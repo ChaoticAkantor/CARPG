@@ -10,7 +10,7 @@ dictionary g_AmmoTypeDamageMultipliers =
     {"m40a1", 1.8f}
 };
 
-// Functions to access the damage multipliers from other files
+// Functions to access the damage multipliers from other files.
 array<string> GetAmmoTypesForDamageMultipliers()
 {
     return g_AmmoTypeDamageMultipliers.getKeys();
@@ -25,10 +25,10 @@ float GetAmmoTypeDamageMultiplier(const string& in ammoType)
 
 dictionary g_PlayerExplosiveRounds;
 string strExplosiveRoundsActivateSound = "weapons/reload3.wav";
-string strExplosiveRoundsImpactSound = "weapons/explode3.wav"; // Explosion sound
-string strExplosiveRoundsExplosionSprite = "sprites/zerogxplode.spr"; // Explosion sprite
-string strExplosiveRoundsExplosionCoreSprite = "sprites/explode1.spr"; // Core explosion sprite
-string strExplosiveRoundsSplatterSprite = "sprites/fire.spr"; // Fire effect
+string strExplosiveRoundsImpactSound = "weapons/explode3.wav"; // Explosion sound.
+string strExplosiveRoundsExplosionSprite = "sprites/zerogxplode.spr"; // Explosion sprite.
+string strExplosiveRoundsExplosionCoreSprite = "sprites/explode1.spr"; // Core explosion sprite.
+string strExplosiveRoundsSplatterSprite = "sprites/fire.spr"; // Fire effect.
 
 class ExplosiveRoundsData
 {

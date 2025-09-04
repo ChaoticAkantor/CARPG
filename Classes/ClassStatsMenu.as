@@ -111,9 +111,27 @@ namespace Menu
                     case PlayerClass::CLASS_XENOMANCER:
                     {
                         if(m_pStats.HasUnlockedEnhancement1())
-                            BaseStatsText += "Xen Pact: Creatures gain 10% lifesteal self and owner.\n";
+                            BaseStatsText += "Life Steal: Creatures gain 10% Life Steal for self and owner.\n";
                         else
-                            BaseStatsText += "( Xen Pact - LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+
+                        if(m_pStats.HasUnlockedEnhancement2())
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+
+                        if(m_pStats.HasUnlockedEnhancement3())
+                            BaseStatsText += "N/A.\n";
+                        else
+                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                        break;
+                    }
+                    case PlayerClass::CLASS_NECROMANCER:
+                    {
+                        if(m_pStats.HasUnlockedEnhancement1())
+                            BaseStatsText += "Life Steal: Zombies gain 10% Life Steal for self and owner.\n";
+                        else
+                            BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
@@ -299,6 +317,26 @@ namespace Menu
                         XenologistStatsText += "\n";
 
                         m_pMenu.AddItem(XenologistStatsText, null);
+                    }
+                    break;
+                }
+                case PlayerClass::CLASS_NECROMANCER:
+                {
+                    NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+                    if(necroMinion !is null)
+                    {
+                        string NecromancerStatsText = "=== Zombies: ===" + "\n" + 
+                        "Health: " + int(necroMinion.GetScaledHealth()) + " HP\n" + 
+                        "Damage Multiplier: " + int(necroMinion.GetScaledDamage() * 100 + 100) + "%\n";
+                        
+                        // Show lifesteal percentage only if Enhancement 1 is unlocked
+                        float lifestealPercent = necroMinion.GetLifestealPercent();
+                        if(lifestealPercent > 0)
+                            NecromancerStatsText += "Lifesteal (Self and Owner): " + int(lifestealPercent * 100) + "%\n";
+                            
+                        NecromancerStatsText += "\n";
+
+                        m_pMenu.AddItem(NecromancerStatsText, null);
                     }
                     break;
                 }

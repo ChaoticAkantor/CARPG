@@ -7,16 +7,21 @@ float flClassResourceRegenDelay = 1.0; // Delay between class resource regen tic
 
 void RegenClassResource()
 { 
-    const int iMaxPlayers = g_Engine.maxClients;
-    
-    for(int i = 1; i <= iMaxPlayers; ++i)
+    // Iterate through all connected players.
+    for (int i = 1; i <= g_Engine.maxClients; i++)
     {
         CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+        if (pPlayer is null || !pPlayer.IsConnected())
             continue;
-
+            
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
+        
+        // Skip if player doesn't have class resources set up.
+        if (!g_PlayerClassResources.exists(steamID))
+            continue;
+        
+        // Skip if player not found or not alive
+        if (pPlayer is null || !pPlayer.IsAlive())
             continue;
             
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
@@ -54,6 +59,20 @@ void RegenClassResource()
                     MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
                     if(minion !is null)
                         hasActiveMinions = minion.IsActive();
+                }
+                
+                if(g_XenologistMinions.exists(steamID))
+                {
+                    XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                    if(xenMinion !is null)
+                        hasActiveMinions = xenMinion.IsActive();
+                }
+                
+                if(g_NecromancerMinions.exists(steamID))
+                {
+                    NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+                    if(necroMinion !is null)
+                        hasActiveMinions = necroMinion.IsActive();
                 }
 
                 if(g_PlayerBloodlusts.exists(steamID))
@@ -145,6 +164,34 @@ void RegenClassResource()
                         }
                     }
                 }
+                
+                // Necromancer Minion reserve pool.
+                if(data.GetCurrentClass() == PlayerClass::CLASS_NECROMANCER)
+                {
+                    if(g_NecromancerMinions.exists(steamID))
+                    {
+                        NecroMinionData@ minion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+                        if(minion !is null)
+                        {
+                            float current = float(resources['current']);
+                            float regen = float(resources['regen']);
+                            
+                            float maxReserve = 0.0f;  // Initialize first.
+                            // Use instance reserve pool
+                            maxReserve = float(resources['max']) - minion.GetReservePool();
+                            
+                            // Only regenerate if we have remaining reserve.
+                            if(maxReserve > 0 && current < maxReserve)
+                            {
+                                current += regen;
+                                if(current > maxReserve)
+                                    current = maxReserve;
+                                resources['current'] = current;
+                            }
+                            continue; // Skip normal regen logic.
+                        }
+                    }
+                }
 
                 // Skip regen if any ability is active.
                 if(isAuraActive || hasActiveMinions || hasShockRifleEquipped || 
@@ -199,83 +246,90 @@ string GetResourceBar(float current, float maximum, int barLength = 20)
 
 void UpdateClassResource() // Update the class resource hud display for all players.
 {
-    for(int i = 1; i <= g_Engine.maxClients; ++i)
+    // Iterate through all connected players
+    for (int i = 1; i <= g_Engine.maxClients; i++)
     {
         CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if(pPlayer !is null && pPlayer.IsConnected())
+        if (pPlayer is null || !pPlayer.IsConnected())
+            continue;
+            
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        
+        // Skip if player doesn't have class resources set up
+        if (!g_PlayerClassResources.exists(steamID))
+            continue;
+            
+        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        float current = float(resources['current']);
+        float maximum = float(resources['max']);
+
+        HUDTextParams params;
+        params.channel = 5; // API says 1-4, though I'm sure it supports up to 16 actually?
+        params.x = -1; // Center horizontally.
+        params.y = 0.9; // Position near bottom.
+        params.effect = 0; // 0: Fade in/out, 1: Credits, 2: Scan Out.
+        params.fadeinTime = 0;
+        params.fadeoutTime = 0;
+        params.holdTime = 0.2; // How long message displays.
+        params.fxTime = 0.0; // Effect time (scan effect only).
+
+        // Primary Colour.
+        params.r1 = 0;
+        params.g1 = 255;
+        params.b1 = 255;
+
+        // Effect Colour.
+        params.r2 = 0;
+        params.g2 = 255;
+        params.b2 = 255;
+
+        string resourceName = "Energy"; // Rename our energy to class specific resource name.
+        if(g_PlayerRPGData.exists(steamID))
         {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(!g_PlayerClassResources.exists(steamID))
-                continue;
-
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            float current = float(resources['current']);
-            float maximum = float(resources['max']);
-
-            HUDTextParams params;
-            params.channel = 5; // API says 1-4, though I'm sure it supports up to 16 actually?
-            params.x = -1; // Center horizontally.
-            params.y = 0.9; // Position near bottom.
-            params.effect = 0; // 0: Fade in/out, 1: Credits, 2: Scan Out.
-            params.fadeinTime = 0;
-            params.fadeoutTime = 0;
-            params.holdTime = 0.2; // How long message displays.
-            params.fxTime = 0.0; // Effect time (scan effect only).
-
-            // Primary Colour.
-            params.r1 = 0;
-            params.g1 = 255;
-            params.b1 = 255;
-
-            // Effect Colour.
-            params.r2 = 0;
-            params.g2 = 255;
-            params.b2 = 255;
-
-            string resourceName = "Energy"; // Rename our energy to class specific resource name.
-            if(g_PlayerRPGData.exists(steamID))
+            PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+            if(data !is null)
             {
-                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null)
+                PlayerClass currentClass = data.GetCurrentClass();
+                switch(currentClass)
                 {
-                    PlayerClass currentClass = data.GetCurrentClass();
-                    switch(currentClass)
-                    {
-                        case PlayerClass::CLASS_ROBOMANCER:
-                            resourceName = "Robots";
-                            break;
-                        case PlayerClass::CLASS_ENGINEER:
-                            resourceName = "Sentry Battery";
-                            break;
-                        case PlayerClass::CLASS_DEFENDER:
-                            resourceName = "Ice Shield";
-                            break;
-                        case PlayerClass::CLASS_MEDIC:
-                            resourceName = "Heal Aura";
-                            break;
-                        case PlayerClass::CLASS_SHOCKTROOPER:
-                            resourceName = "Shockrifle Battery";
-                            break;
-                        case PlayerClass::CLASS_BERSERKER:
-                            resourceName = "Bloodlust";
-                            break;
-                        case PlayerClass::CLASS_CLOAKER:
-                            resourceName = "Cloak Battery";
-                            break;
-                        case PlayerClass::CLASS_VANQUISHER:
-                            resourceName = "Dragon's Breath Ammo Pack";
-                            break;
-                        case PlayerClass::CLASS_XENOMANCER:
-                            resourceName = "Creature Points";
-                            break;
-                        case PlayerClass::CLASS_SWARMER:
-                            resourceName = "Snark Swarms";
-                            break;
-                    }
+                    case PlayerClass::CLASS_MEDIC:
+                        resourceName = "Heal Aura";
+                        break;
+                    case PlayerClass::CLASS_BERSERKER:
+                        resourceName = "Bloodlust";
+                        break;
+                    case PlayerClass::CLASS_ROBOMANCER:
+                        resourceName = "Summon Points (Robots)";
+                        break;
+                    case PlayerClass::CLASS_XENOMANCER:
+                        resourceName = "Summon Points (Creatures)";
+                        break;
+                    case PlayerClass::CLASS_NECROMANCER:
+                        resourceName = "Summon Points (Zombies)";
+                        break;
+                    case PlayerClass::CLASS_ENGINEER:
+                        resourceName = "Sentry Battery";
+                        break;
+                    case PlayerClass::CLASS_DEFENDER:
+                        resourceName = "Ice Shield";
+                        break;
+                    case PlayerClass::CLASS_SHOCKTROOPER:
+                        resourceName = "Shockrifle Battery";
+                        break;
+                    case PlayerClass::CLASS_CLOAKER:
+                        resourceName = "Cloak Battery";
+                        break;
+                    case PlayerClass::CLASS_VANQUISHER:
+                        resourceName = "Dragon's Breath Ammo Pack";
+                        break;
+                    case PlayerClass::CLASS_SWARMER:
+                        resourceName = "Snark Swarms";
+                        break;
                 }
             }
+        }
 
-            string resourceInfo = "" + resourceName + ": (" + int(current) + "/" + int(maximum) +  ") - " + GetResourceBar(current, maximum) + "\n";
+        string resourceInfo = "" + resourceName + ": (" + int(current) + "/" + int(maximum) +  ") - " + GetResourceBar(current, maximum) + "\n";
 
             if(g_PlayerRPGData.exists(steamID))
             {
@@ -322,13 +376,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
 
                                             // Flat HP display.
                                             int healthFlatInt = int(healthFlat);
-                                            resourceInfo += "[Robogrunt " + validMinionCount + ": " + healthFlatInt + " HP] ";
-                                        }
-                                        
-                                        // Only show "No Robogrunts" if there are no valid ones found.
-                                        if(validMinionCount == 0)
-                                        {
-                                            resourceInfo += "[No Robogrunts] ";
+                                            resourceInfo += "[Robogrunt" + ": " + healthFlatInt + " HP] ";
                                         }
                                     }
                                 }
@@ -445,92 +493,136 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             }
                             break;
                             
-                        case PlayerClass::CLASS_XENOMANCER:
-                            if(g_XenologistMinions.exists(steamID))
-                            {
-                                XenMinionData@ minionData = cast<XenMinionData@>(g_XenologistMinions[steamID]);
-                                if(minionData !is null)
-                                {   
-                                    array<XenMinionInfo>@ minions = minionData.GetMinions();
-                                    if(minions !is null && minions.length() > 0)
-                                    {
-                                        int validMinionCount = 0;
-                                        
-                                        // First collect all valid minions.
-                                        array<CBaseEntity@> validMinions;
-                                        for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
-                                        {
-                                            // First just check if entity exists without modifying the array.
-                                            CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
-                                            if(pMinion !is null && pMinion.pev.health > 0)
-                                            {
-                                                validMinions.insertLast(pMinion);
-                                            }
-                                        }
-                                        
-                                        // Now display the valid minions.
-                                        for(uint j = 0; j < validMinions.length(); j++)
-                                        {
-                                            CBaseEntity@ pMinion = validMinions[j];
-                                            validMinionCount++;
-                                            
-                                            // Make sure we have a valid health value.
-                                            float healthFlat = pMinion.pev.health;
-                                            if(healthFlat <= 0)
-                                                healthFlat = 1; // Default to 1 if health is invalid.
-                                            
-                                            // Get creature type from entity classname instead of relying on arrays.
-                                            string creatureName = "Creature"; // Default fallback.
-                                            
-                                            // Get classname directly from the entity
-                                            string classname = pMinion.pev.classname;
-                                                
-                                                // Map classnames to readable names - more reliable than array indexes.
-                                                if(classname == "monster_houndeye")
-                                                    creatureName = "Houndeye";
-                                                else if(classname == "monster_pitdrone") 
-                                                    creatureName = "Pit Drone";
-                                                else if(classname == "monster_bullchicken")
-                                                    creatureName = "Bullsquid";
-                                                else if(classname == "monster_shocktrooper")
-                                                    creatureName = "Shocktrooper";
-                                                else if(classname == "monster_babygarg")
-                                                    creatureName = "Baby Garg";
-                                                    
-                                                int healthFlatInt = int(healthFlat);
-                                                resourceInfo += "[" + creatureName + ": " + healthFlatInt + " HP] ";
-                                        }
-                                        
-                                        // Only show "No Creatures" if there are no valid ones found
-                                        if(validMinionCount == 0)
-                                        {
-                                            resourceInfo += "[No Creatures] ";
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                            
-                        case PlayerClass::CLASS_ENGINEER:
-                            if(g_PlayerSentries.exists(steamID))
-                            {
-                                SentryData@ sentryData = cast<SentryData@>(g_PlayerSentries[steamID]);
-                                if(sentryData !is null)
+                    case PlayerClass::CLASS_XENOMANCER:
+                        if(g_XenologistMinions.exists(steamID))
+                        {
+                            XenMinionData@ minionData = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                            if(minionData !is null)
+                            {   
+                                array<XenMinionInfo>@ minions = minionData.GetMinions();
+                                if(minions !is null && minions.length() > 0)
                                 {
-                                    bool isActive = sentryData.IsActive();
-                                    if(isActive)
+                                    int validMinionCount = 0;
+                                    // First collect all valid minions.
+                                    array<CBaseEntity@> validMinions;
+                                    for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
                                     {
-                                        CBaseEntity@ pSentry = sentryData.GetSentryEntity();
-                                        if(pSentry !is null)
+                                        // First just check if entity exists without modifying the array.
+                                        CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
+                                        if(pMinion !is null && pMinion.pev.health > 0)
                                         {
-                                            float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
-                                            int healthPercentInt = int(healthPercent);
-                                            resourceInfo += "[Sentry HP: " + healthPercentInt + "%]";
-                                            resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]";
+                                            validMinions.insertLast(pMinion);
                                         }
+                                    }
+                                
+                                // Now display the valid minions.
+                                for(uint j = 0; j < validMinions.length(); j++)
+                                {
+                                    CBaseEntity@ pMinion = validMinions[j];
+                                    validMinionCount++;
+                                    
+                                    // Make sure we have a valid health value.
+                                    float healthFlat = pMinion.pev.health;
+                                    if(healthFlat <= 0)
+                                        healthFlat = 1; // Default to 1 if health is invalid.
+                                    
+                                    // Get creature type from entity classname instead of relying on arrays.
+                                    string creatureName = "Creature"; // Default fallback.
+                                    
+                                    // Get classname directly from the entity
+                                    string classname = pMinion.pev.classname;
+                                    
+                                    // Map classnames to readable names - more reliable than array indexes.
+                                    if(classname == "monster_houndeye")
+                                        creatureName = "Houndeye";
+                                    else if(classname == "monster_pitdrone") 
+                                        creatureName = "Pit Drone";
+                                    else if(classname == "monster_bullchicken")
+                                        creatureName = "Bullsquid";
+                                    else if(classname == "monster_shocktrooper")
+                                        creatureName = "Shocktrooper";
+                                    else if(classname == "monster_babygarg")
+                                        creatureName = "Baby Garg";
+                                        
+                                    int healthFlatInt = int(healthFlat);
+                                    resourceInfo += "[" + creatureName + ": " + healthFlatInt + " HP] ";
+                                }
+                            }
+                        }
+                    }
+                    break;
+                    
+                    case PlayerClass::CLASS_NECROMANCER:
+                        if(g_NecromancerMinions.exists(steamID))
+                        {
+                            NecroMinionData@ minionData = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+                            if(minionData !is null)
+                            {   
+                                array<NecroMinionInfo>@ minions = minionData.GetMinions();
+                                if(minions !is null && minions.length() > 0)
+                                {
+                                    int validMinionCount = 0;
+                                    
+                                    // First collect all valid minions.
+                                    array<CBaseEntity@> validMinions;
+                                    for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
+                                    {
+                                        // First just check if entity exists without modifying the array.
+                                        CBaseEntity@ pMinion = minions[minionIndex].hMinion.GetEntity();
+                                        if(pMinion !is null && pMinion.pev.health > 0)
+                                        {
+                                            validMinions.insertLast(pMinion);
+                                        }
+                                    }
+                                
+                                // Now display the valid minions.
+                                for(uint j = 0; j < validMinions.length(); j++)
+                                {
+                                    CBaseEntity@ pMinion = validMinions[j];
+                                    validMinionCount++;
+                                    
+                                    // Make sure we have a valid health value.
+                                    float healthFlat = pMinion.pev.health;
+                                    if(healthFlat <= 0)
+                                        healthFlat = 1; // Default to 1 if health is invalid.
+                                    
+                                    // Get zombie type from stored info.
+                                    string zombieName = "Zombie"; // Default fallback.
+                                    
+                                    // Get type from our stored information.
+                                    int zombieType = minions[j].type;
+                                    if(zombieType >= 0 && uint(zombieType) < NECRO_NAMES.length()) {
+                                        zombieName = NECRO_NAMES[zombieType];
+                                    }
+                                    
+                                    int healthFlatInt = int(healthFlat);
+                                    resourceInfo += "[" + zombieName + ": " + healthFlatInt + " HP] ";
+                                }
+                            }
+                        }
+                    }
+                    break;     
+
+                    case PlayerClass::CLASS_ENGINEER:
+                        if(g_PlayerSentries.exists(steamID))
+                        {
+                            SentryData@ sentryData = cast<SentryData@>(g_PlayerSentries[steamID]);
+                            if(sentryData !is null)
+                            {
+                                bool isActive = sentryData.IsActive();
+                                if(isActive)
+                                {
+                                    CBaseEntity@ pSentry = sentryData.GetSentryEntity();
+                                    if(pSentry !is null)
+                                    {
+                                        float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
+                                        int healthPercentInt = int(healthPercent);
+                                        resourceInfo += "[Sentry HP: " + healthPercentInt + "%]";
+                                        resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]";
                                     }
                                 }
                             }
+                        }
                         break;
                         
                         case PlayerClass::CLASS_SWARMER:
@@ -544,11 +636,10 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 }
                             }
                         break;
-                    }
                 }
             }
-
-            g_PlayerFuncs.HudMessage(pPlayer, params, resourceInfo);
         }
+
+        g_PlayerFuncs.HudMessage(pPlayer, params, resourceInfo);
     }
 }

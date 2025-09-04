@@ -81,6 +81,7 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_PlayerRPGData.deleteAll();
     g_PlayerMinions.deleteAll();
     g_XenologistMinions.deleteAll();
+    g_NecromancerMinions.deleteAll();
     g_PlayerSentries.deleteAll();
     g_HealingAuras.deleteAll();
     g_PlayerBarriers.deleteAll();
@@ -153,6 +154,9 @@ void SetupTimers()
     // Xenologist.
     g_Scheduler.SetInterval("CheckXenologistMinions", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Xenologist minions.
 
+    // Necromancer.
+    g_Scheduler.SetInterval("CheckNecromancerMinions", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Necromancer minions.
+
     // Defender.
     g_Scheduler.SetInterval("CheckBarrier", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Barrier.
 
@@ -188,6 +192,10 @@ void PrecacheAll()
     // Xenomancer Ability Precache.
         // Sounds.
         g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
+
+    // Necromancer Ability Precache.
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strNecroMinionSoundCreate);
 
     // Shocktrooper Ability Precache.
         // Sounds.
@@ -267,6 +275,31 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strRobogruntSoundMP5);
         g_SoundSystem.PrecacheSound(strRobogruntSoundM16);
         g_SoundSystem.PrecacheSound(strRobogruntSoundReload);
+
+    // Zombie.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strZombieModel);
+        g_Game.PrecacheModel(strZombieModelGibs);
+        g_Game.PrecacheModel(strZombieBarneyModel);
+        g_Game.PrecacheModel(strZombieSoldierModel);
+
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strZombieSoundClawMiss1);
+        g_SoundSystem.PrecacheSound(strZombieSoundClawMiss2);
+        g_SoundSystem.PrecacheSound(strZombieSoundClawStrike1);
+        g_SoundSystem.PrecacheSound(strZombieSoundClawStrike2);
+        g_SoundSystem.PrecacheSound(strZombieSoundClawStrike3);
+        g_SoundSystem.PrecacheSound(strZombieSoundAlert10);
+        g_SoundSystem.PrecacheSound(strZombieSoundAlert20);
+        g_SoundSystem.PrecacheSound(strZombieSoundAlert30);
+        g_SoundSystem.PrecacheSound(strZombieSoundAttack1);
+        g_SoundSystem.PrecacheSound(strZombieSoundAttack2);
+        g_SoundSystem.PrecacheSound(strZombieSoundIdle1);
+        g_SoundSystem.PrecacheSound(strZombieSoundIdle2);
+        g_SoundSystem.PrecacheSound(strZombieSoundIdle3);
+        g_SoundSystem.PrecacheSound(strZombieSoundIdle4);
+        g_SoundSystem.PrecacheSound(strZombieSoundPain1);
+        g_SoundSystem.PrecacheSound(strZombieSoundPain2);
 
     // Houndeye.
         // Models/Sprites.
@@ -601,8 +634,34 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageXenMultiplier = 1.0f + xenMinion.GetScaledDamage();
         info.flDamage *= damageXenMultiplier;
 
-        // Process lifesteal - when xenminion deals damage, give health to owner
+        // Process life steal - when xenminion deals damage, give health to owner.
         xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
+    }
+    else if(targetname.StartsWith("_necrominion_"))
+    {
+        // Find owner's NecroMinionData by the index in targetname
+        string ownerIndex = targetname.SubString(12); // Look specifically for only targetnames with indexes added.
+        if(ownerIndex.IsEmpty())
+            return HOOK_CONTINUE;
+            
+        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
+        if(pOwner is null || !pOwner.IsConnected())
+            return HOOK_CONTINUE;
+            
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+        if(steamID.IsEmpty() || !g_NecromancerMinions.exists(steamID))
+            return HOOK_CONTINUE;
+            
+        NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+        if(necroMinion is null)
+            return HOOK_CONTINUE;
+            
+        // Apply the damage multiplier.
+        float damageNecroMultiplier = 1.0f + necroMinion.GetScaledDamage();
+        info.flDamage *= damageNecroMultiplier;
+
+        // Process lifesteal - when necrominion deals damage, give health to owner.
+        necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_snark_"))
     {
@@ -834,10 +893,11 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
     
     if(data !is null)
     {
-        data.CalculateStats(pPlayer);
+        data.CalculateStats(pPlayer); // Calculate stats on join.
         
         // After a map change, previous minion entities won't exist.
         // Let's ensure no stale minion data persists.
+        /*
         if(g_PlayerMinions.exists(steamID))
         {
             MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
@@ -857,6 +917,17 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
                 xenMinion.RecalculateReservePool(); // Reset the reserve pool.
             }
         }
+        
+        if(g_NecromancerMinions.exists(steamID))
+        {
+            NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+            if(necroMinion !is null)
+            {
+                //g_Game.AlertMessage(at_console, "CARPG: OnClientPutInServer - Clearing Necromancer minion data for " + steamID + "\n");
+                necroMinion.RecalculateReservePool(); // Reset the reserve pool.
+            }
+        }
+        */
         
         ResetPlayer(pPlayer);
         RefillHealthArmor(pPlayer);
@@ -918,7 +989,16 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
         }
     }
     
-    // Then save player data
+    if(g_NecromancerMinions.exists(steamID))
+    {
+        NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+        if(necroMinion !is null)
+        {
+            necroMinion.DestroyAllMinions(pPlayer);
+        }
+    }
+    
+    // Then save player data.
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -928,7 +1008,7 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
         }
     }
     
-    // Cancel any barrier refunds
+    // Cancel any barrier refunds.
     if(g_PlayerBarriers.exists(steamID))
     {
         BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
@@ -1106,6 +1186,18 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
                         if(xenMinion !is null)
                             xenMinion.SpawnXenMinion(pPlayer);
+                    }
+                    // Necromancer ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_NECROMANCER)
+                    {
+                        if(!g_NecromancerMinions.exists(steamID))
+                        {
+                            NecroMinionData necroData;
+                            @g_NecromancerMinions[steamID] = necroData;
+                        }
+                        NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+                        if(necroMinion !is null)
+                            necroMinion.SpawnNecroMinion(pPlayer);
                     }
                     // Swarmer ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_SWARMER)
@@ -1334,6 +1426,18 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
     
+    // Reset Necromancer Minions and pools.
+    if(g_NecromancerMinions.exists(steamID))
+    {
+        NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+        if(necroMinion !is null)
+        {
+            // Log that we're destroying minions from ResetPlayer
+            //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Necromancer minions for " + steamID + "\n");
+            necroMinion.DestroyAllMinions(pPlayer);
+        }
+    }
+    
     // Reset Swarmer's Snark Nests
     if(g_PlayerSnarkNests.exists(steamID))
     {
@@ -1373,30 +1477,20 @@ void ShowClassMenuDelayed(CBasePlayer@ pPlayer)
 
 void CheckBarrier()
 {
-    array<string>@ barrierKeys = g_PlayerBarriers.getKeys();
-    for(uint i = 0; i < barrierKeys.length(); i++)
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
     {
-        string steamID = barrierKeys[i];
-        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-        if(barrier !is null)
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
         {
-            // Find player by steamID instead of index
-            CBasePlayer@ pPlayer = null;
-            const int iMaxPlayers = g_Engine.maxClients;
-            
-            for(int j = 1; j <= iMaxPlayers; j++)
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerBarriers.exists(steamID))
             {
-                CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(j);
-                if(tempPlayer !is null && g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict()) == steamID)
+                BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                if(barrier !is null)
                 {
-                    @pPlayer = tempPlayer;
-                    break;
+                    barrier.Update(pPlayer);
                 }
-            }
-            
-            if(pPlayer !is null)
-            {
-                barrier.Update(pPlayer);
             }
         }
     }
@@ -1446,47 +1540,55 @@ void UpdateCloaks()
 
 void ClearMinions()
 {
-    array<string>@ minionKeys = g_PlayerMinions.getKeys();
-    for(uint i = 0; i < minionKeys.length(); i++)
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
     {
-        MinionData@ minion = cast<MinionData@>(g_PlayerMinions[minionKeys[i]]);
-        if(minion !is null)
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
         {
-            // Find the owning player if possible.
-            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i + 1);
-            if(pPlayer is null)
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            
+            // Clear Robomancer minions.
+            if(g_PlayerMinions.exists(steamID))
             {
-                // If owner not found, use first valid player as killer.
-                for(int j = 1; j <= g_Engine.maxClients; j++)
+                MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+                if(minion !is null)
                 {
-                    @pPlayer = g_PlayerFuncs.FindPlayerByIndex(j);
-                    if(pPlayer !is null)
-                        break;
+                    minion.DestroyAllMinions(pPlayer);
                 }
             }
-            minion.DestroyAllMinions(pPlayer);
+            
+            // Clear Xenomancer minions.
+            if(g_XenologistMinions.exists(steamID))
+            {
+                XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                if(xenMinion !is null)
+                {
+                    xenMinion.DestroyAllMinions(pPlayer);
+                }
+            }
+            
+            // Clear Necromancer minions.
+            if(g_NecromancerMinions.exists(steamID))
+            {
+                NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+                if(necroMinion !is null)
+                {
+                    necroMinion.DestroyAllMinions(pPlayer);
+                }
+            }
         }
     }
-
-    // Clear Xenologist minions too.
-    array<string>@ xenKeys = g_XenologistMinions.getKeys();
-    for(uint i = 0; i < xenKeys.length(); i++)
+    
+    // Fallback for any minions not cleared by player iteration (in case dictionary entries exist without connected players).
+    CBasePlayer@ fallbackPlayer = null;
+    
+    // Find any valid player to use as the killer for orphaned minions.
+    for(int i = 1; i <= g_Engine.maxClients; i++)
     {
-        XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[xenKeys[i]]);
-        if(xenMinion !is null)
-        {
-            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i + 1);
-            if(pPlayer is null)
-            {
-                for(int j = 1; j <= g_Engine.maxClients; j++)
-                {
-                    @pPlayer = g_PlayerFuncs.FindPlayerByIndex(j);
-                    if(pPlayer !is null)
-                        break;
-                }
-            }
-            xenMinion.DestroyAllMinions(pPlayer);
-        }
+        @fallbackPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(fallbackPlayer !is null)
+            break;
     }
 }
 
@@ -1508,7 +1610,8 @@ void AdjustAmmoForClass(CBasePlayer@ pPlayer)
 
 void ShowHints()
 {
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Welcome to CARPG! Type 'class' to select your class. Bind say UseAbility to a button to use your Class Ability.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "This server uses CARPG! Type 'class' to select your class. Bind say UseAbility to a button to use your Class Ability.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Stats' to see your class and ability info. Or 'Help' to display this message again.\n");
 }
 
 void RefillHealthArmor(CBasePlayer@ pPlayer)

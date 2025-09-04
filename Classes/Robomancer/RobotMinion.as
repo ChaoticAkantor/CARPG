@@ -222,12 +222,8 @@ class MinionData
         CBaseEntity@ pRoboMinion = g_EntityFuncs.CreateEntity("monster_robogrunt", keys, true);
         if(pRoboMinion !is null)
         {   
-            // Stuff to set before dispatch.
-            // Make them glow green.
-            pRoboMinion.pev.renderfx = kRenderFxGlowShell; // Effect.
-            pRoboMinion.pev.rendermode = kRenderNormal; // Render mode.
-            pRoboMinion.pev.renderamt = 1; // Shell thickness.
-            pRoboMinion.pev.rendercolor = Vector(20, 180, 20); // Green.
+            // Apply glow effect before dispatch.
+            ApplyMinionGlow(pRoboMinion);
 
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
 
@@ -252,23 +248,12 @@ class MinionData
             current -= MINION_COSTS[minionType]; // Subtract from current resources.
             resources['current'] = current;
 
-            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strRobogruntSoundCreate, 1.0f, ATTN_NORM);
+            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, MINION_NAMES[minionType] + " deployed!\n");
         }
     }
 
-    private void UpdateMinionStats(CBaseEntity@ pMinion)
-    {
-        if(pMinion is null)
-            return;
-            
-        float scaledHealth = GetScaledHealth();
-        float scaledDamage = GetScaledDamage();
-
-        pMinion.pev.max_health = scaledHealth;
-    }
-
-    void Update(CBasePlayer@ pPlayer)
+    void RobotUpdate(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null)
             return;
@@ -310,10 +295,10 @@ class MinionData
             }
             
             // Ensure max_health is properly set during updates.
-            if(pExistingMinion.pev.max_health <= 0)
-            {
-                pExistingMinion.pev.max_health = GetScaledHealth();
-            }
+            pExistingMinion.pev.max_health = GetScaledHealth();
+            
+            // Ensure glow effect is maintained.
+            ApplyMinionGlow(pExistingMinion);
         }
 
         // Always recalculate the reserve pool to ensure it's accurate
@@ -368,7 +353,7 @@ class MinionData
         if(anyDestroyed)
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
         else
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cleared all Robot references!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Robots cleared!\n");
     }
     
     // Reset function to clean up all active minions.
@@ -400,12 +385,8 @@ class MinionData
             DestroyAllMinions(pPlayer);
         }
         else
-        {
-            // If we can't find the player, just clear minion references.
-            // After a map change, entities from previous map won't exist anyway.
-            g_Game.AlertMessage(at_console, "CARPG: Robomancer Reset - Clearing " + m_hMinions.length() + " minion references\n");
-            
-            // Just in case, try to remove any that might exist
+        {  
+            // Just in case, try to remove any that might exist.
             for(int i = m_hMinions.length() - 1; i >= 0; i--)
             {
                 CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
@@ -415,7 +396,7 @@ class MinionData
                 }
             }
             
-            // Clear the array and reset pool
+            // Clear the array and reset pool.
             m_hMinions.resize(0);
             m_flReservePool = 0.0f;
         }
@@ -450,16 +431,11 @@ class MinionData
     float GetScaledHealth() // Health scaling for minions.
     {
         if(m_pStats is null)
-            return m_flBaseHealth;
+            return m_flBaseHealth; // Base health without scaling if no stats.
 
         float level = m_pStats.GetLevel();
-        float health = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
-        
-        // Ensure health is never less than base health.
-        if(health < m_flBaseHealth)
-            health = m_flBaseHealth;
-            
-        return health;
+        float flScaledHealth = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
+        return flScaledHealth;
     }
 
     float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
@@ -470,6 +446,18 @@ class MinionData
         float level = m_pStats.GetLevel();
         float flScaledDamage = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
         return flScaledDamage;
+    }
+    
+    void ApplyMinionGlow(CBaseEntity@ pMinion)
+    {
+        if(pMinion is null)
+            return;
+            
+        // Apply the glowing effect.
+        pMinion.pev.renderfx = kRenderFxGlowShell; // Effect.
+        pMinion.pev.rendermode = kRenderNormal; // Render mode.
+        pMinion.pev.renderamt = 1; // Shell thickness.
+        pMinion.pev.rendercolor = Vector(65, 225, 210); // Turquoise.
     }
     
     void RecalculateReservePool()
@@ -603,31 +591,11 @@ void CheckEngineerMinions()
             MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
             if(Minion !is null)
             {
-                // Validation check - if this is a new map and we have stale minion references, clear them!
-                if(Minion.IsActive())
+                // Reset all minions on first check after map load or plugin reload.
+                if(!Minion.IsActive())
                 {
-                    bool hasInvalidMinions = false;
-                    array<MinionInfo>@ minions = Minion.GetMinions();
-                    int invalidCount = 0;
-                    
-                    // Check for any invalid minion entities
-                    for(uint j = 0; j < minions.length(); j++)
-                    {
-                        CBaseEntity@ pMinion = minions[j].hMinion.GetEntity();
-                        if(pMinion is null)
-                        {
-                            hasInvalidMinions = true;
-                            invalidCount++;
-                        }
-                    }
-                    
-                    // If we found invalid minions, clear the array completely
-                    if(hasInvalidMinions)
-                    {
-                        g_Game.AlertMessage(at_console, "CARPG: Found " + invalidCount + " invalid Robomancer minions for player " + steamID + ", clearing all\n");
-                        minions.resize(0);
-                        Minion.SetReservePoolZero();
-                    }
+                    //g_Game.AlertMessage(at_console, "CARPG: Resetting Robomancer minions for player " + steamID + " on map load\n");
+                    Minion.Reset();
                 }
                 
                 // Check if player switched away from Engineer.
@@ -641,20 +609,20 @@ void CheckEngineerMinions()
                             // Player is not Engineer, destroy active minions or clear references.
                             if(Minion.IsActive())
                             {
-                                g_Game.AlertMessage(at_console, "CARPG: Player " + steamID + " is not Robomancer, clearing minions\n");
+                                //g_Game.AlertMessage(at_console, "CARPG: Player " + steamID + " is not Robomancer, clearing minions\n");
                                 Minion.DestroyAllMinions(pPlayer);
                                 continue;  // Skip rest of updates.
                             }
                         }
                         else if(!Minion.HasStats())
                         {
-                            // Update stats for Engineer
+                            // Update stats for Robomancer.
                             Minion.Initialize(data.GetCurrentClassStats());
                         }
                     }
                 }
                 
-                // Make sure resource limits are enforced
+                // Make sure resource limits are enforced.
                 if(g_PlayerClassResources.exists(steamID))
                 {
                     dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
@@ -676,7 +644,7 @@ void CheckEngineerMinions()
                 Minion.GetScaledDamage();
 
                 // Normal update for active minions.
-                Minion.Update(pPlayer);
+                Minion.RobotUpdate(pPlayer);
             }
         }
     }

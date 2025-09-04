@@ -113,6 +113,18 @@ class SentryData
     SpawnSentry(pPlayer);
 }
 
+    void ApplyMinionGlow(CBaseEntity@ pMinion)
+    {
+        if(pMinion is null)
+            return;
+
+        // Apply the glowing effect.
+        pMinion.pev.renderfx = kRenderFxGlowShell;
+        pMinion.pev.rendermode = kRenderNormal;
+        pMinion.pev.renderamt = 1;
+        pMinion.pev.rendercolor = Vector(0, 255, 150); // Light Green.
+    }
+
     private void SpawnSentry(CBasePlayer@ pPlayer)
     {
         Vector vecSrc = pPlayer.GetGunPosition();
@@ -138,15 +150,11 @@ class SentryData
         CBaseEntity@ pSentry = g_EntityFuncs.CreateEntity("monster_sentry", keys, true);
         if(pSentry !is null)
         {
-            // Make the turret glow so it's easy to identify.
-            pSentry.pev.renderfx = kRenderFxGlowShell;
-            pSentry.pev.rendermode = kRenderNormal;
-            pSentry.pev.renderamt = 1;
-            pSentry.pev.rendercolor = Vector(20, 255, 255);
+            ApplyMinionGlow(pSentry); // Apply glow effect before dispatch.
 
-            g_EntityFuncs.DispatchSpawn(pSentry.edict());
+            g_EntityFuncs.DispatchSpawn(pSentry.edict()); // Dispatch the spawn.
 
-            @pSentry.pev.owner = @pPlayer.edict();
+            @pSentry.pev.owner = @pPlayer.edict(); // Set player as owner to stop collision.
 
             // Sentry won't wake unless touched or damaged, regardless of spawnflags. Gently encourage it.
             pSentry.TakeDamage(pPlayer.pev, pPlayer.pev, 0.0f, DMG_GENERIC);
@@ -409,6 +417,9 @@ class SentryData
             return;
         
         m_flNextVisualUpdate = currentTime + m_flVisualUpdateInterval;
+
+        // Ensure glow effect is maintained.
+        ApplyMinionGlow(pSentry);
 
         Vector pos = pSentry.pev.origin;
         Vector mins = pos - Vector(16, 16, 0);

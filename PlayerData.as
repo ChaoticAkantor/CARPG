@@ -13,6 +13,7 @@ dictionary g_ClassNames =
     {PlayerClass::CLASS_ENGINEER, "Engineer"},
     {PlayerClass::CLASS_ROBOMANCER, "Robomancer"},
     {PlayerClass::CLASS_XENOMANCER, "Xenomancer"},
+    {PlayerClass::CLASS_NECROMANCER, "Necromancer"},
     {PlayerClass::CLASS_DEFENDER, "Warden"},
     {PlayerClass::CLASS_SHOCKTROOPER, "Shocktrooper"},
     {PlayerClass::CLASS_CLOAKER, "Cloaker"},
@@ -27,6 +28,7 @@ array<PlayerClass> g_ClassList =
     PlayerClass::CLASS_ENGINEER,
     PlayerClass::CLASS_ROBOMANCER,
     PlayerClass::CLASS_XENOMANCER,
+    PlayerClass::CLASS_NECROMANCER,
     PlayerClass::CLASS_DEFENDER,
     PlayerClass::CLASS_SHOCKTROOPER,
     PlayerClass::CLASS_CLOAKER,
@@ -42,6 +44,7 @@ enum PlayerClass
     CLASS_ENGINEER,
     CLASS_ROBOMANCER,
     CLASS_XENOMANCER,
+    CLASS_NECROMANCER,
     CLASS_DEFENDER,
     CLASS_SHOCKTROOPER,
     CLASS_CLOAKER,
@@ -126,14 +129,21 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 2.0f; // Minion Point Max. Has access to 3 different weapon types and all have grenades.
+                    def.baseResource = 2.0f; // Minion Point Max.
                     def.fullRegenTime = 120.0f;
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 2.0f; // Minion Point Max. Has access to many monster types!
+                    def.baseResource = 2.0f; // Minion Point Max.
+                    def.fullRegenTime = 120.0f;
+                    def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
+                    break;
+                case PlayerClass::CLASS_NECROMANCER:
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
+                    def.baseResource = 4.0f; // Minion Point Max.
                     def.fullRegenTime = 120.0f;
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
@@ -508,6 +518,19 @@ class PlayerData
                     }
                     break;
                     
+                case PlayerClass::CLASS_NECROMANCER:
+                    // Clean up necro minion data.
+                    if (g_NecromancerMinions.exists(m_szSteamID)) 
+                    {
+                        NecroMinionData@ necroMinions = cast<NecroMinionData@>(g_NecromancerMinions[m_szSteamID]);
+                        if (necroMinions !is null && pPlayer !is null) 
+                        {
+                            necroMinions.DestroyAllMinions(pPlayer); // Delete minions of this type.
+                        }
+                        g_NecromancerMinions.delete(m_szSteamID);
+                    }
+                    break;
+                    
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     // Clean up shock rifle data.
                     if (g_ShockRifleData.exists(m_szSteamID)) 
@@ -648,6 +671,15 @@ class PlayerData
                     XenMinionData data;
                     data.Initialize(GetCurrentClassStats());
                     g_XenologistMinions[steamID] = data;
+                }
+                break;
+                
+            case PlayerClass::CLASS_NECROMANCER:
+                if(!g_NecromancerMinions.exists(steamID))
+                {
+                    NecroMinionData data;
+                    data.Initialize(GetCurrentClassStats());
+                    g_NecromancerMinions[steamID] = data;
                 }
                 break;
                         
