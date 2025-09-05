@@ -437,6 +437,31 @@ void PrecacheAll()
         g_Game.PrecacheModel(strBabyGargSpriteBeam);
 
         // Sounds.
+        g_SoundSystem.PrecacheSound(strBabyGargSoundAlert1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundAlert2);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundAlert3);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundAttack1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundAttack2);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundAttack3);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundBreathe1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundBreathe2);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundBreathe3);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundDie1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundDie2);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundFlameoff1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundFlameon1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundFlamerun1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundIdle1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundIdle2);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundIdle3);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundIdle4);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundIdle5);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundPain1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundPain2);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundPain3);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundStep1);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundStep2);
+        g_SoundSystem.PrecacheSound(strBabyGargSoundStomp1);
 
 /*  Had to disable Alien Grunt for now as the hornets it fires aren't owned by it, 
     so you gain no XP from score transfer as it doesn't gain any score.

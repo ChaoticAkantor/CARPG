@@ -129,6 +129,7 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
     string strShocktrooperPain4 = "shocktrooper/shock_trooper_pain4.wav";
     string strShocktrooperPain5 = "shocktrooper/shock_trooper_pain5.wav";
 
+/*
 // Alien Grunt (Friendly). DISABLED FOR NOW.
     // Models/Sprites.
     string strAlienGruntModel = "models/agruntf.mdl";
@@ -155,12 +156,40 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
     string strAlienGruntSoundAlert3 = "agrunt/ag_alert3.wav";
     string strAlienGruntSoundAlert4 = "agrunt/ag_alert4.wav";
     string strAlienGruntSoundAlert5 = "agrunt/ag_alert5.wav";
+*/
 
     // Baby Gargantua. Adult one is way too strong :P.
     // Models/Sprites.
     string strBabyGargModel = "models/babygarg.mdl";
     string strBabyGargSpriteEye = "sprites/gargeye1.spr";
     string strBabyGargSpriteBeam = "sprites/xbeam3.spr";
+
+    // Sounds.
+    string strBabyGargSoundAlert1 = "babygarg/gar_alert1.wav";
+    string strBabyGargSoundAlert2 = "babygarg/gar_alert2.wav";
+    string strBabyGargSoundAlert3 = "babygarg/gar_alert3.wav";
+    string strBabyGargSoundAttack1 = "babygarg/gar_attack1.wav";
+    string strBabyGargSoundAttack2 = "babygarg/gar_attack2.wav";
+    string strBabyGargSoundAttack3 = "babygarg/gar_attack3.wav";
+    string strBabyGargSoundBreathe1 = "babygarg/gar_breathe1.wav";
+    string strBabyGargSoundBreathe2 = "babygarg/gar_breathe2.wav";
+    string strBabyGargSoundBreathe3 = "babygarg/gar_breathe3.wav";
+    string strBabyGargSoundDie1 = "babygarg/gar_die1.wav";
+    string strBabyGargSoundDie2 = "babygarg/gar_die2.wav";
+    string strBabyGargSoundFlameoff1 = "babygarg/gar_flameoff1.wav";
+    string strBabyGargSoundFlameon1 = "babygarg/gar_flameon1.wav";
+    string strBabyGargSoundFlamerun1 = "babygarg/gar_flamerun1.wav";
+    string strBabyGargSoundIdle1 = "babygarg/gar_idle1.wav";
+    string strBabyGargSoundIdle2 = "babygarg/gar_idle2.wav";
+    string strBabyGargSoundIdle3 = "babygarg/gar_idle3.wav";
+    string strBabyGargSoundIdle4 = "babygarg/gar_idle4.wav";
+    string strBabyGargSoundIdle5 = "babygarg/gar_idle5.wav";
+    string strBabyGargSoundPain1 = "babygarg/gar_pain1.wav";
+    string strBabyGargSoundPain2 = "babygarg/gar_pain2.wav";
+    string strBabyGargSoundPain3 = "babygarg/gar_pain3.wav";
+    string strBabyGargSoundStep1 = "babygarg/gar_step1.wav";
+    string strBabyGargSoundStep2 = "babygarg/gar_step2.wav";
+    string strBabyGargSoundStomp1 = "babygarg/gar_stomp1.wav";
 
 dictionary g_XenologistMinions;
 
