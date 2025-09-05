@@ -231,7 +231,7 @@ class XenMinionData
     private bool m_bActive = false;
     private float m_flBaseHealth = 200.0;
     private float m_flHealthScale = 0.18; // Health % scaling per level.
-    private float m_flHealthRegen = 0.005; // // Health recovery % per second of Minions.
+    private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.10; // Damage % scaling per level.
     private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
@@ -246,9 +246,16 @@ class XenMinionData
         // Clean invalid minions first.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
-            // More thorough validation - not just checking IsValid() but also trying to get the entity
+            // Checking IsValid(), GetEntity(), and also if the entity is alive.
             EHandle hMinion = m_hMinions[i].hMinion;
-            if(!hMinion.IsValid() || hMinion.GetEntity() is null)
+            if(!hMinion.IsValid())
+            {
+                m_hMinions.removeAt(i);
+                continue;
+            }
+            
+            CBaseEntity@ pEntity = hMinion.GetEntity();
+            if(pEntity is null || !pEntity.IsAlive() || pEntity.pev.health <= 0)
             {
                 m_hMinions.removeAt(i);
             }
@@ -279,7 +286,7 @@ class XenMinionData
     bool IsMinionTypeUnlocked(int minionType)
     {
         if(m_pStats is null)
-            return minionType == XEN_PITDRONE; // Only allow Pitdrones if no stats
+            return minionType == XEN_PITDRONE; // Only allow Pitdrones if no stats.
             
         int playerLevel = m_pStats.GetLevel();
         return playerLevel >= XEN_LEVEL_REQUIREMENTS[minionType];
@@ -454,8 +461,16 @@ class XenMinionData
             // Cast to CBaseMonster to check monster-specific properties.
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
             
-            // Check if minion is dead.
-            if((pMonster !is null && pMonster.pev.deadflag != DEAD_NO) || pExistingMinion.pev.health <= 0)
+            // Enhanced death check - check multiple conditions
+            bool isDead = false;
+            
+            if(pMonster !is null)
+            {
+                isDead = (pMonster.pev.deadflag != DEAD_NO);
+            }
+            
+            // Also check standard health and IsAlive
+            if(isDead || pExistingMinion.pev.health <= 0 || !pExistingMinion.IsAlive())
             {
                 // Use Killed to properly destroy the minion.
                 pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing to remove possibility of revival.
@@ -486,7 +501,7 @@ class XenMinionData
             ApplyMinionGlow(pExistingMinion);
         }
 
-        // Always recalculate the reserve pool to ensure it's accurate
+        // Always recalculate the reserve pool to ensure it's accurate.
         RecalculateReservePool();
 
         // Update stats reference for stat menu.
@@ -672,8 +687,20 @@ class XenMinionData
     {
         // Recalculate the reserve pool based on current minions.
         float newReservePool = 0.0f;
-        for(uint i = 0; i < m_hMinions.length(); i++)
+        
+        // Process from last to first to allow safe removal during iteration
+        for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
         {
+            // First verify the minion actually exists and is alive
+            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
+            if(pMinion is null || !pMinion.IsAlive() || pMinion.pev.health <= 0)
+            {
+                // Invalid or dead minion, remove it from our tracking
+                m_hMinions.removeAt(i);
+                continue;
+            }
+            
+            // Only count valid, alive minions toward the reserve pool
             int minionType = m_hMinions[i].type;
             if(minionType >= 0 && uint(minionType) < XEN_COSTS.length())
             {
@@ -932,22 +959,23 @@ void CheckXenologistMinions()
                 }
             }
             
-            // Make sure resource limits are enforced
-            if(g_PlayerClassResources.exists(steamID))
-            {
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                if(resources !is null)
+                // Make sure resource limits are enforced
+                if(g_PlayerClassResources.exists(steamID))
                 {
-                    float maxEnergy = float(resources['max']);
-                    if(xenMinion.GetReservePool() > maxEnergy)
+                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+                    if(resources !is null)
                     {
-                        // Over the limit, destroy minions until we're within limits.
-                        xenMinion.DestroyAllMinions(pPlayer);
+                        // First recalculate the reserve pool to ensure it's accurate
+                        xenMinion.RecalculateReservePool();
+                        
+                        float maxEnergy = float(resources['max']);
+                        if(xenMinion.GetReservePool() > maxEnergy)
+                        {
+                            // Over the limit, destroy minions until we're within limits.
+                            xenMinion.DestroyAllMinions(pPlayer);
+                        }
                     }
-                }
-            }
-
-            xenMinion.MinionRegen(); // Minion Regeneration.
+                }            xenMinion.MinionRegen(); // Minion Regeneration.
 
             // Always update scaling values for stats menu.
             xenMinion.GetScaledHealth();

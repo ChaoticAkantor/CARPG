@@ -141,7 +141,7 @@ void SetupTimers()
 
     // RPG/Class System.
     g_Scheduler.SetInterval("UpdatePlayerHUDs", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating RPG HUD.
-    g_Scheduler.SetInterval("CheckAllPlayerScores", 0.5f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
+    g_Scheduler.SetInterval("CheckAllPlayerScores", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
 
     // Medic.
     g_Scheduler.SetInterval("CheckHealAura", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking heal aura.
@@ -360,7 +360,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strPitdroneSoundMelee2);
         g_SoundSystem.PrecacheSound(strPitdroneSoundEat);
 
-    // Bullsquid
+    // Bullsquid.
         // Models/Sprites.
         g_Game.PrecacheModel(strBullsquidModel);
         g_Game.PrecacheModel(strBullsquidSpriteTinyspit);
@@ -470,7 +470,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert5);
 */
 
-/* -- Will be used on a seperate class for zombie family.
     // Gonome.
         // Models/Sprites.
         g_Game.PrecacheModel(strGonomeModel);
@@ -491,7 +490,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strGonomeSoundMelee2);
         g_SoundSystem.PrecacheSound(strGonomeSoundRun);
         g_SoundSystem.PrecacheSound(strGonomeSoundEat);
-    */
 
     /* -- Unused Mortar Strike Ability.
         // Sounds.

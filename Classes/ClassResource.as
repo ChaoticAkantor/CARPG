@@ -20,7 +20,7 @@ void RegenClassResource()
         if (!g_PlayerClassResources.exists(steamID))
             continue;
         
-        // Skip if player not found or not alive
+        // Skip if player not found or not alive.
         if (pPlayer is null || !pPlayer.IsAlive())
             continue;
             
@@ -376,7 +376,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
 
                                             // Flat HP display.
                                             int healthFlatInt = int(healthFlat);
-                                            resourceInfo += "[Robogrunt" + ": " + healthFlatInt + " HP] ";
+                                            resourceInfo += "[Robogrunt" + ": " + healthFlatInt + " HP]\n";
                                         }
                                     }
                                 }
@@ -545,7 +545,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                         creatureName = "Baby Garg";
                                         
                                     int healthFlatInt = int(healthFlat);
-                                    resourceInfo += "[" + creatureName + ": " + healthFlatInt + " HP] ";
+                                    resourceInfo += "[" + creatureName + ": " + healthFlatInt + " HP]\n";
                                 }
                             }
                         }
@@ -596,7 +596,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     }
                                     
                                     int healthFlatInt = int(healthFlat);
-                                    resourceInfo += "[" + zombieName + ": " + healthFlatInt + " HP] ";
+                                    resourceInfo += "[" + zombieName + ": " + healthFlatInt + " HP]\n";
                                 }
                             }
                         }

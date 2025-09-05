@@ -71,7 +71,7 @@ class MinionData
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
     private float m_flHealthScale = 0.18; // Health % scaling per level. Robogrunts are armored.
     private float m_flHealthRegen = 0.005; // Health recovery % per second of Robogrunts.
-    private float m_flDamageScale = 0.10; // Damage % scaling per level.
+    private float m_flDamageScale = 0.08; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -84,9 +84,16 @@ class MinionData
         // Clean invalid minions first.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
-            // More thorough validation - not just checking IsValid() but also trying to get the entity
+            // Checking IsValid(), GetEntity(), and also if the entity is alive.
             EHandle hMinion = m_hMinions[i].hMinion;
-            if(!hMinion.IsValid() || hMinion.GetEntity() is null)
+            if(!hMinion.IsValid())
+            {
+                m_hMinions.removeAt(i);
+                continue;
+            }
+            
+            CBaseEntity@ pEntity = hMinion.GetEntity();
+            if(pEntity is null || !pEntity.IsAlive() || pEntity.pev.health <= 0)
             {
                 m_hMinions.removeAt(i);
             }
@@ -274,8 +281,16 @@ class MinionData
             // Cast to CBaseMonster to check monster-specific properties.
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
             
-            // Check if minion is dead or at very low health.
-            if((pMonster !is null && pMonster.pev.deadflag != DEAD_NO) || pExistingMinion.pev.health <= 0)
+            // Enhanced death check - check multiple conditions
+            bool isDead = false;
+            
+            if(pMonster !is null)
+            {
+                isDead = (pMonster.pev.deadflag != DEAD_NO);
+            }
+
+            // Also check standard health and if they are alive.
+            if(isDead || pExistingMinion.pev.health <= 0 || !pExistingMinion.IsAlive())
             {
                 // Use Killed to properly destroy the minion.
                 pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing to remove possibility of revival.
@@ -301,7 +316,7 @@ class MinionData
             ApplyMinionGlow(pExistingMinion);
         }
 
-        // Always recalculate the reserve pool to ensure it's accurate
+        // Always recalculate the reserve pool to ensure it's accurate.
         RecalculateReservePool();
 
         // Update stats reference for stat menu.
@@ -464,8 +479,20 @@ class MinionData
     {
         // Recalculate the reserve pool based on current minions.
         float newReservePool = 0.0f;
-        for(uint i = 0; i < m_hMinions.length(); i++)
+        
+        // Process from last to first to allow safe removal during iteration
+        for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
         {
+            // First verify the minion actually exists and is alive
+            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
+            if(pMinion is null || !pMinion.IsAlive() || pMinion.pev.health <= 0)
+            {
+                // Invalid or dead minion, remove it from our tracking
+                m_hMinions.removeAt(i);
+                continue;
+            }
+            
+            // Only count valid, alive minions toward the reserve pool
             int minionType = m_hMinions[i].type;
             if(minionType >= 0 && uint(minionType) < MINION_COSTS.length())
             {
@@ -628,6 +655,9 @@ void CheckEngineerMinions()
                     dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
                     if(resources !is null)
                     {
+                        // First recalculate the reserve pool to ensure it's accurate.
+                        Minion.RecalculateReservePool();
+                        
                         float maxEnergy = float(resources['max']);
                         if(Minion.GetReservePool() > maxEnergy)
                         {
