@@ -299,13 +299,13 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         resourceName = "Bloodlust";
                         break;
                     case PlayerClass::CLASS_ROBOMANCER:
-                        resourceName = "Summon Points (Robots)";
+                        resourceName = "Robo Points";
                         break;
                     case PlayerClass::CLASS_XENOMANCER:
-                        resourceName = "Summon Points (Creatures)";
+                        resourceName = "Xeno Points";
                         break;
                     case PlayerClass::CLASS_NECROMANCER:
-                        resourceName = "Summon Points (Zombies)";
+                        resourceName = "Necro Points";
                         break;
                     case PlayerClass::CLASS_ENGINEER:
                         resourceName = "Sentry Battery";
