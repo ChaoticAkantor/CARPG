@@ -2,10 +2,8 @@ string strNecroMinionSoundCreate = "debris/beamstart7.wav";
 
 // Precache strings for monsters. (Yawn)
 
-// Zombies.
+// Zombie.
     // Models/Sprites.
-    string strZombieModel = "models/zombie.mdl";
-    string strZombieBarneyModel = "models/zombie_barney.mdl";
     string strZombieSoldierModel = "models/zombie_soldier.mdl";
     string strZombieModelGibs = "models/zombiegibs1.mdl";
 
@@ -26,8 +24,6 @@ string strNecroMinionSoundCreate = "debris/beamstart7.wav";
     string strZombieSoundIdle4 = "zombie/zo_idle4.wav";
     string strZombieSoundPain1 = "zombie/zo_pain1.wav";
     string strZombieSoundPain2 = "zombie/zo_pain2.wav";
-
-
 
 // Gonome.
     // Models/Sprites.
@@ -55,61 +51,36 @@ dictionary g_NecromancerMinions;
 
 enum ZombieType
 {   
-    NECRO_ZOMBIE = 0,
-    NECRO_ZOMBIEBARNEY = 1,
-    NECRO_ZOMBIESOLDIER = 2,
-    NECRO_GONOME = 3
+    NECRO_ZOMBIE = 1,
+    NECRO_GONOME = 2
 }
 
 const array<string> NECRO_NAMES = 
 {
     "Zombie",
-    "Z-Guard",
-    "Z-Soldier",
     "Gonome"
 };
 
 const array<string> NECRO_ENTITIES = 
 {
-    "monster_zombie",
-    "monster_zombie_barney",
     "monster_zombie_soldier",
-    "monster_gonome"
-    
+    "monster_gonome"    
 };
 
 const array<int> NECRO_COSTS = // Pool cost per summon of each type. All zombies are technically upgrades except for the gonome, they need to cost the same!
 {
     1, // Zombie.
-    1, // Zombie Guard.
-    1, // Zombie Soldier.
     2 // Gonome.
 };
 
 // Level requirements for each Zombie type.
 const array<int> NECRO_LEVEL_REQUIREMENTS = 
 {   
-    1,    // Zombie.
-    10,    // Zombie Guard Upgrade.
-    20,    // Zombie Soldier Upgrade.
-    30    // Gonome Unlock.
+    1,   // Zombie.
+    1    // Gonome.
 };
 
-// Add a new function to get the appropriate zombie type based on player level.
-int GetZombieTypeForLevel(int playerLevel)
-{
-    // Return the highest zombie tier available at the player's level.
-    if (playerLevel >= NECRO_LEVEL_REQUIREMENTS[2])
-        return NECRO_ZOMBIESOLDIER; // Zombie (Soldier).
-
-    else if (playerLevel >= NECRO_LEVEL_REQUIREMENTS[1])
-        return NECRO_ZOMBIEBARNEY; // Zombie (Barney)
-
-    else
-        return NECRO_ZOMBIE; // Zombie.
-}
-
-// Structure to track minion type
+// Structure to track minion type.
 class NecroMinionInfo
 {
     EHandle hMinion;
@@ -124,9 +95,9 @@ class NecroMinionData
     private NecroMinionMenu@ m_pMenu;
     private array<NecroMinionInfo> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 300.0;
+    private float m_flBaseHealth = 200.0;
     private float m_flHealthScale = 0.18; // Health % scaling per level.
-    private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
+    private float m_flHealthRegen = 0.002; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.12; // Damage % scaling per level.
     private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
@@ -185,12 +156,11 @@ class NecroMinionData
 
         int playerLevel = m_pStats.GetLevel();
     
-        // Special case for Gonome option unlock.
-        if(minionType == NECRO_GONOME)
-            return playerLevel >= NECRO_LEVEL_REQUIREMENTS[3];
-
-        // Zombies automatically upgrade tier based on level. Only highest tier is usable.
-        return minionType <= GetZombieTypeForLevel(playerLevel);
+        // Check level requirement for each minion type.
+        if(minionType >= 0 && uint(minionType) < NECRO_LEVEL_REQUIREMENTS.length())
+            return playerLevel >= NECRO_LEVEL_REQUIREMENTS[minionType];
+        
+        return false;
     }
     
     array<NecroMinionInfo>@ GetMinions() { return m_hMinions; }
@@ -279,18 +249,10 @@ class NecroMinionData
             }
         }
         
-        // If the player selected a Zombie.
-        if(minionType != NECRO_GONOME && minionType < NECRO_GONOME)
-        {
-            // Get the highest zombie tier available at their level.
-            int playerLevel = m_pStats !is null ? m_pStats.GetLevel() : 1;
-            minionType = GetZombieTypeForLevel(playerLevel);
-        }
-        
-        // Check if the gonome is unlocked.
+        // Check if the minion type is unlocked based on player level.
         if(!IsMinionTypeUnlocked(minionType))
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + NECRO_NAMES[minionType] + " requires Lv. " + NECRO_LEVEL_REQUIREMENTS[minionType == NECRO_GONOME ? 3 : minionType] + "!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + NECRO_NAMES[minionType] + " requires Lv. " + NECRO_LEVEL_REQUIREMENTS[minionType] + "!\n");
             return;
         }
 
@@ -590,19 +552,19 @@ class NecroMinionData
         // Recalculate the reserve pool based on current minions.
         float newReservePool = 0.0f;
         
-        // Process from last to first to allow safe removal during iteration
+        // Process from last to first to allow safe removal during iteration.
         for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
         {
-            // First verify the minion actually exists and is alive
+            // First verify the minion actually exists and is alive.
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion is null || !pMinion.IsAlive() || pMinion.pev.health <= 0)
             {
-                // Invalid or dead minion, remove it from our tracking
+                // Invalid or dead minion, remove it from our tracking.
                 m_hMinions.removeAt(i);
                 continue;
             }
             
-            // Only count valid, alive minions toward the reserve pool
+            // Only count valid, alive minions toward the reserve pool.
             int minionType = m_hMinions[i].type;
             if(minionType >= 0 && uint(minionType) < NECRO_COSTS.length())
             {
@@ -745,43 +707,23 @@ class NecroMinionMenu
         @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
         m_pMenu.SetTitle("[Zombies Control Menu]\n");
         
-        int playerLevel = 1;
-        if(m_pOwner.HasStats())
+        for(uint i = 0; i < NECRO_NAMES.length(); i++) 
         {
-            PlayerData@ data = null;
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerRPGData.exists(steamID))
+            string menuText = "";
+
+            // Check if this minion type is unlocked.
+            if(!m_pOwner.IsMinionTypeUnlocked(i))
             {
-                @data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null)
-                {
-                    ClassStats@ stats = data.GetCurrentClassStats();
-                    if(stats !is null)
-                    {
-                        playerLevel = stats.GetLevel();
-                    }
-                }
+                menuText += "Summon " + NECRO_NAMES[i] + " (Lv. " + NECRO_LEVEL_REQUIREMENTS[i] + ")";
             }
+            else
+            {
+                menuText += "Summon " + NECRO_NAMES[i] + " (Cost: " + NECRO_COSTS[i] + ")";
+            }
+            
+            m_pMenu.AddItem(menuText + "\n", any(i));
         }
         
-        // Get the best zombie type for the player's level
-        int bestZombieType = GetZombieTypeForLevel(playerLevel);
-        
-        // Give the correct zombie summon option based on highest tier unlocked.
-        m_pMenu.AddItem("Summon " + NECRO_NAMES[bestZombieType] + " (Cost: " + NECRO_COSTS[bestZombieType] + ")\n", any(bestZombieType));
-    
-        // Add Gonome option if unlocked
-        if(m_pOwner.IsMinionTypeUnlocked(NECRO_GONOME))
-        {
-            m_pMenu.AddItem("Summon Gonome (Cost: " + NECRO_COSTS[NECRO_GONOME] + ")\n", any(NECRO_GONOME));
-        }
-        else 
-        {
-            // Show locked Gonome option
-            m_pMenu.AddItem("Summon Gonome (Lv. " + NECRO_LEVEL_REQUIREMENTS[3] + ")\n", any(NECRO_GONOME));
-        }
-        
-        // Rest of menu options
         if(m_pOwner.GetMinionCount() > 0) 
         {
             m_pMenu.AddItem("Teleport All\n", any(98));
