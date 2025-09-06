@@ -648,7 +648,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     }
     else if(targetname.StartsWith("_xenminion_"))
     {
-        // Find owner's XenMinionData by the index in targetname
+        // Find owner's XenMinionData by the index in targetname.
         string ownerIndex = targetname.SubString(11); // Look specifically for only targetnames with indexes added.
         if(ownerIndex.IsEmpty())
             return HOOK_CONTINUE;
@@ -674,7 +674,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     }
     else if(targetname.StartsWith("_necrominion_"))
     {
-        // Find owner's NecroMinionData by the index in targetname
+        // Find owner's NecroMinionData by the index in targetname.
         string ownerIndex = targetname.SubString(12); // Look specifically for only targetnames with indexes added.
         if(ownerIndex.IsEmpty())
             return HOOK_CONTINUE;
@@ -722,7 +722,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         if(snarkNest is null)
             return HOOK_CONTINUE;
             
-        // Apply the damage multiplier
+        // Apply the damage multiplier.
         float damageSnarkMultiplier = 1.0f + snarkNest.GetScaledDamage();
         info.flDamage *= damageSnarkMultiplier;
     }
@@ -842,10 +842,11 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
         if(cloak !is null && cloak.IsActive())
         {
-            float damageCloakMultiplier = cloak.GetDamageMultiplier(pAttacker);
-            info.flDamage *= damageCloakMultiplier;
-            info.bitsDamageType |= DMG_ALWAYSGIB;
-            cloak.DrainEnergyFromShot(pAttacker);
+            float damageMultiplier = cloak.GetDamageMultiplier(pAttacker); // Get multiplier.
+            float originalDamage = info.flDamage; // Store original damage so we can use to to scale drain.
+            info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
+            info.bitsDamageType |= DMG_ALWAYSGIB; // Add damage bit type always gib for the feels.
+            cloak.DrainEnergyFromShot(pAttacker, originalDamage); // Drain energy on dealing damage.
         }
     }
     
