@@ -77,7 +77,7 @@ class CloakData
                     float currentEnergy = float(resources['current']);
                     float maxEnergy = float(resources['max']);
                     
-                    // Check energy - require FULL energy to activate
+                    // Check energy - require FULL energy to activate.
                     if(currentEnergy < maxEnergy) // Cloak needs to be fully charged between uses.
                     {
                         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak recharging...\n");
@@ -90,7 +90,7 @@ class CloakData
                     // Set initial energy value for damage calculation.
                     m_flLastEnergyConsumed = currentEnergy;
                     
-                    // Visual effects
+                    // Visual effects.
                     pPlayer.pev.rendermode = kRenderTransAlpha;
                     pPlayer.pev.renderfx = kRenderFxGlowShell;
                     pPlayer.pev.rendercolor = CLOAK_COLOR; // Set color of effect.
