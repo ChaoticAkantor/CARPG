@@ -186,7 +186,7 @@ class SentryData
                 }
             }
             
-            // Always ensure we reset the state
+            // Always ensure we reset the state.
             m_bActive = false;
             m_hSentry = null;
             return;
