@@ -278,9 +278,7 @@ void PrecacheAll()
 
     // Zombie.
         // Models/Sprites.
-        g_Game.PrecacheModel(strZombieModel);
         g_Game.PrecacheModel(strZombieModelGibs);
-        g_Game.PrecacheModel(strZombieBarneyModel);
         g_Game.PrecacheModel(strZombieSoldierModel);
 
         // Sounds.
@@ -300,6 +298,28 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strZombieSoundIdle4);
         g_SoundSystem.PrecacheSound(strZombieSoundPain1);
         g_SoundSystem.PrecacheSound(strZombieSoundPain2);
+
+    // Gonome.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strGonomeModel);
+        g_Game.PrecacheModel(strGonomeSpriteSpit);
+
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strGonomeSoundSpit1);
+        g_SoundSystem.PrecacheSound(strGonomeSoundDeath2);
+        g_SoundSystem.PrecacheSound(strGonomeSoundDeath3);
+        g_SoundSystem.PrecacheSound(strGonomeSoundDeath4);
+        g_SoundSystem.PrecacheSound(strGonomeSoundIdle1);
+        g_SoundSystem.PrecacheSound(strGonomeSoundIdle2);
+        g_SoundSystem.PrecacheSound(strGonomeSoundIdle3);
+        g_SoundSystem.PrecacheSound(strGonomeSoundPain1);
+        g_SoundSystem.PrecacheSound(strGonomeSoundPain2);
+        g_SoundSystem.PrecacheSound(strGonomeSoundPain3);
+        g_SoundSystem.PrecacheSound(strGonomeSoundPain4);
+        g_SoundSystem.PrecacheSound(strGonomeSoundMelee1);
+        g_SoundSystem.PrecacheSound(strGonomeSoundMelee2);
+        g_SoundSystem.PrecacheSound(strGonomeSoundRun);
+        g_SoundSystem.PrecacheSound(strGonomeSoundEat);
 
     // Houndeye.
         // Models/Sprites.
@@ -494,27 +514,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert4);
         g_SoundSystem.PrecacheSound(strAlienGruntSoundAlert5);
 */
-
-    // Gonome.
-        // Models/Sprites.
-        g_Game.PrecacheModel(strGonomeModel);
-        g_Game.PrecacheModel(strGonomeSpriteSpit);
-
-        // Sounds.
-        g_SoundSystem.PrecacheSound(strGonomeSoundSpit1);
-        g_SoundSystem.PrecacheSound(strGonomeSoundDeath2);
-        g_SoundSystem.PrecacheSound(strGonomeSoundDeath3);
-        g_SoundSystem.PrecacheSound(strGonomeSoundDeath4);
-        g_SoundSystem.PrecacheSound(strGonomeSoundIdle1);
-        g_SoundSystem.PrecacheSound(strGonomeSoundIdle2);
-        g_SoundSystem.PrecacheSound(strGonomeSoundIdle3);
-        g_SoundSystem.PrecacheSound(strGonomeSoundPain1);
-        g_SoundSystem.PrecacheSound(strGonomeSoundPain3);
-        g_SoundSystem.PrecacheSound(strGonomeSoundPain4);
-        g_SoundSystem.PrecacheSound(strGonomeSoundMelee1);
-        g_SoundSystem.PrecacheSound(strGonomeSoundMelee2);
-        g_SoundSystem.PrecacheSound(strGonomeSoundRun);
-        g_SoundSystem.PrecacheSound(strGonomeSoundEat);
 
     /* -- Unused Mortar Strike Ability.
         // Sounds.
