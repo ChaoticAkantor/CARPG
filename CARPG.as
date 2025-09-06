@@ -48,14 +48,23 @@ void PluginInit()
 {
     g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
     g_Module.ScriptInfo.SetContactInfo("None");
-
+    
     PluginReset(); // Call a full reset whenever plugin is initialised or reloaded.
 }
 
 void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
 {
     PrecacheAll(); // Precache our models, sounds and sprites.
-    //PluginReset(); // Reset all plugin data when a new map is loaded.
+
+    // Reset ability states (non-minion). Temporary fix for map change issues, until initialization is reworked.
+    g_PlayerSentries.deleteAll();
+    g_HealingAuras.deleteAll();
+    g_PlayerBarriers.deleteAll();
+    g_PlayerBloodlusts.deleteAll();
+    g_PlayerCloaks.deleteAll();
+    g_PlayerExplosiveRounds.deleteAll();
+    g_ShockRifleData.deleteAll();
+    g_PlayerSnarkNests.deleteAll();
 }
 
 void MapActivate() // Like MapInit, only called after all mapper placed entities have been activated and the sound list has been written.
@@ -77,6 +86,15 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_Scheduler.ClearTimerList(); // Clear all timers.
     //RemoveHooks(); // Remove Hooks.
 
+    ResetData(); // Clear all dictionaries.
+    RegisterHooks(); // Re-register Hooks.
+    InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
+    SetupTimers(); // Re-setup timers.
+    ApplyDifficultySettings(); // Re-apply difficulty settings.
+}
+
+void ResetData()
+{
     // Clear all dictionaries.
     g_PlayerRPGData.deleteAll();
     g_PlayerMinions.deleteAll();
@@ -89,13 +107,8 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     g_PlayerCloaks.deleteAll();
     g_PlayerExplosiveRounds.deleteAll();
     g_ShockRifleData.deleteAll();
-    g_PlayerClassResources.deleteAll();
     g_PlayerSnarkNests.deleteAll();
-    
-    RegisterHooks(); // Re-register Hooks.
-    InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
-    SetupTimers(); // Re-setup timers.
-    ApplyDifficultySettings(); // Re-apply difficulty settings.
+    g_PlayerClassResources.deleteAll();
 }
 
 void RegisterHooks()
@@ -925,7 +938,6 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
             MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
             if(minion !is null)
             {
-                //g_Game.AlertMessage(at_console, "CARPG: OnClientPutInServer - Clearing Robomancer minion data for " + steamID + "\n");
                 minion.RecalculateReservePool(); // Reset the reserve pool.
             }
         }
@@ -935,7 +947,6 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
             XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
             if(xenMinion !is null)
             {
-                //g_Game.AlertMessage(at_console, "CARPG: OnClientPutInServer - Clearing Xenomancer minion data for " + steamID + "\n");
                 xenMinion.RecalculateReservePool(); // Reset the reserve pool.
             }
         }
@@ -945,11 +956,20 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
             NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
             if(necroMinion !is null)
             {
-                //g_Game.AlertMessage(at_console, "CARPG: OnClientPutInServer - Clearing Necromancer minion data for " + steamID + "\n");
                 necroMinion.RecalculateReservePool(); // Reset the reserve pool.
             }
         }
         */
+        
+        // Reset any active Engineer sentries for the player when they join/changelevel.
+        if(g_PlayerSentries.exists(steamID))
+        {
+            SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
+            if(sentry !is null)
+            {
+                sentry.Reset();
+            }
+        }
         
         ResetPlayer(pPlayer);
         RefillHealthArmor(pPlayer);
