@@ -1,4 +1,4 @@
-// Our multipliers for explosive damage based on ammo type.
+// Multipliers for explosive damage based on ammo type.
 dictionary g_AmmoTypeDamageMultipliers = 
 {
     {"9mm", 0.6f},
