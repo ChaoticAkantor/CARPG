@@ -70,7 +70,7 @@ class MinionData
     private bool m_bActive = false;
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
     private float m_flHealthScale = 0.18; // Health % scaling per level. Robogrunts are armored.
-    private float m_flHealthRegen = 0.005; // Health recovery % per second of Robogrunts.
+    private float m_flHealthRegen = 0.001; // Health recovery % per second of Robogrunts.
     private float m_flDamageScale = 0.08; // Damage % scaling per level.
     private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
     private float m_flReservePool = 0.0f;

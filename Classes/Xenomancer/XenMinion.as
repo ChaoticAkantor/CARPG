@@ -237,10 +237,10 @@ const array<int> XEN_COSTS = // Pool cost per summon of each type.
 const array<int> XEN_LEVEL_REQUIREMENTS = 
 {   
     1,    // Houndeye.
-    2,    // Pitdrone.
+    3,    // Pitdrone.
     5,    // Bullsquid.
-    8,   // Shocktrooper.
-    15    // Baby Garg.
+    10,   // Shocktrooper.
+    20    // Baby Garg.
 };
 
 // Structure to track minion type
@@ -260,7 +260,7 @@ class XenMinionData
     private bool m_bActive = false;
     private float m_flBaseHealth = 200.0;
     private float m_flHealthScale = 0.18; // Health % scaling per level.
-    private float m_flHealthRegen = 0.01; // // Health recovery % per second of Minions.
+    private float m_flHealthRegen = 0.002; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.10; // Damage % scaling per level.
     private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
