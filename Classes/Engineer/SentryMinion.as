@@ -23,12 +23,12 @@ class SentryData
     private EHandle m_hSentry;
     private bool m_bActive = false;
     private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
-    private float m_flHealthScale = 0.10; // Health scaling % per level.
+    private float m_flHealthScale = 0.18; // Health scaling % per level.
     private float m_flDamageScale = 0.10; // Damage scaling % per level.
     private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
     private float m_flHealScale = 0.18f; // Heal scaling % per level.
-    private float m_flSelfHealModifier = 10.0f; // Sentry self-healing multiplier.
+    private float m_flSelfHealModifier = 5.0f; // Sentry self-healing multiplier.
     private float m_flEnergyDrain = 1.0; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
     private float m_flRecallEnergyCost = 0.0f; // Energy % cost to recall.
@@ -50,10 +50,12 @@ class SentryData
         if(!m_bActive)
             return false;
         
-        // Check if the handle is valid
+        // Check if the handle is valid.
         if(!m_hSentry.IsValid())
         {
+            // Reset active state if handle is invalid.
             m_bActive = false;
+            m_hSentry = null;
             return false;
         }
             
@@ -61,7 +63,9 @@ class SentryData
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
         if(pSentry is null || !pSentry.IsAlive())
         {
-            m_bActive = false; // Skill is "inactive" if sentry doesnt exist or is dead.
+            // Reset active state if sentry doesn't exist or is dead.
+            m_bActive = false;
+            m_hSentry = null;
             return false;
         }
 
@@ -170,14 +174,36 @@ class SentryData
 
     void DestroySentry(CBasePlayer@ pPlayer)
     {
-        if(!m_bActive || pPlayer is null)
+        if(pPlayer is null)
+        {
+            // Just handle the cleanup
+            if(m_hSentry.IsValid())
+            {
+                CBaseEntity@ pSentry = m_hSentry.GetEntity();
+                if(pSentry !is null)
+                {
+                    g_EntityFuncs.Remove(pSentry);
+                }
+            }
+            
+            // Always ensure we reset the state
+            m_bActive = false;
+            m_hSentry = null;
             return;
+        }
+        
+        if(!m_bActive)
+        {
+            m_bActive = false;
+            m_hSentry = null;
+            return;
+        }
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
 
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
         if(pSentry !is null)
         {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            
             // Handle different destroy conditions.
             if(pSentry.pev.health <= 0)
             {
@@ -188,7 +214,7 @@ class SentryData
                     resources['current'] = 0.0f;
                 }
                 g_EntityFuncs.Remove(pSentry);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recalled!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Destroyed!\n");
             }
             else
             {
@@ -201,49 +227,52 @@ class SentryData
                     resources['current'] = current - recallCost;
                 }
                 
-                //pSentry.Killed(pPlayer.pev, GIB_NEVER);
                 g_EntityFuncs.Remove(pSentry); // Remove the sentry entity.
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recalled!\n");
                 g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSentryRecall, 1.0f, ATTN_NORM);
             }
         }
 
+        // Always ensure we reset the state properly.
         m_bActive = false;
         m_hSentry = null;
     }
     
-    // Reset function to clean up any active sentries
+    // Reset function to clean up any active sentries.
     void Reset()
-    {
-        // Find the player index
-        int playerIndex = -1;
+    {   
+        // Find the player using the same method as other abilities.
         CBasePlayer@ pPlayer = null;
         
-        if(m_hSentry.IsValid())
+        if(m_pStats !is null)
         {
-            CBaseEntity@ pSentry = m_hSentry.GetEntity();
-            if(pSentry !is null && pSentry.pev.owner !is null)
-            {
-                @pPlayer = cast<CBasePlayer@>(g_EntityFuncs.Instance(pSentry.pev.owner));
-            }
-        }
-        
-        // If we couldn't find the player from the sentry, try to find from stats
-        if(pPlayer is null && m_pStats !is null)
-        {
+            // Find the player via stats.
             for(int i = 1; i <= g_Engine.maxClients; i++)
             {
                 CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
                 if(tempPlayer !is null && tempPlayer.IsConnected())
                 {
                     string steamID = g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict());
-                    PlayerData@ playerData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                    if(playerData !is null && playerData.GetCurrentClassStats() is m_pStats)
+                    if(g_PlayerRPGData.exists(steamID))
                     {
-                        @pPlayer = tempPlayer;
-                        break;
+                        PlayerData@ playerData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                        if(playerData !is null && playerData.GetCurrentClassStats() is m_pStats)
+                        {
+                            @pPlayer = tempPlayer;
+                            break;
+                        }
                     }
                 }
+            }
+        }
+        
+        // Try to find player from sentry owner if available.
+        if(pPlayer is null && m_hSentry.IsValid())
+        {
+            CBaseEntity@ pSentry = m_hSentry.GetEntity();
+            if(pSentry !is null && pSentry.pev.owner !is null)
+            {
+                @pPlayer = cast<CBasePlayer@>(g_EntityFuncs.Instance(pSentry.pev.owner));
             }
         }
         
@@ -253,10 +282,7 @@ class SentryData
         }
         else
         {
-            // If we can't find the player, just remove the sentry directly
-            // After a map change, the entity reference may be invalid
-            g_Game.AlertMessage(at_console, "CARPG: Engineer Reset - Clearing sentry reference\n");
-            
+            // If we can't find the player, just remove the sentry directly.
             if(m_hSentry.IsValid())
             {
                 CBaseEntity@ pSentry = m_hSentry.GetEntity();
@@ -266,6 +292,7 @@ class SentryData
                 }
             }
             
+            // Always ensure we reset the active state and clear the handle.
             m_bActive = false;
             m_hSentry = null;
         }
@@ -279,6 +306,7 @@ class SentryData
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
         if(pSentry is null || !pSentry.IsAlive())
         {
+            // Ensure we properly reset state if sentry is invalid.
             DestroySentry(pPlayer);
             return;
         }
@@ -396,10 +424,10 @@ class SentryData
             aura2msg.WriteCoord(maxs.x);
             aura2msg.WriteCoord(maxs.y);
             aura2msg.WriteCoord(maxs.z);
-            aura2msg.WriteCoord(80.0f); // Height of the bubble effect
+            aura2msg.WriteCoord(80.0f); // Height of the bubble effect.
             aura2msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-            aura2msg.WriteByte(18); // Count
-            aura2msg.WriteCoord(6.0f); // Speed
+            aura2msg.WriteByte(18); // Count.
+            aura2msg.WriteCoord(6.0f); // Speed.
             aura2msg.End();
     }
 
@@ -456,10 +484,10 @@ class SentryData
             aura2msg.WriteCoord(maxs.x);
             aura2msg.WriteCoord(maxs.y);
             aura2msg.WriteCoord(maxs.z);
-            aura2msg.WriteCoord(80.0f); // Height of the bubble effect
+            aura2msg.WriteCoord(80.0f); // Height of the bubble effect.
             aura2msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-            aura2msg.WriteByte(18); // Count
-            aura2msg.WriteCoord(6.0f); // Speed
+            aura2msg.WriteByte(18); // Count.
+            aura2msg.WriteCoord(6.0f); // Speed.
             aura2msg.End();
     }
 
@@ -520,13 +548,13 @@ void CheckSentries()
             SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
             if(sentry !is null)
             {
-                // Check for invalid entity references first
+                // Check for invalid entity references first.
                 if(sentry.IsActive())
                 {
-                    // Check if sentry entity is valid (this will reset active state if not)
+                    // The IsActive() call will reset m_bActive if the sentry is invalid.
                     if(!sentry.IsActive())
                     {
-                        g_Game.AlertMessage(at_console, "CARPG: Found invalid Engineer sentry for player " + steamID + ", clearing reference\n");
+                        sentry.Reset();
                     }
                 }
                 
@@ -534,18 +562,26 @@ void CheckSentries()
                 if(g_PlayerRPGData.exists(steamID))
                 {
                     PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                    if(data !is null && data.GetCurrentClass() != PlayerClass::CLASS_ENGINEER)
+                    if(data !is null)
                     {
-                        if(sentry.IsActive())
-                            sentry.DestroySentry(pPlayer);
-                        continue;
-                    }
-                    else if(!sentry.HasStats())
-                    {
-                        sentry.Initialize(data.GetCurrentClassStats());
+                        if(data.GetCurrentClass() != PlayerClass::CLASS_ENGINEER)
+                        {
+                            // Player is no longer Engineer, destroy any active sentries.
+                            if(sentry.IsActive())
+                            {
+                                sentry.DestroySentry(pPlayer);
+                            }
+                            continue;
+                        }
+                        else if(!sentry.HasStats())
+                        {
+                            // Initialize stats if needed.
+                            sentry.Initialize(data.GetCurrentClassStats());
+                        }
                     }
                 }
 
+                // Update the sentry if we have one.
                 sentry.Update(pPlayer);
             }
         }
