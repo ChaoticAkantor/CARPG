@@ -59,17 +59,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_BERSERKER:
@@ -77,17 +77,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_ROBOMANCER:
@@ -95,17 +95,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_XENOMANCER:
@@ -118,12 +118,12 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_NECROMANCER:
@@ -136,12 +136,12 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_SHOCKTROOPER:
@@ -149,17 +149,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_DEFENDER:
@@ -172,12 +172,12 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_CLOAKER:
@@ -185,17 +185,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_VANQUISHER:
@@ -203,17 +203,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_ENGINEER:
@@ -221,17 +221,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_SWARMER:
@@ -239,17 +239,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedEnhancement1())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement2())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedEnhancement3())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
                         break;
                     }
                 }
