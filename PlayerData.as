@@ -122,9 +122,9 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 25.0f;
+                    def.baseResource = 30.0f;
                     def.fullRegenTime = 30.0f;
-                    def.energyPerLevel = 0.08f; // 100s at level 50.
+                    def.energyPerLevel = 0.04f; // 120s at level 50.
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
@@ -185,9 +185,9 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_SWARMER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 1.0f; // Base charges.
+                    def.baseResource = 2.0f; // Base charges.
                     def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.05f; // 5 Max at level 50.
+                    def.energyPerLevel = 0.00f; // No increase.
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
