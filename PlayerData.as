@@ -171,9 +171,9 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 20.0f; // Base Cloak battery (duration).
+                    def.baseResource = 10.0f; // Base Cloak battery (duration in seconds).
                     def.fullRegenTime = 15.0f;
-                    def.energyPerLevel = 0.04f; // 60s at level 50.
+                    def.energyPerLevel = 0.04f; // 30s at level 50.
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
                     def.baseHP = 100.0f;
