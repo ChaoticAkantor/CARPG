@@ -8,7 +8,8 @@ dictionary g_PlayerCloaks;
 class CloakData
 {
     private bool m_bActive = false;
-    private float m_flCloakEnergyCostPerShot = 15.0f; // Duration drained per shot.
+    private float m_flBaseCloakEnergyCostPerShot = 1.0f; // Base duration drained per damage instance, drain scales with amount of damage dealt.
+    private float m_flCloakEnergyCostCap = 10.0f; // Max duration drained per damage instance. Will never drain more than this value.
     private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 1.0f; // Base drain rate.
@@ -24,7 +25,7 @@ class CloakData
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     float GetDamageBonus() { return m_flBaseDamageBonus * (1.0f + m_pStats.GetLevel() * m_flDamageBonusPerLevel); }
     float GetEnergyCost () { return m_flBaseDrainRate; }
-    float GetEnergyCostPerShot() { return m_flCloakEnergyCostPerShot; }
+    float GetEnergyCostPerShot() { return m_flBaseCloakEnergyCostPerShot; }
 
     float GetDamageMultiplier(CBasePlayer@ pPlayer)
     {
@@ -73,7 +74,7 @@ class CloakData
             {
                 if(!m_bActive)
                 {
-                    // Activate
+                    // Activate.
                     float currentEnergy = float(resources['current']);
                     float maxEnergy = float(resources['max']);
                     
@@ -108,9 +109,12 @@ class CloakData
                     
                     // AI targeting.
                     pPlayer.pev.flags |= FL_NOTARGET;
-                    
+
+                    // Increase movement speed.
+                    pPlayer.pev.maxspeed = 2000.0f;
+
                     // Sounds - activation and loop.
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, 0, PITCH_NORM);
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Activated!\n");
                 }
@@ -141,9 +145,9 @@ class CloakData
         pPlayer.pev.flags &= ~FL_NOTARGET;
         
         // Stop looping sound and play deactivation sound.
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.0f, ATTN_NORM, SND_STOP);
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);    
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Disabled!\n");
+        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.0f, ATTN_NORM, SND_STOP);
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Deactivated!\n");
         
         m_flLastEnergyConsumed = 0.0f;
     }
@@ -187,7 +191,7 @@ class CloakData
         }
     }
 
-    void DrainEnergyFromShot(CBasePlayer@ pPlayer)
+    void DrainEnergyFromShot(CBasePlayer@ pPlayer, float damage = 0.0f)
     {
         if(!m_bActive || pPlayer is null)
             return;
@@ -201,9 +205,24 @@ class CloakData
                 float current = float(resources['current']);
                 m_flLastEnergyConsumed = current;
                 
-                current -= m_flCloakEnergyCostPerShot; // Reduce energy when shooting.
+                // Scale battery drain based on damage dealt.
+                float drainAmount = m_flBaseCloakEnergyCostPerShot;
                 
-                // End cloak if energy runs out.
+                if(damage > 0.0f)
+                {
+                    // Simple linear scaling with damage dealt.
+                    // Add % of scaled damage to base cost.
+                    float damageScale = damage / 10.0f;
+                    drainAmount += (damageScale * 0.15f * m_flBaseCloakEnergyCostPerShot);
+                    
+                    // Cap the amount drained to prevent per damage instance.
+                    if(drainAmount > m_flCloakEnergyCostCap)
+                        drainAmount = m_flCloakEnergyCostCap;
+                }
+                
+                current -= drainAmount;
+                
+                // End cloak if energy runs out
                 if(current <= 0)
                 {
                     current = 0;
