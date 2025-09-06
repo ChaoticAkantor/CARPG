@@ -6,10 +6,10 @@ class SnarkNestData
     private int m_iBaseSnarkCount = 30; // Base number of snarks to spawn.
     private float m_flSnarkHealth = 50.0f; // Health of each snark.
     private float m_flSnarkHealthScale = 0.02f; // Health % increase per level.
-    private float m_flSnarkDamageScale = 0.06f; // Damage % increase per level.
+    private float m_flSnarkDamageScale = 0.08f; // Damage % increase per level.
     private float m_flSnarkCountScale = 0.02f; // Count % increase in snarks in swarm per level.
     private float m_flLastToggleTime = 0.0f;
-    private float m_flToggleCooldown = 5.0f; // Cooldown between spawns.
+    private float m_flToggleCooldown = 4.0f; // Cooldown between spawns.
     private float m_flLaunchForce = 1000.0f; // Velocity that snarks are thrown outward.
 
     private ClassStats@ m_pStats = null;
@@ -166,8 +166,8 @@ class SnarkNestData
         g_EngineFuncs.AngleVectors(pPlayer.pev.v_angle, aimDir, right, up);
         
         // Create variation around the player's view direction.
-        float horizontalVariation = Math.RandomFloat(-0.3f, 0.3f); // +/- 0.3 radians (~17 degrees)
-        float verticalVariation = Math.RandomFloat(-0.3f, 0.3f);   // +/- 0.3 radians (~17 degrees)
+        float horizontalVariation = Math.RandomFloat(-0.3f, 0.3f); // +/- 0.3 radians (~17 degrees).
+        float verticalVariation = Math.RandomFloat(-0.3f, 0.3f);   // +/- 0.3 radians (~17 degrees).
         
         // Apply variation to the aim direction
         Vector finalDir = aimDir;
@@ -185,7 +185,7 @@ class SnarkNestData
         velocity.z += Math.RandomFloat(20.0f, 50.0f);
 
         // Create visual effect on player per snark.
-        // Use gun position for effect start
+        // Use gun position for effect start.
         Vector origin = gunPos;
         
         // Use finalDir (aim direction with variation) to calculate endpoint.
