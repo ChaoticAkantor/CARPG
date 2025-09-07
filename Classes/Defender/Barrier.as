@@ -44,7 +44,7 @@ class BarrierData
     // Check if the barrier can protect teammates.
     bool CanProtectTeammates() 
     { 
-        return HasStats() && m_pStats.HasUnlockedEnhancement1();
+        return HasStats() && m_pStats.HasUnlockedPerk1();
     }
     
     // Get all players currently protected by this barrier.
@@ -393,7 +393,7 @@ class BarrierData
         if(!g_PlayerClassResources.exists(steamID))
             return;
             
-        // Update protection list if enhancement is unlocked
+        // Update protection list if perk is unlocked.
         float currentTime = g_Engine.time;
         if (CanProtectTeammates() && currentTime - m_flLastProtectionUpdateTime >= m_flProtectionUpdateInterval)
         {
