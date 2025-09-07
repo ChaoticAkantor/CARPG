@@ -5,7 +5,6 @@ dictionary g_AmmoTypeDamageMultipliers =
     {"357", 1.50f},
     {"buckshot", 0.5f},
     {"556", 0.6f},
-    {"762", 1.8f},
     {"uranium", 0.8f},
     {"m40a1", 1.8f}
 };
@@ -83,7 +82,7 @@ class ExplosiveRoundsData
             pPlayer.pev,
             GetScaledDamage() * damageMultiplier,
             GetRadius(),
-            CLASS_PLAYER_ALLY, // Will not damage allies of player.
+            CLASS_PLAYER, // Will not damage player or allies.
             damageType // Damage type - configurable via parameter.
         );
     }
