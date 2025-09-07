@@ -77,6 +77,8 @@ void MapStart() // Called after 0.1 seconds of game activity, this is used to si
     // Startup console message so we know it is installed.
     g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n");
 
+    g_EngineFuncs.ServerCommand("mp_friendlyfire 0\n"); // Disable friendly fire to ensure certain abilities don't hurt ally monsters.
+
     // Hints to play on map load.
     g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
 }
@@ -201,7 +203,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strHealAuraActiveSound);
         g_SoundSystem.PrecacheSound(strHealSound);
 
-
     // Xenomancer Ability Precache.
         // Sounds.
         g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
@@ -235,9 +236,13 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strBarrierActiveSound);
 
     // Cloaker Ability Precache.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strCloakNovaSprite);
+
         // Sounds.
         g_SoundSystem.PrecacheSound(strCloakActivateSound);
         g_SoundSystem.PrecacheSound(strCloakActiveSound);
+        g_SoundSystem.PrecacheSound(strCloakNovaSound);
 
     // Vanquisher Class Precache.
         // Models/Sprites.
@@ -618,7 +623,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         info.flDamage *= damageSentryMultiplier;
 
         // Sentry enhancement, change damage type. Doesn't seem to make armor damagable.
-        //if(sentry.HasStats() && sentry.GetStats().HasUnlockedEnhancement3())
+        //if(sentry.HasStats() && sentry.GetStats().HasUnlockedPerk3())
         //{
         //    info.bitsDamageType |= DMG_RADIATION; // Add AP damage type.
         //}
@@ -847,6 +852,48 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
             info.bitsDamageType |= DMG_ALWAYSGIB; // Add damage bit type always gib for the feels.
             cloak.DrainEnergyFromShot(pAttacker, originalDamage); // Drain energy on dealing damage.
+        }
+    }
+
+    // Perk 1 - AP Steal Nova.
+    if(g_PlayerCloaks.exists(steamID))
+    {
+        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+        if(cloak !is null && cloak.IsNovaActive() && cloak.GetStats().HasUnlockedPerk1())
+        {
+            float healAmount = info.flDamage * cloak.GetAPStealPercent(); // Get damage dealt to repair.
+
+            // Apply to AP, don't repair over maximum.
+            pAttacker.pev.armorvalue = Math.min(pAttacker.pev.armorvalue + healAmount, pAttacker.pev.armortype);
+            
+            // After healing, check if AP actually changed, if it didn't, AP must be disabled by map, apply to HP instead.
+            if (pAttacker.pev.armorvalue > 0)
+            {
+                //Apply to HP, don't repair over maximum.
+                pAttacker.pev.health = Math.min(pAttacker.pev.health + healAmount, pAttacker.pev.max_health);
+
+                // Health Bubbles Effect.
+                Vector pos = pAttacker.pev.origin;
+                Vector mins = pos - Vector(16, 16, 0);
+                Vector maxs = pos + Vector(16, 16, 64);
+
+                NetworkMessage healbubblesmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                    healbubblesmsg.WriteByte(TE_BUBBLES);
+                    healbubblesmsg.WriteCoord(mins.x);
+                    healbubblesmsg.WriteCoord(mins.y);
+                    healbubblesmsg.WriteCoord(mins.z);
+                    healbubblesmsg.WriteCoord(maxs.x);
+                    healbubblesmsg.WriteCoord(maxs.y);
+                    healbubblesmsg.WriteCoord(maxs.z);
+                    healbubblesmsg.WriteCoord(80.0f); // Height of the bubble effect.
+                    healbubblesmsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+                    healbubblesmsg.WriteByte(18); // Count.
+                    healbubblesmsg.WriteCoord(6.0f); // Speed.
+                    healbubblesmsg.End();
+
+                // Play HP healing sound.
+                //g_SoundSystem.EmitSoundDyn(pAttacker.edict(), CHAN_ITEM, "items/smallmedkit1.wav", 0.5f, ATTN_NORM, 0, PITCH_NORM);
+            }
         }
     }
     
