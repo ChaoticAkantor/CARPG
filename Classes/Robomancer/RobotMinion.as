@@ -105,6 +105,8 @@ class MinionData
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
+    ClassStats@ GetStats() { return m_pStats; }
+
     int GetMinionCount() { return m_hMinions.length(); }
 
     float GetReservePool() { return m_flReservePool; }

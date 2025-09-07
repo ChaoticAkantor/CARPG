@@ -296,6 +296,8 @@ class XenMinionData
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
+    ClassStats@ GetStats() { return m_pStats; }
+
     int GetMinionCount() { return m_hMinions.length(); }
 
     float GetReservePool() { return m_flReservePool; }
@@ -307,7 +309,7 @@ class XenMinionData
     float GetLifestealPercent() 
     { 
         // Only return lifesteal percent if Enhancement 1 is unlocked.
-        return (m_pStats !is null && m_pStats.HasUnlockedEnhancement1()) ? m_flLifestealPercent : 0.0f;
+        return (m_pStats !is null && m_pStats.HasUnlockedPerk1()) ? m_flLifestealPercent : 0.0f;
     }
 
     bool HasStats() { return m_pStats !is null; }
@@ -748,7 +750,7 @@ class XenMinionData
             return;
             
         // Check if the enhancement is unlocked.
-        if(m_pStats is null || !m_pStats.HasUnlockedEnhancement1())
+        if(m_pStats is null || !m_pStats.HasUnlockedPerk1())
             return;
 
         // Calculate health to return to player and minion.
