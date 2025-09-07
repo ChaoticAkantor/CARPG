@@ -1,4 +1,4 @@
-// Plugin Created by Chaotic Akantor for potential use in an addon.
+// Plugin Created by Chaotic Akantor as ammo recovery system for CARPG.
 // This file handles player ammo recovery.
 
 float flAmmoTick = 1.0; // How long between each ammo regen tick.
@@ -67,7 +67,7 @@ void InitializeAmmoRegen()
         }
     }
     
-    // Initialize ammo types with current map multiplier
+    // Initialize ammo types with current map multiplier.
     g_AmmoTypes.insertLast(AmmoType("health", 1, 5, 100, true, 100));
     g_AmmoTypes.insertLast(AmmoType("9mm", 1, 1, 300));
     g_AmmoTypes.insertLast(AmmoType("buckshot", 12, 1, 125));
@@ -76,17 +76,17 @@ void InitializeAmmoRegen()
     g_AmmoTypes.insertLast(AmmoType("m40a1", 20, 1, 25));
     g_AmmoTypes.insertLast(AmmoType("bolts", 25, 1, 30));
     g_AmmoTypes.insertLast(AmmoType("sporeclip", 30, 1, 20));
-    g_AmmoTypes.insertLast(AmmoType("hornets", 3, 1, 100));
+    g_AmmoTypes.insertLast(AmmoType("Hornets", 3, 1, 100));
     g_AmmoTypes.insertLast(AmmoType("shock charges", 3, 1, 100));
     g_AmmoTypes.insertLast(AmmoType("uranium", 10, 1, 100));
     
     // Threshold-based ammo types (explosives, etc).
-    g_AmmoTypes.insertLast(AmmoType("hand grenade", 60, 1, 10, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 60, 1, 10, true, 1));
     g_AmmoTypes.insertLast(AmmoType("ARgrenades", 60, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("satchel charge", 120, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("trip mine", 120, 1, 10, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 120, 1, 10, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("Trip Mine", 120, 1, 10, true, 1));
     g_AmmoTypes.insertLast(AmmoType("rockets", 90, 1, 10, true, 1));
-    g_AmmoTypes.insertLast(AmmoType("snarks", 30, 1, 15, true, 1));
+    g_AmmoTypes.insertLast(AmmoType("Snarks", 30, 1, 15, true, 1));
 }
 
 void AmmoTimerTick()
@@ -98,14 +98,14 @@ void AmmoTimerTick()
         if(pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
             continue;
 
-        // Process ammo regeneration using global settings
+        // Process ammo regeneration using global settings.
         for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
         {
             AmmoType@ ammoType = g_AmmoTypes[ammoIndex];
             if(ammoType is null)
                 continue;
                 
-            // Decrease counter
+            // Decrease counter.
             ammoType.counter--;
             
             if(ammoType.counter < 0)
@@ -123,13 +123,13 @@ void AmmoTimerTick()
                         
                         if(canRegenerate)
                         {
-                            // Add exactly amount (no multiplication)
+                            // Add exactly amount (no multiplication).
                             pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + ammoType.amount);
                         }
                     }
                 }
                 
-                // Reset counter with scaled delay
+                // Reset counter with scaled delay.
                 ammoType.counter = ammoType.delay;
             }
         }
@@ -197,7 +197,7 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
             }
             
             AdjustAmmoDelay(playerAmmoTypes, "m40a1", 25, classLevel, 0.2f);
-            AdjustAmmoDelay(playerAmmoTypes, "trip mine", 120, classLevel, 0.5f);
+            AdjustAmmoDelay(playerAmmoTypes, "Trip Mine", 120, classLevel, 0.5f);
 
             break;
         }
@@ -205,13 +205,13 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
         case PlayerClass::CLASS_VANQUISHER:
         {
             // Adjust explosive ammo capacities.
-            AmmoType@ grenadeAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "hand grenade");
+            AmmoType@ grenadeAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "Hand Grenade");
             if(grenadeAmmo !is null) 
             {
                 grenadeAmmo.threshold = 15;
             }
-            
-            AmmoType@ satchelAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "satchel charge");
+
+            AmmoType@ satchelAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "Satchel Charge");
             if(satchelAmmo !is null) 
             {
                 satchelAmmo.threshold = 7;
