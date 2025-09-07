@@ -15,17 +15,18 @@ class BarrierData
 {
     private ClassStats@ m_pStats = null;
     private bool m_bActive = false;
-    private float m_flBarrierDamageReduction = 1.00f; // Base damage reduction.
-    private float m_flToggleCooldown = 0.5f; // 1 second cooldown between toggles.
-    private float m_flBarrierDurabilityMultiplier = 1.0f; // % of total damage dealt to shield, lower = tougher.
-    private float m_flLastDrainTime = 0.0f;
-    private float m_flBarrierReflectDamageMultiplier = 0.5f; // Base damage reflect multiplier, how much of the damage is reflected back to attacker.
+    private float m_flBarrierDamageReduction = 1.00f; // Base damage reduction, anything lower will not block all damage.
+    private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
+    private float m_flBarrierDurabilityMultiplier = 1.0f; // % of total incoming damage dealt to shield, lower = tougher.
+    private float m_flLastDrainTime = 0.0f; // Initialising.
+    private float m_flBarrierReflectDamageMultiplier = 0.5f; // Base damage reflect multiplier.
     private float m_flBarrierReflectDamageScaling = 0.04f; // How much % to scale damage reflection per level.
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
     private float m_flLastProtectionUpdateTime = 0.0f;
     private float m_flProtectionUpdateInterval = 0.5f; // How often to update which players are protected.
 
+    // Refund system.
     private float m_flRefundAmount = 0.0f;
     private float m_flRefundTimeLeft = 0.0f;
     private float m_flStoredEnergy = 0.0f;
