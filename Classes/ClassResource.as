@@ -209,7 +209,7 @@ void RegenClassResource()
                 BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                 if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && isBarrierActive)
                 {
-                    regen *= 0.50f; // 50% regeneration rate when active.
+                    regen *= 0.50f; // 50% regeneration rate when active. Scales from total ability regen time.
                 }
 
                 if(current < maximum)
@@ -390,7 +390,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(barrierData !is null)
                                 {
                                     bool isActive = barrierData.IsActive();
-                                    resourceInfo += "[" + (isActive ? " 50% Recovery " : " 100% Recovery ") + "] ";
+                                    resourceInfo += "[" + (isActive ? " 50% Recovery " : " 100% Recovery ") + "]\n";
                                     
                                     if(isActive)
                                     {
@@ -406,12 +406,11 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 HealingAura@ healingAura = cast<HealingAura@>(g_HealingAuras[steamID]);
                                 if(healingAura !is null)
                                 {
-                                    float HealAmount = healingAura.GetScaledHealAmount();
-
                                     bool isActive = healingAura.IsActive();
                                     if(isActive)
                                     {
-                                        resourceInfo += "[Heal: " + int(HealAmount) + "HP/s]";
+                                        resourceInfo += "[Heal: " + int(healingAura.GetScaledHealAmount()) + "HP/s]\n";
+                                        resourceInfo += "[Poison: " + int(healingAura.GetPoisonDamageAmount()) + "/s]";
                                     }
                                 }
                             }
@@ -447,7 +446,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     float dmgBonus = bloodlust.GetDamageBonus(pPlayer) * 100;
                                     
                                     //resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "]";
-                                    resourceInfo += " [DMG Bonus: +" + int(dmgBonus) + "%]";
+                                    resourceInfo += " [DMG Bonus: +" + int(dmgBonus) + "%]\n";
 
                                     if (isActive)
                                     {
@@ -486,7 +485,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     bool isActive = cloak.IsActive(); 
                                     if(isActive)
                                     {
-                                        resourceInfo += "[Weapon Damage: +" + int(cloak.GetDamageMultiplier(pPlayer) * 100) + "%]\n";
+                                        resourceInfo += "[Damage Bonus: +" + int((cloak.GetDamageMultiplier(pPlayer) - 1.0f) * 100) + "%]\n";
                                         resourceInfo += "[Nova Damage: " + int(cloak.GetNovaDamage(pPlayer)) + "]";
                                     }
                                 }
@@ -617,7 +616,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     {
                                         float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
                                         int healthPercentInt = int(healthPercent);
-                                        resourceInfo += "[Sentry HP: " + healthPercentInt + "%]";
+                                        resourceInfo += "[Sentry HP: " + healthPercentInt + "%]\n";
                                         resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]";
                                     }
                                 }
