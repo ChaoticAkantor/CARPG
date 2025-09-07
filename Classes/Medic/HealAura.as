@@ -43,9 +43,9 @@ void CheckHealAura()
 
 class HealingAura 
 {
-    // Healing Aura variables.
+    // Healing Aura.
     private bool m_bIsActive = false;
-    private float m_flRadius = 640.0f; // Radius of the aura.
+    private float m_flRadius = 800.0f; // Radius of the aura.
     private float m_flBaseHealAmount = 10.0f; // Base heal amount.
     private float m_flHealScaling = 0.06f; // % per level scaling.
     private int m_iDrainAmount = 1.0f; // Energy drain per interval.
@@ -56,12 +56,12 @@ class HealingAura
     private float m_flLastHealTime = 0.0f;
     private float m_flHealInterval = 1.0f;
 
-    // Poison Aura variables.
-    private float m_flPoisonDamagePercent = 0.5f; // Damage as percentage of healing amount.
+    // Poison Aura.
+    private float m_flPoisonDamagePercent = 1.0f; // Damage as percentage of healing amount. Using RadiusDamage so it now has harsh falloff.
     private float m_flPoisonDamageInterval = m_flHealAuraInterval; // Interval for poison damage (same as healing).
     private float m_flLastPoisonTime = 0.0f; // Track last poison application time.
 
-    // Visual effect variables.
+    // Visual.
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = m_flHealAuraInterval; // Time between visual updates. Same as heal rate.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
@@ -209,7 +209,7 @@ class HealingAura
             return;
 
         Vector playerOrigin = pPlayer.pev.origin;
-        float poisonDamage = GetPoisonDamageAmount();
+        float poisonDamage = GetPoisonDamageAmount(); // Has harsh damage falloff due to RadiusDamage.
         
         // Apply the poison damage using RadiusDamage, not as complex and less control, but easier to handle than relationships.
         g_WeaponFuncs.RadiusDamage
@@ -487,11 +487,11 @@ class HealingAura
                 }
             }
             
-            // Skip if not determined as friendly
+            // Skip if not determined as friendly.
             if(!shouldHeal)
                 continue;
                 
-            // Skip if at full health
+            // Skip if at full health.
             if(pEntity.pev.health >= pEntity.pev.max_health)
                 continue;
 
