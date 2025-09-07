@@ -49,207 +49,207 @@ namespace Menu
                 "Ability Duration/Charges: " + int(maxEnergy) + "\n" + 
                 "Ability Recharge Rate: " + energyRegen + "/s\n\n";
 
-                BaseStatsText += "=== Ability Enhancements: ===\n";
+                BaseStatsText += "=== Ability Perks: ===\n";
             
                 // Display perks based on class and level.
                 switch(m_pOwner.GetCurrentClass())
                 {
                     case PlayerClass::CLASS_MEDIC:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_BERSERKER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_ROBOMANCER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_XENOMANCER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "Life Steal: Creatures gain 10% Life Steal for self and owner.\n";
                         else
-                            BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_NECROMANCER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "Life Steal: Zombies gain 10% Life Steal for self and owner.\n";
                         else
-                            BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_SHOCKTROOPER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_DEFENDER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "Protector - Your Ice shield also protects nearby teammates.\n";
                         else
-                            BaseStatsText += "( Protector - LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( Protector - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_CLOAKER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
-                            BaseStatsText += "N/A.\n";
+                        if(m_pStats.HasUnlockedPerk1())
+                            BaseStatsText += "AP Stealing Nova - Nova now converts damage into AP (Or HP if AP is disabled).\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( AP Stealing Nova - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_VANQUISHER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_ENGINEER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_SWARMER:
                     {
-                        if(m_pStats.HasUnlockedEnhancement1())
+                        if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement2())
+                        if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
-                        if(m_pStats.HasUnlockedEnhancement3())
+                        if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetEnhancement3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                 }
@@ -267,7 +267,7 @@ namespace Menu
                             "Healing: " + int(healingAura.GetScaledHealAmount()) + " HP/s\n" + 
                             "Poison Damage: " + int(healingAura.GetPoisonDamageAmount()) + "/s\n" +
                             "Radius: " + int(healingAura.GetHealingRadius() / 16) + "ft\n" + 
-                            "Ally Revival Duration Cost: " + int(healingAura.GetEnergyCostRevive()) + "s\n\n";
+                            "Ally Revival Duration Cost: " + int(healingAura.GetEnergyCostRevive()) + "s\n";
 
                         m_pMenu.AddItem(MedicStatsText, null);
                     }
@@ -281,7 +281,7 @@ namespace Menu
                         string BerserkerStatsText = "=== Bloodlust: ===" + "\n" +
                         "Ability Charge Steal: " + int(bloodlust.GetEnergySteal()) + "%\n" +
                         "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
-                        "Health scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n\n";
+                        "Health scaling DMG Bonus: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
@@ -294,7 +294,7 @@ namespace Menu
                     {
                         string EngineerStatsText = "=== Robogrunts: ===" + "\n" + 
                         "Health: " + int(roboMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage Multiplier: " + int(roboMinion.GetScaledDamage() * 100 + 100) + "%\n\n";
+                        "Damage Bonus: " + int(roboMinion.GetScaledDamage() * 100) + "%\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
@@ -307,13 +307,12 @@ namespace Menu
                     {
                         string XenologistStatsText = "=== Creatures: ===" + "\n" + 
                         "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage Multiplier: " + int(xenMinion.GetScaledDamage() * 100 + 100) + "%\n";
+                        "Damage Bonus: " + int(xenMinion.GetScaledDamage() * 100) + "%\n";
                         
-                        // Show lifesteal percentage only if Enhancement 1 is unlocked
-                        float lifestealPercent = xenMinion.GetLifestealPercent();
-                        if(lifestealPercent > 0)
-                            XenologistStatsText += "Lifesteal (Self and Owner): " + int(lifestealPercent * 100) + "%\n";
-                            
+                        // Show perk 1.
+                        if(xenMinion.GetStats().HasUnlockedPerk1())
+                            XenologistStatsText += "Lifesteal (Self and Owner): " + int(xenMinion.GetLifestealPercent() * 100) + "%\n";
+
                         XenologistStatsText += "\n";
 
                         m_pMenu.AddItem(XenologistStatsText, null);
@@ -327,13 +326,12 @@ namespace Menu
                     {
                         string NecromancerStatsText = "=== Zombies: ===" + "\n" + 
                         "Health: " + int(necroMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage Multiplier: " + int(necroMinion.GetScaledDamage() * 100 + 100) + "%\n";
+                        "Damage Bonus: " + int(necroMinion.GetScaledDamage() * 100) + "%\n";
                         
-                        // Show lifesteal percentage only if Enhancement 1 is unlocked
-                        float lifestealPercent = necroMinion.GetLifestealPercent();
-                        if(lifestealPercent > 0)
-                            NecromancerStatsText += "Lifesteal (Self and Owner): " + int(lifestealPercent * 100) + "%\n";
-                            
+                        // Show perk 1.
+                        if(necroMinion.GetStats().HasUnlockedPerk1())
+                            NecromancerStatsText += "Lifesteal (Self and Owner): " + int(necroMinion.GetLifestealPercent() * 100) + "%\n";
+
                         NecromancerStatsText += "\n";
 
                         m_pMenu.AddItem(NecromancerStatsText, null);
@@ -345,9 +343,9 @@ namespace Menu
                     ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
                     if(shockRifle !is null)
                     {
-                        string ShocktrooperStatsText = "=== Shockroach: ===" + "\n" + 
+                        string ShocktrooperStatsText = "=== Shockroach Rifle: ===" + "\n" + 
                             "Capacity: " + int(maxEnergy) + "\n" +
-                            "Damage Multiplier: " + int((shockRifle.GetScaledDamage() - 1.0f) * 100 + 100) + "%\n\n";
+                            "Damage Bonus: " + int((shockRifle.GetScaledDamage() - 1.0f) * 100) + "%\n";
 
                         m_pMenu.AddItem(ShocktrooperStatsText, null);
                     }
@@ -362,7 +360,7 @@ namespace Menu
                             "Durability: " + int(maxEnergy) + " HP\n" + 
                             //"Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
                             "Damage Reflection: " + int(barrier.GetScaledDamageReflection() * 100) + "%\n" +
-                            "Active Recharge Rate: " + (energyRegen * 0.5) + "/s\n\n";
+                            "Active Recharge Rate: " + (energyRegen * 0.5) + "/s\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }
@@ -374,13 +372,18 @@ namespace Menu
                     if(cloak !is null)
                     {
                         string CloakerStatsText = "=== Cloak: ===" + "\n" +  
-                            "Battery Cost Per Shot: " + int(cloak.GetEnergyCostPerShot()) + "\n" +
-                            "Damage Bonus at 100% Battery: " + int(cloak.GetDamageBonus() * 100 + 100) + "%\n\n";
+                            "Cloak Damage Multiplier (full): " + int(cloak.GetDamageBonus() * 100 + 100) + "%\n" +
+                            "Shock Nova Damage: " + int(cloak.GetNovaDamage(pPlayer)) + "\n" +
+                            "Shock Nova Radius: " + int(cloak.GetNovaRadius() / 16) + "ft\n";
+
+                        // Show perk 1.
+                        if(cloak.GetStats().HasUnlockedPerk1())
+                            CloakerStatsText += "Shock Nova AP Steal: " + int(cloak.GetAPStealPercent() * 100) + "%\n";
 
                         m_pMenu.AddItem(CloakerStatsText, null);
                     }
-                    break;
                 }
+                break;
                 case PlayerClass::CLASS_VANQUISHER:
                 {
                     ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
@@ -436,7 +439,7 @@ namespace Menu
                         string EngineerStatsText = "=== Sentry: ===" + "\n" + 
                             "Health: " + int(sentry.GetScaledHealth()) + " HP\n" +
                             "Damage Multiplier: " + int(sentry.GetScaledDamage() * 100 + 100) + "%\n" + 
-                            "Healing: " + sentry.GetHealAmount() + " HP/s\n\n";
+                            "Healing: " + sentry.GetHealAmount() + " HP/s\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
