@@ -372,7 +372,7 @@ namespace Menu
                     if(cloak !is null)
                     {
                         string CloakerStatsText = "=== Cloak: ===" + "\n" +  
-                            "Cloak Damage Multiplier (full): " + int(cloak.GetDamageBonus() * 100 + 100) + "%\n" +
+                            "Cloak Active Damage Bonus: " + int(cloak.GetDamageBonus() * 100) + "%\n" +
                             "Shock Nova Damage: " + int(cloak.GetNovaDamage(pPlayer)) + "\n" +
                             "Shock Nova Radius: " + int(cloak.GetNovaRadius() / 16) + "ft\n";
 
