@@ -71,7 +71,7 @@ class HealingAura
     private ClassStats@ m_pStats = null;
 
     private Vector m_vHealColor = Vector(0, 255, 0);
-    private Vector m_vPoisonColor = Vector(0, 255, 0); // Poison color for enemies
+    private Vector m_vPoisonColor = Vector(0, 255, 0); // Poison color for enemies.
 
     bool IsActive() { return m_bIsActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -211,66 +211,19 @@ class HealingAura
         Vector playerOrigin = pPlayer.pev.origin;
         float poisonDamage = GetPoisonDamageAmount();
         
-        CBaseEntity@ pEntity = null;
-        while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flRadius, "*", "classname")) !is null)
-        {
-            // Skip if not alive or is a player
-            if(!pEntity.IsAlive() || pEntity.IsPlayer())
-                continue;
-                
-            // Skip squadmakers
-            if(pEntity.GetClassname() == "squadmaker")
-                continue;
-                
-            bool isEnemy = false;
-            
-            // Check classification to determine if entity is an enemy.
-            int classification = pEntity.Classify();
-            
-            // All these classifications are enemies
-            if(classification == CLASS_ALIEN_MILITARY || 
-               classification == CLASS_ALIEN_MONSTER ||
-               classification == CLASS_ALIEN_PREDATOR ||
-               classification == CLASS_ALIEN_PREY ||
-               classification == CLASS_INSECT ||
-               classification == CLASS_ALIEN_BIOWEAPON ||
-               classification == CLASS_XRACE_PITDRONE ||
-               classification == CLASS_XRACE_SHOCK ||
-               classification == CLASS_HUMAN_MILITARY)
-            {
-                isEnemy = true;
-            }
-            
-            // Special handling for exclusion list entities.
-            // For these entities, if they're in the exclusion list and IsPlayerAlly is true.
-            // they're actually enemies (contrary to what their classification would suggest).
-            string classname = pEntity.GetClassname();
-            bool isInExclusionList = false;
-            
-            for(uint i = 0; i < ISPLAYERALLY_EXCLUSION.length(); i++)
-            {
-                if(classname == ISPLAYERALLY_EXCLUSION[i])
-                {
-                    CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                    if(pMonster !is null && pMonster.IsPlayerAlly())
-                    {
-                        // These are special cases where IsPlayerAlly is true but they're actually enemies.
-                        isEnemy = true;
-                    }
-                    break;
-                }
-            }
-            
-            // Only damage if it's an enemy.
-            if(isEnemy)
-            {
-                // Apply poison damage to enemy.
-                pEntity.TakeDamage(pPlayer.pev, pPlayer.pev, poisonDamage, DMG_POISON);
-                
-                // Apply poison effect.
-                ApplyPoisonEffect(pEntity);
-            }
-        }
+        // Apply the poison damage using RadiusDamage, not as complex and less control, but easier to handle than relationships.
+        g_WeaponFuncs.RadiusDamage
+        (
+            playerOrigin, // Explosion center (Player).
+            pPlayer.pev, // Inflictor.
+            pPlayer.pev, // Attacker.
+            poisonDamage, // Damage - scaled from max energy.
+            m_flRadius, // Radius.
+            CLASS_PLAYER, // Will not damage player or allies. (No need for complex searches and checks).
+            DMG_POISON // Damage type - poison.
+        );      
+            // Apply poison effect.
+            //ApplyPoisonEffect(pEntity); // Disabled whilst I come up with a solution.
     }
 
     private void ApplyPoisonEffect(CBaseEntity@ target)
