@@ -475,7 +475,7 @@ class SentryData
             auramsg.WriteByte(0); // Scroll speed.
             auramsg.End();
 
-        // Bubbles Effect.
+        // Health Bubbles Effect.
         NetworkMessage aura2msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
             aura2msg.WriteByte(TE_BUBBLES);
             aura2msg.WriteCoord(mins.x);
