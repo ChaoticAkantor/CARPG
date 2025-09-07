@@ -486,8 +486,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     bool isActive = cloak.IsActive(); 
                                     if(isActive)
                                     {
-                                        float damageBonus = (cloak.GetDamageMultiplier(pPlayer) - 1.0f) * 100;
-                                        resourceInfo += "[Damage Bonus: +" + int(damageBonus) + "%]";
+                                        resourceInfo += "[Weapon Damage: +" + int(cloak.GetDamageMultiplier(pPlayer) * 100) + "%]\n";
+                                        resourceInfo += "[Nova Damage: " + int(cloak.GetNovaDamage(pPlayer)) + "]";
                                     }
                                 }
                             }
