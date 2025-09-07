@@ -17,7 +17,7 @@ class CloakData
     private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 1.0f; // Base drain rate.
-    private float m_flBaseDamageBonus = 1.0f; // Base % damage increase.
+    private float m_flBaseDamageBonus = 1.0f; // Base % damage increase (should really be left at 1.0).
     private float m_flDamageBonusPerLevel = 0.02f; // Bonus % per level.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -29,7 +29,7 @@ class CloakData
 
     // Perk 1 - AP Stealing Nova.
     private bool m_bNovaActive = false;
-    private float m_flAPStealPercent = 0.30f; // % of damage dealt that is returned as AP to the player, or health if AP is 0.
+    private float m_flAPStealPercent = 0.20f; // % of damage dealt that is returned as AP to the player, or health if AP is 0.
 
     private ClassStats@ m_pStats = null;
 
@@ -41,7 +41,7 @@ class CloakData
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
     // Used specifically for stats menu to display full potential damage bonus.
-    float GetDamageBonus() { return m_flBaseDamageBonus * (1.0f + m_pStats.GetLevel() * m_flDamageBonusPerLevel); }
+    float GetDamageBonus() { return m_flBaseDamageBonus + (m_flBaseDamageBonus + m_pStats.GetLevel() * m_flDamageBonusPerLevel); }
 
     float GetAPStealPercent() { return m_flAPStealPercent; }
     float GetNovaRadius() { return m_flNovaRadius; }
@@ -79,7 +79,7 @@ class CloakData
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            totalPossibleBonus *= (1.0f + (level * m_flDamageBonusPerLevel)); // Now multiply with level bonus.
+            totalPossibleBonus *= (m_flBaseDamageBonus + (level * m_flDamageBonusPerLevel)); // Now multiply with level bonus.
         }
         
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
