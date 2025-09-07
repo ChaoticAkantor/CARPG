@@ -7,7 +7,7 @@ class ShockRifleData
     private ClassStats@ m_pStats = null;
     private float m_flLastUseTime = 0.0f;
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
-    private float m_flDamageScalePerLevel = 0.04f; // Damage increase % for shockrifle per level.
+    private float m_flDamageScalePerLevel = 0.03f; // Damage increase % for shockrifle per level.
 
     bool HasStats() { return m_pStats !is null; }    
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -60,7 +60,7 @@ class ShockRifleData
             // Force remove the weapon.
             g_EntityFuncs.Remove(pWeapon);
             
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle Stowed: +" + currentAmmo + " battery.\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "STORED: 50%% Battery Recovered +(" + currentAmmo + ")\n");
             g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strShockrifleEquipSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             
             m_flLastUseTime = flCurrentTime;

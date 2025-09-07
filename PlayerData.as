@@ -165,8 +165,8 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Base Shock Rifle Battery capacity.
-                    def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.08f; // 500 ammo at level 50. Shockrifle battery capacity scaling.
+                    def.fullRegenTime = 120.0f;
+                    def.energyPerLevel = 0.14f; // 800 capacity at level 50.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
@@ -205,10 +205,10 @@ class ClassStats
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
     
-    // Ability enhancement level requirements.
-    private int m_iAbilityEnhancement1LvReq = 15; // Level required to unlock first enhancement.
-    private int m_iAbilityEnhancement2LvReq = 30; // Level required to unlock second enhancement.
-    private int m_iAbilityEnhancement3LvReq = 45; // Level required to unlock third enhancement.
+    // Ability perk level requirements.
+    private int m_iAbilityPerk1LvReq = 15; // Level required to unlock first perk.
+    private int m_iAbilityPerk2LvReq = 30; // Level required to unlock second perk.
+    private int m_iAbilityPerk3LvReq = 45; // Level required to unlock third perk.
     
     int GetLevel() { return m_iLevel; }
     int GetXP() { return m_iXP; }
@@ -216,15 +216,15 @@ class ClassStats
     int GetCurrentLevelXP() { return m_iCurrentLevelXP; }
     int GetNeededXP() { return GetXPForLevel(m_iLevel); }
     
-    // Accessor methods for enhancement level requirements.
-    int GetEnhancement1LevelReq() { return m_iAbilityEnhancement1LvReq; }
-    int GetEnhancement2LevelReq() { return m_iAbilityEnhancement2LvReq; }
-    int GetEnhancement3LevelReq() { return m_iAbilityEnhancement3LvReq; }
+    // Accessor methods for perk level requirements.
+    int GetPerk1LevelReq() { return m_iAbilityPerk1LvReq; }
+    int GetPerk2LevelReq() { return m_iAbilityPerk2LvReq; }
+    int GetPerk3LevelReq() { return m_iAbilityPerk3LvReq; }
     
-    // Method to check if a player has unlocked a specific enhancement.
-    bool HasUnlockedEnhancement1() { return m_iLevel >= m_iAbilityEnhancement1LvReq; }
-    bool HasUnlockedEnhancement2() { return m_iLevel >= m_iAbilityEnhancement2LvReq; }
-    bool HasUnlockedEnhancement3() { return m_iLevel >= m_iAbilityEnhancement3LvReq; }
+    // Method to check if a player has unlocked a specific perk.
+    bool HasUnlockedPerk1() { return m_iLevel >= m_iAbilityPerk1LvReq; }
+    bool HasUnlockedPerk2() { return m_iLevel >= m_iAbilityPerk2LvReq; }
+    bool HasUnlockedPerk3() { return m_iLevel >= m_iAbilityPerk3LvReq; }
 
     bool IsMaxLevel() { return m_iLevel >= MAX_LEVEL; }
     
