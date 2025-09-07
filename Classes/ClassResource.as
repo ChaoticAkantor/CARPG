@@ -314,7 +314,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         resourceName = "Ice Shield";
                         break;
                     case PlayerClass::CLASS_SHOCKTROOPER:
-                        resourceName = "Shockrifle Battery";
+                        resourceName = "Shockrifle Recharger";
                         break;
                     case PlayerClass::CLASS_CLOAKER:
                         resourceName = "Cloak Battery";
