@@ -24,12 +24,12 @@ class CloakData
     private float m_flLastEnergyConsumed = 0.0f;
 
     //Nova.
-    private float m_flExplosionRadius = 800.0f; // Radius of the electric nova.
-    private float m_flExplosionDamageMultiplier = 3.0f; // Damage scaling of electric nova. Multiplies max duration by this value.
+    private float m_flNovaRadius = 960.0f; // Radius of the nova.
+    private float m_flNovaDamageMultiplier = 14.0f; // How much to scale the nova damage after max and remaining are combined.
 
     // Perk 1 - AP Stealing Nova.
     private bool m_bNovaActive = false;
-    private float m_flAPStealPercent = 0.25f; // % of damage dealt that is returned as AP to the player, or health if AP is 0.
+    private float m_flAPStealPercent = 0.30f; // % of damage dealt that is returned as AP to the player, or health if AP is 0.
 
     private ClassStats@ m_pStats = null;
 
@@ -39,31 +39,34 @@ class CloakData
     bool IsNovaActive() { return m_bNovaActive;}
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+
+    // Used specifically for stats menu to display full potential damage bonus.
     float GetDamageBonus() { return m_flBaseDamageBonus * (1.0f + m_pStats.GetLevel() * m_flDamageBonusPerLevel); }
-    float GetEnergyCost () { return m_flBaseDrainRate; }
-    float GetEnergyCostPerShot() { return m_flBaseCloakEnergyCostPerShot; }
+
     float GetAPStealPercent() { return m_flAPStealPercent; }
-    float GetNovaRadius() { return m_flExplosionRadius; }
+    float GetNovaRadius() { return m_flNovaRadius; }
 
     float GetNovaDamage(CBasePlayer@ pPlayer)
     { 
         // Scale nova damage.
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        float currentEnergy = 0.0f;
-        float maxEnergy = 10.0f; // Default fallback.
+        float maxEnergy = 0.0f; // Initialise.
+        float remainingEnergy = 0.0f; // Initialise.
         
         if(g_PlayerClassResources.exists(steamID))
         {
             dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
             if(resources !is null)
             {
-                maxEnergy = float(resources['max']); // Get max energy for scaling.
-                currentEnergy = float(resources['current']); // Get current energy for scaling.
+                maxEnergy = float(resources['max']); // Get max energy.
+                remainingEnergy = float(resources['current']); // Get current remaining energy.
             }
         }
 
-        float novaDamage = maxEnergy + currentEnergy * m_flExplosionDamageMultiplier;
-        return novaDamage;
+        float novadamage = 0.0f;
+        novadamage = (maxEnergy + remainingEnergy) * m_flNovaDamageMultiplier;
+
+        return novadamage;
     }
 
     float GetDamageMultiplier(CBasePlayer@ pPlayer)
@@ -292,11 +295,9 @@ class CloakData
         // Calculate explosion damage.
         float explosionDamage = GetNovaDamage(pPlayer);
         
-        // Play explosion sound.
-        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strCloakNovaSound, 1.0f, ATTN_NORM);
-        
         // Create beam cylinder effect for nova visuals.
         Vector playerOrigin = pPlayer.pev.origin;
+
         NetworkMessage beamMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, playerOrigin);
             beamMsg.WriteByte(TE_BEAMCYLINDER);
             beamMsg.WriteCoord(playerOrigin.x);
@@ -304,18 +305,18 @@ class CloakData
             beamMsg.WriteCoord(playerOrigin.z);
             beamMsg.WriteCoord(playerOrigin.x);
             beamMsg.WriteCoord(playerOrigin.y);
-            beamMsg.WriteCoord(playerOrigin.z + m_flExplosionRadius); // Height equals radius.
+            beamMsg.WriteCoord(playerOrigin.z + m_flNovaRadius); // Height equals radius.
             beamMsg.WriteShort(g_EngineFuncs.ModelIndex(strCloakNovaSprite));
             beamMsg.WriteByte(0); // Start frame.
-            beamMsg.WriteByte(2); // Frame rate.
-            beamMsg.WriteByte(10); // Life.
+            beamMsg.WriteByte(0); // Frame rate.
+            beamMsg.WriteByte(20); // Life.
             beamMsg.WriteByte(6); // Width.
             beamMsg.WriteByte(0); // Noise.
             beamMsg.WriteByte(0); // Red.
             beamMsg.WriteByte(50); // Green.
             beamMsg.WriteByte(255); // Blue.
             beamMsg.WriteByte(255); // Brightness.
-            beamMsg.WriteByte(1); // Speed.
+            beamMsg.WriteByte(0); // Speed.
         beamMsg.End();
 
         // Also create a dynamic light at the nova center.
@@ -324,7 +325,7 @@ class CloakData
             lightMsg.WriteCoord(playerOrigin.x);
             lightMsg.WriteCoord(playerOrigin.y);
             lightMsg.WriteCoord(playerOrigin.z);
-            lightMsg.WriteByte(uint8(m_flExplosionRadius / 10.0f)); // Radius (scaled down as DLIGHT uses different scale).
+            lightMsg.WriteByte(64); // Radius.
             lightMsg.WriteByte(0);   // Red.
             lightMsg.WriteByte(50); // Green.
             lightMsg.WriteByte(255);   // Blue.
@@ -342,13 +343,13 @@ class CloakData
             pPlayer.pev, // Inflictor.
             pPlayer.pev, // Attacker.
             explosionDamage, // Scaled Damage.
-            m_flExplosionRadius, // Radius.
+            m_flNovaRadius, // Radius.
             CLASS_PLAYER, // Will not damage player or allies.
-            DMG_SHOCK | DMG_ALWAYSGIB // Damage type and always gib.
+            DMG_ENERGYBEAM | DMG_ALWAYSGIB // Damage type and always gib.
         );
-        
-        // Play sound.
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_WEAPON, strCloakNovaSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+
+        // Play explosion sound.
+        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strCloakNovaSound, 1.0f, ATTN_NORM);
 
         // Nova has finished.
         m_bNovaActive = false;
