@@ -202,7 +202,7 @@ class BloodlustData
 
         pPlayer.pev.health = Math.min(pPlayer.pev.health + flHealAmount, pPlayer.pev.max_health); // Add health, but don't exceed max health.
 
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
         return flHealAmount;
     }
@@ -240,8 +240,9 @@ class BloodlustData
                     resources['current'] = flCurrentEnergy; // Add back to energy.
                 }
             }
-
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);
+        
+        // No longer plays a sound as it was confusing.
+        //g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);
 
         return flGainAmount;
     }
