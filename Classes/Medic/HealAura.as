@@ -252,7 +252,7 @@ class HealingAura
             msg.WriteByte(3);   // Scale in 0.1's.
             msg.WriteByte(15);  // Velocity along vector in 10's.
             msg.WriteByte(10);  // Random velocity in 10's.
-        msg.End();
+            msg.End();
     }
 
     private void UpdateVisualEffect(CBasePlayer@ pPlayer)
