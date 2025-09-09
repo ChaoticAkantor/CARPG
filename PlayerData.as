@@ -186,7 +186,7 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 2.0f; // Base charges.
-                    def.fullRegenTime = 60.0f * def.baseResource; // Scale by number of charges.
+                    def.fullRegenTime = 120; // 60s per charge.
                     def.energyPerLevel = 0.00f; // No increase.
                     break;
             }
@@ -453,9 +453,6 @@ class PlayerData
                         // Remove from dictionaries to ensure clean start when switching back.
                         g_PlayerBarriers.delete(m_szSteamID);
                     }
-                    
-                    // Also clean up any barrier protection being provided to others.
-                    CleanupPlayerBarrierProtection(m_szSteamID);
                     break;
                     
                 case PlayerClass::CLASS_MEDIC:
