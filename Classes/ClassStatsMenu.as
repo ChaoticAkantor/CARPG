@@ -149,35 +149,35 @@ namespace Menu
                         if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_DEFENDER:
                     {
                         if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "Protector - Your Ice shield also protects nearby teammates.\n";
+                            BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( Protector - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_CLOAKER:
@@ -190,12 +190,12 @@ namespace Menu
                         if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_VANQUISHER:
@@ -203,17 +203,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A.\n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_ENGINEER:
@@ -221,17 +221,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                     case PlayerClass::CLASS_SWARMER:
@@ -239,17 +239,17 @@ namespace Menu
                         if(m_pStats.HasUnlockedPerk1())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk2())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
 
                         if(m_pStats.HasUnlockedPerk3())
                             BaseStatsText += "N/A. \n";
                         else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
+                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
                         break;
                     }
                 }
@@ -360,7 +360,7 @@ namespace Menu
                             "Durability: " + int(maxEnergy) + " HP\n" + 
                             //"Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
                             "Damage Reflection: " + int(barrier.GetScaledDamageReflection() * 100) + "%\n" +
-                            "Active Recharge Rate: " + (energyRegen * 0.5) + "/s\n";
+                            "Active Recharge Rate: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }

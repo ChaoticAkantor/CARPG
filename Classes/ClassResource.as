@@ -386,15 +386,15 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         case PlayerClass::CLASS_DEFENDER:
                             if(g_PlayerBarriers.exists(steamID))
                             {
-                                BarrierData@ barrierData = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                                if(barrierData !is null)
+                                BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                                if(barrier !is null)
                                 {
-                                    bool isActive = barrierData.IsActive();
-                                    resourceInfo += "[" + (isActive ? " 50% Recovery " : " 100% Recovery ") + "]\n";
-                                    
+                                    bool isActive = barrier.IsActive();
+                                    resourceInfo += "[" + (isActive ? "" + int(barrier.GetActiveRechargePenalty() * 100) + "% Recovery " : " 100% Recovery ") + "]\n";
+
                                     if(isActive)
                                     {
-                                        resourceInfo += "[Damage Reflect: " + int(barrierData.GetScaledDamageReflection() * 100) + "%]";
+                                        resourceInfo += "[Damage Reflect: " + int(barrier.GetScaledDamageReflection() * 100) + "%]";
                                     }
                                 }
                             }

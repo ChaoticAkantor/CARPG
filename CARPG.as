@@ -227,7 +227,7 @@ void PrecacheAll()
 
     // Defender Ability Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strBarrierBeamSprite);
+        g_Game.PrecacheModel(strBarrierReflectDamageSprite);
         
         // Sounds.
         g_SoundSystem.PrecacheSound(strBarrierToggleSound);
@@ -783,7 +783,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                             // Only process lifesteal if bloodlust is active.
                             if(bloodlust.IsActive())
                             {
-                                bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Bloodlust active lifesteal.
+                                bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Bloodlust lifesteal.
                                 
                                 // Add rising blood particles.
                                 Vector pos = pAttacker.pev.origin;
@@ -804,7 +804,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                                     bubbleMsg.WriteCoord(2.0f);
                                 bubbleMsg.End();
 
-                                // Add dynamic light
+                                // Add dynamic light.
                                 NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
                                     msg.WriteByte(TE_DLIGHT);
                                     msg.WriteCoord(pAttacker.pev.origin.x);
@@ -928,7 +928,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         }
     }
 
-    // Check for personal barrier protection first.
+    // Check if barrier is active.
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -939,17 +939,10 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
             {
                 // Let the barrier handle all damage reflection logic.
                 barrier.HandleBarrier(pPlayer, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
+                barrier.EffectReflectDamage(attacker.pev.origin, attacker); // Play reflect damage feedback on target/attacker.
                 return HOOK_CONTINUE;
             }
         }
-    }
-    
-    // If player doesn't have their own barrier, check if they're being protected by someone else's.
-    if(IsPlayerProtectedByBarrier(pPlayer, attacker))
-    {
-        // Let the protection system handle the damage.
-        HandleProtectedPlayerDamage(pPlayer, attacker, pDamageInfo);
-        return HOOK_CONTINUE;
     }
 
     return HOOK_CONTINUE;
@@ -1107,9 +1100,6 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
             barrier.CancelRefunds(steamID);
         }
     }
-    
-    // Clean up any barrier protection relationships.
-    CleanupPlayerBarrierProtection(steamID);
     
     ClearMinions();
     return HOOK_CONTINUE;
@@ -1417,10 +1407,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         return;
         
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    
-    // Clean up any barrier protection relationships
-    CleanupPlayerBarrierProtection(steamID);
-    
+
     // Reset Heal Aura.
     if (g_HealingAuras.exists(steamID))
     {
