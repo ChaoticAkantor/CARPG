@@ -16,7 +16,7 @@ class DragonsBreathData
     private float m_flDragonsBreathPoolScaling = 0.06f; // % Ammo Pool size increase per level.
     private float m_flDragonsBreathRadius = 480.0f; // Radius of fire damage for Dragons Breath.
     private float m_flEnergyCostPerActivation = 1.0f; // Amount of energy to use per activation.
-    private float m_flRoundsFillPercentage = 1.0f; // Give % of max ammo pool per activation.
+    private float m_flRoundsFillPercentage = 1.00f; // Give % of max ammo pool per activation.
     private float m_flRoundsInPool = 0.0f; // Used to store rounds currently in pool.
     private float m_flLastToggleTime = 0.0f; // Used for last toggle time.
     private float m_flToggleCooldown = 0.10f; // Used to delay toggling to prevent spam.

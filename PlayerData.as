@@ -130,21 +130,21 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 2.0f; // Minion Point Max.
-                    def.fullRegenTime = 120.0f;
+                    def.fullRegenTime = 60.0f * def.baseResource; // 60s per minion point.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 2.0f; // Minion Point Max.
-                    def.fullRegenTime = 120.0f;
+                    def.fullRegenTime = 60.0f * def.baseResource; // 60s per minion point.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 4.0f; // Minion Point Max.
-                    def.fullRegenTime = 120.0f;
+                    def.fullRegenTime = 60.0f * def.baseResource; // 60s per minion point.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
@@ -158,7 +158,7 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Shield Base HP.
-                    def.fullRegenTime = 20.0f;
+                    def.fullRegenTime = 15.0f;
                     def.energyPerLevel = 0.08f; // 500 HP at level 50.
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
@@ -186,7 +186,7 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 2.0f; // Base charges.
-                    def.fullRegenTime = 120; // 60s per charge.
+                    def.fullRegenTime = 60.0f * def.baseResource; // 60s per charge.
                     def.energyPerLevel = 0.00f; // No increase.
                     break;
             }
