@@ -62,7 +62,7 @@ void MapInit() // When a new map is started, all scripts are initialized by call
     g_PlayerBarriers.deleteAll();
     g_PlayerBloodlusts.deleteAll();
     g_PlayerCloaks.deleteAll();
-    g_PlayerExplosiveRounds.deleteAll();
+    g_PlayerDragonsBreath.deleteAll();
     g_ShockRifleData.deleteAll();
     g_PlayerSnarkNests.deleteAll();
 }
@@ -107,7 +107,7 @@ void ResetData()
     g_PlayerBarriers.deleteAll();
     g_PlayerBloodlusts.deleteAll();
     g_PlayerCloaks.deleteAll();
-    g_PlayerExplosiveRounds.deleteAll();
+    g_PlayerDragonsBreath.deleteAll();
     g_ShockRifleData.deleteAll();
     g_PlayerSnarkNests.deleteAll();
     g_PlayerClassResources.deleteAll();
@@ -246,13 +246,13 @@ void PrecacheAll()
 
     // Vanquisher Class Precache.
         // Models/Sprites.
-    g_Game.PrecacheModel(strExplosiveRoundsExplosionSprite);
-    g_Game.PrecacheModel(strExplosiveRoundsExplosionCoreSprite);
-    g_Game.PrecacheModel(strExplosiveRoundsSplatterSprite);
+    g_Game.PrecacheModel(strDragonsBreathExplosionSprite);
+    g_Game.PrecacheModel(strDragonsBreathExplosionCoreSprite);
+    g_Game.PrecacheModel(strDragonsBreathSplatterSprite);
 
         // Sounds.
-    g_SoundSystem.PrecacheSound(strExplosiveRoundsActivateSound);
-    g_SoundSystem.PrecacheSound(strExplosiveRoundsImpactSound);
+    g_SoundSystem.PrecacheSound(strDragonsBreathActivateSound);
+    g_SoundSystem.PrecacheSound(strDragonsBreathImpactSound);
 
     // Precache for all spawnable NPC's.
     // Sentry.
@@ -549,19 +549,19 @@ void PrecacheAll()
     */
 }
 
-// Hook handler for Primary Attack.
+// Hook handler for Primary Attack. This is used for Dragons Breath on each shot.
 HookReturnCode OnWeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
 {
     if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0) // Make sure clip is not empty.
         return HOOK_CONTINUE;
     
     string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    if(g_PlayerExplosiveRounds.exists(steamId))
+    if(g_PlayerDragonsBreath.exists(steamId))
     {
-        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamId]);
-        if(explosiveRounds !is null && explosiveRounds.HasRounds())
+        DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamId]);
+        if(DragonsBreath !is null && DragonsBreath.HasRounds())
         {
-            explosiveRounds.FireExplosiveRounds(pPlayer, pWeapon); // Consume rounds and fire explosive shots if active.
+            DragonsBreath.FireDragonsBreathRound(pPlayer, pWeapon); // Consume rounds and fire Dragons Breath shots if active.
         }
     }
     
@@ -578,12 +578,12 @@ HookReturnCode OnWeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ 
     string SecondaryWeaponName = pWeapon.pev.classname;
     if(SecondaryWeaponName == "weapon_shotgun" || SecondaryWeaponName == "weapon_9mmhandgun" || SecondaryWeaponName == "weapon_sawedoff")
     {
-        if(g_PlayerExplosiveRounds.exists(steamId))
+        if(g_PlayerDragonsBreath.exists(steamId))
         {
-            ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamId]);
-            if(explosiveRounds !is null && explosiveRounds.HasRounds())
+            DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamId]);
+            if(DragonsBreath !is null && DragonsBreath.HasRounds())
             {
-                explosiveRounds.FireExplosiveRounds(pPlayer, pWeapon); // Consume rounds and fire explosive shots if active.
+                DragonsBreath.FireDragonsBreathRound(pPlayer, pWeapon); // Consume rounds and fire Dragons Breath shots if active.
             }
         }
     }
@@ -1245,15 +1245,15 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                     // Vanquisher ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_VANQUISHER)
                     {
-                        if(!g_PlayerExplosiveRounds.exists(steamID))
+                        if(!g_PlayerDragonsBreath.exists(steamID))
                         {
-                            ExplosiveRoundsData explosiveRounds;
-                            @g_PlayerExplosiveRounds[steamID] = explosiveRounds;
-                            explosiveRounds.Initialize(data.GetCurrentClassStats());
+                            DragonsBreathData DragonsBreath;
+                            @g_PlayerDragonsBreath[steamID] = DragonsBreath;
+                            DragonsBreath.Initialize(data.GetCurrentClassStats());
                         }
-                        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-                        if(explosiveRounds !is null)
-                            explosiveRounds.ActivateExplosiveRounds(pPlayer);
+                        DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
+                        if(DragonsBreath !is null)
+                            DragonsBreath.ActivateDragonsBreath(pPlayer);
                     }
                     // Xenologist ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER)
@@ -1459,13 +1459,13 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         }
     }
 
-    // Reset Explosive Rounds.
-    if(g_PlayerExplosiveRounds.exists(steamID))
+    // Reset Dragon's Breath Rounds.
+    if(g_PlayerDragonsBreath.exists(steamID))
     {
-        ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-        if(explosiveRounds !is null)
+        DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
+        if(DragonsBreath !is null)
         {
-            explosiveRounds.ResetRounds();
+            DragonsBreath.ResetRounds();
         }
     }
 
