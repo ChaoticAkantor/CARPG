@@ -368,7 +368,7 @@ class HealingAura
                         CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                         if(pMonster !is null)
                         {
-                            // Always skip squadmakers
+                            // Always skip squadmakers.
                             if(pMonster.GetClassname() == "squadmaker")
                                 continue;
                                 
@@ -430,13 +430,13 @@ class HealingAura
                 }
             }
 
-            // Skip if entity is dead
+            // Skip if entity is dead.
             if(!pEntity.IsAlive())
                 continue;
 
             bool shouldHeal = false;
 
-            // Always heal players
+            // Always heal players.
             if(pEntity.IsPlayer())
             {
                 CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
@@ -445,7 +445,7 @@ class HealingAura
             }
             else
             {
-                // For non-players, check classification
+                // For non-players, check classification.
                 int classification = pEntity.Classify();
                 
                 // Only heal player allies, friendly monsters, and neutral entities
@@ -468,11 +468,11 @@ class HealingAura
                         }
                     }
                     
-                    // Do not heal entities in the exclusion list
+                    // Do not heal entities in the exclusion list.
                     shouldHeal = !isInExclusionList;
                 }
                 
-                // Skip known enemy classes entirely
+                // Skip known enemy classes entirely.
                 if(classification == CLASS_ALIEN_MILITARY || 
                    classification == CLASS_ALIEN_MONSTER ||
                    classification == CLASS_ALIEN_PREDATOR ||
