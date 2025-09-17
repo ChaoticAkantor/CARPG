@@ -550,10 +550,10 @@ class PlayerData
                     break;
                     
                 case PlayerClass::CLASS_VANQUISHER:
-                    // Clean up explosive rounds data.
-                    if (g_PlayerExplosiveRounds.exists(m_szSteamID)) 
+                    // Clean up Dragon's Breath Rounds data.
+                    if (g_PlayerDragonsBreath.exists(m_szSteamID)) 
                     {
-                        g_PlayerExplosiveRounds.delete(m_szSteamID);
+                        g_PlayerDragonsBreath.delete(m_szSteamID);
                     }
                     break;
                     
@@ -708,11 +708,11 @@ class PlayerData
                 break;
 
                case PlayerClass::CLASS_VANQUISHER:
-                if(!g_PlayerExplosiveRounds.exists(steamID))
+                if(!g_PlayerDragonsBreath.exists(steamID))
                 {
-                    ExplosiveRoundsData data;
+                    DragonsBreathData data;
                     data.Initialize(GetCurrentClassStats());
-                    g_PlayerExplosiveRounds[steamID] = data;
+                    g_PlayerDragonsBreath[steamID] = data;
                 }
                 break;
 
