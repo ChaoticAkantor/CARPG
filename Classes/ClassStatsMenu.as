@@ -386,46 +386,17 @@ namespace Menu
                 break;
                 case PlayerClass::CLASS_VANQUISHER:
                 {
-                    ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-                    if(explosiveRounds !is null)
+                    DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
+                    if(DragonsBreath !is null)
                     {
                         // Display the base damage first.
                         string VanquisherStatsText = "=== Dragon's Breath Ammo: ===" + "\n" + 
-                            "Base Damage: " + int(explosiveRounds.GetScaledDamage()) + "\n";
+                            "Fire Damage: " + DragonsBreath.GetScaledFireDamage() + "/s\n" +
+                            "Fire Duration: " + int(DragonsBreath.GetFireDuration()) + "s\n" +
+                            "Fire Radius: " + int(DragonsBreath.GetRadius() / 16) + "ft\n";
                         
-                        // Define the order we want to display ammo types in.
-                        array<string> orderedAmmoTypes = {
-                            "9mm", "357", "556", "762", "buckshot", "uranium" //"m40a1"
-                        };
-                        
-                        // Base damage for calculation.
-                        float baseDamage = explosiveRounds.GetScaledDamage();
-                        
-                        // Display actual damage values in our defined order.
-                        for(uint i = 0; i < orderedAmmoTypes.length(); i++)
-                        {
-                            string ammoName = orderedAmmoTypes[i];
-                            float multiplier = GetAmmoTypeDamageMultiplier(ammoName);
-                            int actualDamage = int(baseDamage * multiplier);
-                            
-                            // Display damage for each ammo type with multipliers.
-                            string displayName = ammoName;
-                            if(ammoName == "9mm") displayName = "9mm";
-                            else if(ammoName == "357") displayName = ".357";
-                            else if(ammoName == "buckshot") displayName = "Buckshot";
-                            else if(ammoName == "556") displayName = "5.56";
-                            else if(ammoName == "762") displayName = "7.62";
-                            else if(ammoName == "uranium") displayName = "Uranium";
-                            //else if(ammoName == "m40a1") displayName = "M40A1";
-                            
-                            VanquisherStatsText += displayName + ": " + actualDamage + "";
-                            
-                            // Multiplier.
-                            VanquisherStatsText += " (" + int(multiplier * 100) + "%)\n";
-                        }
-                        
-                        VanquisherStatsText += "\nMax Ammo Capacity: " + int(explosiveRounds.GetMaxRounds()) + "\n" +
-                        "Ammo per Pack: " + explosiveRounds.GetAmmoPerPack() + "\n\n";
+                        VanquisherStatsText += "\nMax Ammo Capacity: " + int(DragonsBreath.GetMaxRounds()) + "\n" +
+                        "Ammo per Pack: " + DragonsBreath.GetAmmoPerPack() + "\n\n";
 
                         m_pMenu.AddItem(VanquisherStatsText, null);
                     }

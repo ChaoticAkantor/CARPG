@@ -458,23 +458,26 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             break;
 
                         case PlayerClass::CLASS_VANQUISHER:
-                        {
-                            int rounds = 0;
-                            int maxRounds = 0;
-                            
-                            if(g_PlayerExplosiveRounds.exists(steamID))
-                            {
-                                ExplosiveRoundsData@ explosiveRounds = cast<ExplosiveRoundsData@>(g_PlayerExplosiveRounds[steamID]);
-                                if(explosiveRounds !is null)
+                            if(g_PlayerDragonsBreath.exists(steamID))
+                            {   
+                                int rounds = 0;
+                                int maxRounds = 0;
+
+                                DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
+                                if(DragonsBreath !is null)
                                 {
-                                    rounds = int(explosiveRounds.GetRounds());
-                                    maxRounds = explosiveRounds.GetMaxRounds();
+                                    rounds = int(DragonsBreath.GetRounds());
+                                    maxRounds = DragonsBreath.GetMaxRounds();
+                                }
+
+                                resourceInfo += "[Dragon's Breath Rounds: (" + rounds + "/" + maxRounds + ")]\n";
+
+                                if(DragonsBreath.HasRounds())
+                                {
+                                    resourceInfo += "[Fire Damage: " + DragonsBreath.GetScaledFireDamage() + "/s]";
                                 }
                             }
-                            
-                            resourceInfo += "[Dragon's Breath Rounds: (" + rounds + "/" + maxRounds + ")]";
                             break;
-                        }
 
                         case PlayerClass::CLASS_CLOAKER:
                             if(g_PlayerCloaks.exists(steamID))
