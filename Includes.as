@@ -40,7 +40,7 @@
 #include "Classes/Cloaker/Cloak"
 
 // Vanquisher.
-#include "Classes/Vanquisher/ExplosiveRounds"
+#include "Classes/Vanquisher/DragonsBreath"
 //#include "Classes/Vanquisher/MortarStrike" // Unused mortar strike ability, may be reused for another class.
 
 // Swarmer.
