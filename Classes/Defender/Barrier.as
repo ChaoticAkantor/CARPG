@@ -75,7 +75,7 @@ class BarrierData
         {
             // Apply damage reflection as a specific damage type.
             float reflectDamage = incomingDamage * GetScaledDamageReflection();
-            attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_TIMEBASED); // Apply the damage with the player as the attacker.
+            attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_FREEZE); // Apply the damage with the player as the attacker.
         }
 
         // Play barrier damage chunks effect on player.
