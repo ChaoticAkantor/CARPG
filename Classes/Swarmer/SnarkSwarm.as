@@ -310,19 +310,22 @@ void CheckSnarkNests()
                     }
                 }
                 
+                /*
                 // Check for any snarks belonging to this player and check their frags.
                 CBaseEntity@ snarkEntity = null;
                 string searchPattern = "_snark_" + i + "_*";
                 while((@snarkEntity = g_EntityFuncs.FindEntityByTargetname(snarkEntity, searchPattern)) !is null)
                 {
+                    
                     // Check if snark has gained a frag.
-                    if(snarkEntity.pev.frags > 0)
+                    //if(snarkEntity.pev.frags > 0)
                     {
                         // Transfer frags to player.
                         pPlayer.pev.frags += snarkEntity.pev.frags;
                         snarkEntity.pev.frags = 0;
                     }
                 }
+                */
             }
         }
     }
