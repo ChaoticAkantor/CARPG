@@ -190,7 +190,7 @@ class MinionData
             return;
         }
 
-        // Initialize stats if needed
+        // Initialize stats if needed.
         if(m_pStats is null)
         {
             if(g_PlayerRPGData.exists(steamID))
