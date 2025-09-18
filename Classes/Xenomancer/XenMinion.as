@@ -258,7 +258,7 @@ class XenMinionData
     private XenMinionMenu@ m_pMenu;
     private array<XenMinionInfo> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 200.0;
+    private float m_flBaseHealth = 300.0;
     private float m_flHealthScale = 0.18; // Health % scaling per level.
     private float m_flHealthRegen = 0.002; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.10; // Damage % scaling per level.

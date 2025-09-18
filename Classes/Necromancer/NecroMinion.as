@@ -95,9 +95,9 @@ class NecroMinionData
     private NecroMinionMenu@ m_pMenu;
     private array<NecroMinionInfo> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 200.0;
+    private float m_flBaseHealth = 400.0;
     private float m_flHealthScale = 0.18; // Health % scaling per level.
-    private float m_flHealthRegen = 0.002; // // Health recovery % per second of Minions.
+    private float m_flHealthRegen = 0.003; // // Health recovery % per second of Minions.
     private float m_flDamageScale = 0.12; // Damage % scaling per level.
     private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
@@ -234,7 +234,7 @@ class NecroMinionData
         float maxEnergy = float(resources['max']);
         if(m_flReservePool + NECRO_COSTS[minionType] > maxEnergy)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Creature Capacity reached!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Zombie Capacity reached!\n");
             return;
         }
 
