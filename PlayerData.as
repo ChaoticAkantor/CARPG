@@ -130,21 +130,21 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 2.0f; // Minion Point Max.
-                    def.fullRegenTime = 60.0f * def.baseResource; // 60s per minion point.
+                    def.fullRegenTime = 90.0f; // 90s for all minion points.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 2.0f; // Minion Point Max.
-                    def.fullRegenTime = 60.0f * def.baseResource; // 60s per minion point.
+                    def.fullRegenTime = 90.0f; // 90s for all minion points.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 4.0f; // Minion Point Max.
-                    def.fullRegenTime = 60.0f * def.baseResource; // 60s per minion point.
+                    def.fullRegenTime = 120.0f; // 120s for all minion points.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
@@ -186,7 +186,7 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 2.0f; // Base charges.
-                    def.fullRegenTime = 60.0f * def.baseResource; // 60s per charge.
+                    def.fullRegenTime = 60.0f; // 60s per charge.
                     def.energyPerLevel = 0.00f; // No increase.
                     break;
             }
@@ -280,7 +280,7 @@ class ClassStats
                 {
                     string className = playerData.GetClassName(playerData.GetCurrentClass());
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Your (" + className + ") is now Level " + m_iLevel + "!\n");
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
                     NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
                     message.WriteByte(TE_PARTICLEBURST);
