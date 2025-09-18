@@ -970,37 +970,8 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
     if(data !is null)
     {
         data.CalculateStats(pPlayer); // Calculate stats on join.
-        
-        // After a map change, previous minion entities won't exist.
-        // Let's ensure no stale minion data persists.
-        /*
-        if(g_PlayerMinions.exists(steamID))
-        {
-            MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
-            if(minion !is null)
-            {
-                minion.RecalculateReservePool(); // Reset the reserve pool.
-            }
-        }
-        
-        if(g_XenologistMinions.exists(steamID))
-        {
-            XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
-            if(xenMinion !is null)
-            {
-                xenMinion.RecalculateReservePool(); // Reset the reserve pool.
-            }
-        }
-        
-        if(g_NecromancerMinions.exists(steamID))
-        {
-            NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
-            if(necroMinion !is null)
-            {
-                necroMinion.RecalculateReservePool(); // Reset the reserve pool.
-            }
-        }
-        */
+        ResetPlayer(pPlayer); // Initialize player defaults if they rejoined.
+        RefillHealthArmor(pPlayer); // Refill health and armor to full.
         
         // Reset any active Engineer sentries for the player when they join/changelevel.
         if(g_PlayerSentries.exists(steamID))
@@ -1011,9 +982,6 @@ HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
                 sentry.Reset();
             }
         }
-        
-        ResetPlayer(pPlayer);
-        RefillHealthArmor(pPlayer);
     }
     
     // Show class menu if no class selected.
@@ -1052,6 +1020,15 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
 HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
 {
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(g_PlayerRPGData.exists(steamID))
+    {
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
+        {
+            data.CalculateStats(pPlayer); // Re-Calculate stats on disconnect incase we rejoin.
+            ResetPlayer(pPlayer); // We disconnected, so re-initialize defaults incase we rejoin.
+        }
+    }
     
     // First ensure all minions are destroyed
     if(g_PlayerMinions.exists(steamID))
@@ -1225,9 +1202,10 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                             @g_PlayerBloodlusts[steamID] = bloodlust;
                             bloodlust.Initialize(data.GetCurrentClassStats());
                         }
+
                         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                         if(bloodlust !is null)
-                            bloodlust.ToggleBloodlust(pPlayer);
+                        bloodlust.ToggleBloodlust(pPlayer);
                     }
                     // Cloaker ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_CLOAKER)
