@@ -390,7 +390,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(barrier !is null)
                                 {
                                     bool isActive = barrier.IsActive();
-                                    resourceInfo += "[" + (isActive ? "" + int(barrier.GetActiveRechargePenalty() * 100) + "% Recovery " : " 100% Recovery ") + "]\n";
+                                    resourceInfo += "[Ability Recharge: " + (isActive ? "" + int(barrier.GetActiveRechargePenalty() * 100) + "%]\n" : "100%]\n");
 
                                     if(isActive)
                                     {
