@@ -71,7 +71,10 @@ class MinionData
     private float m_flBaseHealth = 200.0; // Base health of Robogrunts.
     private float m_flHealthScale = 0.18; // Health % scaling per level. Robogrunts are armored.
     private float m_flHealthRegen = 0.001; // Health recovery % per second of Robogrunts.
+    private float m_flLastRegenTime = 0.0f; // Track last regen time.
+    private float m_flRegenInterval = 1.0f; // Interval for regen.
     private float m_flDamageScale = 0.08; // Damage % scaling per level.
+    private float m_flAnimationSpeed = 1.25; // Animation speed modifier for Robogrunts.
     private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -239,14 +242,6 @@ class MinionData
             // Stuff to set after dispatch.
             @pRoboMinion.pev.owner = @pPlayer.edict(); // Set owner to spawning player.
 
-            // Cast so we can alter monster float variables.
-            CBaseMonster@ pMonster = cast<CBaseMonster@>(pRoboMinion);
-            if(pMonster !is null)
-            {
-                pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
-                                                //  -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
-            }
-
             // Store both the minion handle and its type
             MinionInfo info;
             info.hMinion = EHandle(pRoboMinion);
@@ -282,6 +277,10 @@ class MinionData
             
             // Cast to CBaseMonster to check monster-specific properties.
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
+
+            // Set some values after casting incase they override.
+            pMonster.pev.framerate = m_flAnimationSpeed; // Animation speed modifier, make them far more useful.
+            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             
             // Enhanced death check - check multiple conditions
             bool isDead = false;
@@ -421,6 +420,13 @@ class MinionData
 
     void MinionRegen()
     {
+        // Only process regen if enough time has passed.
+        float currentTime = g_Engine.time;
+        if(currentTime - m_flLastRegenTime < m_flRegenInterval)
+            return;
+            
+        m_flLastRegenTime = currentTime;
+
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();

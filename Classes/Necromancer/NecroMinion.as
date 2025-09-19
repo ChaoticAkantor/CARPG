@@ -4,7 +4,7 @@ string strNecroMinionSoundCreate = "debris/beamstart7.wav";
 
 // Zombie.
     // Models/Sprites.
-    string strZombieSoldierModel = "models/zombie_soldier.mdl";
+    string strZombieModel = "models/hunger/hungerzombie.mdl";
     string strZombieModelGibs = "models/zombiegibs1.mdl";
 
     // Sounds.
@@ -25,9 +25,27 @@ string strNecroMinionSoundCreate = "debris/beamstart7.wav";
     string strZombieSoundPain1 = "zombie/zo_pain1.wav";
     string strZombieSoundPain2 = "zombie/zo_pain2.wav";
 
+// Skeleton (Vortigaunt).
+    // Models/Sprites.
+    string strSkeletonModel = "models/hunger/hungerslave.mdl";
+
+    // Sounds.
+    string strSkeletonSoundShoot1 = "hassault/hw_shoot1.wav";
+    string strSkeletonSoundBite = "headcrab/hc_headbite.wav";
+    string strSkeletonSoundWord3 = "aslave/slv_word3.wav";
+    string strSkeletonSoundWord4 = "aslave/slv_word4.wav";
+    string strSkeletonSoundWord5 = "aslave/slv_word5.wav";
+    string strSkeletonSoundWord7 = "aslave/slv_word7.wav";
+    string strSkeletonSoundPain1 = "aslave/slv_pain1.wav";
+    string strSkeletonSoundPain2 = "aslave/slv_pain2.wav";
+    string strSkeletonSoundDie1 = "aslave/slv_die1.wav";
+    string strSkeletonSoundDie2 = "aslave/slv_die2.wav";
+    string strSkeletonSoundZap1 = "debris/zap1.wav";
+    string strSkeletonSoundZap4 = "debris/zap4.wav";
+
 // Gonome.
     // Models/Sprites.
-    string strGonomeModel = "models/gonome.mdl";
+    string strGonomeModel = "models/hunger/hungergonome.mdl";
     string strGonomeSpriteSpit = "sprites/blood_chnk.spr";
 
     // Sounds.
@@ -55,21 +73,57 @@ enum ZombieType
     NECRO_GONOME = 2
 }
 
+// Used to swap bodygroups for Zombies.
+const array<int> ZOMBIE_BODYGROUPS = 
+{
+    1,  // Male burnt.
+    2,  // Male burnt headless.
+    3,  // Male suit.
+    4,  // Male suit headless.
+    5,  // Male police.
+    6,  // Female.
+    7,  // Male Hazmat.
+    8,  // Male Army dress.
+    9,  // Male scientist burnt.
+    10, // Male scientist.
+    11  // Male patient.
+};
+
+const array<float> NECRO_ANIMATION_SPEEDS = 
+{
+    2.50f,  // Zombie.
+    1.50f,  // Skeleton.
+    1.30f   // Gonome.
+};
+
+// Used to change monster name in UI.
 const array<string> NECRO_NAMES = 
 {
     "Zombie",
+    "Skeleton",
     "Gonome"
 };
 
+// Used to swap monster type.
 const array<string> NECRO_ENTITIES = 
 {
-    "monster_zombie_soldier",
+    "monster_zombie",
+    "monster_alien_slave",
     "monster_gonome"    
 };
 
-const array<int> NECRO_COSTS = // Pool cost per summon of each type. All zombies are technically upgrades except for the gonome, they need to cost the same!
+// Used to swap models.
+const array<string> NECRO_MODELS = 
+{
+    strZombieModel,
+    strSkeletonModel,
+    strGonomeModel
+};
+
+const array<int> NECRO_COSTS = // Pool cost per summon of each type.
 {
     1, // Zombie.
+    2, // Skeleton (Vortigaunt).
     2 // Gonome.
 };
 
@@ -77,7 +131,8 @@ const array<int> NECRO_COSTS = // Pool cost per summon of each type. All zombies
 const array<int> NECRO_LEVEL_REQUIREMENTS = 
 {   
     1,   // Zombie.
-    1    // Gonome.
+    5,  // Skeleton (Vortigaunt).
+    15    // Gonome.
 };
 
 // Structure to track minion type.
@@ -97,8 +152,10 @@ class NecroMinionData
     private bool m_bActive = false;
     private float m_flBaseHealth = 400.0;
     private float m_flHealthScale = 0.18; // Health % scaling per level.
-    private float m_flHealthRegen = 0.003; // // Health recovery % per second of Minions.
-    private float m_flDamageScale = 0.12; // Damage % scaling per level.
+    private float m_flHealthRegen = 0.001; // // Health recovery % per second of Minions.
+    private float m_flLastRegenTime = 0.0f; // Track last regen time.
+    private float m_flRegenInterval = 1.0f; // Interval for regen.
+    private float m_flDamageScale = 0.15; // Damage % scaling per level.
     private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
@@ -267,8 +324,9 @@ class NecroMinionData
 
         float scaledHealth = GetScaledHealth();
         float scaledDamage = GetScaledDamage();
-        
+
         dictionary keys;
+        keys["model"] = NECRO_MODELS[minionType];
         keys["origin"] = vecSrc.ToString();
         keys["angles"] = Vector(0, pPlayer.pev.v_angle.y, 0).ToString();
         keys["targetname"] = "_NecroMinion_" + pPlayer.entindex();
@@ -278,6 +336,8 @@ class NecroMinionData
         keys["friendly"] = "1";
         keys["spawnflag"] = "32";
         keys["is_player_ally"] = "1";
+        keys["body"] = string(Math.RandomLong(1, 11)); // Random bodygroup for zombies.
+        //keys["skin"] = string(randomBody); // Random skin for zombies.
 
         CBaseEntity@ pNecroMinion = g_EntityFuncs.CreateEntity(NECRO_ENTITIES[minionType], keys, true);
         if(pNecroMinion !is null)
@@ -289,14 +349,6 @@ class NecroMinionData
 
             // Stuff to set after dispatch.
             @pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
-
-            // Cast so we can alter monster float variables.
-            CBaseMonster@ pMonster = cast<CBaseMonster@>(pNecroMinion);
-            if(pMonster !is null)
-            {
-                pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
-                                                //  -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
-            }
 
             // Store both the minion handle and its type.
             NecroMinionInfo info;
@@ -333,8 +385,17 @@ class NecroMinionData
             
             // Cast to CBaseMonster to check monster-specific properties.
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
+
+            // Set some values after casting incase they override.
+            int minionType = m_hMinions[i].type;
+            if(minionType >= 0 && uint(minionType) < NECRO_ANIMATION_SPEEDS.length())
+            {
+                pMonster.pev.framerate = NECRO_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
+            }
+
+            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             
-            // Enhanced death check - check multiple conditions
+            // Enhanced death check - check multiple conditions.
             bool isDead = false;
             
             if(pMonster !is null)
@@ -342,7 +403,7 @@ class NecroMinionData
                 isDead = (pMonster.pev.deadflag != DEAD_NO);
             }
             
-            // Also check standard health and IsAlive
+            // Also check standard health and IsAlive.
             if(isDead || pExistingMinion.pev.health <= 0 || !pExistingMinion.IsAlive())
             {
                 // Use Killed to properly destroy the minion.
@@ -362,7 +423,7 @@ class NecroMinionData
             
             // Ensure max_health is refreshed when leveling up.  
             pExistingMinion.pev.max_health = GetScaledHealth(); // Use our scaled health formula that accounts for player level.
-            
+
             // Ensure glow effect is not overridden.
             ApplyMinionGlow(pExistingMinion);
         }
@@ -482,6 +543,13 @@ class NecroMinionData
 
     void MinionRegen()
     {
+        // Only process regen if enough time has passed.
+        float currentTime = g_Engine.time;
+        if(currentTime - m_flLastRegenTime < m_flRegenInterval)
+            return;
+            
+        m_flLastRegenTime = currentTime;
+
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();

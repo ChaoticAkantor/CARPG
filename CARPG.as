@@ -164,13 +164,13 @@ void SetupTimers()
     // Engineer.
     g_Scheduler.SetInterval("CheckSentries", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer sentries.
 
-    g_Scheduler.SetInterval("CheckEngineerMinions", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer Robogrunts.
+    g_Scheduler.SetInterval("CheckEngineerMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer Robogrunts.
 
     // Xenologist.
-    g_Scheduler.SetInterval("CheckXenologistMinions", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Xenologist minions.
+    g_Scheduler.SetInterval("CheckXenologistMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Xenologist minions.
 
     // Necromancer.
-    g_Scheduler.SetInterval("CheckNecromancerMinions", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Necromancer minions.
+    g_Scheduler.SetInterval("CheckNecromancerMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Necromancer minions.
 
     // Defender.
     g_Scheduler.SetInterval("CheckBarrier", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Barrier.
@@ -296,8 +296,8 @@ void PrecacheAll()
 
     // Zombie.
         // Models/Sprites.
+        g_Game.PrecacheModel(strZombieModel);
         g_Game.PrecacheModel(strZombieModelGibs);
-        g_Game.PrecacheModel(strZombieSoldierModel);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strZombieSoundClawMiss1);
@@ -316,6 +316,25 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strZombieSoundIdle4);
         g_SoundSystem.PrecacheSound(strZombieSoundPain1);
         g_SoundSystem.PrecacheSound(strZombieSoundPain2);
+
+    // Skeleton (Vortigaunt).
+        // Models/Sprites.
+        g_Game.PrecacheModel(strSkeletonModel);
+
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strSkeletonSoundShoot1);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundBite);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundWord3);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundWord4);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundWord5);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundWord7);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundPain1);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundPain2);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundDie1);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundDie2);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundZap1);
+        g_SoundSystem.PrecacheSound(strSkeletonSoundZap4);
+
 
     // Gonome.
         // Models/Sprites.
@@ -339,6 +358,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strGonomeSoundRun);
         g_SoundSystem.PrecacheSound(strGonomeSoundEat);
 
+/* -- Removed as they flinch, retreat and hesitate too much due to pack tactics.
     // Houndeye.
         // Models/Sprites.
         g_Game.PrecacheModel(strHoundeyeModel);
@@ -370,6 +390,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strHoundeyeSoundPain3);
         g_SoundSystem.PrecacheSound(strHoundeyeSoundPain4);
         g_SoundSystem.PrecacheSound(strHoundeyeSoundPain5);
+*/
 
     // Pitdrone.
         // Models/Sprites.

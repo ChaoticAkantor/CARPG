@@ -2,6 +2,7 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
 
 // Precache strings for monsters. (Yawn)
 
+/* -- Removed as they flinch, retreat and hesitate too much due to pack tactics.
 // Houndeye.
     // Models/Sprites.
     string strHoundeyeModel = "models/houndeye.mdl";
@@ -31,6 +32,7 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
     string strHoundeyeSoundPain3 = "houndeye/he_pain3.wav";
     string strHoundeyeSoundPain4 = "houndeye/he_pain4.wav";
     string strHoundeyeSoundPain5 = "houndeye/he_pain5.wav";
+*/
 
 // Pitdrone.
     // Models/Sprites.
@@ -195,16 +197,22 @@ dictionary g_XenologistMinions;
 
 enum XenType
 {   
-    XEN_HOUNDEYE = 0,
-    XEN_PITDRONE = 1,
-    XEN_BULLSQUID = 2,
-    XEN_SHOCKTROOPER = 3,
-    XEN_BABYGARG = 4
+    XEN_PITDRONE = 0,
+    XEN_BULLSQUID = 1,
+    XEN_SHOCKTROOPER = 2,
+    XEN_BABYGARG = 3
 }
+
+const array<float> XEN_ANIMATION_SPEEDS = 
+{
+    1.40f,  // Pit Drone.
+    2.00f,  // Bullsquid.
+    1.40f,  // Shocktrooper.
+    1.30f   // Baby Gargantua.
+};
 
 const array<string> XEN_NAMES = 
 {
-    "Houndeye",
     "Pit Drone",
     "Bullsquid",
     "Shocktrooper",
@@ -215,7 +223,6 @@ const array<string> XEN_NAMES =
 
 const array<string> XEN_ENTITIES = 
 {
-    "monster_houndeye",
     "monster_pitdrone",
     "monster_bullchicken",
     "monster_shocktrooper",
@@ -226,7 +233,6 @@ const array<string> XEN_ENTITIES =
 
 const array<int> XEN_COSTS = // Pool cost per summon of each type.
 {
-    1, // Houndeye.
     1, // Pit Drone.
     1, // Bullsquid.
     1, // Shocktrooper.
@@ -236,8 +242,7 @@ const array<int> XEN_COSTS = // Pool cost per summon of each type.
 // Level requirements for each Xen creature type.
 const array<int> XEN_LEVEL_REQUIREMENTS = 
 {   
-    1,    // Houndeye.
-    3,    // Pitdrone.
+    1,    // Pitdrone.
     5,    // Bullsquid.
     10,   // Shocktrooper.
     20    // Baby Garg.
@@ -260,8 +265,10 @@ class XenMinionData
     private bool m_bActive = false;
     private float m_flBaseHealth = 300.0;
     private float m_flHealthScale = 0.18; // Health % scaling per level.
-    private float m_flHealthRegen = 0.002; // // Health recovery % per second of Minions.
-    private float m_flDamageScale = 0.10; // Damage % scaling per level.
+    private float m_flHealthRegen = 0.001; // // Health recovery % per second of Minions.
+    private float m_flLastRegenTime = 0.0f; // Track last regen time.
+    private float m_flRegenInterval = 1.0f; // Interval for regen.
+    private float m_flDamageScale = 0.12; // Damage % scaling per level.
     private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
@@ -448,14 +455,6 @@ class XenMinionData
             // Stuff to set after dispatch.
             @pXenMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
 
-            // Cast so we can alter monster float variables.
-            CBaseMonster@ pMonster = cast<CBaseMonster@>(pXenMinion);
-            if(pMonster !is null)
-            {
-                pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
-                                                //  -1.0 = 360 degrees, 0.0 = 90 degrees, 1.0 = 60 degrees.
-            }
-
             // Store both the minion handle and its type
             XenMinionInfo info;
             info.hMinion = EHandle(pXenMinion);
@@ -491,8 +490,17 @@ class XenMinionData
             
             // Cast to CBaseMonster to check monster-specific properties.
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
+
+            // Set some values after casting incase they override.
+            int minionType = m_hMinions[i].type;
+            if(minionType >= 0 && uint(minionType) < XEN_ANIMATION_SPEEDS.length())
+            {
+                pMonster.pev.framerate = XEN_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
+            }
+
+            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             
-            // Enhanced death check - check multiple conditions
+            // Enhanced death check - check multiple conditions.
             bool isDead = false;
             
             if(pMonster !is null)
@@ -500,7 +508,7 @@ class XenMinionData
                 isDead = (pMonster.pev.deadflag != DEAD_NO);
             }
             
-            // Also check standard health and IsAlive
+            // Also check standard health and IsAlive.
             if(isDead || pExistingMinion.pev.health <= 0 || !pExistingMinion.IsAlive())
             {
                 // Use Killed to properly destroy the minion.
@@ -647,6 +655,13 @@ class XenMinionData
 
     void MinionRegen()
     {
+        // Only process regen if enough time has passed.
+        float currentTime = g_Engine.time;
+        if(currentTime - m_flLastRegenTime < m_flRegenInterval)
+            return;
+            
+        m_flLastRegenTime = currentTime;
+
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
@@ -990,7 +1005,7 @@ void CheckXenologistMinions()
                 }
             }
             
-                // Make sure resource limits are enforced
+                // Make sure resource limits are enforced.
                 if(g_PlayerClassResources.exists(steamID))
                 {
                     dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
@@ -1006,7 +1021,9 @@ void CheckXenologistMinions()
                             xenMinion.DestroyAllMinions(pPlayer);
                         }
                     }
-                }            xenMinion.MinionRegen(); // Minion Regeneration.
+                }
+
+            xenMinion.MinionRegen(); // Minion Regeneration.
 
             // Always update scaling values for stats menu.
             xenMinion.GetScaledHealth();
