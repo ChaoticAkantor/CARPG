@@ -43,7 +43,7 @@ namespace Menu
                     if(choice == 0 && stats !is null)
                     {
                         stats.AddXP(1000, pPlayer, data);
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Added 100 XP to current class.\n");
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Added 1000 XP to current class.\n");
                     }
                     else if(choice == 1 && stats !is null)
                     {
