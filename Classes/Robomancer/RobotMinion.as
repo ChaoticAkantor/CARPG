@@ -68,12 +68,12 @@ class MinionData
     private MinionMenu@ m_pMenu;
     private array<MinionInfo> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 200.0; // Base health of Robogrunts.
+    private float m_flBaseHealth = 250.0; // Base health of Robogrunts.
     private float m_flHealthScale = 0.18; // Health % scaling per level. Robogrunts are armored.
     private float m_flHealthRegen = 0.001; // Health recovery % per second of Robogrunts.
     private float m_flLastRegenTime = 0.0f; // Track last regen time.
     private float m_flRegenInterval = 1.0f; // Interval for regen.
-    private float m_flDamageScale = 0.08; // Damage % scaling per level.
+    private float m_flDamageScale = 0.10; // Damage % scaling per level.
     private float m_flAnimationSpeed = 1.25; // Animation speed modifier for Robogrunts.
     private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
     private float m_flReservePool = 0.0f;
@@ -280,7 +280,7 @@ class MinionData
 
             // Set some values after casting incase they override.
             pMonster.pev.framerate = m_flAnimationSpeed; // Animation speed modifier, make them far more useful.
-            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             
             // Enhanced death check - check multiple conditions
             bool isDead = false;
