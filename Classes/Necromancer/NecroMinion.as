@@ -45,7 +45,8 @@ string strNecroMinionSoundCreate = "debris/beamstart7.wav";
 
 // Gonome.
     // Models/Sprites.
-    string strGonomeModel = "models/hunger/hungergonome.mdl";
+    string strGonomeModel = "models/cards/big_skeleton.mdl";
+    //string strGonomeModel = "models/hunger/hungergonome.mdl";
     string strGonomeSpriteSpit = "sprites/blood_chnk.spr";
 
     // Sounds.
@@ -70,7 +71,8 @@ dictionary g_NecromancerMinions;
 enum ZombieType
 {   
     NECRO_ZOMBIE = 1,
-    NECRO_GONOME = 2
+    NECRO_SKELETON = 2,
+    NECRO_GONOME = 3
 }
 
 // Used to swap bodygroups for Zombies.
@@ -91,9 +93,9 @@ const array<int> ZOMBIE_BODYGROUPS =
 
 const array<float> NECRO_ANIMATION_SPEEDS = 
 {
-    2.50f,  // Zombie.
-    1.50f,  // Skeleton.
-    1.30f   // Gonome.
+    2.50,  // Zombie.
+    1.50,  // Skeleton.
+    1.30   // Gonome.
 };
 
 // Used to change monster name in UI.

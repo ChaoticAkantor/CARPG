@@ -205,10 +205,10 @@ enum XenType
 
 const array<float> XEN_ANIMATION_SPEEDS = 
 {
-    1.40f,  // Pit Drone.
-    2.00f,  // Bullsquid.
-    1.40f,  // Shocktrooper.
-    1.30f   // Baby Gargantua.
+    1.40,  // Pit Drone.
+    2.00,  // Bullsquid.
+    1.40,  // Shocktrooper.
+    1.30   // Baby Gargantua.
 };
 
 const array<string> XEN_NAMES = 
