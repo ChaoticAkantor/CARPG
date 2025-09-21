@@ -280,7 +280,7 @@ class MinionData
 
             // Set some values after casting incase they override.
             pMonster.pev.framerate = m_flAnimationSpeed; // Animation speed modifier, make them far more useful.
-            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             
             // Enhanced death check - check multiple conditions
             bool isDead = false;
