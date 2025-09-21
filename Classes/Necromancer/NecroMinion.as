@@ -72,7 +72,7 @@ enum ZombieType
 {   
     NECRO_ZOMBIE = 1,
     NECRO_SKELETON = 2,
-    NECRO_GONOME = 3
+    NECRO_ABOMINATION = 3
 }
 
 // Used to swap bodygroups for Zombies.
@@ -95,7 +95,7 @@ const array<float> NECRO_ANIMATION_SPEEDS =
 {
     2.50,  // Zombie.
     1.50,  // Skeleton.
-    1.30   // Gonome.
+    1.30   // Abomination (Gonome).
 };
 
 // Used to change monster name in UI.
@@ -103,7 +103,7 @@ const array<string> NECRO_NAMES =
 {
     "Zombie",
     "Skeleton",
-    "Gonome"
+    "Abomination"
 };
 
 // Used to swap monster type.
@@ -126,7 +126,7 @@ const array<int> NECRO_COSTS = // Pool cost per summon of each type.
 {
     1, // Zombie.
     2, // Skeleton (Vortigaunt).
-    2 // Gonome.
+    2 // Abomination (Gonome).
 };
 
 // Level requirements for each Zombie type.
@@ -134,7 +134,7 @@ const array<int> NECRO_LEVEL_REQUIREMENTS =
 {   
     1,   // Zombie.
     5,  // Skeleton (Vortigaunt).
-    15    // Gonome.
+    15    // Abomination (Gonome).
 };
 
 // Structure to track minion type.
@@ -293,7 +293,7 @@ class NecroMinionData
         float maxEnergy = float(resources['max']);
         if(m_flReservePool + NECRO_COSTS[minionType] > maxEnergy)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Zombie Capacity reached!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Undead Capacity reached!\n");
             return;
         }
 
@@ -395,7 +395,7 @@ class NecroMinionData
                 pMonster.pev.framerate = NECRO_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
             }
 
-            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             
             // Enhanced death check - check multiple conditions.
             bool isDead = false;
