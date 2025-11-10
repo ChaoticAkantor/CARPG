@@ -111,7 +111,7 @@ namespace Menu
                     case PlayerClass::CLASS_XENOMANCER:
                     {
                         if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "Life Steal: Creatures gain 10% Life Steal for self and owner.\n";
+                            BaseStatsText += "Life Steal: Creatures steal Life for self and owner.\n";
                         else
                             BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
@@ -129,7 +129,7 @@ namespace Menu
                     case PlayerClass::CLASS_NECROMANCER:
                     {
                         if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "Life Steal: Zombies gain 10% Life Steal for self and owner.\n";
+                            BaseStatsText += "Life Steal: Undead steal Life for self and owner.\n";
                         else
                             BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
@@ -219,7 +219,7 @@ namespace Menu
                     case PlayerClass::CLASS_ENGINEER:
                     {
                         if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "N/A. \n";
+                            BaseStatsText += "Cold Rounds - Turret now deals bonus Cold Damage and gains a Slow Debuff.\n";
                         else
                             BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
 
@@ -357,9 +357,9 @@ namespace Menu
                     if(barrier !is null)
                     {
                         string DefenderStatsText = "=== Ice Shield: ===" + "\n" + 
-                            "Durability: " + int(maxEnergy) + " HP\n" + 
-                            //"Damage Reduction: " + int(barrier.GetBaseDamageReduction() * 100) + "%\n" +
+                            "Max Durability: " + int(maxEnergy) + " HP\n" + 
                             "Damage Reflection: " + int(barrier.GetScaledDamageReflection() * 100) + "%\n" +
+                            "Damage Reflect Slow Debuff: " + int(barrier.GetBarrierReflectDebuff() * 100) + "%\n" +
                             "Active Recharge Rate: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
@@ -409,8 +409,13 @@ namespace Menu
                     {
                         string EngineerStatsText = "=== Sentry: ===" + "\n" + 
                             "Health: " + int(sentry.GetScaledHealth()) + " HP\n" +
-                            "Damage Multiplier: " + int(sentry.GetScaledDamage() * 100 + 100) + "%\n" + 
+                            "Damage Bonus: " + int(sentry.GetScaledDamage() * 100) + "%\n" + 
                             "Healing: " + sentry.GetHealAmount() + " HP/s\n";
+
+                        // Show perk 1.
+                        if(sentry.GetStats().HasUnlockedPerk1())
+                            EngineerStatsText += "Bonus Cold Damage: " + int(sentry.GetElementalShotsDamageMult() * 100) + "%\n";
+                            EngineerStatsText += "Slow Debuff: " + int(sentry.GetElementalShotsDebuffInverse() * 100) + "%\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
