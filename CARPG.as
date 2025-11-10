@@ -619,7 +619,10 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
     // Check if attacker is a minion.
     CBaseEntity@ attacker = info.pAttacker;
+    CBaseEntity@ victim = info.pVictim;
+
     string targetname = string(attacker.pev.targetname);
+    Vector targetPos = info.pVictim.pev.origin;
 
     if(targetname.StartsWith("_sentry_"))
     {
@@ -643,11 +646,11 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageSentryMultiplier = 1.0f + sentry.GetScaledDamage();
         info.flDamage *= damageSentryMultiplier;
 
-        // Sentry enhancement, change damage type. Doesn't seem to make armor damagable.
-        //if(sentry.HasStats() && sentry.GetStats().HasUnlockedPerk3())
-        //{
-        //    info.bitsDamageType |= DMG_RADIATION; // Add AP damage type.
-        //}
+        //Sentry perk, explosive shots.
+        if(sentry.HasStats() && sentry.GetStats().HasUnlockedPerk1())
+        {
+            sentry.ApplyElementalShots(targetPos, attacker, victim, info.flDamage);
+        }
     }
     else if(targetname.StartsWith("_minion_"))
     {
@@ -932,6 +935,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
 
     // Get attacker before any damage calculations.
     CBaseEntity@ attacker = pDamageInfo.pAttacker;
+
     if(attacker is null)
         return HOOK_CONTINUE;
 
@@ -1089,17 +1093,7 @@ HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
         }
     }
     
-    // Cancel any barrier refunds.
-    if(g_PlayerBarriers.exists(steamID))
-    {
-        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-        if(barrier !is null)
-        {
-            barrier.CancelRefunds(steamID);
-        }
-    }
-    
-    ClearMinions();
+    //ClearMinions();
     return HOOK_CONTINUE;
 }
 
