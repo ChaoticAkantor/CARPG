@@ -456,7 +456,7 @@ class NecroMinionData
         uint MinionCount = m_hMinions.length();
         if(MinionCount == 0)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Zombies to destroy!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Undead to destroy!\n");
             return;
         }
 
@@ -480,9 +480,9 @@ class NecroMinionData
         m_flReservePool = 0.0f;
         
         if(anyDestroyed)
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Zombies killed!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Undead killed!\n");
         else
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Zombies cleared!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Undead cleared!\n");
     }
     
     // Reset function to clean up all active minions.
