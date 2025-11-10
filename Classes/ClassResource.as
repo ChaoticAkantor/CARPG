@@ -241,7 +241,11 @@ string GetResourceBar(float current, float maximum, int barLength = 20)
     }
     
     output += "]";
-    return output;
+
+    if(current == maximum)
+        return "[READY]";
+    else
+        return output;
 }
 
 void UpdateClassResource() // Update the class resource hud display for all players.
