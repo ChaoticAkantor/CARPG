@@ -16,6 +16,8 @@ string strSentrySpinDown = "turret/tu_spindown.wav";
 string strSentrySearch = "turret/tu_search.wav";
 string strSentryAlert = "turret/tu_alert.wav";
 
+const Vector ELEMENT_COLOR = Vector(130, 200, 255); // R G B.
+
 dictionary g_PlayerSentries;
 
 class SentryData
@@ -24,7 +26,7 @@ class SentryData
     private bool m_bActive = false;
     private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
     private float m_flHealthScale = 0.18; // Health scaling % per level.
-    private float m_flDamageScale = 0.10; // Damage scaling % per level.
+    private float m_flDamageScale = 0.08; // Damage scaling % per level.
     private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
     private float m_flHealScale = 0.18f; // Heal scaling % per level.
@@ -41,6 +43,10 @@ class SentryData
     private float m_flVisualUpdateInterval = 1.0f; // Time between visual updates. Same as heal rate.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
 
+    // Perk - Elemental Shots.
+    private int m_iElementalShotsRadius = 64; // Radius of bonus damage on shots.
+    private float m_flElementalShotsDamage = 0.15f; // Damage modifier.
+    private float m_flElementalShotsDebuff = 0.25f; // Slow effect modifier.
 
     private ClassStats@ m_pStats = null;
 
@@ -81,41 +87,46 @@ class SentryData
         return m_hSentry.GetEntity();
     }
 
+    int GetElementalShotsRadius() { return m_iElementalShotsRadius; }
+    float GetElementalShotsDamageMult() { return m_flElementalShotsDamage; }
+    float GetElementalShotsDebuff() { return m_flElementalShotsDebuff; }
+    float GetElementalShotsDebuffInverse() { return 1.0f - m_flElementalShotsDebuff; } // For stat display, to show inverse value.
+
     void ToggleSentry(CBasePlayer@ pPlayer)
-{
-    if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
-        return;
-
-    float currentTime = g_Engine.time;
-    if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
-        return;
-
-    m_flLastToggleTime = currentTime;
-
-    if(m_bActive)
     {
-        DestroySentry(pPlayer);
-        return;
+        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+            return;
+
+        float currentTime = g_Engine.time;
+        if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
+            return;
+
+        m_flLastToggleTime = currentTime;
+
+        if(m_bActive)
+        {
+            DestroySentry(pPlayer);
+            return;
+        }
+
+        // Check energy requirements for deployment.
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(!g_PlayerClassResources.exists(steamID))
+            return;
+
+        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        float current = float(resources['current']);
+        float maximum = float(resources['max']);
+
+        // Check energy - require FULL energy to activate.
+        if(current < maximum)
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recharging...\n");
+            return;
+        }
+
+        SpawnSentry(pPlayer);
     }
-
-    // Check energy requirements for deployment.
-    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    if(!g_PlayerClassResources.exists(steamID))
-        return;
-
-    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-    float current = float(resources['current']);
-    float maximum = float(resources['max']);
-
-    // Check energy - require FULL energy to activate.
-    if(current < maximum)
-    {
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recharging...\n");
-        return;
-    }
-
-    SpawnSentry(pPlayer);
-}
 
     void ApplyMinionGlow(CBaseEntity@ pMinion)
     {
@@ -351,6 +362,82 @@ class SentryData
                 }
             }
         }
+    }
+
+    // Apply Elemental Shots.
+    void ApplyElementalShots(Vector targetPos, CBaseEntity@ attacker, CBaseEntity@ victim, float damage)
+    {
+        if(attacker is null || attacker.pev.owner is null || victim is null)
+        return;
+
+        // Get the sentry owner (player)
+        CBasePlayer@ pOwner = cast<CBasePlayer@>(g_EntityFuncs.Instance(attacker.pev.owner));
+        if(pOwner is null)
+            return;
+
+        string steamId = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+        if(!g_PlayerSentries.exists(steamId))
+            return;
+
+        SentryData@ sentryData = cast<SentryData@>(g_PlayerSentries[steamId]);
+        if(sentryData is null)
+            return;
+
+        // Add glow shell effect to entity taking damage.
+        victim.pev.renderfx = kRenderFxGlowShell;
+        victim.pev.rendermode = kRenderNormal;
+        victim.pev.rendercolor = ELEMENT_COLOR; // Light Blue.
+        victim.pev.renderamt = 10; // Thickness.
+
+        // Offsets for sprite trail.
+        Vector originOffset = targetPos;
+        originOffset.z += 32; // Offset to top of entity.
+
+        Vector endPoint = originOffset;
+        endPoint.z += 10; // Trail moves upward.
+
+        // Create sprite trail effect for snow/ice particles.
+        NetworkMessage radiusSlowmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, targetPos);
+            radiusSlowmsg.WriteByte(TE_SPRITETRAIL);
+            radiusSlowmsg.WriteCoord(targetPos.x);
+            radiusSlowmsg.WriteCoord(targetPos.y);
+            radiusSlowmsg.WriteCoord(targetPos.z);
+            radiusSlowmsg.WriteCoord(endPoint.x);
+            radiusSlowmsg.WriteCoord(endPoint.y);
+            radiusSlowmsg.WriteCoord(endPoint.z);
+            radiusSlowmsg.WriteShort(g_EngineFuncs.ModelIndex(strBarrierReflectDamageSprite));
+            radiusSlowmsg.WriteByte(2);   // Count.
+            radiusSlowmsg.WriteByte(1);   // Life in 0.1's.
+            radiusSlowmsg.WriteByte(3);   // Scale in 0.1's.
+            radiusSlowmsg.WriteByte(25);  // Velocity along vector in 10's.
+            radiusSlowmsg.WriteByte(15);  // Random velocity in 10's.
+            radiusSlowmsg.End();
+
+        // Needs damage sound here.
+
+        // Calculate explosive damage based on original damage.
+        float explosiveDamage = damage * sentryData.GetElementalShotsDamageMult();
+
+        // Apply radius damage with the sentry as inflictor and owner as attacker.
+        g_WeaponFuncs.RadiusDamage(
+            targetPos,                // Center on where the target was hit
+            attacker.pev,            // Inflictor (the sentry)
+            pOwner.pev,              // Attacker (the player)
+            explosiveDamage,         // Scaled explosive damage
+            sentryData.GetElementalShotsRadius(),
+            CLASS_PLAYER,              // Damage all classes
+            DMG_FREEZE | DMG_ALWAYSGIB
+        );
+
+        // Use monster framerate to do a slow effect on the enemy that is hit.
+        CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
+        if(slowTargetSentry !is null)
+        {
+            slowTargetSentry.pev.framerate = GetElementalShotsDebuff(); // Reduce the hit target's framerate (animation speed).
+        }
+
+        // No built in duration for render effects, so set a delay to automatically remove it.
+        g_Scheduler.SetTimeout("EffectRemoveDamageGlow", 0.2, attacker.entindex());
     }
 
     float GetScaledHealAmount()
