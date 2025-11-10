@@ -64,16 +64,6 @@ namespace Menu
                         resources['current'] = 0; // Reset current energy to 0.
                     }
                 }
-                
-                // Cancel any barrier refunds in progress.
-                if(g_PlayerBarriers.exists(steamID))
-                {
-                    BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                    if(barrier !is null)
-                    {
-                        barrier.CancelRefunds(steamID);
-                    }
-                }
 
                 PlayClassChangeEffects(pPlayer);
                 
