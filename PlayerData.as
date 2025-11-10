@@ -122,9 +122,9 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 30.0f;
-                    def.fullRegenTime = 30.0f;
-                    def.energyPerLevel = 0.04f; // 120s at level 50.
+                    def.baseResource = 20.0f;
+                    def.fullRegenTime = 20.0f;
+                    def.energyPerLevel = 0.04f; // 60s at level 50.
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
@@ -206,9 +206,9 @@ class ClassStats
     private string m_szSteamID; // Store player's SteamID.
     
     // Ability perk level requirements.
-    private int m_iAbilityPerk1LvReq = 15; // Level required to unlock first perk.
-    private int m_iAbilityPerk2LvReq = 30; // Level required to unlock second perk.
-    private int m_iAbilityPerk3LvReq = 45; // Level required to unlock third perk.
+    private int m_iAbilityPerk1LvReq = 5; // Level required to unlock first perk.
+    private int m_iAbilityPerk2LvReq = 10; // Level required to unlock second perk.
+    private int m_iAbilityPerk3LvReq = 15; // Level required to unlock third perk.
     
     int GetLevel() { return m_iLevel; }
     int GetXP() { return m_iXP; }
