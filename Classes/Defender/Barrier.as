@@ -21,17 +21,11 @@ class BarrierData
     private float m_flLastDrainTime = 0.0f; // Initialising.
     private float m_flBarrierReflectDamageMultiplier = 0.5f; // Base damage reflect multiplier.
     private float m_flBarrierReflectDamageScaling = 0.04f; // How much % to scale damage reflection per level.
+    private float m_flBarrierReflectDebuff = 0.1f; // Slow effect modifier from reflected damage.
     private float m_flBarrierActiveRechargePenalty = 0.25f; // Ability recharge rate penalty when barrier is active.
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
 
-    // Refund system.
-    private float m_flRefundAmount = 0.0f;
-    private float m_flRefundTimeLeft = 0.0f;
-    private float m_flStoredEnergy = 0.0f;
-    private float m_flRefundTime = 5.0f; // Time to refund energy, total / this.
-    private float m_flRefundInterval = 1.0f; // Intervals to give refunded energy.
-    private float m_flLastRefundStartTime = 0.0f; // Track when the last refund started.
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
@@ -48,8 +42,11 @@ class BarrierData
         return m_flBarrierReflectDamageMultiplier * (1.0f + (m_pStats.GetLevel() * m_flBarrierReflectDamageScaling));
     }
 
+    float GetBarrierReflectDebuff() { return m_flBarrierReflectDebuff; }
+    float GetBarrierReflectDebuffInverse() { return 1.0f - m_flBarrierReflectDebuff; } // For stat display, to show inverse value.
+
     float GetActiveRechargePenalty() { return m_flBarrierActiveRechargePenalty; }
-    
+
     void HandleBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker, float incomingDamage, float& out modifiedDamage)
     {
         if(pPlayer is null || attacker is null)
@@ -64,7 +61,7 @@ class BarrierData
         // or another player protected by this barrier.
         bool skipReflection = false;
         
-        // Check if attacker is the barrier owner (self-damage)
+        // Check if attacker is the barrier owner (self-damage).
         if(attacker is pPlayer)
         {
             skipReflection = true;
@@ -73,7 +70,7 @@ class BarrierData
         // Only apply damage reflection if it's not self.
         if(!skipReflection)
         {
-            // Apply damage reflection as a specific damage type.
+            // Apply damage reflection as a specific damage type and proc the debuff.
             float reflectDamage = incomingDamage * GetScaledDamageReflection();
             attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_FREEZE); // Apply the damage with the player as the attacker.
         }
@@ -138,14 +135,12 @@ class BarrierData
         }
         else // MANUAL DEACTIVATION.
         {
-            StartResourceRefund(pPlayer); // Start refund.
-
             // Deactivate Manually.
             m_bActive = false;
             ToggleGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP, 100);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Refunded!\n"); // MANUALLY SHATTERED.
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // MANUALLY SHATTERED.
             EffectBarrierShatter(pPlayer.pev.origin);
         }
 
@@ -212,25 +207,8 @@ class BarrierData
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // SHATTERED - DESTROYED.
             EffectBarrierShatter(pPlayer.pev.origin);
         }
-        
-        // Cancel any ongoing refunds.
-        if(pPlayer !is null)
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            CancelRefunds(steamID);
-        }
     }
-    
-    bool IsRefundValid(float startTime)
-    {
-        return startTime >= m_flLastRefundStartTime;
-    }
-    
-    void CancelRefunds(string steamID)
-    {
-        // Update the last refund start time to invalidate any current refunds.
-        m_flLastRefundStartTime = g_Engine.time + 0.1f; // Add a small buffer to ensure all new refunds have a newer timestamp.
-    }
+
 
     private void ToggleGlow(CBasePlayer@ pPlayer)
     {
@@ -359,67 +337,16 @@ class BarrierData
 
         // Needs damage sound here.
 
+        // Use monster framerate to do a slow effect on the enemy that is hit.
+        CBaseMonster@ slowTargetBarrier = cast<CBaseMonster@>(target);
+        if(slowTargetBarrier !is null)
+        {
+            slowTargetBarrier.pev.framerate = GetBarrierReflectDebuff(); // Reduce the hit target's framerate (animation speed).
+        }
+
         // No build in duration for render effects, so set a delay to automatically remove it.
         g_Scheduler.SetTimeout("EffectRemoveDamageGlow", 0.2, target.entindex());
     }
-
-    void StartResourceRefund(CBasePlayer@ pPlayer)
-    {
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
-            
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        if(resources is null)
-            return;
-            
-        m_flRefundAmount = float(resources['current']); // Store current energy.
-        resources['current'] = 0; // Empty energy.
-        
-        // Update the refund start time.
-        m_flLastRefundStartTime = g_Engine.time;
-        
-        if(m_flRefundAmount > 0)
-        {
-            float refundPerTick = m_flRefundAmount / m_flRefundTime;
-            g_Scheduler.SetInterval("BarrierRefund", m_flRefundInterval, int(m_flRefundTime), steamID, refundPerTick, m_flLastRefundStartTime);
-        }
-    }
-}
-
-void BarrierRefund(string steamID, float refundAmount, float startTime)
-{
-    // Check if this refund is still valid.
-    if(g_PlayerBarriers.exists(steamID))
-    {
-        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-        if(barrier !is null && barrier.IsRefundValid(startTime))
-        {
-            // Check if the player is still playing as Defender.
-            if(g_PlayerRPGData.exists(steamID))
-            {        
-                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER)
-                {
-                    if(g_PlayerClassResources.exists(steamID))
-                    {
-                        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                        if(resources !is null)
-                        {
-                            float current = float(resources['current']);
-                            float maxEnergy = float(resources['max']);
-                            float newAmount = Math.min(current + refundAmount, maxEnergy);
-                            resources['current'] = newAmount;
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    // If we get here, the refund should be canceled.
-    g_Scheduler.RemoveTimer(g_Scheduler.GetCurrentFunction());
 }
 
 void EffectRemoveDamageGlow(int entityIndex) // Used to explicitly remove glow effect from damage effects.
