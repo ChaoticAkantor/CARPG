@@ -328,7 +328,7 @@ class BarrierData
             snowmsg.WriteCoord(endPoint.y);
             snowmsg.WriteCoord(endPoint.z);
             snowmsg.WriteShort(g_EngineFuncs.ModelIndex(strBarrierReflectDamageSprite));
-            snowmsg.WriteByte(6);   // Count.
+            snowmsg.WriteByte(3);   // Count.
             snowmsg.WriteByte(1);   // Life in 0.1's.
             snowmsg.WriteByte(3);   // Scale in 0.1's.
             snowmsg.WriteByte(25);  // Velocity along vector in 10's.
