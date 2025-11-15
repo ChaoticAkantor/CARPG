@@ -3,7 +3,7 @@ string strDragonsBreathActivateSound = "weapons/reload3.wav";
 string strDragonsBreathImpactSound = "weapons/explode3.wav"; // Explosion sound.
 string strDragonsBreathExplosionSprite = "sprites/zerogxplode.spr"; // Explosion sprite.
 string strDragonsBreathExplosionCoreSprite = "sprites/explode1.spr"; // Core explosion sprite.
-string strDragonsBreathSplatterSprite = "sprites/fire.spr"; // Fire effect.
+string strDragonsBreathFireSprite = "sprites/fire.spr"; // Fire effect.
 
 class DragonsBreathData
 {
@@ -14,7 +14,7 @@ class DragonsBreathData
     private float m_flDragonsBreathFireDamageScaling = 0.02f; // % Damage increase of DoT per level.
     private int m_iDragonsBreathPoolBase = 15; // Base max ammo pool for Dragons Breath.
     private float m_flDragonsBreathPoolScaling = 0.06f; // % Ammo Pool size increase per level.
-    private float m_flDragonsBreathRadius = 800.0f; // Radius of fire damage for Dragons Breath.
+    private float m_flDragonsBreathRadius = 320.0f; // Radius of fire damage DoT for Dragons Breath.
     private float m_flEnergyCostPerActivation = 1.0f; // Amount of energy to use per activation.
     private float m_flRoundsFillPercentage = 1.00f; // Give % of max ammo pool per activation.
     private float m_flRoundsInPool = 0.0f; // Used to store rounds currently in pool.
@@ -64,12 +64,12 @@ class DragonsBreathData
             fireAreaMsg.WriteCoord(impactPoint.x);
             fireAreaMsg.WriteCoord(impactPoint.y);
             fireAreaMsg.WriteCoord(impactPoint.z);
-            fireAreaMsg.WriteByte(16); // Radius in 0.1 units.
+            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathRadius * 0.1)); // Radius units * 10.
             fireAreaMsg.WriteByte(255); // Red.
             fireAreaMsg.WriteByte(100); // Green.
             fireAreaMsg.WriteByte(15); // Blue.
-            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10)); // Life in 0.1s.
-            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10)); // Fade speed.
+            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10)); // Life * 0.1s.
+            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval)); // Fade speed * 1s.
             fireAreaMsg.End();
 
         ApplyDragonsBreathFire(pPlayer, impactPoint); // Apply damage over time fire at location.
@@ -214,7 +214,7 @@ class DragonsBreathData
                 }
 
                 // IMPORTANT: Always play the explosion sound for each shotgun pellet.
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strDragonsBreathImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_STATIC, strDragonsBreathImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
                 
                 // Create smaller explosion effects for shotgun pellets.
                 // 1. Main explosion sprite.
@@ -258,7 +258,7 @@ class DragonsBreathData
                 msgTrail.WriteCoord(endPoint.x);
                 msgTrail.WriteCoord(endPoint.y);
                 msgTrail.WriteCoord(endPoint.z);
-                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathSplatterSprite));
+                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
                 msgTrail.WriteByte(3);  // Count - fewer sprites for smaller effect.
                 msgTrail.WriteByte(2);  // Life in 0.1's.
                 msgTrail.WriteByte(1);  // Scale in 0.1's.
@@ -312,7 +312,7 @@ class DragonsBreathData
                 }
                 
                 // IMPORTANT: Always play the explosion sound for each M16 burst round.
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strDragonsBreathImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-10, 10), 0, true, impactPoint);
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_STATIC, strDragonsBreathImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-10, 10), 0, true, impactPoint);
                 
                 // Create very small explosion effects for burst fire.
                 // 1. Main explosion sprite.
@@ -356,7 +356,7 @@ class DragonsBreathData
                 msgTrail.WriteCoord(endPoint.x);
                 msgTrail.WriteCoord(endPoint.y);
                 msgTrail.WriteCoord(endPoint.z);
-                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathSplatterSprite));
+                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
                 msgTrail.WriteByte(3);  // Count.
                 msgTrail.WriteByte(1);  // Life in 0.1's.
                 msgTrail.WriteByte(1);  // Scale in 0.1's.
@@ -399,7 +399,7 @@ class DragonsBreathData
             }
 
             // Play impact sound.
-            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strDragonsBreathImpactSound, 0.6f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-3, 3), 0, true, impactPoint);
+            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_STATIC, strDragonsBreathImpactSound, 0.6f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-3, 3), 0, true, impactPoint);
             
             // Create explosion effects.
             // 1. Main explosion sprite.
@@ -443,7 +443,7 @@ class DragonsBreathData
             msgTrail.WriteCoord(endPoint.x);
             msgTrail.WriteCoord(endPoint.y);
             msgTrail.WriteCoord(endPoint.z);
-            msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathSplatterSprite));
+            msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
             msgTrail.WriteByte(3);  // Count - more sprites for a denser burst.
             msgTrail.WriteByte(10);   // Life in 0.1's.
             msgTrail.WriteByte(2);   // Scale in 0.1's.
@@ -516,37 +516,13 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     msgFireArea.WriteCoord(endPoint.x);
     msgFireArea.WriteCoord(endPoint.y);
     msgFireArea.WriteCoord(endPoint.z);
-    msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathSplatterSprite));
+    msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
     msgFireArea.WriteByte(3);  // Count - more sprites for a denser burst.
     msgFireArea.WriteByte(10);   // Life in 0.1's.
     msgFireArea.WriteByte(2);   // Scale in 0.1's.
     msgFireArea.WriteByte(25);  // Velocity along vector in 10's.
     msgFireArea.WriteByte(50);  // Random velocity in 10's - higher for more spread.
     msgFireArea.End();
-
-    /*
-    //Beam Torus on every tick, for each flame.
-    NetworkMessage fireAreaMsgRing(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-        fireAreaMsgRing.WriteByte(TE_BEAMTORUS);
-        fireAreaMsgRing.WriteCoord(impactPoint.x); // Center X
-        fireAreaMsgRing.WriteCoord(impactPoint.y); // Center Y
-        fireAreaMsgRing.WriteCoord(impactPoint.z); // Center Z
-        fireAreaMsgRing.WriteCoord(impactPoint.x); // Start X
-        fireAreaMsgRing.WriteCoord(impactPoint.y); // Start Y
-        fireAreaMsgRing.WriteCoord(impactPoint.z + dragonsBreath.GetRadius());  // Start Z (offset upwards by radius)
-        fireAreaMsgRing.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite)); // Sprite
-        fireAreaMsgRing.WriteByte(0); // Starting frame
-        fireAreaMsgRing.WriteByte(0); // Framerate
-        fireAreaMsgRing.WriteByte(uint8(dragonsBreath.GetFireDuration() * 100)); // Life in 0.1s
-        fireAreaMsgRing.WriteByte(5); // Width
-        fireAreaMsgRing.WriteByte(0); // Noise
-        fireAreaMsgRing.WriteByte(255); // Red
-        fireAreaMsgRing.WriteByte(100); // Green
-        fireAreaMsgRing.WriteByte(15); // Blue
-        fireAreaMsgRing.WriteByte(128); // Brightness
-        fireAreaMsgRing.WriteByte(0); // Scroll speed
-    fireAreaMsgRing.End();
-    */
 }
 
 // Helper function to get ammo name from index.
