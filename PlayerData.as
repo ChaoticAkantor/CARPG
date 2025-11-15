@@ -148,8 +148,8 @@ void InitializeClassDefinitions()
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
-                    def.baseHP = 150.0f; // Berserkers have higher base HP.
-                    def.baseAP = 50.0f; // Berserkers have lower base AP.
+                    def.baseHP = 100.0f;
+                    def.baseAP = 100.0f;
                     def.baseResource = 20.0f;
                     def.fullRegenTime = 90.0f;
                     def.energyPerLevel = 0.04f; // 30s at level 50. (Drains 2/s).
