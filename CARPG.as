@@ -55,16 +55,6 @@ void PluginInit()
 void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
 {
     PrecacheAll(); // Precache our models, sounds and sprites.
-
-    // Reset ability states (non-minion). Temporary fix for map change issues, until initialization is reworked.
-    g_PlayerSentries.deleteAll();
-    g_HealingAuras.deleteAll();
-    g_PlayerBarriers.deleteAll();
-    g_PlayerBloodlusts.deleteAll();
-    g_PlayerCloaks.deleteAll();
-    g_PlayerDragonsBreath.deleteAll();
-    g_ShockRifleData.deleteAll();
-    g_PlayerSnarkNests.deleteAll();
 }
 
 void MapActivate() // Like MapInit, only called after all mapper placed entities have been activated and the sound list has been written.
@@ -91,6 +81,7 @@ void PluginReset() // Used to reset anything important to the plugin on reload.
     //RemoveHooks(); // Remove Hooks.
 
     ResetData(); // Clear all dictionaries.
+    ClearMinions(); // Clear all minion data.
     RegisterHooks(); // Re-register Hooks.
     InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
     SetupTimers(); // Re-setup timers.
@@ -1038,7 +1029,7 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
         }
     }
     
-    // First ensure all minions are destroyed
+    // First ensure all minions are destroyed.
     if(g_PlayerMinions.exists(steamID))
     {
         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);

@@ -60,7 +60,7 @@ class ShockRifleData
             // Force remove the weapon.
             g_EntityFuncs.Remove(pWeapon);
             
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "STORED: 50%% Battery Recovered +(" + currentAmmo + ")\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "STORED: 50%% Battery Recovered (+" + currentAmmo + ")\n");
             g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strShockrifleEquipSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             
             m_flLastUseTime = flCurrentTime;
