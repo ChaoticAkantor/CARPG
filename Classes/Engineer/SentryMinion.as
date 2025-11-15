@@ -413,19 +413,17 @@ class SentryData
             radiusSlowmsg.WriteByte(15);  // Random velocity in 10's.
             radiusSlowmsg.End();
 
-        // Needs damage sound here.
-
         // Calculate explosive damage based on original damage.
         float explosiveDamage = damage * sentryData.GetElementalShotsDamageMult();
 
         // Apply radius damage with the sentry as inflictor and owner as attacker.
         g_WeaponFuncs.RadiusDamage(
-            targetPos,                // Center on where the target was hit
-            attacker.pev,            // Inflictor (the sentry)
-            pOwner.pev,              // Attacker (the player)
-            explosiveDamage,         // Scaled explosive damage
+            targetPos,                // Center on where the target was hit.
+            attacker.pev,            // Inflictor (the sentry).
+            pOwner.pev,              // Attacker (the player).
+            explosiveDamage,         // Scaled explosive damage.
             sentryData.GetElementalShotsRadius(),
-            CLASS_PLAYER,              // Damage all classes
+            CLASS_PLAYER,              // Ignore players.
             DMG_FREEZE | DMG_ALWAYSGIB
         );
 
@@ -551,7 +549,7 @@ class SentryData
             auramsg.WriteCoord(pos.z + 24); // Height.
             auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame.
-            auramsg.WriteByte(16); // Frame rate.
+            auramsg.WriteByte(0); // Frame rate (no effect).
             auramsg.WriteByte(5); // Life.
             auramsg.WriteByte(32); // Width.
             auramsg.WriteByte(0); // Noise.
