@@ -24,8 +24,8 @@ class CloakData
     private float m_flLastEnergyConsumed = 0.0f;
 
     //Nova.
-    private float m_flNovaRadius = 960.0f; // Radius of the nova.
-    private float m_flNovaDamageMultiplier = 14.0f; // How much to scale the nova damage after max and remaining are combined.
+    private float m_flNovaRadius = 640.0f; // Radius of the nova.
+    private float m_flNovaDamageMultiplier = 12.0f; // How much to scale the nova damage after max and remaining are combined.
 
     // Perk 1 - AP Stealing Nova.
     private bool m_bNovaActive = false;
@@ -308,15 +308,15 @@ class CloakData
             beamMsg.WriteCoord(playerOrigin.z + m_flNovaRadius); // Height equals radius.
             beamMsg.WriteShort(g_EngineFuncs.ModelIndex(strCloakNovaSprite));
             beamMsg.WriteByte(0); // Start frame.
-            beamMsg.WriteByte(0); // Frame rate.
-            beamMsg.WriteByte(20); // Life.
+            beamMsg.WriteByte(0); // Frame rate (no effect).
+            beamMsg.WriteByte(10); // Life * 0.1s (1s to reach max).
             beamMsg.WriteByte(6); // Width.
             beamMsg.WriteByte(0); // Noise.
             beamMsg.WriteByte(0); // Red.
             beamMsg.WriteByte(50); // Green.
             beamMsg.WriteByte(255); // Blue.
             beamMsg.WriteByte(255); // Brightness.
-            beamMsg.WriteByte(0); // Speed.
+            beamMsg.WriteByte(0); // Speed (no effect).
         beamMsg.End();
 
         // Also create a dynamic light at the nova center.
@@ -329,8 +329,8 @@ class CloakData
             lightMsg.WriteByte(0);   // Red.
             lightMsg.WriteByte(50); // Green.
             lightMsg.WriteByte(255);   // Blue.
-            lightMsg.WriteByte(10);  // Life in 0.1s (1 second).
-            lightMsg.WriteByte(100);  // Decay rate.
+            lightMsg.WriteByte(10);  // Life in 0.1s (1s).
+            lightMsg.WriteByte(100);  // Decay rate (instant).
         lightMsg.End();
 
         // Nova has started.
