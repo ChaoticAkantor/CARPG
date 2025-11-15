@@ -1,7 +1,7 @@
 # CARPG
  Class-based RPG Mod for Sven Co-op by Chaotic Akantor. Many features are still a work in progress and may be subject to change, especially class balancing. Discord can be found here, if you have any feedback or suggestions.
 
- https://discord.gg/JN6umuAt7H
+ https://discord.gg/FbsxHMvPGN
 
 # What is it?
  This plugin takes the basic principals of SCXPM but in an attempt to simplify features and turn it into a class-based mod similar to Killing Floor.
