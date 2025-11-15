@@ -94,6 +94,23 @@ class BarrierData
             return;
         }
 
+        // Make sure the stats are initialized properly before proceeding >.>.
+        if(m_pStats is null)
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null)
+                {
+                    @m_pStats = data.GetCurrentClassStats();
+                }
+            }
+            
+            if(m_pStats is null)
+                return;
+        }
+
         float currentTime = g_Engine.time;
         if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
         {

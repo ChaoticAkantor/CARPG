@@ -925,7 +925,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         }
     }
 
-    // Check if barrier is active.
+    // Check if barrier is active - only process damage from actual enemies.
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
@@ -934,9 +934,20 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
             BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
             if(barrier !is null && barrier.IsActive())
             {
-                // Let the barrier handle all damage reflection logic.
-                barrier.HandleBarrier(pPlayer, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
-                barrier.EffectReflectDamage(attacker.pev.origin, attacker); // Play reflect damage feedback on target/attacker.
+                // Only process barrier damage if attacker is NOT a player, otherwise friendly fire can strip shield. We don't care about PvP.
+                if(!attacker.IsPlayer())
+                {
+                    CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
+                    if(pMonster !is null)
+                    {
+                        int relationship = pMonster.IRelationship(pPlayer);
+                        if(relationship != R_AL) // Only process if NOT an ally of the player.
+                        {
+                            barrier.HandleBarrier(pPlayer, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
+                            barrier.EffectReflectDamage(attacker.pev.origin, attacker);
+                        }
+                    }
+                }
                 return HOOK_CONTINUE;
             }
         }
