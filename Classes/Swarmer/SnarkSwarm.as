@@ -192,7 +192,7 @@ class SnarkNestData
         // This makes the trail shoot out in front of the player along their view direction.
         Vector endPoint = origin + (finalDir * 100.0f); // Trail shoots out X units in front.
 
-        // Create sprite trail effect. (Same as the one from HealAura poison splatter).
+        // Create sprite trail effect. (Same as the one from HealAura poison).
         NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
             msg.WriteByte(TE_SPRITETRAIL);
             msg.WriteCoord(origin.x);
