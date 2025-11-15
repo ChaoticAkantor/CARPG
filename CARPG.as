@@ -85,7 +85,9 @@ void MapStart() // Called after 0.1 seconds of game activity, this is used to si
 
 void PluginReset() // Used to reset anything important to the plugin on reload.
 {
-    g_Scheduler.ClearTimerList(); // Clear all timers.
+    g_Game.AlertMessage(at_console, "=== CARPG Reset! ===\n");
+
+    g_Scheduler.ClearTimerList(); // Clear all timers here also, this will ensure proper reset if plugin is reloaded with as_reloadplugins.
     //RemoveHooks(); // Remove Hooks.
 
     ResetData(); // Clear all dictionaries.
@@ -116,25 +118,27 @@ void ResetData()
 void RegisterHooks()
 {
     g_Hooks.RegisterHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
-    g_Hooks.RegisterHook(Hooks::Weapon::WeaponPrimaryAttack, @OnWeaponPrimaryAttack);
-    g_Hooks.RegisterHook(Hooks::Weapon::WeaponSecondaryAttack, @OnWeaponSecondaryAttack);
-    g_Hooks.RegisterHook(Hooks::Player::ClientPutInServer, @OnClientPutInServer);
-    g_Hooks.RegisterHook(Hooks::Player::ClientDisconnect, @OnClientDisconnect);
+    g_Hooks.RegisterHook(Hooks::Weapon::WeaponPrimaryAttack, @WeaponPrimaryAttack);
+    g_Hooks.RegisterHook(Hooks::Weapon::WeaponSecondaryAttack, @WeaponSecondaryAttack);
+    g_Hooks.RegisterHook(Hooks::Player::ClientPutInServer, @ClientPutInServer);
+    g_Hooks.RegisterHook(Hooks::Player::ClientDisconnect, @ClientDisconnect);
     g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
     g_Hooks.RegisterHook(Hooks::Player::PlayerSpawn, @PlayerRespawn);
     g_Hooks.RegisterHook(Hooks::Monster::MonsterTakeDamage, @MonsterTakeDamage);
+    g_Hooks.RegisterHook(Hooks::Game::MapChange, @MapChange);
 }
 
 void RemoveHooks()
 {
     g_Hooks.RemoveHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
-    g_Hooks.RemoveHook(Hooks::Weapon::WeaponPrimaryAttack, @OnWeaponPrimaryAttack);
-    g_Hooks.RemoveHook(Hooks::Weapon::WeaponSecondaryAttack, @OnWeaponSecondaryAttack);
-    g_Hooks.RemoveHook(Hooks::Player::ClientPutInServer, @OnClientPutInServer);
-    g_Hooks.RemoveHook(Hooks::Player::ClientDisconnect, @OnClientDisconnect);
+    g_Hooks.RemoveHook(Hooks::Weapon::WeaponPrimaryAttack, @WeaponPrimaryAttack);
+    g_Hooks.RemoveHook(Hooks::Weapon::WeaponSecondaryAttack, @WeaponSecondaryAttack);
+    g_Hooks.RemoveHook(Hooks::Player::ClientPutInServer, @ClientPutInServer);
+    g_Hooks.RemoveHook(Hooks::Player::ClientDisconnect, @ClientDisconnect);
     g_Hooks.RemoveHook(Hooks::Player::ClientSay, @ClientSay);
     g_Hooks.RemoveHook(Hooks::Player::PlayerSpawn, @PlayerRespawn);
     g_Hooks.RemoveHook(Hooks::Monster::MonsterTakeDamage, @MonsterTakeDamage);
+    g_Hooks.RemoveHook(Hooks::Game::MapChange, @MapChange);
 }
 
 void SetupTimers()
@@ -248,7 +252,7 @@ void PrecacheAll()
         // Models/Sprites.
     g_Game.PrecacheModel(strDragonsBreathExplosionSprite);
     g_Game.PrecacheModel(strDragonsBreathExplosionCoreSprite);
-    g_Game.PrecacheModel(strDragonsBreathSplatterSprite);
+    g_Game.PrecacheModel(strDragonsBreathFireSprite);
 
         // Sounds.
     g_SoundSystem.PrecacheSound(strDragonsBreathActivateSound);
@@ -570,8 +574,14 @@ void PrecacheAll()
     */
 }
 
+HookReturnCode MapChange(const string& in nextMap) // Called on map change.
+{
+    PluginReset(); // Reset all plugin elements on map change.
+    return HOOK_CONTINUE;
+}
+
 // Hook handler for Primary Attack. This is used for Dragons Breath on each shot.
-HookReturnCode OnWeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
+HookReturnCode WeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
 {
     if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0) // Make sure clip is not empty.
         return HOOK_CONTINUE;
@@ -590,7 +600,7 @@ HookReturnCode OnWeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pW
 }
 
 // Hook handler for Secondary Attack.
-HookReturnCode OnWeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
+HookReturnCode WeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
 {
     if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0 && pWeapon.m_iClip2 != -1 ) // Check if clip is not empty and clip2 isn't infinite.
         return HOOK_CONTINUE;
@@ -801,47 +811,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                             // Apply damage bonus based on missing health.
                             float damageBonus = bloodlust.GetDamageBonus(pAttacker);
                             info.flDamage *= (1.0f + damageBonus);
-
-                            bloodlust.ProcessEnergySteal(pAttacker, info.flDamage); // Energy steal inside and outside of bloodlust.
                             
-                            // Only process lifesteal if bloodlust is active.
-                            if(bloodlust.IsActive())
-                            {
-                                bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Bloodlust lifesteal.
-                                
-                                // Add rising blood particles.
-                                Vector pos = pAttacker.pev.origin;
-                                Vector mins = pos - Vector(16, 16, 0);
-                                Vector maxs = pos + Vector(16, 16, 64);
-
-                                NetworkMessage bubbleMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY);
-                                    bubbleMsg.WriteByte(TE_BUBBLES);
-                                    bubbleMsg.WriteCoord(mins.x);
-                                    bubbleMsg.WriteCoord(mins.y);
-                                    bubbleMsg.WriteCoord(mins.z);
-                                    bubbleMsg.WriteCoord(maxs.x);
-                                    bubbleMsg.WriteCoord(maxs.y);
-                                    bubbleMsg.WriteCoord(maxs.z);
-                                    bubbleMsg.WriteCoord(112.0f);
-                                    bubbleMsg.WriteShort(g_EngineFuncs.ModelIndex(strBloodlustSprite));
-                                    bubbleMsg.WriteByte(10);
-                                    bubbleMsg.WriteCoord(2.0f);
-                                bubbleMsg.End();
-
-                                // Add dynamic light.
-                                NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
-                                    msg.WriteByte(TE_DLIGHT);
-                                    msg.WriteCoord(pAttacker.pev.origin.x);
-                                    msg.WriteCoord(pAttacker.pev.origin.y);
-                                    msg.WriteCoord(pAttacker.pev.origin.z);
-                                    msg.WriteByte(5); // Radius.
-                                    msg.WriteByte(int(BLOODLUST_COLOR.x));
-                                    msg.WriteByte(int(BLOODLUST_COLOR.y));
-                                    msg.WriteByte(int(BLOODLUST_COLOR.z));
-                                    msg.WriteByte(2); // Life in 0.1s.
-                                    msg.WriteByte(1); // Decay rate.
-                                msg.End();
-                            }
+                            bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Process lifesteal on damage dealt.
+                            bloodlust.ProcessEnergySteal(pAttacker, info.flDamage); // Process energy steal on damage dealt.
                         }
                     }
                     break;
@@ -973,7 +945,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     return HOOK_CONTINUE;
 }
 
-HookReturnCode OnClientPutInServer(CBasePlayer@ pPlayer)
+HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer)
 {
     if(pPlayer is null) return HOOK_CONTINUE;
     
@@ -1042,7 +1014,7 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
     return HOOK_CONTINUE;
 }
 
-HookReturnCode OnClientDisconnect(CBasePlayer@ pPlayer)
+HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
 {
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     if(g_PlayerRPGData.exists(steamID))
@@ -1200,6 +1172,15 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                             BarrierData barrier;
                             barrier.Initialize(data.GetCurrentClassStats());
                             @g_PlayerBarriers[steamID] = barrier;
+                        }
+                        else
+                        {
+                            // Re-initialize if switching from another class
+                            BarrierData@ existingBarrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                            if(existingBarrier !is null)
+                            {
+                                existingBarrier.Initialize(data.GetCurrentClassStats());
+                            }
                         }
                         
                         BarrierData@ barrierRef = cast<BarrierData@>(g_PlayerBarriers[steamID]);
