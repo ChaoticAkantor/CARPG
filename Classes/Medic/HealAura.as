@@ -3,20 +3,9 @@ string strHealAuraActiveSound = "ambience/alien_beacon.wav"; // Aura active loop
 string strHealSound = "player/heartbeat1.wav"; // Aura heal hit sound.
 string strHealAuraSprite = "sprites/zbeam6.spr"; // Aura sprite.
 string strHealAuraEffectSprite = "sprites/saveme.spr"; // Aura healing sprite.
-string strHealAuraPoisonEffectSprite = "sprites/tinyspit.spr"; // Poison damage sprite for enemies
+string strHealAuraPoisonEffectSprite = "sprites/tinyspit.spr"; // Poison damage sprite for enemies.
 
 dictionary g_HealingAuras;
-
-array<string> ISPLAYERALLY_EXCLUSION = 
-{
-    "monster_human_grunt_ally",  // These NPCs have their relationships flipped when set as IsPlayerAlly.
-    "monster_human_medic_ally",  
-    "monster_human_torch_ally",  
-    "monster_otis",             
-    "monster_barney",           
-    "monster_scientist",
-    "monster_cleansuit_scientist"
-};
 
 void CheckHealAura() 
 {
@@ -45,21 +34,18 @@ class HealingAura
 {
     // Healing Aura.
     private bool m_bIsActive = false;
-    private float m_flRadius = 800.0f; // Radius of the aura.
+    private float m_flRadius = 480.0f; // Radius of the aura.
     private float m_flBaseHealAmount = 10.0f; // Base heal amount.
     private float m_flHealScaling = 0.06f; // % per level scaling.
     private int m_iDrainAmount = 1.0f; // Energy drain per interval.
-    private int m_iHealAuraDrainRevive = m_iDrainAmount * 5; // Energy drain per revival.
+    private int m_iHealAuraDrainRevive = m_iDrainAmount * 2; // Energy drain per entity revived.
+    private float m_flHealAuraReviveHealthPercent = 0.25f; // Health percent when revived.
+    private float m_flPoisonDamagePercent = 0.75f; // Damage as percentage of healing amount. Using RadiusDamage so it now has harsh falloff.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
     private float m_flLastHealTime = 0.0f;
     private float m_flHealInterval = 1.0f;
-
-    // Poison Aura.
-    private float m_flPoisonDamagePercent = 1.0f; // Damage as percentage of healing amount. Using RadiusDamage so it now has harsh falloff.
-    private float m_flPoisonDamageInterval = m_flHealAuraInterval; // Interval for poison damage (same as healing).
-    private float m_flLastPoisonTime = 0.0f; // Track last poison application time.
 
     // Visual.
     private float m_flNextVisualUpdate = 0.0f;
@@ -153,7 +139,6 @@ class HealingAura
 
         m_flLastToggleTime = 0.0f;
         m_flLastHealTime = 0.0f;
-        m_flLastPoisonTime = 0.0f;
         m_flNextVisualUpdate = 0.0f;
     }
 
@@ -198,12 +183,6 @@ class HealingAura
 
     private void ProcessPoisonDamage(CBasePlayer@ pPlayer)
     {
-        float currentTime = g_Engine.time;
-        if (currentTime - m_flLastPoisonTime < m_flPoisonDamageInterval)
-            return;
-
-        m_flLastPoisonTime = currentTime;
-        
         // Only apply poison damage if healing aura is active.
         if (!m_bIsActive)
             return;
@@ -222,8 +201,6 @@ class HealingAura
             CLASS_PLAYER, // Will not damage player or allies. (No need for complex searches and checks).
             DMG_POISON // Damage type - poison.
         );      
-            // Apply poison effect.
-            //ApplyPoisonEffect(pEntity); // Disabled whilst I come up with a solution.
     }
 
     private void ApplyPoisonEffect(CBaseEntity@ target)
@@ -270,7 +247,7 @@ class HealingAura
         Vector mins = pos - Vector(16, 16, 0);
         Vector maxs = pos + Vector(16, 16, 64);
         
-        // Beam cylinder effect.
+        // Aura Beam Cylinder Effect.
         NetworkMessage auramsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, pos);
             auramsg.WriteByte(TE_BEAMCYLINDER);
             auramsg.WriteCoord(pos.x);
@@ -281,18 +258,18 @@ class HealingAura
             auramsg.WriteCoord(pos.z + m_flRadius); // Height.
             auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame.
-            auramsg.WriteByte(16); // Frame rate.
-            auramsg.WriteByte(5); // Life.
+            auramsg.WriteByte(0); // Frame rate (no effect).
+            auramsg.WriteByte(uint8(m_flHealAuraInterval * 10)); // Life * 0.1s (hits max every interval).
             auramsg.WriteByte(32); // Width.
             auramsg.WriteByte(0); // Noise.
             auramsg.WriteByte(int(m_vAuraColor.x));
             auramsg.WriteByte(int(m_vAuraColor.y));
             auramsg.WriteByte(int(m_vAuraColor.z));
             auramsg.WriteByte(128); // Brightness.
-            auramsg.WriteByte(0); // Scroll speed.
+            auramsg.WriteByte(0); // Scroll speed (no effect).
             auramsg.End();
 
-        //Bubbles Effect.
+        // Heal Bubbles Effect.
         NetworkMessage aura2msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
             aura2msg.WriteByte(TE_BUBBLES);
             aura2msg.WriteCoord(mins.x);
@@ -342,7 +319,11 @@ class HealingAura
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flRadius, "*", "classname")) !is null)
         {
-            // Check for dead players first.
+            // Skip squadmakers.
+            if(pEntity.GetClassname() == "squadmaker")
+                continue;
+
+            // Check for dead entities.
             if(!pEntity.IsAlive())
             {
                 // Only attempt revival if we have enough energy.
@@ -354,10 +335,10 @@ class HealingAura
                         if(pTarget !is null)
                         {
                             pTarget.Revive(); // Do Player specific revival.
-                            pTarget.pev.health = pTarget.pev.max_health * 0.5; // Revive at 50% of max health.
+                            pTarget.pev.health = pTarget.pev.max_health * m_flHealAuraReviveHealthPercent; // Revive at % of max health.
                             current -= reviveCost;
                             resources['current'] = current;
-                            pPlayer.pev.frags += 5; // Award frags for reviving.
+                            pPlayer.pev.frags += 3; // Award frags for reviving.
                             ApplyHealEffect(pEntity);
                             g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
                             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pEntity.pev.netname + "!\n");
@@ -368,128 +349,64 @@ class HealingAura
                         CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
                         if(pMonster !is null)
                         {
-                            // Always skip squadmakers.
-                            if(pMonster.GetClassname() == "squadmaker")
-                                continue;
-                                
-                            bool shouldRevive = false;
-                            
-                            // Check classification - only revive certain classes
-                            int classification = pMonster.Classify();
-                            
-                            // Only revive player allies and friendly NPCs
-                            if(classification == CLASS_PLAYER_ALLY || 
-                               classification == CLASS_HUMAN_PASSIVE)
-                            {
-                                // Skip exclusion list entities
-                                string classname = pMonster.GetClassname();
-                                bool isInExclusionList = false;
-                                
-                                for(uint i = 0; i < ISPLAYERALLY_EXCLUSION.length(); i++)
-                                {
-                                    if(classname == ISPLAYERALLY_EXCLUSION[i])
-                                    {
-                                        isInExclusionList = true;
-                                        break;
-                                    }
-                                }
-                                
-                                // Only revive if not in exclusion list
-                                shouldRevive = !isInExclusionList;
-                            }
-                            
-                            // Never revive known enemy classes
-                            if(classification == CLASS_ALIEN_MILITARY || 
-                               classification == CLASS_ALIEN_MONSTER ||
-                               classification == CLASS_ALIEN_PREDATOR ||
-                               classification == CLASS_ALIEN_PREY ||
-                               classification == CLASS_INSECT ||
-                               classification == CLASS_ALIEN_BIOWEAPON ||
-                               classification == CLASS_XRACE_PITDRONE ||
-                               classification == CLASS_XRACE_SHOCK ||
-                               classification == CLASS_HUMAN_MILITARY)
-                            {
-                                shouldRevive = false;
-                            }
-                            
-                            // Only revive if it's actually friendly
-                            if(shouldRevive)
+                            // Check relationship instead of IsPlayerAlly.
+                            int relationship = pMonster.IRelationship(pPlayer);
+                            if(relationship == R_AL) // R_AL = Ally relationship.
                             {
                                 pMonster.Revive();
-                                pMonster.pev.health = pMonster.pev.max_health * 0.5;
+                                pMonster.pev.health = pMonster.pev.max_health * m_flHealAuraReviveHealthPercent;
                                 current -= reviveCost;
                                 resources['current'] = current;
-                                pPlayer.pev.frags += 5;
+                                pPlayer.pev.frags += 3;
                                 ApplyHealEffect(pEntity);
                                 g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
                                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
                             }
                         }
                     }
-                    continue;
                 }
-            }
-
-            // Skip if entity is dead.
-            if(!pEntity.IsAlive())
                 continue;
+            }
 
             bool shouldHeal = false;
 
             // Always heal players.
             if(pEntity.IsPlayer())
             {
-                CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
-                if(pTarget !is null)
-                    shouldHeal = true;
+                shouldHeal = true;
             }
             else
             {
-                // For non-players, check classification.
-                int classification = pEntity.Classify();
-                
-                // Only heal player allies, friendly monsters, and neutral entities
-                // CLASS_PLAYER_ALLY = player allies
-                // CLASS_HUMAN_PASSIVE = scientists, civilians
-                // CLASS_BARNACLE = neutral
-                if(classification == CLASS_PLAYER_ALLY || 
-                   classification == CLASS_HUMAN_PASSIVE)
+                CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
+                if(pMonster !is null)
                 {
-                    // Skip exclusion list entities
-                    string classname = pEntity.GetClassname();
-                    bool isInExclusionList = false;
-                    
-                    for(uint i = 0; i < ISPLAYERALLY_EXCLUSION.length(); i++)
+                    // Check relationship instead of IsPlayerAlly.
+                    int relationship = pMonster.IRelationship(pPlayer);
+                    if(relationship == R_AL) // R_AL = Ally relationship.
                     {
-                        if(classname == ISPLAYERALLY_EXCLUSION[i])
-                        {
-                            isInExclusionList = true;
-                            break;
-                        }
+                        shouldHeal = true;
                     }
-                    
-                    // Do not heal entities in the exclusion list.
-                    shouldHeal = !isInExclusionList;
-                }
-                
-                // Skip known enemy classes entirely.
-                if(classification == CLASS_ALIEN_MILITARY || 
-                   classification == CLASS_ALIEN_MONSTER ||
-                   classification == CLASS_ALIEN_PREDATOR ||
-                   classification == CLASS_ALIEN_PREY ||
-                   classification == CLASS_INSECT ||
-                   classification == CLASS_ALIEN_BIOWEAPON ||
-                   classification == CLASS_XRACE_PITDRONE ||
-                   classification == CLASS_XRACE_SHOCK ||
-                   classification == CLASS_HUMAN_MILITARY)
-                {
-                    shouldHeal = false;
                 }
             }
             
             // Skip if not determined as friendly.
             if(!shouldHeal)
+            {
+                // Only apply poison to actual enemies.
+                if(!pEntity.IsPlayer())
+                {
+                    CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
+                    if(pMonster !is null)
+                    {
+                        int relationship = pMonster.IRelationship(pPlayer);
+                        if(relationship != R_AL) // Only poison if NOT an ally
+                        {
+                            ApplyPoisonEffect(pEntity);
+                        }
+                    }
+                }
                 continue;
+            }
                 
             // Skip if at full health.
             if(pEntity.pev.health >= pEntity.pev.max_health)
