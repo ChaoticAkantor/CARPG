@@ -398,7 +398,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
 
                                     if(isActive)
                                     {
-                                        resourceInfo += "[Damage Reflect: " + int(barrier.GetScaledDamageReflection() * 100) + "%]";
+                                        resourceInfo += "[DMG Reflect: " + int(barrier.GetScaledDamageReflection() * 100) + "%]";
                                     }
                                 }
                             }
@@ -413,8 +413,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     bool isActive = healingAura.IsActive();
                                     if(isActive)
                                     {
-                                        resourceInfo += "[Heal: " + int(healingAura.GetScaledHealAmount()) + "HP/s]\n";
-                                        resourceInfo += "[Poison: " + int(healingAura.GetPoisonDamageAmount()) + "/s]";
+                                        resourceInfo += "[Healing: " + int(healingAura.GetScaledHealAmount()) + "/s]\n";
+                                        resourceInfo += "[Poison DMG: " + int(healingAura.GetPoisonDamageAmount()) + "/s]";
                                     }
                                 }
                             }
@@ -449,14 +449,9 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     float lifesteal = bloodlust.GetLifestealAmount() * 100; // Base lifesteal.
                                     float dmgBonus = bloodlust.GetDamageBonus(pPlayer) * 100;
                                     
-                                    //resourceInfo += "[" + (isActive ? " ON " : " OFF ") + "]";
-                                    resourceInfo += " [DMG Bonus: +" + int(dmgBonus) + "%]\n";
-
-                                    if (isActive)
-                                    {
-                                        resourceInfo += " [Lifesteal: " + int(lifesteal) + "%]";
-                                    }
-
+                                    resourceInfo += " [Low-HP DMG Bonus: +" + int(dmgBonus) + "%]\n";
+                                    resourceInfo += " [Ability Charge Steal: " + int(bloodlust.GetEnergystealAmount() * 100) + "%]\n";
+                                    resourceInfo += " [Lifesteal: " + int(lifesteal) + "%]";
                                 }
                             }
                             break;
@@ -478,7 +473,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
 
                                 if(DragonsBreath.HasRounds())
                                 {
-                                    resourceInfo += "[Fire Damage: " + DragonsBreath.GetScaledFireDamage() + "/s]";
+                                    resourceInfo += "[Incendiary DMG: " + DragonsBreath.GetScaledFireDamage() + "/s]";
                                 }
                             }
                             break;
@@ -492,8 +487,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     bool isActive = cloak.IsActive(); 
                                     if(isActive)
                                     {
-                                        resourceInfo += "[Damage Bonus: +" + int((cloak.GetDamageMultiplier(pPlayer) - 1.0f) * 100) + "%]\n";
-                                        resourceInfo += "[Nova Damage: " + int(cloak.GetNovaDamage(pPlayer)) + "]";
+                                        resourceInfo += "[Cloak DMG Bonus: +" + int((cloak.GetDamageMultiplier(pPlayer) - 1.0f) * 100) + "%]\n";
+                                        resourceInfo += "[Nova DMG: " + int(cloak.GetNovaDamage(pPlayer)) + "]";
                                     }
                                 }
                             }
