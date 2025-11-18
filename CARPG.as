@@ -25,19 +25,19 @@ This is our core file. Hooks, timers, initialisations of functions.
 #include "Includes"
 
 // Add near the top with other globals.
-array<string> g_DevList = 
+array<string> g_AdminList = 
 {
     "STEAM_0:1:21530096" // Unlike file structure, must use actual STEAM ID format.
 };
 
 Menu::DebugMenu g_DebugMenu;
 
-// Check Devs list.
-bool IsDev(const string& in steamID)
+// Check Admin list.
+bool IsAdmin(const string& in steamID)
 {
-    for(uint i = 0; i < g_DevList.length(); i++)
+    for(uint i = 0; i < g_AdminList.length(); i++)
     {
-        if(steamID == g_DevList[i])
+        if(steamID == g_AdminList[i])
             return true;
     }
     return false;
@@ -64,28 +64,31 @@ void MapActivate() // Like MapInit, only called after all mapper placed entities
 
 void MapStart() // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
 {
-    // Startup console message so we know it is installed.
-    g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n");
-
+    g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n"); // Confirmation.
     g_EngineFuncs.ServerCommand("mp_friendlyfire 0\n"); // Disable friendly fire to ensure certain abilities don't hurt ally monsters.
-
-    // Hints to play on map load.
     g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
+
+    ClearMinions(); // Clear all minion data.
+    ResetTimers(); // Reset timers.
 }
 
-void PluginReset() // Used to reset anything important to the plugin on reload.
+void PluginReset() // Used to force a full reload.
 {
-    g_Game.AlertMessage(at_console, "=== CARPG Reset! ===\n");
-
-    g_Scheduler.ClearTimerList(); // Clear all timers here also, this will ensure proper reset if plugin is reloaded with as_reloadplugins.
     //RemoveHooks(); // Remove Hooks.
-
-    ResetData(); // Clear all dictionaries.
     ClearMinions(); // Clear all minion data.
+    ResetData(); // Clear all dictionaries.
     RegisterHooks(); // Re-register Hooks.
     InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
-    SetupTimers(); // Re-setup timers.
     ApplyDifficultySettings(); // Re-apply difficulty settings.
+    SetupTimers(); // Re-setup timers.
+
+    g_Game.AlertMessage(at_console, "=== CARPG Reset! ===\n"); // Confirmation.
+}
+
+void ResetTimers()
+{
+    g_Scheduler.ClearTimerList(); // Clear all timers.
+    SetupTimers(); // Re-setup timers.
 }
 
 void ResetData()
@@ -567,7 +570,7 @@ void PrecacheAll()
 
 HookReturnCode MapChange(const string& in nextMap) // Called on map change.
 {
-    PluginReset(); // Reset all plugin elements on map change.
+    //PluginReset(); // Reset all plugin elements on map change.
     return HOOK_CONTINUE;
 }
 
@@ -590,8 +593,7 @@ HookReturnCode WeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWea
     return HOOK_CONTINUE;
 }
 
-// Hook handler for Secondary Attack.
-HookReturnCode WeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
+HookReturnCode WeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) // Hook handler for Secondary Attack.
 {
     if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0 && pWeapon.m_iClip2 != -1 ) // Check if clip is not empty and clip2 isn't infinite.
         return HOOK_CONTINUE;
@@ -971,16 +973,6 @@ HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer)
         data.CalculateStats(pPlayer); // Calculate stats on join.
         ResetPlayer(pPlayer); // Initialize player defaults if they rejoined.
         RefillHealthArmor(pPlayer); // Refill health and armor to full.
-        
-        // Reset any active Engineer sentries for the player when they join/changelevel.
-        if(g_PlayerSentries.exists(steamID))
-        {
-            SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
-            if(sentry !is null)
-            {
-                sentry.Reset();
-            }
-        }
     }
     
     // Show class menu if no class selected.
@@ -1277,7 +1269,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
         else if(command == "debug")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(IsDev(steamID))
+            if(IsAdmin(steamID))
             {
                 g_DebugMenu.ShowDebugMenu(pPlayer);
                 pParams.ShouldHide = true;
@@ -1285,7 +1277,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
             }
             else
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Only developers can access the debug menu.\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Only admins can access the debug menu.\n");
                 pParams.ShouldHide = true;
                 return HOOK_HANDLED;
             }
@@ -1293,7 +1285,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
         else if(command == "help")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(IsDev(steamID))
+            if(IsAdmin(steamID))
             {
                 ShowHints();
                 pParams.ShouldHide = true;
