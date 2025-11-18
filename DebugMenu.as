@@ -12,7 +12,7 @@ namespace Menu
             if(pPlayer is null) return;
             
             @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
-            m_pMenu.SetTitle("Dev Debug Menu\n");
+            m_pMenu.SetTitle("Admin Debug Menu\n");
             
             m_pMenu.AddItem("Add 1000 XP\n", any(0));
             m_pMenu.AddItem("Set Max Level\n", any(1));
@@ -32,7 +32,7 @@ namespace Menu
                 item.m_pUserData.retrieve(choice);
                 string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
 
-                if(!IsDev(steamID))
+                if(!IsAdmin(steamID))
                     return;
 
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
