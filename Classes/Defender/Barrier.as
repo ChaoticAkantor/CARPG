@@ -22,7 +22,7 @@ class BarrierData
     private float m_flBarrierReflectDamageMultiplier = 0.5f; // Base damage reflect multiplier.
     private float m_flBarrierReflectDamageScaling = 0.04f; // How much % to scale damage reflection per level.
     private float m_flBarrierReflectDebuff = 0.1f; // Slow effect modifier from reflected damage.
-    private float m_flBarrierActiveRechargePenalty = 0.25f; // Ability recharge rate penalty when barrier is active.
+    private float m_flBarrierActiveRechargePenalty = 0.25f; // Ability recharge rate when barrier is active.
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
 
@@ -89,27 +89,8 @@ class BarrierData
 
     void ToggleBarrier(CBasePlayer@ pPlayer)
     {
-        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
-        {
+        if(pPlayer is null || !pPlayer.IsAlive())
             return;
-        }
-
-        // Make sure the stats are initialized properly before proceeding >.>.
-        if(m_pStats is null)
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerRPGData.exists(steamID))
-            {
-                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null)
-                {
-                    @m_pStats = data.GetCurrentClassStats();
-                }
-            }
-            
-            if(m_pStats is null)
-                return;
-        }
 
         float currentTime = g_Engine.time;
         if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
@@ -119,46 +100,43 @@ class BarrierData
         }
 
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
+        if(g_PlayerClassResources.exists(steamID))
         {
-            return;
-        }
-            
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        if(resources is null)
-        {
-            return;
-        }
-
-        if(!m_bActive)
-        {
-            // Check energy - require FULL energy to activate,
-            float currentEnergy = float(resources['current']);
-            float maxEnergy = float(resources['max']);
-            
-            if(currentEnergy < maxEnergy)
+            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+            if(resources !is null)
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield recharging...\n");
-                return;
-            }
 
-            // Activate.
-            m_bActive = true;
-            m_flLastDrainTime = currentTime;
-            ToggleGlow(pPlayer);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP, 100);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Activated!\n");
-        }
-        else // MANUAL DEACTIVATION.
-        {
-            // Deactivate Manually.
-            m_bActive = false;
-            ToggleGlow(pPlayer);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP, 100);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // MANUALLY SHATTERED.
-            EffectBarrierShatter(pPlayer.pev.origin);
+                if(!m_bActive)
+                {
+                    // Check energy - require FULL energy to activate,
+                    float currentEnergy = float(resources['current']);
+                    float maxEnergy = float(resources['max']);
+                    
+                    if(currentEnergy < maxEnergy)
+                    {
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield recharging...\n");
+                        return;
+                    }
+
+                    // Activate.
+                    m_bActive = true;
+                    m_flLastDrainTime = currentTime;
+                    ToggleGlow(pPlayer);
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP, 100);
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Activated!\n");
+                }
+                else // MANUAL DEACTIVATION.
+                {
+                    // Deactivate Manually.
+                    m_bActive = false;
+                    ToggleGlow(pPlayer);
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP, 100);
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // MANUALLY SHATTERED.
+                    EffectBarrierShatter(pPlayer.pev.origin);
+                }
+            }
         }
 
         m_flLastToggleTime = currentTime;
