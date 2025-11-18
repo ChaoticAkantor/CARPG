@@ -968,7 +968,7 @@ class PlayerData
         RPGHudParams.fadeinTime = 0;
         RPGHudParams.fadeoutTime = 0;
         RPGHudParams.holdTime = 0.5;
-        RPGHudParams.channel = 3;
+        RPGHudParams.channel = 7;
         
         string RPGHudText = "Lvl: " + stats.GetLevel() + " | " + GetClassName(m_CurrentClass) + "\n";
         RPGHudText += "XP: " + (stats.IsMaxLevel() ? "(--/--)" : "(" + stats.GetCurrentLevelXP() + "/" + stats.GetNeededXP() + ")") + "\n";
