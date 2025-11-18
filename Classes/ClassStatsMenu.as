@@ -359,8 +359,8 @@ namespace Menu
                         string DefenderStatsText = "=== Ice Shield: ===" + "\n" + 
                             "Max Durability: " + int(maxEnergy) + " HP\n" + 
                             "Damage Reflection: " + int(barrier.GetScaledDamageReflection() * 100) + "%\n" +
-                            "Damage Reflect Slow Debuff: " + int(barrier.GetBarrierReflectDebuff() * 100) + "%\n" +
-                            "Active Recharge Rate: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
+                            "Damage Reflect Slow Debuff: " + int(barrier.GetBarrierReflectDebuffInverse() * 100) + "%\n" +
+                            "Active Ability Recharge Rate: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }
