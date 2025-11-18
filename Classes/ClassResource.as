@@ -209,7 +209,7 @@ void RegenClassResource()
                 BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                 if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && isBarrierActive)
                 {
-                    regen *= 0.50f; // 50% regeneration rate when active. Scales from total ability regen time.
+                    regen *= barrier.GetActiveRechargePenalty(); // Reduced regeneration rate when active. Scales from total ability regen time.
                 }
 
                 if(current < maximum)
@@ -242,9 +242,9 @@ string GetResourceBar(float current, float maximum, int barLength = 20)
     
     output += "]";
 
-    if(current == maximum)
-        return "[READY]";
-    else
+    //if(current == maximum)
+        //return output += " [READY]";
+    //else
         return output;
 }
 
@@ -324,7 +324,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         resourceName = "Cloak Battery";
                         break;
                     case PlayerClass::CLASS_VANQUISHER:
-                        resourceName = "Dragon's Breath Ammo Pack";
+                        resourceName = "Dragon's Breath Ammo";
                         break;
                     case PlayerClass::CLASS_SWARMER:
                         resourceName = "Snark Swarms";
@@ -374,13 +374,14 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                             validMinionCount++;
                                             
                                             // Make sure we have a valid health value.
-                                            float healthFlat = pMinion.pev.health;
-                                            if(healthFlat <= 0)
-                                                healthFlat = 0; // Default to 0 if health is invalid.
+                                            float healthFlatRobo = 0;
+                                                healthFlatRobo = pMinion.pev.health;
+
+                                            //if(healthFlatRobo is null)
+                                                //healthFlatRobo = 0; // Default to 0 if health is invalid for whatever reason.
 
                                             // Flat HP display.
-                                            int healthFlatInt = int(healthFlat);
-                                            resourceInfo += "[Robogrunt" + ": " + healthFlatInt + " HP]\n";
+                                            resourceInfo += "[Robogrunt" + ": " + int(healthFlatRobo) + " HP]\n";
                                         }
                                     }
                                 }
@@ -522,11 +523,6 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     CBaseEntity@ pMinion = validMinions[j];
                                     validMinionCount++;
                                     
-                                    // Make sure we have a valid health value.
-                                    float healthFlat = pMinion.pev.health;
-                                    if(healthFlat <= 0)
-                                        healthFlat = 1; // Default to 1 if health is invalid.
-                                    
                                     // Get creature type from entity classname instead of relying on arrays.
                                     string creatureName = "Creature"; // Default fallback.
                                     
@@ -544,9 +540,15 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                         creatureName = "Shocktrooper";
                                     else if(classname == "monster_babygarg")
                                         creatureName = "Baby Garg";
+
+                                    // Make sure we have a valid health value.
+                                    float healthFlatXeno = 0;
+                                        healthFlatXeno = pMinion.pev.health;
+
+                                    //if(healthFlatXeno == 0)
+                                        //healthFlatXeno = 0; // Default to 0 if health is invalid for whatever reason.
                                         
-                                    int healthFlatInt = int(healthFlat);
-                                    resourceInfo += "[" + creatureName + ": " + healthFlatInt + " HP]\n";
+                                    resourceInfo += "[" + creatureName + ": " + int(healthFlatXeno) + " HP]\n";
                                 }
                             }
                         }
@@ -582,22 +584,24 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     CBaseEntity@ pMinion = validMinions[j];
                                     validMinionCount++;
                                     
-                                    // Make sure we have a valid health value.
-                                    float healthFlat = pMinion.pev.health;
-                                    if(healthFlat <= 0)
-                                        healthFlat = 1; // Default to 1 if health is invalid.
-                                    
                                     // Get zombie type from stored info.
                                     string zombieName = "Zombie"; // Default fallback.
                                     
                                     // Get type from our stored information.
                                     int zombieType = minions[j].type;
-                                    if(zombieType >= 0 && uint(zombieType) < NECRO_NAMES.length()) {
+                                    if(zombieType >= 0 && uint(zombieType) < NECRO_NAMES.length()) 
+                                    {
                                         zombieName = NECRO_NAMES[zombieType];
                                     }
+
+                                    // Make sure we have a valid health value.
+                                    float healthFlatNecro = 0;
+                                        healthFlatNecro = pMinion.pev.health;
+                                        
+                                    //if(healthFlatNecro is null)
+                                        //healthFlatNecro = 0; // Default to 0 if health is invalid for whatever reason.
                                     
-                                    int healthFlatInt = int(healthFlat);
-                                    resourceInfo += "[" + zombieName + ": " + healthFlatInt + " HP]\n";
+                                    resourceInfo += "[" + zombieName + ": " + int(healthFlatNecro) + " HP]\n";
                                 }
                             }
                         }
