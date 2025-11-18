@@ -46,7 +46,9 @@ class SentryData
     // Perk - Elemental Shots.
     private int m_iElementalShotsRadius = 64; // Radius of bonus damage on shots.
     private float m_flElementalShotsDamage = 0.15f; // Damage modifier.
-    private float m_flElementalShotsDebuff = 0.25f; // Slow effect modifier.
+    private float m_flElementalShotsDebuff = 0.25f; // Slow effect (animation speed multiplier, actual speed).
+    private float m_flElementalShotsDebuffDuration = 6.0f; // Duration of slow effect in seconds, cannot be refreshed currently.
+    private float m_flNextDebuff = 0.0f; // Used for debuff duration timer.
 
     private ClassStats@ m_pStats = null;
 
@@ -91,6 +93,7 @@ class SentryData
     float GetElementalShotsDamageMult() { return m_flElementalShotsDamage; }
     float GetElementalShotsDebuff() { return m_flElementalShotsDebuff; }
     float GetElementalShotsDebuffInverse() { return 1.0f - m_flElementalShotsDebuff; } // For stat display, to show inverse value.
+    float GetElementalShotsDebuffDuration() { return m_flElementalShotsDebuffDuration; }
 
     void ToggleSentry(CBasePlayer@ pPlayer)
     {
@@ -384,10 +387,7 @@ class SentryData
             return;
 
         // Add glow shell effect to entity taking damage.
-        victim.pev.renderfx = kRenderFxGlowShell;
-        victim.pev.rendermode = kRenderNormal;
-        victim.pev.rendercolor = ELEMENT_COLOR; // Light Blue.
-        victim.pev.renderamt = 10; // Thickness.
+        ApplyDamageGlow(victim);
 
         // Offsets for sprite trail.
         Vector originOffset = targetPos;
@@ -427,15 +427,57 @@ class SentryData
             DMG_FREEZE | DMG_ALWAYSGIB
         );
 
-        // Use monster framerate to do a slow effect on the enemy that is hit.
+        ApplySlowEffect(victim); // Turret applies slow effect to targets.
+    }
+
+    void ApplySlowEffect(CBaseEntity@ victim)
+    {
+        if(victim is null)
+            return;
+
         CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
         if(slowTargetSentry !is null)
         {
-            slowTargetSentry.pev.framerate = GetElementalShotsDebuff(); // Reduce the hit target's framerate (animation speed).
+            if (slowTargetSentry.pev.framerate >= 1.0f) // Check if slow effect was already applied, if not then apply and schedule removal.
+            {
+                slowTargetSentry.pev.framerate = GetElementalShotsDebuff(); // Reduce the target's animation speed.
+                RemoveSlowEffect(victim); // Start removal of slow effect.
+            }
         }
+    }
 
-        // No built in duration for render effects, so set a delay to automatically remove it.
-        g_Scheduler.SetTimeout("EffectRemoveDamageGlow", 0.2, attacker.entindex());
+    void RemoveSlowEffect(CBaseEntity@ victim)
+    {
+        if(victim is null)
+            return;
+
+        CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
+        if(slowTargetSentry !is null)
+        {
+            float currenttime = g_Engine.time;
+            if(currenttime >= m_flNextDebuff)
+            {
+                m_flNextDebuff = currenttime + GetElementalShotsDebuffDuration();
+                slowTargetSentry.pev.framerate = 1.0f; // Reset animation speed to normal.
+                
+                // Remove the glow shell effect.
+                victim.pev.renderfx = kRenderFxNone;
+                victim.pev.rendermode = kRenderNormal;
+                victim.pev.renderamt = 0;
+            }
+        }   
+    }
+
+    void ApplyDamageGlow(CBaseEntity@ victim)
+    {
+        if(victim is null)
+            return;
+
+        // Add glow shell effect to entity taking damage.
+        victim.pev.renderfx = kRenderFxGlowShell;
+        victim.pev.rendermode = kRenderNormal;
+        victim.pev.rendercolor = ELEMENT_COLOR; // Light Blue.
+        victim.pev.renderamt = 10; // Thickness.
     }
 
     float GetScaledHealAmount()
