@@ -274,24 +274,9 @@ class MinionData
                 m_hMinions.removeAt(i);
                 continue;
             }
-            
-            // Cast to CBaseMonster to check monster-specific properties.
-            CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
 
-            // Set some values after casting incase they override.
-            pMonster.pev.framerate = m_flAnimationSpeed; // Animation speed modifier, make them far more useful.
-            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
-            
-            // Enhanced death check - check multiple conditions
-            bool isDead = false;
-            
-            if(pMonster !is null)
-            {
-                isDead = (pMonster.pev.deadflag != DEAD_NO);
-            }
-
-            // Also check standard health and if they are alive.
-            if(isDead || pExistingMinion.pev.health <= 0 || !pExistingMinion.IsAlive())
+            // Check if any minions have died.
+            if(pExistingMinion.pev.health <= 0 || !pExistingMinion.IsAlive() || pExistingMinion.pev.deadflag != DEAD_NO)
             {
                 // Use Killed to properly destroy the minion.
                 pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing to remove possibility of revival.
@@ -300,18 +285,28 @@ class MinionData
                 m_hMinions.removeAt(i);
                 continue;
             }
+            
+            // Cast monster and check monster is not null.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingMinion);
+            if(pMonster !is null)
+            {
+                // Set some values after casting incase they override.
+                pMonster.pev.framerate = m_flAnimationSpeed; // Animation speed modifier, make them far more useful.
+                pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            }
 
-            // Check if minion has gained a frag.
+            // Check if minion has gained a frag, transfer to owner.
             if(pExistingMinion.pev.frags > 0)
             {
                 // Add frag to player.
-                pPlayer.pev.frags += 1;
+                pPlayer.pev.frags += 1; // May not be needed if set to player's owner?
+
                 // Reset minion's frag counter.
                 pExistingMinion.pev.frags = 0;
             }
             
             // Ensure max_health is properly set during updates.
-            pExistingMinion.pev.max_health = GetScaledHealth();
+            //pExistingMinion.pev.max_health = GetScaledHealth();
             
             // Ensure glow effect is maintained.
             ApplyMinionGlow(pExistingMinion);
@@ -432,8 +427,8 @@ class MinionData
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion !is null && pMinion.pev.health > 0) // Only regenerate if not "dead".
             {
-                // Ensure max_health is properly set.
-                if(pMinion.pev.max_health <= 0)
+                // Ensure max_health is properly set and updated.
+                if(pMinion.pev.max_health >= 0)
                 {
                     pMinion.pev.max_health = GetScaledHealth();
                 }
@@ -568,12 +563,12 @@ class MinionMenu
         {
             m_pMenu.AddItem("Deploy " + MINION_NAMES[i] + " (Cost: " + MINION_COSTS[i] + ")\n", any(i));
         }
-        
+
         // Add management options if we have minions.
         if(m_pOwner.GetMinionCount() > 0) 
         {
-            m_pMenu.AddItem("Teleport All\n", any(98));
-            m_pMenu.AddItem("Destroy All\n", any(99));
+            m_pMenu.AddItem("Teleport All\n", any(99));
+            m_pMenu.AddItem("Destroy All\n", any(98));
         }
         
         m_pMenu.Register();
@@ -587,12 +582,12 @@ class MinionMenu
             int choice;
             item.m_pUserData.retrieve(choice);
             
-            if(choice == 99) 
+            if(choice == 98) 
             {
                 // Destroy all minions.
                 m_pOwner.DestroyAllMinions(pPlayer);
             }
-            else if(choice == 98)
+            else if(choice == 99)
             {
                 // Teleport existing minions.
                 m_pOwner.TeleportMinions(pPlayer);
