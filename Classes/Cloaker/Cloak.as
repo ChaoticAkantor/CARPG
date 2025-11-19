@@ -24,8 +24,8 @@ class CloakData
     private float m_flLastEnergyConsumed = 0.0f;
 
     //Nova.
-    private float m_flNovaRadius = 640.0f; // Radius of the nova.
-    private float m_flNovaDamageMultiplier = 12.0f; // How much to scale the nova damage after max and remaining are combined.
+    private float m_flNovaRadius = 480.0f; // Radius of the nova.
+    private float m_flNovaDamageMultiplier = 5.0f; // How much to scale the nova damage after max and remaining are combined.
 
     // Perk 1 - AP Stealing Nova.
     private bool m_bNovaActive = false;
@@ -309,7 +309,7 @@ class CloakData
             beamMsg.WriteShort(g_EngineFuncs.ModelIndex(strCloakNovaSprite));
             beamMsg.WriteByte(0); // Start frame.
             beamMsg.WriteByte(0); // Frame rate (no effect).
-            beamMsg.WriteByte(10); // Life * 0.1s (1s to reach max).
+            beamMsg.WriteByte(5); // Life * 0.1s (0.5s to reach max).
             beamMsg.WriteByte(6); // Width.
             beamMsg.WriteByte(0); // Noise.
             beamMsg.WriteByte(0); // Red.
