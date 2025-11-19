@@ -279,9 +279,9 @@ namespace Menu
                     if(bloodlust !is null)
                     {
                         string BerserkerStatsText = "=== Bloodlust (Doubled when Active): ===" + "\n" +
+                        "Damage Reduction as HP Reduces: " + int(bloodlust.GetDamageReductionMax()) + "%\n" +
                         "Ability Charge Steal: " + int(bloodlust.GetEnergySteal()) + "%\n" +
-                        "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" + 
-                        "Damage Bonus as HP Reduces: " + int(bloodlust.GetLowHPDMGBonus()) + "%\n";
+                        "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
