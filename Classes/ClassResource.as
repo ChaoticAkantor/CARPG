@@ -225,27 +225,23 @@ void RegenClassResource()
 }
 
 string GetResourceBar(float current, float maximum, int barLength = 20)
-{
+{ 
     float ratio = current / maximum;
-    float segmentSize = 1.0f / barLength;
     string output = "[";
     
-    // Simple filled/empty segment display.
+    // Calculate how many segments should be filled.
+    int filledSegments = int(ratio * barLength);
+    
     for(int i = 0; i < barLength; i++)
     {
-        float segmentThreshold = segmentSize * (i + 1);
-        if(ratio >= segmentThreshold)
+        if(i < filledSegments)
             output += "|"; // Filled segment.
         else
             output += " "; // Empty segment.
     }
     
     output += "]";
-
-    //if(current == maximum)
-        //return output += " [READY]";
-    //else
-        return output;
+    return output;
 }
 
 void UpdateClassResource() // Update the class resource hud display for all players.
@@ -448,11 +444,11 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 {
                                     bool isActive = bloodlust.IsActive();
                                     float lifesteal = bloodlust.GetLifestealAmount() * 100; // Base lifesteal.
-                                    float dmgBonus = bloodlust.GetDamageBonus(pPlayer) * 100;
+                                    float damageReduction = bloodlust.GetDamageReduction(pPlayer);
                                     
-                                    resourceInfo += " [Low-HP DMG Bonus: +" + int(dmgBonus) + "%]\n";
-                                    resourceInfo += " [Ability Charge Steal: " + int(bloodlust.GetEnergystealAmount() * 100) + "%]\n";
-                                    resourceInfo += " [Lifesteal: " + int(lifesteal) + "%]";
+                                    resourceInfo += "[DMG Reduction: +" + int(damageReduction) + "%]\n";
+                                    resourceInfo += "[Ability Charge Steal: " + int(bloodlust.GetEnergystealAmount() * 100) + "%]\n";
+                                    resourceInfo += "[Lifesteal: " + int(lifesteal) + "%]";
                                 }
                             }
                             break;
