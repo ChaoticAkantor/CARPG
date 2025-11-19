@@ -62,14 +62,13 @@ void MapActivate() // Like MapInit, only called after all mapper placed entities
 
 }
 
-void MapStart(CBasePlayer@ pPlayer) // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
+void MapStart() // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
 {
     g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n"); // Confirmation.
     g_EngineFuncs.ServerCommand("mp_friendlyfire 0\n"); // Disable friendly fire to ensure certain abilities don't hurt ally monsters.
     g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
 
-    ClearMinions(); // Clear all minion data.
-    ResetPlayer(pPlayer); // Reset all abilities.
+    ClearMinions(); // Clear all minion data..
     ResetTimers(); // Reset timers.
 }
 
@@ -1386,6 +1385,16 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         return;
         
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+
+    // Reset resources when changing class, so it can't be exploited.
+    if(g_PlayerClassResources.exists(steamID))
+    {
+        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
+        if(resources !is null)
+        {
+            resources['current'] = 0; // Reset current energy to 0.
+        }
+    }
 
     // Reset Heal Aura.
     if (g_HealingAuras.exists(steamID))
