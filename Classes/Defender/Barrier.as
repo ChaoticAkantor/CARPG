@@ -29,7 +29,10 @@ class BarrierData
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
+
     ClassStats@ GetStats() {return m_pStats;}
+    void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    
     float GetBaseDamageReduction() { return m_flBarrierDamageReduction; }
     float GetBarrierDurabilityMultiplier() { return m_flBarrierDurabilityMultiplier; }
     
@@ -80,11 +83,6 @@ class BarrierData
         
         // Drain barrier health (energy).
         DrainEnergy(pPlayer, blockedDamage);
-    }
-
-    void Initialize(ClassStats@ stats)
-    {
-        @m_pStats = stats;
     }
 
     void ToggleBarrier(CBasePlayer@ pPlayer)
