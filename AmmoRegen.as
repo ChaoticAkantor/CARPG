@@ -62,7 +62,7 @@ void InitializeAmmoRegen()
         if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix)
         {
             g_CurrentMapMultiplier = float(prefixes[prefixKeys[i]]);
-            g_Game.AlertMessage(at_console, "=== CARPG: ===\nMap prefix - '" + prefixKeys[i] + "' detected. Ammo regen multiplier set to " + g_CurrentMapMultiplier + "x.\n");
+            g_Game.AlertMessage(at_console, "=== CARPG Ammo Regen System: ===\nMap prefix - '" + prefixKeys[i] + "' detected. Ammo regen multiplier set to " + g_CurrentMapMultiplier + "x.\n\n");
             break;
         }
     }
