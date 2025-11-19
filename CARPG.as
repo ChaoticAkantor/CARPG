@@ -62,13 +62,14 @@ void MapActivate() // Like MapInit, only called after all mapper placed entities
 
 }
 
-void MapStart() // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
+void MapStart(CBasePlayer@ pPlayer) // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
 {
     g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n"); // Confirmation.
     g_EngineFuncs.ServerCommand("mp_friendlyfire 0\n"); // Disable friendly fire to ensure certain abilities don't hurt ally monsters.
     g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
 
     ClearMinions(); // Clear all minion data.
+    ResetPlayer(pPlayer); // Reset all abilities.
     ResetTimers(); // Reset timers.
 }
 
@@ -795,16 +796,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                 }
                 case PlayerClass::CLASS_BERSERKER:
                 {
-                    // Get bloodlust data for damage bonus.
+                    // Get bloodlust data for lifesteal and energy steal processing.
                     if(g_PlayerBloodlusts.exists(steamID))
                     {
                         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                         if(bloodlust !is null)
                         {
-                            // Apply damage bonus based on missing health.
-                            float damageBonus = bloodlust.GetDamageBonus(pAttacker);
-                            info.flDamage *= (1.0f + damageBonus);
-                            
                             bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Process lifesteal on damage dealt.
                             bloodlust.ProcessEnergySteal(pAttacker, info.flDamage); // Process energy steal on damage dealt.
                         }
@@ -942,6 +939,20 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
                     }
                 }
                 return HOOK_CONTINUE;
+            }
+        }
+    }
+
+    // Berserker low health damage reduction.
+    if(g_PlayerRPGData.exists(steamID))
+    {
+        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+        if(bloodlust !is null)
+        {
+            PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+            if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
+            {
+                bloodlust.HandleDamageReduction(pPlayer, pDamageInfo.flDamage, pDamageInfo.flDamage);
             }
         }
     }
