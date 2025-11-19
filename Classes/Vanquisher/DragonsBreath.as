@@ -69,7 +69,7 @@ class DragonsBreathData
             fireAreaMsg.WriteByte(100); // Green.
             fireAreaMsg.WriteByte(15); // Blue.
             fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10)); // Life * 0.1s.
-            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval)); // Fade speed * 1s.
+            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10)); // Fade speed * 1s.
             fireAreaMsg.End();
 
         ApplyDragonsBreathFire(pPlayer, impactPoint); // Apply damage over time fire at location.
