@@ -47,7 +47,7 @@ bool IsAdmin(const string& in steamID)
 void PluginInit()
 {
     g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
-    g_Module.ScriptInfo.SetContactInfo("None");
+    g_Module.ScriptInfo.SetContactInfo("Discord: chaoticakantor");
     
     PluginReset(); // Call a full reset whenever plugin is initialised or reloaded.
 }
@@ -64,12 +64,13 @@ void MapActivate() // Like MapInit, only called after all mapper placed entities
 
 void MapStart() // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
 {
-    g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n"); // Confirmation.
+    g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n"); // Confirmation text in console.
     g_EngineFuncs.ServerCommand("mp_friendlyfire 0\n"); // Disable friendly fire to ensure certain abilities don't hurt ally monsters.
     g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
 
-    ClearMinions(); // Clear all minion data..
+    ClearMinions(); // Clear all minion data.
     ResetTimers(); // Reset timers.
+    UpdateAllPlayerStats(); // Re-update all player stats on a new map start.
 }
 
 void PluginReset() // Used to force a full reload.
@@ -119,7 +120,7 @@ void RegisterHooks()
     g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
     g_Hooks.RegisterHook(Hooks::Player::PlayerSpawn, @PlayerRespawn);
     g_Hooks.RegisterHook(Hooks::Monster::MonsterTakeDamage, @MonsterTakeDamage);
-    g_Hooks.RegisterHook(Hooks::Game::MapChange, @MapChange);
+    //g_Hooks.RegisterHook(Hooks::Game::MapChange, @MapChange);
 }
 
 void RemoveHooks()
@@ -132,7 +133,7 @@ void RemoveHooks()
     g_Hooks.RemoveHook(Hooks::Player::ClientSay, @ClientSay);
     g_Hooks.RemoveHook(Hooks::Player::PlayerSpawn, @PlayerRespawn);
     g_Hooks.RemoveHook(Hooks::Monster::MonsterTakeDamage, @MonsterTakeDamage);
-    g_Hooks.RemoveHook(Hooks::Game::MapChange, @MapChange);
+    //g_Hooks.RemoveHook(Hooks::Game::MapChange, @MapChange);
 }
 
 void SetupTimers()
@@ -568,11 +569,11 @@ void PrecacheAll()
     */
 }
 
-HookReturnCode MapChange(const string& in nextMap) // Called on map change.
-{
+//HookReturnCode MapChange(const string& in nextMap) // Called on map change.
+//{
     //PluginReset(); // Reset all plugin elements on map change.
-    return HOOK_CONTINUE;
-}
+    //return HOOK_CONTINUE;
+//}
 
 // Hook handler for Primary Attack. This is used for Dragons Breath on each shot.
 HookReturnCode WeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
@@ -727,7 +728,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageNecroMultiplier = 1.0f + necroMinion.GetScaledDamage();
         info.flDamage *= damageNecroMultiplier;
 
-        // Process lifesteal - when necrominion deals damage, give health to owner.
+        // Process lifesteal - when necrominion deals damage, give health to owner and all minions.
         necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_snark_"))
@@ -980,8 +981,8 @@ HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer)
     
     if(data !is null)
     {
-        data.CalculateStats(pPlayer); // Calculate stats on join.
-        ResetPlayer(pPlayer); // Initialize player defaults if they rejoined.
+        data.CalculateStats(pPlayer); // Calculate stats on join. Calculate also initializes them!
+        ResetPlayer(pPlayer); //  Defaults abilities if they rejoined.
         RefillHealthArmor(pPlayer); // Refill health and armor to full.
     }
     
@@ -1003,7 +1004,7 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
         if(data !is null)
         {
             data.CalculateStats(pPlayer); // Re-calculate stats if we respawn.
-            ResetPlayer(pPlayer); // We respawned, so re-initialize defaults.
+            ResetPlayer(pPlayer); // We respawned, so default abilities.
             RefillHealthArmor(pPlayer); // Refill health and armor to full.
 
             // Show class menu if no class selected.
@@ -1027,7 +1028,7 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
         if(data !is null)
         {
             data.CalculateStats(pPlayer); // Re-Calculate stats on disconnect incase we rejoin.
-            ResetPlayer(pPlayer); // We disconnected, so re-initialize defaults incase we rejoin.
+            ResetPlayer(pPlayer); // We disconnected, so default abilities incase we rejoin.
         }
     }
     
@@ -1337,7 +1338,7 @@ void CheckAllPlayerScores()
     }
 }
 
-void UpdateAllPlayerStats()
+void UpdateAllPlayerStats() // Update ALL currently connected player's stats.
 {
     const int iMaxPlayers = g_Engine.maxClients;
     for(int i = 1; i <= iMaxPlayers; ++i)
@@ -1351,7 +1352,7 @@ void UpdateAllPlayerStats()
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(data !is null)
                 {
-                    data.CalculateStats(pPlayer);
+                    data.CalculateStats(pPlayer); // Calculate stats. Also initializes them!
                 }
             }
         }
@@ -1473,7 +1474,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
         if(minion !is null)
         {
-            // Log that we're destroying minions from ResetPlayer
+            // Log that we're destroying minions from ResetPlayer.
             //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Robomancer minions for " + steamID + "\n");
             minion.DestroyAllMinions(pPlayer);
         }
@@ -1485,7 +1486,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
         if(xenMinion !is null)
         {
-            // Log that we're destroying minions from ResetPlayer
+            // Log that we're destroying minions from ResetPlayer.
             //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Xenomancer minions for " + steamID + "\n");
             xenMinion.DestroyAllMinions(pPlayer);
         }
@@ -1497,7 +1498,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
         if(necroMinion !is null)
         {
-            // Log that we're destroying minions from ResetPlayer
+            // Log that we're destroying minions from ResetPlayer.
             //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Necromancer minions for " + steamID + "\n");
             necroMinion.DestroyAllMinions(pPlayer);
         }
@@ -1510,16 +1511,6 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         if(snarkNestData !is null)
         {
             snarkNestData.Reset();
-        }
-    }
-
-    // Set max health/armor based on class stats
-    if (g_PlayerRPGData.exists(steamID))
-    {
-        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-        if (data !is null)
-        {
-            data.CalculateStats(pPlayer);
         }
     }
 }
