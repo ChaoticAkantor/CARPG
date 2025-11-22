@@ -25,11 +25,11 @@ class CloakData
 
     //Nova.
     private float m_flNovaRadius = 480.0f; // Radius of the nova.
-    private float m_flNovaDamageMultiplier = 5.0f; // How much to scale the nova damage after max and remaining are combined.
+    private float m_flNovaDamageMultiplier = 4.0f; // How much to scale the nova damage after max and remaining are combined.
 
     // Perk 1 - AP Stealing Nova.
     private bool m_bNovaActive = false;
-    private float m_flAPStealPercent = 0.20f; // % of damage dealt that is returned as AP to the player, or health if AP is 0.
+    private float m_flAPStealPercent = 0.25f; // % of damage dealt that is returned as AP to the player, or health if AP is 0.
 
     private ClassStats@ m_pStats = null;
 
