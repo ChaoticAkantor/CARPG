@@ -57,14 +57,14 @@ class ClassDefinition
 {
     // Base stats for each class. Typically overridden on a per class basis.
     string name;
-    float baseHP = 100.0f; // Base health.
-    float baseAP = 100.0f; // Base armor.
+    float baseHP = 100.0f; // Base HP.
+    float baseAP = 100.0f; // Base AP.
     float baseResource = 100.0f; // Base max ability charge/duration.
     float fullRegenTime = 60.0f; // Default time in seconds to regenerate from empty to full if not specified.
 
-    float healthPerLevel = 0.02f; // Base health raise per level.
-    float armorPerLevel = 0.02f; // Base armor raise per level.
-    float energyPerLevel = 0.1f; // Base energy raise per level if not specified.
+    float healthPerLevel = 0.02f; // Health % of base raise per level.
+    float armorPerLevel = 0.02f; // Armor % of base raise per level.
+    float energyPerLevel = 0.1f; // Ability Charge/Duration % of base raise per level.
 
     ClassDefinition(string _name) 
     {
@@ -113,14 +113,14 @@ void InitializeClassDefinitions()
             switch(pClass)
             {
                 case PlayerClass::CLASS_MEDIC:
-                    def.baseHP = 100.0f;
+                    def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 10.0f;
                     def.fullRegenTime = 30.0f;
                     def.energyPerLevel = 0.04f; // 30s at level 50.
                     break;
                 case PlayerClass::CLASS_ENGINEER:
-                    def.baseHP = 100.0f;
+                    def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 20.0f;
                     def.fullRegenTime = 20.0f;
@@ -128,34 +128,34 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 100.0f;
+                    def.baseAP = 125.0f;
                     def.baseResource = 2.0f; // Minion Point Max.
                     def.fullRegenTime = 90.0f; // 90s for all minion points.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 100.0f;
+                    def.baseAP = 125.0f;
                     def.baseResource = 2.0f; // Minion Point Max.
                     def.fullRegenTime = 90.0f; // 90s for all minion points.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
-                    def.baseHP = 100.0f;
+                    def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 4.0f; // Minion Point Max.
                     def.fullRegenTime = 120.0f; // 120s for all minion points.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
-                    def.baseHP = 100.0f;
-                    def.baseAP = 100.0f;
+                    def.baseHP = 150.0f;
+                    def.baseAP = 75.0f;
                     def.baseResource = 20.0f;
                     def.fullRegenTime = 90.0f;
                     def.energyPerLevel = 0.04f; // 30s at level 50. (Drains 2/s).
                     break;
                 case PlayerClass::CLASS_DEFENDER:
-                    def.baseHP = 100.0f;
+                    def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 100.0f; // Shield Base HP.
                     def.fullRegenTime = 15.0f;
@@ -163,30 +163,30 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 100.0f;
+                    def.baseAP = 125.0f;
                     def.baseResource = 100.0f; // Base Shock Rifle Battery capacity.
                     def.fullRegenTime = 120.0f;
                     def.energyPerLevel = 0.14f; // 800 capacity at level 50.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 100.0f;
+                    def.baseAP = 125.0f;
                     def.baseResource = 10.0f; // Base Cloak battery (duration in seconds).
                     def.fullRegenTime = 15.0f;
                     def.energyPerLevel = 0.04f; // 30s at level 50.
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 100.0f;
+                    def.baseAP = 125.0f;
                     def.baseResource = 1.0f;
                     def.fullRegenTime = 60.0f;
-                    def.energyPerLevel = 0.00f; // 1 charge at level 50. No increase.
+                    def.energyPerLevel = 0.00f; // No increase.
                     break;
                 case PlayerClass::CLASS_SWARMER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 100.0f;
-                    def.baseResource = 2.0f; // Base charges.
-                    def.fullRegenTime = 60.0f; // 60s per charge.
+                    def.baseAP = 125.0f;
+                    def.baseResource = 1.0f; // Base charges.
+                    def.fullRegenTime = 30.0f; //
                     def.energyPerLevel = 0.00f; // No increase.
                     break;
             }
@@ -205,7 +205,7 @@ class ClassStats
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
     
-    // Ability perk level requirements.
+    // Ability perk level requirements. - Depriciated, to be removed. Gonna add the extra effects permanently instead.
     private int m_iAbilityPerk1LvReq = 5; // Level required to unlock first perk.
     private int m_iAbilityPerk2LvReq = 10; // Level required to unlock second perk.
     private int m_iAbilityPerk3LvReq = 15; // Level required to unlock third perk.
@@ -440,8 +440,7 @@ class PlayerData
             // Handle class-specific cleanup.
             switch(m_CurrentClass) 
             {
-                case PlayerClass::CLASS_DEFENDER:
-                    // Clean up barrier data when switching away from Defender.
+                case PlayerClass::CLASS_DEFENDER: // Clean up barrier data.
                     if (g_PlayerBarriers.exists(m_szSteamID)) 
                     {
                         BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[m_szSteamID]);
@@ -450,21 +449,23 @@ class PlayerData
                             barrier.DeactivateBarrier(pPlayer);
                         }
                         
-                        // Remove from dictionaries to ensure clean start when switching back.
                         g_PlayerBarriers.delete(m_szSteamID);
                     }
                     break;
                     
-                case PlayerClass::CLASS_MEDIC:
-                    // Clean up healing aura data.
+                case PlayerClass::CLASS_MEDIC: 
                     if (g_HealingAuras.exists(m_szSteamID)) 
                     {
+                        HealingAuraData@ aura = cast<HealingAuraData@>(g_HealingAuras[m_szSteamID]);
+                        if (aura !is null && aura.IsActive() && pPlayer !is null) 
+                        {
+                            aura.DeactivateAura(pPlayer);
+                        }
                         g_HealingAuras.delete(m_szSteamID);
                     }
                     break;
                     
-                case PlayerClass::CLASS_BERSERKER:
-                    // Clean up bloodlust data.
+                case PlayerClass::CLASS_BERSERKER: // Clean up bloodlust data.
                     if (g_PlayerBloodlusts.exists(m_szSteamID)) 
                     {
                         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[m_szSteamID]);
@@ -476,8 +477,7 @@ class PlayerData
                     }
                     break;
                     
-                case PlayerClass::CLASS_ENGINEER:
-                    // Clean up sentry data.
+                case PlayerClass::CLASS_ENGINEER: // Clean up sentry data.
                     if (g_PlayerSentries.exists(m_szSteamID)) 
                     {
                         SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[m_szSteamID]);
@@ -489,8 +489,7 @@ class PlayerData
                     }
                     break;
                     
-                case PlayerClass::CLASS_ROBOMANCER:
-                    // Clean up minion data.
+                case PlayerClass::CLASS_ROBOMANCER: // Clean up minion data.
                     if (g_PlayerMinions.exists(m_szSteamID)) 
                     {
                         MinionData@ minions = cast<MinionData@>(g_PlayerMinions[m_szSteamID]);
@@ -502,8 +501,7 @@ class PlayerData
                     }
                     break;
                     
-                case PlayerClass::CLASS_XENOMANCER:
-                    // Clean up xen minion data.
+                case PlayerClass::CLASS_XENOMANCER: // Clean up xen minion data.
                     if (g_XenologistMinions.exists(m_szSteamID)) 
                     {
                         XenMinionData@ xenMinions = cast<XenMinionData@>(g_XenologistMinions[m_szSteamID]);
@@ -515,8 +513,7 @@ class PlayerData
                     }
                     break;
                     
-                case PlayerClass::CLASS_NECROMANCER:
-                    // Clean up necro minion data.
+                case PlayerClass::CLASS_NECROMANCER: // Clean up necro minion data.
                     if (g_NecromancerMinions.exists(m_szSteamID)) 
                     {
                         NecroMinionData@ necroMinions = cast<NecroMinionData@>(g_NecromancerMinions[m_szSteamID]);
@@ -528,16 +525,14 @@ class PlayerData
                     }
                     break;
                     
-                case PlayerClass::CLASS_SHOCKTROOPER:
-                    // Clean up shock rifle data.
+                case PlayerClass::CLASS_SHOCKTROOPER: // Clean up shock rifle data.
                     if (g_ShockRifleData.exists(m_szSteamID)) 
                     {
                         g_ShockRifleData.delete(m_szSteamID);
                     }
                     break;
                     
-                case PlayerClass::CLASS_CLOAKER:
-                    // Clean up cloak data.
+                case PlayerClass::CLASS_CLOAKER: // Clean up cloak data.
                     if (g_PlayerCloaks.exists(m_szSteamID)) 
                     {
                         CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[m_szSteamID]);
@@ -549,16 +544,14 @@ class PlayerData
                     }
                     break;
                     
-                case PlayerClass::CLASS_VANQUISHER:
-                    // Clean up Dragon's Breath Rounds data.
+                case PlayerClass::CLASS_VANQUISHER: // Clean up Dragon's Breath data.
                     if (g_PlayerDragonsBreath.exists(m_szSteamID)) 
                     {
                         g_PlayerDragonsBreath.delete(m_szSteamID);
                     }
                     break;
                     
-                case PlayerClass::CLASS_SWARMER:
-                    // Clean up snark nest data.
+                case PlayerClass::CLASS_SWARMER: // Clean up snark nest data.
                     if (g_PlayerSnarkNests.exists(m_szSteamID)) 
                     {
                         SnarkNestData@ snarkNest = cast<SnarkNestData@>(g_PlayerSnarkNests[m_szSteamID]);
@@ -572,7 +565,7 @@ class PlayerData
             }
         }
         
-        m_CurrentClass = newClass;
+        m_CurrentClass = newClass; // Set new class.
     
         // Find the player and update their stats.
         const int iMaxPlayers = g_Engine.maxClients;
@@ -597,12 +590,13 @@ class PlayerData
                 
                 CalculateStats(pPlayer);
                 
-                // Update resource caps after stats calculation.
+                // Update resource caps after stats calculation, if they go over.
                 dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
                 if(resources !is null)
                 {   
                     float currentEnergy = float(resources['current']);
                     float maxEnergy = float(resources['max']);
+
                     if(currentEnergy > maxEnergy)
                         resources['current'] = maxEnergy;
                 }
@@ -632,7 +626,7 @@ class PlayerData
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
 
         // Initialize abilities if they don't exist.
-        // Initialize class-specific data.
+        // Initialize class-specific data if they don't exist.
         switch(m_CurrentClass)
         {
             case PlayerClass::CLASS_MEDIC:
@@ -819,6 +813,9 @@ class PlayerData
                     if(pOtherPlayer !is null && pOtherPlayer.IsConnected())
                     {
                         string otherSteamID = g_EngineFuncs.GetPlayerAuthId(pOtherPlayer.edict());
+                        if(otherSteamID == m_szSteamID) // Skip self, so you don't receive the XP twice.
+                            continue;
+                            
                         if(g_PlayerRPGData.exists(otherSteamID))
                         {
                             PlayerData@ otherData = cast<PlayerData@>(g_PlayerRPGData[otherSteamID]);
@@ -827,7 +824,7 @@ class PlayerData
                                 ClassStats@ stats = otherData.GetCurrentClassStats();
                                 if(stats !is null)
                                 {
-                                    stats.AddXP(scoreDiff, pOtherPlayer, otherData);
+                                    stats.AddXP(scoreDiff, pOtherPlayer, otherData); // Add the actual XP.
                                     //g_PlayerFuncs.ClientPrint(pOtherPlayer, HUD_PRINTCONSOLE, "+" + scoreDiff + " XP\n"); // Show gained XP.
                                 }
                             }
@@ -897,7 +894,7 @@ class PlayerData
             g_Game.AlertMessage(at_console, "CARPG: Loaded class: " + GetClassName(m_CurrentClass) + "\n");
             
             // Load each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_SWARMER; i++) // Updated to include Swarmer class
+            for(uint i = 1; i <= PlayerClass::CLASS_SWARMER; i++)
             {
                 ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
                 if(stats !is null)
@@ -931,7 +928,7 @@ class PlayerData
         {
             dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
             
-            // Get resource values from class definition
+            // Get resource values from class definition.
             if(g_ClassDefinitions.exists(m_CurrentClass))
             {
                 ClassDefinition@ def = cast<ClassDefinition@>(g_ClassDefinitions[m_CurrentClass]);
