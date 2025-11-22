@@ -204,8 +204,7 @@ class NecroMinionData
 
     float GetLifestealPercent() 
     { 
-        // Only return lifesteal percent if Enhancement 1 is unlocked.
-        return (m_pStats !is null && m_pStats.HasUnlockedPerk1()) ? m_flLifestealPercent : 0.0f;
+        return m_flLifestealPercent;
     }
 
     bool HasStats() { return m_pStats !is null; }
@@ -652,10 +651,6 @@ class NecroMinionData
     void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
-            return;
-            
-        // Check if the enhancement is unlocked.
-        if(m_pStats is null || !m_pStats.HasUnlockedPerk1())
             return;
 
         // Calculate health to return to player and minion.
