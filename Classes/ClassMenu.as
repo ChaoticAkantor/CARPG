@@ -20,9 +20,9 @@ namespace Menu
             if(pPlayer is null) return;
             
             @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
-            m_pMenu.SetTitle("Select a Class\nCurrent Class: " + m_pOwner.GetClassName(m_pOwner.GetCurrentClass()) + "\n\n");
+            m_pMenu.SetTitle("=== Select a Class ===\nCurrent Class: " + m_pOwner.GetClassName(m_pOwner.GetCurrentClass()) + "\n\n");
             
-            // Add all classes from list.
+            // Add all classes from class list to the menu.
             for(uint i = 0; i < g_ClassList.length(); i++)
             {
                 AddClassOption(g_ClassList[i]);
@@ -52,7 +52,7 @@ namespace Menu
                 
                 m_pOwner.SetClass(newClass); // Set class.
                 m_pOwner.CalculateStats(pPlayer); // Recalculate stats.
-                ResetPlayer(pPlayer); // Reset player abilities, HP/AP/Energy.
+                ResetPlayer(pPlayer); // Reset abilities.
 
                 PlayClassChangeEffects(pPlayer);
                 
