@@ -20,21 +20,21 @@ final class ForceDifficulty
 {
 	private array<float> weapon_damage_values = 
 	{
-		10.0, //Medkit - Default 10.
+		25.0, //Medkit - Default 10.
 		18.0, //Crowbar - Default 15.
 		25.0, //Wrench - Default 22.
 		45.0, //Grapple (Barnacle) - Default 40.
 		14.0, //Handgun (9mm Handgun) - Default 12.
 		70.0, //357 (Deagle is 2/3 of this) - Default 66.
 		13.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
-		13.0, //MP5 (9mm AR) - Default 8.
+		14.0, //MP5 (9mm AR) - Default 8.
 		12.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
 		70.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
-		20.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
+		18.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
 		150.0, //M203 (ARgrenades) - Default 100.
 		200.0, //RPG - Default 150.
 		22.0, //Gauss (No charge) - Default 19.
-		220.0, //Secondary Guass (Max Charge) - Default 190.
+		220.0, //Guass (Secondary, Max Charge) - Default 190.
 		14.0, //Gluon (Egon) Gun - Default 12.
 		16.0, //Hornet Gun - Default 12.
 		150.0, //Hand Grenade - Default 100.
@@ -288,11 +288,11 @@ final class ForceDifficulty
 
 	private array<float> monster_damage_values_bullet = {
 		8, // sk_12mm_bullet - Default 8
-		4, // sk_9mmAR_bullet - Default 3
-		4, // sk_9mm_bullet - Default 3
+		3, // sk_9mmAR_bullet - Default 3
+		3, // sk_9mm_bullet - Default 3
 		8, // sk_hornet_dmg - Default 8
 		34, // sk_otis_bullet - Default 34
-		4, // sk_grunt_buckshot - Default 3
+		3, // sk_grunt_buckshot - Default 3
 		20 // sk_556_bullet - Default 12
 	};
 
@@ -350,7 +350,7 @@ final class ForceDifficulty
 	void ApplyDifficultySettings()
 	{   
 
-		//Player Damage
+		// Player Damage.
 		int iMax = weapon_damage_values.size();
 		for( int i = 0; i < iMax; ++i )
 		{
@@ -358,7 +358,8 @@ final class ForceDifficulty
 			string strStrings = weapon_damage_strings[i] + " " + flValue + "\n";
 			g_EngineFuncs.ServerCommand( strStrings );
 		}
-        //Monster Damage
+
+        // Monster Damage.
 		iMax = monster_damage_values.size();
 		for( int i = 0; i < iMax; ++i )
 		{
@@ -367,7 +368,7 @@ final class ForceDifficulty
 			g_EngineFuncs.ServerCommand( strStrings );
 		}
 
-		//Monster Damage Bullet
+		// Monster Damage Bullet
 		iMax = monster_damage_values_bullet.size();
 		for( int i = 0; i < iMax; ++i )
 		{
@@ -376,7 +377,7 @@ final class ForceDifficulty
 			g_EngineFuncs.ServerCommand( strStrings );
 		}
 		
-		//Player location damage
+		// Player location damage.
 		iMax = player_location_values.size();
 		for( int i = 0; i < iMax; ++i )
 		{
@@ -385,7 +386,7 @@ final class ForceDifficulty
 			g_EngineFuncs.ServerCommand( strStrings );
 		}
 		
-		//Monster location damage
+		// Monster location damage.
 		iMax = monster_location_values.size( );
 		for( int i = 0; i < iMax; ++i )
 		{
