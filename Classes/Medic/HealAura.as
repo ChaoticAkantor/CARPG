@@ -128,6 +128,18 @@ class HealingAura
         m_flLastToggleTime = currentTime;
     }
     
+    void DeactivateAura(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null)
+            return;
+
+        if(m_bIsActive)
+        {
+            m_bIsActive = false;
+            RemoveAuraGlow(pPlayer);
+        }
+    }
+    
     void ResetAura(CBasePlayer@ pPlayer)
     {
         if(m_bIsActive)
