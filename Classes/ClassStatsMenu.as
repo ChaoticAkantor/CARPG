@@ -49,211 +49,6 @@ namespace Menu
                 "Ability Duration/Charges: " + int(maxEnergy) + "\n" + 
                 "Ability Recharge Rate: " + energyRegen + "/s\n\n";
 
-                BaseStatsText += "=== Ability Perks: ===\n";
-            
-                // Display perks based on class and level.
-                switch(m_pOwner.GetCurrentClass())
-                {
-                    case PlayerClass::CLASS_MEDIC:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_BERSERKER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_ROBOMANCER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_XENOMANCER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "Life Steal: Creatures steal Life for self and owner.\n";
-                        else
-                            BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_NECROMANCER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "Life Steal: Undead steal Life for self and owner.\n";
-                        else
-                            BaseStatsText += "( Life Steal - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_SHOCKTROOPER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_DEFENDER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_CLOAKER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "AP Stealing Nova - Nova now converts damage into AP (Or HP if AP is disabled).\n";
-                        else
-                            BaseStatsText += "( AP Stealing Nova - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_VANQUISHER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_ENGINEER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "Cold Rounds - Turret now deals bonus Cold Damage and gains a Slow Debuff.\n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A. \n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A. \n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                    case PlayerClass::CLASS_SWARMER:
-                    {
-                        if(m_pStats.HasUnlockedPerk1())
-                            BaseStatsText += "N/A. \n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk1LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk2())
-                            BaseStatsText += "N/A. \n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk2LevelReq() + " )\n";
-
-                        if(m_pStats.HasUnlockedPerk3())
-                            BaseStatsText += "N/A. \n";
-                        else
-                            BaseStatsText += "( WIP - LOCKED - Lv. " + m_pStats.GetPerk3LevelReq() + " )\n\n";
-                        break;
-                    }
-                }
-
             m_pMenu.AddItem(BaseStatsText, null);
     
             switch(m_pOwner.GetCurrentClass())
@@ -278,10 +73,15 @@ namespace Menu
                     BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                     if(bloodlust !is null)
                     {
-                        string BerserkerStatsText = "=== Bloodlust (Doubled when Active): ===" + "\n" +
+                        string BerserkerStatsText = "=== Bloodlust (Passive): ===" + "\n" +
                         "Damage Reduction as HP Reduces: " + int(bloodlust.GetDamageReductionMax()) + "%\n" +
                         "Ability Charge Steal: " + int(bloodlust.GetEnergySteal()) + "%\n" +
                         "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n";
+                        
+                        BerserkerStatsText += "=== Bloodlust (Active): ===" + "\n" +
+                        "Damage Reduction as HP Reduces: " + int(bloodlust.GetDamageReductionMax() * 2) + "%\n" +
+                        "Ability Charge Steal: " + int(bloodlust.GetEnergySteal() * 2) + "%\n" +
+                        "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100 * 2) + "%\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
@@ -305,13 +105,10 @@ namespace Menu
                     XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
                     if(xenMinion !is null)
                     {
-                        string XenologistStatsText = "=== Creatures: ===" + "\n" + 
+                        string XenologistStatsText = "=== Xen Creatures: ===" + "\n" + 
                         "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage Bonus: " + int(xenMinion.GetScaledDamage() * 100) + "%\n";
-                        
-                        // Show perk 1.
-                        if(xenMinion.GetStats().HasUnlockedPerk1())
-                            XenologistStatsText += "Lifesteal (Self and Owner): " + int(xenMinion.GetLifestealPercent() * 100) + "%\n";
+                        "Damage Bonus: " + int(xenMinion.GetScaledDamage() * 100) + "%\n" +
+                        "Minion Lifesteal (Minion and Player): " + int(xenMinion.GetLifestealPercent() * 100) + "%\n";
 
                         XenologistStatsText += "\n";
 
@@ -326,11 +123,8 @@ namespace Menu
                     {
                         string NecromancerStatsText = "=== Zombies: ===" + "\n" + 
                         "Health: " + int(necroMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage Bonus: " + int(necroMinion.GetScaledDamage() * 100) + "%\n";
-                        
-                        // Show perk 1.
-                        if(necroMinion.GetStats().HasUnlockedPerk1())
-                            NecromancerStatsText += "Lifesteal (Self and Owner): " + int(necroMinion.GetLifestealPercent() * 100) + "%\n";
+                        "Damage Bonus: " + int(necroMinion.GetScaledDamage() * 100) + "%\n" +
+                        "Minion Lifesteal (Minion and Player): " + int(necroMinion.GetLifestealPercent() * 100) + "%\n";
 
                         NecromancerStatsText += "\n";
 
