@@ -62,7 +62,7 @@ void MapActivate() // Like MapInit, only called after all mapper placed entities
 
 }
 
-void MapStart() // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
+void MapStart(CBasePlayer@ pPlayer) // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
 {
     g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n"); // Confirmation text in console.
     g_EngineFuncs.ServerCommand("mp_friendlyfire 0\n"); // Disable friendly fire to ensure certain abilities don't hurt ally monsters.
@@ -70,7 +70,17 @@ void MapStart() // Called after 0.1 seconds of game activity, this is used to si
 
     ClearMinions(); // Clear all minion data.
     ResetTimers(); // Reset timers.
-    UpdateAllPlayerStats(); // Re-update all player stats on a new map start.
+
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(g_PlayerRPGData.exists(steamID))
+    {
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
+        {
+            data.CalculateStats(pPlayer); // Re-calculate stats on a new map.
+            ResetPlayer(pPlayer); // Default abilities on a new map.
+        }
+    }
 }
 
 void PluginReset() // Used to force a full reload.
