@@ -496,7 +496,7 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
         dragonsBreath.GetScaledFireDamage(), // Damage per tick.
         dragonsBreath.GetRadius(), // Radius.
         CLASS_PLAYER, // Will not damage player or allies.
-        DMG_GENERIC | DMG_ALWAYSGIB // Damage type.
+        DMG_POISON | DMG_ALWAYSGIB // Damage type (Poison for DoT and stacking).
     );
 
     Vector startPoint = impactPoint;
