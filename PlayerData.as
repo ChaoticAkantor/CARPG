@@ -116,7 +116,7 @@ void InitializeClassDefinitions()
                     def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 10.0f;
-                    def.fullRegenTime = 30.0f;
+                    def.fullRegenTime = 20.0f;
                     def.energyPerLevel = 0.04f; // 30s at level 50.
                     break;
                 case PlayerClass::CLASS_ENGINEER:
@@ -144,7 +144,7 @@ void InitializeClassDefinitions()
                     def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
                     def.baseResource = 4.0f; // Minion Point Max.
-                    def.fullRegenTime = 120.0f; // 120s for all minion points.
+                    def.fullRegenTime = 90.0f; // 120s for all minion points.
                     def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
@@ -165,7 +165,7 @@ void InitializeClassDefinitions()
                     def.baseHP = 100.0f;
                     def.baseAP = 125.0f;
                     def.baseResource = 100.0f; // Base Shock Rifle Battery capacity.
-                    def.fullRegenTime = 120.0f;
+                    def.fullRegenTime = 90.0f;
                     def.energyPerLevel = 0.14f; // 800 capacity at level 50.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
