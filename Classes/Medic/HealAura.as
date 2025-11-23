@@ -40,11 +40,12 @@ class HealingAura
     private int m_iDrainAmount = 1.0f; // Energy drain per interval.
     private int m_iHealAuraDrainRevive = m_iDrainAmount * 2; // Energy drain per entity revived.
     private float m_flHealAuraReviveHealthPercent = 0.25f; // Health percent when revived.
-    private float m_flPoisonDamagePercent = 0.75f; // Damage as percentage of healing amount. Using RadiusDamage so it now has harsh falloff.
+    private float m_flPoisonDamagePercent = 1.0f; // Percentage of healing amount dealt as poison damage. Using RadiusDamage.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
     private float m_flLastHealTime = 0.0f;
+    private float m_flLastPoisonTime = 0.0f;
     private float m_flHealInterval = 1.0f;
 
     // Visual.
@@ -102,11 +103,11 @@ class HealingAura
             float maximum = float(resources['max']);
             
             // Check energy - require FULL energy to activate.
-            if (current < maximum)
-            {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Recharging...\n");
-                return;
-            }
+            //if (current < maximum)
+            //{
+                //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Recharging...\n");
+                //return;
+            //}
         }
 
         m_bIsActive = !m_bIsActive;
@@ -199,6 +200,10 @@ class HealingAura
         if (!m_bIsActive)
             return;
 
+        float currentTime = g_Engine.time;
+        if (currentTime - m_flLastPoisonTime < m_flHealInterval)
+            return;
+
         Vector playerOrigin = pPlayer.pev.origin;
         float poisonDamage = GetPoisonDamageAmount(); // Has harsh damage falloff due to RadiusDamage.
         
@@ -212,7 +217,9 @@ class HealingAura
             m_flRadius, // Radius.
             CLASS_PLAYER, // Will not damage player or allies. (No need for complex searches and checks).
             DMG_POISON // Damage type - poison.
-        );      
+        );
+
+        m_flLastPoisonTime = currentTime; 
     }
 
     private void ApplyPoisonEffect(CBaseEntity@ target)
@@ -236,7 +243,7 @@ class HealingAura
             msg.WriteCoord(endPoint.y);
             msg.WriteCoord(endPoint.z);
             msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
-            msg.WriteByte(8);   // Count.
+            msg.WriteByte(3);   // Count.
             msg.WriteByte(1);   // Life in 0.1's.
             msg.WriteByte(3);   // Scale in 0.1's.
             msg.WriteByte(15);  // Velocity along vector in 10's.
