@@ -47,8 +47,6 @@ class SentryData
     private int m_iElementalShotsRadius = 64; // Radius of bonus damage on shots.
     private float m_flElementalShotsDamage = 0.15f; // Damage modifier.
     private float m_flElementalShotsDebuff = 0.25f; // Slow effect (animation speed multiplier, actual speed).
-    private float m_flElementalShotsDebuffDuration = 6.0f; // Duration of slow effect in seconds, cannot be refreshed currently.
-    private float m_flNextDebuff = 0.0f; // Used for debuff duration timer.
 
     private ClassStats@ m_pStats = null;
 
@@ -93,7 +91,6 @@ class SentryData
     float GetElementalShotsDamageMult() { return m_flElementalShotsDamage; }
     float GetElementalShotsDebuff() { return m_flElementalShotsDebuff; }
     float GetElementalShotsDebuffInverse() { return 1.0f - m_flElementalShotsDebuff; } // For stat display, to show inverse value.
-    float GetElementalShotsDebuffDuration() { return m_flElementalShotsDebuffDuration; }
 
     void ToggleSentry(CBasePlayer@ pPlayer)
     {
@@ -438,10 +435,9 @@ class SentryData
         CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
         if(slowTargetSentry !is null)
         {
-            if (slowTargetSentry.pev.framerate >= 1.0f) // Check if slow effect was already applied, if not then apply and schedule removal.
+            if (slowTargetSentry.pev.framerate >= 1.0f) // Check if slow effect was already applied.
             {
                 slowTargetSentry.pev.framerate = GetElementalShotsDebuff(); // Reduce the target's animation speed.
-                RemoveSlowEffect(victim); // Start removal of slow effect.
             }
         }
     }
@@ -454,17 +450,12 @@ class SentryData
         CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
         if(slowTargetSentry !is null)
         {
-            float currenttime = g_Engine.time;
-            if(currenttime >= m_flNextDebuff)
-            {
-                m_flNextDebuff = currenttime + GetElementalShotsDebuffDuration();
-                slowTargetSentry.pev.framerate = 1.0f; // Reset animation speed to normal.
+            slowTargetSentry.pev.framerate = 1.0f; // Reset animation speed to normal.
                 
-                // Remove the glow shell effect.
-                victim.pev.renderfx = kRenderFxNone;
-                victim.pev.rendermode = kRenderNormal;
-                victim.pev.renderamt = 0;
-            }
+            // Remove the glow shell effect.
+            victim.pev.renderfx = kRenderFxNone;
+            victim.pev.rendermode = kRenderNormal;
+            victim.pev.renderamt = 0;
         }   
     }
 
