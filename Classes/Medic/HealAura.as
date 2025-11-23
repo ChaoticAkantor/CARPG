@@ -126,7 +126,7 @@ class HealingAura
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
         }
 
-        m_flLastToggleTime = currentTime;
+        m_flLastToggleTime = 0.0f;
     }
     
     void DeactivateAura(CBasePlayer@ pPlayer)

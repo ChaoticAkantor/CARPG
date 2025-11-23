@@ -137,7 +137,7 @@ class BarrierData
             }
         }
 
-        m_flLastToggleTime = currentTime;
+        m_flLastToggleTime = 0.0f;
     }
 
     float GetDamageReduction()
@@ -161,10 +161,6 @@ class BarrierData
             ToggleGlow(pPlayer);
             return;
         }
-
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
     }
     
     void DrainEnergy(CBasePlayer@ pPlayer, float blockedDamage)
@@ -191,6 +187,9 @@ class BarrierData
 
     void DeactivateBarrier(CBasePlayer@ pPlayer) // Called when DESTROYED, NOT MANUALLY DEACTIVATED.
     {
+        if(pPlayer is null)
+            return;
+
         if(m_bActive)
         {
             m_bActive = false;
@@ -229,6 +228,7 @@ class BarrierData
 
     private void EffectBarrierShatter(Vector origin)
     {
+        // Add effect to shatter barrier.
         NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
             breakMsg.WriteByte(TE_BREAKMODEL);
             breakMsg.WriteCoord(origin.x);
@@ -338,7 +338,7 @@ class BarrierData
         }
 
         // No build in duration for render effects, so set a delay to automatically remove it.
-        g_Scheduler.SetTimeout("EffectRemoveDamageGlow", 0.2, target.entindex());
+        //g_Scheduler.SetTimeout("EffectRemoveDamageGlow", 0.2, target.entindex());
     }
 }
 

@@ -143,7 +143,7 @@ class BloodlustData
             DeactivateBloodlust(pPlayer);
         }
         
-        m_flLastToggleTime = currentTime;
+        m_flLastToggleTime = 0.0f;
     }
 
     void HandleDamageReduction(CBasePlayer@ pPlayer, float bloodlustDamageTaken, float& out bloodlustReducedDamage)

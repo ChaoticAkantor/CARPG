@@ -165,7 +165,7 @@ class CloakData
             }
         }
 
-        m_flLastToggleTime = currentTime;
+        m_flLastToggleTime = 0.0f;
     }
 
     void DeactivateCloak(CBasePlayer@ pPlayer)

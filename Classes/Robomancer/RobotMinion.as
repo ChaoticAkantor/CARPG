@@ -154,6 +154,8 @@ class MinionData
         if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
             return;
 
+        m_flLastToggleTime = 0.0f;
+
         m_pMenu.ShowRobotMinionMenu(pPlayer); // Show menu.
     }
 

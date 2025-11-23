@@ -101,8 +101,6 @@ class SentryData
         if(currentTime - m_flLastToggleTime < m_flToggleCooldown)
             return;
 
-        m_flLastToggleTime = currentTime;
-
         if(m_bActive)
         {
             DestroySentry(pPlayer);
@@ -126,6 +124,7 @@ class SentryData
         }
 
         SpawnSentry(pPlayer);
+        m_flLastToggleTime = 0.0f;
     }
 
     void ApplyMinionGlow(CBaseEntity@ pMinion)

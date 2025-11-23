@@ -155,7 +155,7 @@ class DragonsBreathData
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strDragonsBreathActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + actualAdded + " Dragon's Breath Rounds\n");
 
-        m_flLastToggleTime = currentTime;
+        m_flLastToggleTime = 0.0f;
     }
 
     void FireDragonsBreathRound(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon)

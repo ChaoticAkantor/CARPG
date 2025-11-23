@@ -63,7 +63,7 @@ class ShockRifleData
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "STORED: 50%% Battery Recovered (+" + currentAmmo + ")\n");
             g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strShockrifleEquipSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             
-            m_flLastUseTime = flCurrentTime;
+            m_flLastUseTime = 0.0f;
             return;
         }
         // If player has shock rifle but isn't holding it, do nothing.

@@ -97,7 +97,7 @@ class SnarkNestData
             return;
         }
 
-        m_flLastToggleTime = currentTime;
+        m_flLastToggleTime = 0.0f;
 
         // Check energy requirements for deployment.
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
