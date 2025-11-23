@@ -407,12 +407,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 HealingAura@ healingAura = cast<HealingAura@>(g_HealingAuras[steamID]);
                                 if(healingAura !is null)
                                 {
-                                    bool isActive = healingAura.IsActive();
-                                    if(isActive)
-                                    {
-                                        resourceInfo += "[Healing: " + int(healingAura.GetScaledHealAmount()) + "/s]\n";
-                                        resourceInfo += "[Poison DMG: " + int(healingAura.GetPoisonDamageAmount()) + "/s]";
-                                    }
+                                    resourceInfo += "[Healing: " + int(healingAura.GetScaledHealAmount()) + "/s]\n";
+                                    resourceInfo += "[Poison DMG: " + int(healingAura.GetPoisonDamageAmount()) + "/s]";
                                 }
                             }
                             break;
