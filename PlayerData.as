@@ -456,7 +456,7 @@ class PlayerData
                 case PlayerClass::CLASS_MEDIC: 
                     if (g_HealingAuras.exists(m_szSteamID)) 
                     {
-                        HealingAuraData@ aura = cast<HealingAuraData@>(g_HealingAuras[m_szSteamID]);
+                        HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[m_szSteamID]);
                         if (aura !is null && aura.IsActive() && pPlayer !is null) 
                         {
                             aura.DeactivateAura(pPlayer);
