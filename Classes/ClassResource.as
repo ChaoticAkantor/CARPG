@@ -205,19 +205,25 @@ void RegenClassResource()
                 float maximum = float(resources['max']);
                 float regen = float(resources['regen']);
 
-                // Special case for Defender with active barrier. Regen at a reduced rate.
-                BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && isBarrierActive)
-                {
-                    regen *= barrier.GetActiveRechargePenalty(); // Reduced regeneration rate when active. Scales from total ability regen time.
-                }
-
                 if(current < maximum)
                 {
                     current += regen;
                     if(current > maximum)
                         current = maximum;
                     resources['current'] = current;
+                }
+
+                // Special case for Defender with active barrier. Regen at a reduced rate.
+                if (g_PlayerBarriers.exists(steamID))
+                {
+                    BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                    if (barrier !is null)
+                    {
+                        if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && isBarrierActive)
+                        {
+                            regen *= barrier.GetActiveRechargePenalty(); // Reduced regeneration rate when active. Scales from total ability regen time.
+                        }
+                    }
                 }
             }
         }
@@ -255,7 +261,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
             
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
         
-        // Skip if player doesn't have class resources set up
+        // Skip if player doesn't have class resources set up.
         if (!g_PlayerClassResources.exists(steamID))
             continue;
             
@@ -323,7 +329,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         resourceName = "Dragon's Breath Ammo";
                         break;
                     case PlayerClass::CLASS_SWARMER:
-                        resourceName = "Snark Swarms";
+                        resourceName = "Snark Swarm";
                         break;
                 }
             }
@@ -391,10 +397,14 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(barrier !is null)
                                 {
                                     bool isActive = barrier.IsActive();
-                                    resourceInfo += "[Ability Recharge: " + (isActive ? "" + int(barrier.GetActiveRechargePenalty() * 100) + "%]\n" : "100%]\n");
 
-                                    if(isActive)
+                                    if (!isActive)
                                     {
+                                        resourceInfo += "[Ability Recharge: 100%]\n";
+                                    }
+                                    else
+                                    {
+                                        resourceInfo += "[Ability Recharge: " + int(barrier.GetActiveRechargePenalty() * 100) + "%]\n";
                                         resourceInfo += "[DMG Reflect: " + int(barrier.GetScaledDamageReflection() * 100) + "%]";
                                     }
                                 }
@@ -629,7 +639,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(snarkData !is null)
                                 {
                                     int snarkCount = snarkData.GetSnarkCount();
-                                    resourceInfo += "[Snarks Per Swarm: " + snarkCount + "]";
+                                    resourceInfo += "[Snark Swarm Size: " + snarkCount + "]";
                                 }
                             }
                         break;

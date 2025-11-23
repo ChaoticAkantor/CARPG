@@ -223,7 +223,7 @@ namespace Menu
                         string SwarmerStatsText = "=== Snark Swarm: ===" + "\n" + 
                             "Snark Health: " + int(snarkNest.GetScaledHealth()) + " HP\n" +
                             "Snark Damage Multiplier: " + int(snarkNest.GetScaledDamage() * 100 + 100) + "%\n" +
-                            "Snarks Per Swarm: " + snarkNest.GetSnarkCount() + "\n";
+                            "Snark Swarm Size: " + snarkNest.GetSnarkCount() + "\n";
 
                         m_pMenu.AddItem(SwarmerStatsText, null);
                     }
