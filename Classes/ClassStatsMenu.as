@@ -152,9 +152,10 @@ namespace Menu
                     {
                         string DefenderStatsText = "=== Ice Shield: ===" + "\n" + 
                             "Max Durability: " + int(maxEnergy) + " HP\n" + 
-                            "Damage Reflection: " + int(barrier.GetScaledDamageReflection() * 100) + "%\n" +
-                            "Damage Reflect Slow Debuff: " + int(barrier.GetBarrierReflectDebuffInverse() * 100) + "%\n" +
-                            "Active Ability Recharge Rate: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
+                            "Damage Reflect: " + int(barrier.GetScaledDamageReflection() * 100) + "%\n" +
+                            "Damage Reflect Freeze Effect: " + barrier.GetBarrierReflectFreezeInverse() + "%\n" +
+                            "Damage Reflect Freeze Duration: " + barrier.GetBarrierReflectFreezeDuration() + "s\n" +
+                            "Ability Recharge Rate whilst active: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }
@@ -201,15 +202,12 @@ namespace Menu
                     SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
                     if(sentry !is null)
                     {
-                        string EngineerStatsText = "=== Sentry: ===" + "\n" + 
-                            "Health: " + int(sentry.GetScaledHealth()) + " HP\n" +
-                            "Damage Bonus: " + int(sentry.GetScaledDamage() * 100) + "%\n" + 
-                            "Healing: " + sentry.GetHealAmount() + " HP/s\n";
-
-                        // Show perk 1.
-                        if(sentry.GetStats().HasUnlockedPerk1())
-                            EngineerStatsText += "Bonus Cold Damage: " + int(sentry.GetElementalShotsDamageMult() * 100) + "%\n";
-                            EngineerStatsText += "Slow Debuff: " + int(sentry.GetElementalShotsDebuffInverse() * 100) + "%\n";
+                        string EngineerStatsText = "=== Sentry Turret: ===\n";
+                            EngineerStatsText += "Health: " + int(sentry.GetScaledHealth()) + " HP\n";
+                            EngineerStatsText += "Healing Buff: " + sentry.GetHealAmount() + " HP/s\n\n";
+                            EngineerStatsText += "Damage Bonus: " + int(sentry.GetScaledDamage() * 100) + "%\n";
+                            EngineerStatsText += "Cryo Damage Bonus: " + int(sentry.GetCryoShotsDamageMult() * 10) + "%\n";
+                            EngineerStatsText += "Freeze Effect: " + (sentry.GetCryoShotsSlowInverse()) + "%\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }

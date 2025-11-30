@@ -205,25 +205,22 @@ void RegenClassResource()
                 float maximum = float(resources['max']);
                 float regen = float(resources['regen']);
 
+                // Special case for Defender with active barrier. Regen at a reduced rate.
+                if (g_PlayerBarriers.exists(steamID))
+                {
+                    BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                    if (barrier !is null && barrier.IsActive() && data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER)
+                    {
+                        regen *= barrier.GetActiveRechargePenalty(); // Apply penalty BEFORE adding to current
+                    }
+                }
+
                 if(current < maximum)
                 {
                     current += regen;
                     if(current > maximum)
                         current = maximum;
                     resources['current'] = current;
-                }
-
-                // Special case for Defender with active barrier. Regen at a reduced rate.
-                if (g_PlayerBarriers.exists(steamID))
-                {
-                    BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                    if (barrier !is null)
-                    {
-                        if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && isBarrierActive)
-                        {
-                            regen *= barrier.GetActiveRechargePenalty(); // Reduced regeneration rate when active. Scales from total ability regen time.
-                        }
-                    }
                 }
             }
         }
@@ -624,8 +621,9 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     {
                                         float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
                                         int healthPercentInt = int(healthPercent);
-                                        resourceInfo += "[Sentry HP: " + healthPercentInt + "%]\n";
-                                        resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]";
+                                        resourceInfo += "[Sentry HP: " + healthPercentInt + "%]";
+                                        resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]\n";
+                                        resourceInfo += " [Freeze Effect: " + (sentryData.GetCryoShotsSlowInverse()) + " %]\n";
                                     }
                                 }
                             }
