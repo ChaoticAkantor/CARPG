@@ -26,7 +26,11 @@ class SentryData
     private bool m_bActive = false;
     private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
     private float m_flHealthScale = 0.18; // Health scaling % per level.
-    private float m_flDamageScale = 0.08; // Damage scaling % per level.
+    private float m_flDamageScale = 0.06; // Damage scaling % per level.
+    private int m_iCryoShotsRadius = 64; // Radius of bonus damage on shots.
+    private float m_flCryoShotsDamage = 0.02f; // Damage modifier for elemental radius damage per level.
+    private float m_flCryoShotsSlowPerLevel = 0.015f; // Slow effect increase per level (animation speed multiplier, actual speed).
+    private float m_flCryoShotsSlowDuration = 6.0f; // Duration of slow effect in seconds.
     private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
     private float m_flHealScale = 0.18f; // Heal scaling % per level.
@@ -42,11 +46,6 @@ class SentryData
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = 1.0f; // Time between visual updates. Same as heal rate.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
-
-    // Perk - Elemental Shots.
-    private int m_iElementalShotsRadius = 64; // Radius of bonus damage on shots.
-    private float m_flElementalShotsDamage = 0.15f; // Damage modifier.
-    private float m_flElementalShotsDebuff = 0.25f; // Slow effect (animation speed multiplier, actual speed).
 
     private ClassStats@ m_pStats = null;
 
@@ -87,10 +86,40 @@ class SentryData
         return m_hSentry.GetEntity();
     }
 
-    int GetElementalShotsRadius() { return m_iElementalShotsRadius; }
-    float GetElementalShotsDamageMult() { return m_flElementalShotsDamage; }
-    float GetElementalShotsDebuff() { return m_flElementalShotsDebuff; }
-    float GetElementalShotsDebuffInverse() { return 1.0f - m_flElementalShotsDebuff; } // For stat display, to show inverse value.
+    int GetCryoShotsRadius() { return m_iCryoShotsRadius; }
+
+    float GetCryoShotsDamageMult() 
+    { 
+        if(m_pStats is null)
+            return m_flCryoShotsDamage;
+
+        float damageMult = 0.0f;
+        damageMult = 1.0f + (m_pStats.GetLevel() * m_flCryoShotsDamage);
+
+        return damageMult;
+    }
+
+    float GetCryoShotsSlow() // Reduce animation speed for slowing effect.
+    { 
+        if(m_pStats is null)
+            return m_flCryoShotsSlowPerLevel;
+
+        float SlowStrength = 0.0f;
+        SlowStrength = (m_pStats.GetLevel() * m_flCryoShotsSlowPerLevel);
+
+        return 1.0f - SlowStrength; // Replace framerate with this returned number.
+    }
+
+    float GetCryoShotsSlowInverse() // For stat display, to show inverse value.
+    { 
+        if(m_pStats is null)
+            return m_flCryoShotsSlowPerLevel;
+
+        float SlowStrength = 0.0f;
+        SlowStrength = (m_pStats.GetLevel() * m_flCryoShotsSlowPerLevel);
+
+        return SlowStrength * 100.0f;
+    }
 
     void ToggleSentry(CBasePlayer@ pPlayer)
     {
@@ -367,9 +396,9 @@ class SentryData
     void ApplyElementalShots(Vector targetPos, CBaseEntity@ attacker, CBaseEntity@ victim, float damage)
     {
         if(attacker is null || attacker.pev.owner is null || victim is null)
-        return;
+            return;
 
-        // Get the sentry owner (player)
+        // Get the sentry owner (player).
         CBasePlayer@ pOwner = cast<CBasePlayer@>(g_EntityFuncs.Instance(attacker.pev.owner));
         if(pOwner is null)
             return;
@@ -410,7 +439,7 @@ class SentryData
             radiusSlowmsg.End();
 
         // Calculate explosive damage based on original damage.
-        float explosiveDamage = damage * sentryData.GetElementalShotsDamageMult();
+        float explosiveDamage = damage * sentryData.GetCryoShotsDamageMult();
 
         // Apply radius damage with the sentry as inflictor and owner as attacker.
         g_WeaponFuncs.RadiusDamage(
@@ -418,7 +447,7 @@ class SentryData
             attacker.pev,            // Inflictor (the sentry).
             pOwner.pev,              // Attacker (the player).
             explosiveDamage,         // Scaled explosive damage.
-            sentryData.GetElementalShotsRadius(),
+            sentryData.GetCryoShotsRadius(),
             CLASS_PLAYER,              // Ignore players.
             DMG_FREEZE | DMG_ALWAYSGIB
         );
@@ -434,28 +463,14 @@ class SentryData
         CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
         if(slowTargetSentry !is null)
         {
-            if (slowTargetSentry.pev.framerate >= 1.0f) // Check if slow effect was already applied.
+            if (slowTargetSentry.pev.framerate >= 1.0f) // Check if framerate is already reduced.
             {
-                slowTargetSentry.pev.framerate = GetElementalShotsDebuff(); // Reduce the target's animation speed.
+                slowTargetSentry.pev.framerate = GetCryoShotsSlow(); // Reduce the target's animation speed.
+
+                // Schedule a think function to remove the slow effect after the duration.
+                g_Scheduler.SetTimeout("RemoveSlowEffect", m_flCryoShotsSlowDuration, victim.entindex());
             }
         }
-    }
-
-    void RemoveSlowEffect(CBaseEntity@ victim)
-    {
-        if(victim is null)
-            return;
-
-        CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
-        if(slowTargetSentry !is null)
-        {
-            slowTargetSentry.pev.framerate = 1.0f; // Reset animation speed to normal.
-                
-            // Remove the glow shell effect.
-            victim.pev.renderfx = kRenderFxNone;
-            victim.pev.rendermode = kRenderNormal;
-            victim.pev.renderamt = 0;
-        }   
     }
 
     void ApplyDamageGlow(CBaseEntity@ victim)
@@ -703,4 +718,22 @@ void CheckSentries()
             }
         }
     }
+}
+
+void RemoveSlowEffect(int victimIndex)
+{
+    CBaseEntity@ victim = g_EntityFuncs.Instance(victimIndex);
+    if(victim is null)
+        return;
+
+    CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
+    if(slowTargetSentry !is null)
+    {
+        slowTargetSentry.pev.framerate = 1.0f; // Reset animation speed to normal.
+            
+        // Remove the glow shell effect.
+        victim.pev.renderfx = kRenderFxNone;
+        victim.pev.rendermode = kRenderNormal;
+        victim.pev.renderamt = 0;
+    }   
 }
