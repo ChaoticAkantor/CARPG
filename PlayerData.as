@@ -115,16 +115,16 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_MEDIC:
                     def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 10.0f;
-                    def.fullRegenTime = 20.0f;
-                    def.energyPerLevel = 0.04f; // 30s at level 50.
+                    def.baseResource = 30.0f; // Duration in seconds.
+                    def.fullRegenTime = 30.0f;
+                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 20.0f;
+                    def.baseResource = 60.0f; // Duration in seconds.
                     def.fullRegenTime = 20.0f;
-                    def.energyPerLevel = 0.04f; // 60s at level 50.
+                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
@@ -150,16 +150,16 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 150.0f;
                     def.baseAP = 75.0f;
-                    def.baseResource = 20.0f;
+                    def.baseResource = 30.0f; // Duration in seconds.
                     def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.04f; // 30s at level 50. (Drains 2/s).
+                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseHP = 125.0f;
                     def.baseAP = 100.0f;
-                    def.baseResource = 100.0f; // Shield Base HP.
-                    def.fullRegenTime = 15.0f;
-                    def.energyPerLevel = 0.08f; // 500 HP at level 50.
+                    def.baseResource = 200.0f; // Shield Base HP.
+                    def.fullRegenTime = 20.0f;
+                    def.energyPerLevel = 0.03f; // 500 HP at level 50.
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
@@ -171,23 +171,23 @@ void InitializeClassDefinitions()
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
                     def.baseAP = 125.0f;
-                    def.baseResource = 10.0f; // Base Cloak battery (duration in seconds).
-                    def.fullRegenTime = 15.0f;
-                    def.energyPerLevel = 0.04f; // 30s at level 50.
+                    def.baseResource = 30.0f; // Duration in seconds.
+                    def.fullRegenTime = 18.0f;
+                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
                     def.baseHP = 100.0f;
                     def.baseAP = 125.0f;
-                    def.baseResource = 1.0f;
+                    def.baseResource = 1.0f; // Base charges.
                     def.fullRegenTime = 60.0f;
-                    def.energyPerLevel = 0.00f; // No increase.
+                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_SWARMER:
                     def.baseHP = 100.0f;
                     def.baseAP = 125.0f;
                     def.baseResource = 1.0f; // Base charges.
-                    def.fullRegenTime = 30.0f; //
-                    def.energyPerLevel = 0.00f; // No increase.
+                    def.fullRegenTime = 30.0f;
+                    def.energyPerLevel = 0.00f;
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
