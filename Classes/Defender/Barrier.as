@@ -9,7 +9,6 @@ const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B.
 const float BARRIER_PROTECTION_RANGE = 2400.0f; // Range in units for the barrier protection to work.
 
 dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
-dictionary g_ProtectedPlayers; // Dictionary to track which players are currently protected by barriers and by who.
 
 class BarrierData
 {
@@ -21,11 +20,12 @@ class BarrierData
     private float m_flLastDrainTime = 0.0f; // Initialising.
     private float m_flBarrierReflectDamageMultiplier = 0.5f; // Base damage reflect multiplier.
     private float m_flBarrierReflectDamageScaling = 0.04f; // How much % to scale damage reflection per level.
-    private float m_flBarrierReflectDebuff = 0.1f; // Slow effect modifier from reflected damage.
-    private float m_flBarrierActiveRechargePenalty = 0.25f; // Ability recharge rate when barrier is active.
+    private float m_flBarrierReflectFreeze = 0.999f; // Reduction of animation speed for enemies frozen by damage reflection.
+    private float m_flBarrierReflectBaseFreezeDuration = 2.0f; // Freeze effect base duration.
+    private float m_flBarrierReflectFreezeDuration = 0.02f; // Freeze effect duration per level.
+    private float m_flBarrierActiveRechargePenalty = 0.20f; // Ability recharge rate when barrier is active.
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
-
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
@@ -45,10 +45,21 @@ class BarrierData
         return m_flBarrierReflectDamageMultiplier * (1.0f + (m_pStats.GetLevel() * m_flBarrierReflectDamageScaling));
     }
 
-    float GetBarrierReflectDebuff() { return m_flBarrierReflectDebuff; }
-    float GetBarrierReflectDebuffInverse() { return 1.0f - m_flBarrierReflectDebuff; } // For stat display, to show inverse value.
+    float GetBarrierReflectFreeze() { return 1.0f - m_flBarrierReflectFreeze; } // Freeze animation speed reduction.
+    float GetBarrierReflectFreezeInverse() { return m_flBarrierReflectFreeze * 100.0f;} // For stat display, to show inverse value.
 
-    float GetActiveRechargePenalty() { return m_flBarrierActiveRechargePenalty; }
+    float GetBarrierReflectFreezeDuration() // Total duration to freeze enemies for.
+    { 
+        if(m_pStats is null)
+            return m_flBarrierReflectFreezeDuration; // Return base if no stats.
+
+            float barrierFreeze = 0.0f;
+            barrierFreeze = m_flBarrierReflectBaseFreezeDuration * (1.0f + m_pStats.GetLevel() * m_flBarrierReflectFreezeDuration);
+        
+        return barrierFreeze; 
+    }
+
+    float GetActiveRechargePenalty() { return m_flBarrierActiveRechargePenalty; } // Ability recharge penalty when active.
 
     void HandleBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker, float incomingDamage, float& out modifiedDamage)
     {
@@ -76,6 +87,17 @@ class BarrierData
             // Apply damage reflection as a specific damage type and proc the debuff.
             float reflectDamage = incomingDamage * GetScaledDamageReflection();
             attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_FREEZE); // Apply the damage with the player as the attacker.
+
+            // Alter framerate for a Freeze effect on the enemy that is hit.
+            CBaseMonster@ FreezeTarget = cast<CBaseMonster@>(attacker);
+            if(FreezeTarget !is null)
+            {
+                if (FreezeTarget.pev.framerate >= 1.0f) // Only apply if not already frozen.
+                {
+                    FreezeTarget.pev.framerate = GetBarrierReflectFreeze(); // Apply freeze effect by reducing animation speed.
+                    g_Scheduler.SetTimeout("RemoveFreezeEffect", GetBarrierReflectFreezeDuration(), attacker.entindex());
+                }
+            }
         }
 
         // Play barrier damage chunks effect on player.
@@ -279,7 +301,7 @@ class BarrierData
         g_SoundSystem.PlaySound(entity.edict(), CHAN_ITEM, strBarrierHitSound, 1.0f, 0.8f, 0, randomPitch);
     }
 
-    void EffectReflectDamage(Vector origin, CBaseEntity@ target)
+    void ApplyReflectDamage(Vector origin, CBaseEntity@ target)
     {
         if(target is null)
             return;
@@ -327,30 +349,23 @@ class BarrierData
             snowmsg.WriteByte(25);  // Velocity along vector in 10's.
             snowmsg.WriteByte(15);  // Random velocity in 10's.
             snowmsg.End();
-
-        // Needs damage sound here.
-
-        // Use monster framerate to do a slow effect on the enemy that is hit.
-        CBaseMonster@ slowTargetBarrier = cast<CBaseMonster@>(target);
-        if(slowTargetBarrier !is null)
-        {
-            slowTargetBarrier.pev.framerate = GetBarrierReflectDebuff(); // Reduce the hit target's framerate (animation speed).
-        }
-
-        // No build in duration for render effects, so set a delay to automatically remove it.
-        //g_Scheduler.SetTimeout("EffectRemoveDamageGlow", 0.2, target.entindex());
     }
 }
 
-void EffectRemoveDamageGlow(int entityIndex) // Used to explicitly remove glow effect from damage effects.
-{   
-    // Must use g_EntityFuncs.Instance as AngelScript can't safely pass entity handles to scheduled functions apparently.
-    CBaseEntity@ entity = g_EntityFuncs.Instance(entityIndex);
-    if(entity !is null)
+void RemoveFreezeEffect(int attackerIndex)
+{
+    CBaseEntity@ attacker = g_EntityFuncs.Instance(attackerIndex);
+    if(attacker is null)
+        return;
+
+    CBaseMonster@ FreezeTarget = cast<CBaseMonster@>(attacker);
+    if(FreezeTarget !is null)
     {
-        entity.pev.renderfx = kRenderFxNone; // Reset renderfx to none.
-        entity.pev.rendermode = kRenderNormal; // Reset rendermode to normal.
-        entity.pev.renderamt = 255; // Reset render amount to normal.
-        entity.pev.rendercolor = Vector(255, 255, 255); // Reset render colour to normal.
-    }
+        FreezeTarget.pev.framerate = 1.0f; // Reset animation speed to normal.
+            
+        // Remove the glow shell effect.
+        FreezeTarget.pev.renderfx = kRenderFxNone;
+        FreezeTarget.pev.rendermode = kRenderNormal;
+        FreezeTarget.pev.renderamt = 0;
+    }   
 }
