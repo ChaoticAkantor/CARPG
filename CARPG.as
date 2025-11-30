@@ -656,15 +656,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         if(sentry is null)
             return HOOK_CONTINUE;
 
-        // Apply damage multiplier.
+        // Sentry damage scaling.
         float damageSentryMultiplier = 1.0f + sentry.GetScaledDamage();
         info.flDamage *= damageSentryMultiplier;
 
-        //Sentry perk, explosive shots.
-        if(sentry.HasStats() && sentry.GetStats().HasUnlockedPerk1())
-        {
-            sentry.ApplyElementalShots(targetPos, attacker, victim, info.flDamage);
-        }
+        //Sentry cryo effect.
+        sentry.ApplyElementalShots(targetPos, attacker, victim, info.flDamage);
     }
     else if(targetname.StartsWith("_minion_"))
     {
@@ -925,8 +922,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         }
     }
 
-    // Check if barrier is active - only process damage from actual enemies.
-    if(g_PlayerRPGData.exists(steamID))
+    if(g_PlayerRPGData.exists(steamID)) // Barrier damage checks.
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && g_PlayerBarriers.exists(steamID))
@@ -934,23 +930,15 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
             BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
             if(barrier !is null && barrier.IsActive())
             {
-                // Only process barrier damage if attacker is NOT a player, otherwise friendly fire can strip shield. We don't care about PvP.
-                if(!attacker.IsPlayer())
+                CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
+                if(pMonster !is null)
                 {
-                    CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
-                    if(pMonster !is null)
-                    {
-                        int relationship = pMonster.IRelationship(pPlayer);
-                        if(relationship != R_AL) // Only process if NOT an ally of the player.
-                        {
-                            barrier.HandleBarrier(pPlayer, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
-                            barrier.EffectReflectDamage(attacker.pev.origin, attacker);
-                        }
-                    }
+                    barrier.HandleBarrier(pPlayer, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
+                    barrier.ApplyReflectDamage(attacker.pev.origin, attacker);
                 }
-                return HOOK_CONTINUE;
             }
         }
+        return HOOK_CONTINUE;
     }
 
     // Berserker low health damage reduction.
