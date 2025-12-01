@@ -813,8 +813,6 @@ class PlayerData
                     if(pOtherPlayer !is null && pOtherPlayer.IsConnected())
                     {
                         string otherSteamID = g_EngineFuncs.GetPlayerAuthId(pOtherPlayer.edict());
-                        if(otherSteamID == m_szSteamID) // Skip self, so you don't receive the XP twice.
-                            continue;
                             
                         if(g_PlayerRPGData.exists(otherSteamID))
                         {
