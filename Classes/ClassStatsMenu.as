@@ -76,12 +76,14 @@ namespace Menu
                         string BerserkerStatsText = "=== Bloodlust (Passive): ===" + "\n" +
                         "Damage Reduction as HP Reduces: " + int(bloodlust.GetDamageReductionMax()) + "%\n" +
                         "Ability Charge Steal: " + int(bloodlust.GetEnergySteal()) + "%\n" +
-                        "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n";
+                        "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100) + "%\n" +
+                        "AP Steal (when at full HP): " + int(bloodlust.GetLifestealAmount() * 100 * 0.5) + "%\n\n";
                         
                         BerserkerStatsText += "=== Bloodlust (Active): ===" + "\n" +
                         "Damage Reduction as HP Reduces: " + int(bloodlust.GetDamageReductionMax() * 2) + "%\n" +
                         "Ability Charge Steal: " + int(bloodlust.GetEnergySteal() * 2) + "%\n" +
-                        "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100 * 2) + "%\n";
+                        "Lifesteal: " + int(bloodlust.GetLifestealAmount() * 100 * 2) + "%\n" +
+                        "AP Steal (when at full HP): " + int(bloodlust.GetLifestealAmount() * 100) + "%\n\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
@@ -94,7 +96,8 @@ namespace Menu
                     {
                         string EngineerStatsText = "=== Robogrunts: ===" + "\n" + 
                         "Health: " + int(roboMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage Bonus: " + int(roboMinion.GetScaledDamage() * 100) + "%\n";
+                        "Damage: " + int(roboMinion.GetScaledDamage() * 100) + "%\n" +
+                        "Health Regen: " + roboMinion.GetMinionRegen() * 100 + "%\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
@@ -107,7 +110,8 @@ namespace Menu
                     {
                         string XenologistStatsText = "=== Xen Creatures: ===" + "\n" + 
                         "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage Bonus: " + int(xenMinion.GetScaledDamage() * 100) + "%\n" +
+                        "Damage: " + int(xenMinion.GetScaledDamage() * 100) + "%\n" +
+                        "Health Regen: " + xenMinion.GetMinionRegen() * 100 + "%\n" +
                         "Minion Lifesteal (Minion and Player): " + int(xenMinion.GetLifestealPercent() * 100) + "%\n";
 
                         XenologistStatsText += "\n";
@@ -123,7 +127,8 @@ namespace Menu
                     {
                         string NecromancerStatsText = "=== Zombies: ===" + "\n" + 
                         "Health: " + int(necroMinion.GetScaledHealth()) + " HP\n" + 
-                        "Damage Bonus: " + int(necroMinion.GetScaledDamage() * 100) + "%\n" +
+                        "Damage: " + int(necroMinion.GetScaledDamage() * 100) + "%\n" +
+                        "Health Regen: " + necroMinion.GetMinionRegen() * 100 + "%\n" +
                         "Minion Lifesteal (Minion and Player): " + int(necroMinion.GetLifestealPercent() * 100) + "%\n";
 
                         NecromancerStatsText += "\n";
@@ -139,7 +144,7 @@ namespace Menu
                     {
                         string ShocktrooperStatsText = "=== Shockroach Rifle: ===" + "\n" + 
                             "Capacity: " + int(maxEnergy) + "\n" +
-                            "Damage Bonus: " + int((shockRifle.GetScaledDamage() - 1.0f) * 100) + "%\n";
+                            "Damage Bonus: " + int(shockRifle.GetScaledDamage() * 100) + "%\n";
 
                         m_pMenu.AddItem(ShocktrooperStatsText, null);
                     }
@@ -167,13 +172,10 @@ namespace Menu
                     if(cloak !is null)
                     {
                         string CloakerStatsText = "=== Cloak: ===" + "\n" +  
-                            "Cloak Damage Bonus: +" + int((cloak.GetDamageBonus() - 1.0f) * 100) + "%\n" +
+                            "Cloak Damage Bonus: +" + int(cloak.GetDamageMultiplierTotal() * 100) + "%\n" +
                             "Shock Nova Damage: " + int(cloak.GetNovaDamage(pPlayer)) + "\n" +
-                            "Shock Nova Radius: " + int(cloak.GetNovaRadius() / 16) + "ft\n";
-
-                        // Show perk 1.
-                        if(cloak.GetStats().HasUnlockedPerk1())
-                            CloakerStatsText += "Shock Nova AP Steal: " + int(cloak.GetAPStealPercent() * 100) + "%\n";
+                            "Shock Nova Radius: " + int(cloak.GetNovaRadius() / 16) + "ft\n" +
+                            "Shock Nova AP Steal (HP if AP disabled): " + int(cloak.GetAPStealPercent() * 100) + "%\n";
 
                         m_pMenu.AddItem(CloakerStatsText, null);
                     }
@@ -204,9 +206,9 @@ namespace Menu
                     {
                         string EngineerStatsText = "=== Sentry Turret: ===\n";
                             EngineerStatsText += "Health: " + int(sentry.GetScaledHealth()) + " HP\n";
-                            EngineerStatsText += "Healing Buff: " + sentry.GetHealAmount() + " HP/s\n\n";
+                            EngineerStatsText += "Healing Buff: " + sentry.GetScaledHealAmount() + " HP/s\n\n";
                             EngineerStatsText += "Damage Bonus: " + int(sentry.GetScaledDamage() * 100) + "%\n";
-                            EngineerStatsText += "Cryo Damage Bonus: " + int(sentry.GetCryoShotsDamageMult() * 10) + "%\n";
+                            EngineerStatsText += "Cryo Damage Bonus: " + int(sentry.GetCryoShotsDamageMult() * 100) + "%\n";
                             EngineerStatsText += "Freeze Effect: " + (sentry.GetCryoShotsSlowInverse()) + "%\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);

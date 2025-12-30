@@ -414,30 +414,40 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 HealingAura@ healingAura = cast<HealingAura@>(g_HealingAuras[steamID]);
                                 if(healingAura !is null)
                                 {
-                                    resourceInfo += "[Healing: " + int(healingAura.GetScaledHealAmount()) + "/s]\n";
-                                    resourceInfo += "[Poison DMG: " + int(healingAura.GetPoisonDamageAmount()) + "/s]";
+                                    resourceInfo += "[Healing: " + (healingAura.GetScaledHealAmount()) + "/s]\n";
+                                    resourceInfo += "[Poison DMG: " + (healingAura.GetPoisonDamageAmount()) + "/s]";
                                 }
                             }
                             break;
 
                         case PlayerClass::CLASS_SHOCKTROOPER:
-                        {
-                            // Check for shock rifle, doing this one differently incase we pick up a shock roach in the world.
-                            bool hasShockRifleEquipped = false;
-                            CBasePlayerItem@ currentItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
-                            
-                            if(currentItem !is null && pPlayer.m_hActiveItem.GetEntity() is currentItem)
+                            if(g_ShockRifleData.exists(steamID))
                             {
-                                hasShockRifleEquipped = true;
+                                ShockRifleData@ shockData = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
+                                if(shockData !is null)
+                                {
+
+                                // Check for shock rifle, doing this one differently incase we pick up a shock roach in the world.
+                                bool hasShockRifleEquipped = false;
+                                CBasePlayerItem@ currentItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
+                                
+                                if(currentItem !is null && pPlayer.m_hActiveItem.GetEntity() is currentItem)
+                                {
+                                    hasShockRifleEquipped = true;
+                                }
+                                
+                                // Grab ammo.
+                                int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
+                                int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
+                                
+                                resourceInfo += "[" + (hasShockRifleEquipped ? "EQUIPPED" : "STORED") + "]\n"; // Shockrifle battery.
+
+                                if (hasShockRifleEquipped)
+                                    resourceInfo += "[DMG Bonus: " + int(shockData.GetScaledDamage() * 100) + "%]\n"; // Show damage bonus whilst equipped.
+
+                                }
                             }
-                            
-                            // Grab ammo.
-                            int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
-                            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
-                            
-                            resourceInfo += "[" + (hasShockRifleEquipped ? "EQUIPPED" : "STORED") + "]"; // Shockrifle battery.
                             break;
-                        }
 
                         case PlayerClass::CLASS_BERSERKER:
                             if(g_PlayerBloodlusts.exists(steamID))
@@ -446,12 +456,12 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(bloodlust !is null)
                                 {
                                     bool isActive = bloodlust.IsActive();
-                                    float lifesteal = bloodlust.GetLifestealAmount() * 100; // Base lifesteal.
+                                    float lifesteal = bloodlust.GetLifestealAmount(); // Base lifesteal.
                                     float damageReduction = bloodlust.GetDamageReduction(pPlayer);
                                     
                                     resourceInfo += "[DMG Reduction: +" + int(damageReduction) + "%]\n";
                                     resourceInfo += "[Ability Charge Steal: " + int(bloodlust.GetEnergystealAmount() * 100) + "%]\n";
-                                    resourceInfo += "[Lifesteal: " + int(lifesteal) + "%]";
+                                    resourceInfo += "[Lifesteal: " + int(lifesteal * 100) + "%]";
                                 }
                             }
                             break;
@@ -487,7 +497,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     bool isActive = cloak.IsActive(); 
                                     if(isActive)
                                     {
-                                        resourceInfo += "[Cloak DMG Bonus: +" + int((cloak.GetDamageMultiplier(pPlayer) - 1.0f) * 100) + "%]\n";
+                                        resourceInfo += "[Cloak DMG: +" + int(cloak.GetDamageMultiplier(pPlayer) * 100) + "%]\n";
                                         resourceInfo += "[Nova DMG: " + int(cloak.GetNovaDamage(pPlayer)) + "]";
                                     }
                                 }
@@ -623,7 +633,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                         int healthPercentInt = int(healthPercent);
                                         resourceInfo += "[Sentry HP: " + healthPercentInt + "%]";
                                         resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]\n";
-                                        resourceInfo += " [Freeze Effect: " + (sentryData.GetCryoShotsSlowInverse()) + " %]\n";
+                                        resourceInfo += " [Freeze Effect: " + (sentryData.GetCryoShotsSlowInverse()) + "%]\n";
                                     }
                                 }
                             }
