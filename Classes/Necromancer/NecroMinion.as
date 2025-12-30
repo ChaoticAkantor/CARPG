@@ -93,9 +93,9 @@ const array<int> ZOMBIE_BODYGROUPS =
 
 const array<float> NECRO_ANIMATION_SPEEDS = 
 {
-    2.50,  // Zombie.
+    3.00,  // Zombie.
     1.50,  // Skeleton.
-    1.30   // Abomination (Gonome).
+    2.00   // Abomination (Gonome).
 };
 
 // Used to change monster name in UI.
@@ -152,19 +152,27 @@ class NecroMinionData
     private NecroMinionMenu@ m_pMenu;
     private array<NecroMinionInfo> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 400.0;
-    private float m_flHealthScale = 0.18; // Health % scaling per level.
-    private float m_flHealthRegen = 0.001; // // Health recovery % per second of Minions.
-    private float m_flLastRegenTime = 0.0f; // Track last regen time.
+    private float m_flBaseHealth = 200.0; // Base health of Minions, currently the same for all of them.
+    private float m_flHealthScaleAtMaxLevel = 9.0; // Health modifier at max level.
+    private float m_flHealthRegenAtMaxLevel = 0.01; // // Health recovery % per second at max level.
+    private float m_flDamageScaleAtMaxLevel = 4.0; // Damage modifier at max level.
+    private float m_flLifestealPercentAtMaxLevel = 0.25; // Lifesteal at max level.
     private float m_flRegenInterval = 1.0f; // Interval for regen.
-    private float m_flDamageScale = 0.15; // Damage % scaling per level.
-    private float m_flLifestealPercent = 0.10; // 10% of minion damage is returned as health to the owner (Enhancement).
     private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
+    private float m_flLastRegenTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
     private ClassStats@ m_pStats = null;
+
+    void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    ClassStats@ GetStats() { return m_pStats; }
+
+    int GetMinionCount() { return m_hMinions.length(); }
+    float GetReservePool() { return m_flReservePool; }
+    void SetReservePoolZero() { m_flReservePool = 0.0f; }
+    bool HasStats() { return m_pStats !is null; }
 
     bool IsActive() 
     { 
@@ -190,24 +198,59 @@ class NecroMinionData
         return m_hMinions.length() > 0;
     }
 
-    void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    float GetScaledHealth()
+    {
+        if(m_pStats is null)
+            return m_flBaseHealth; // Return base health without scaling if no stats.
 
-    ClassStats@ GetStats() { return m_pStats; }
+        float minionScaledHealth = m_flBaseHealth; // Start with base health.
 
-    int GetMinionCount() { return m_hMinions.length(); }
+        float level = m_pStats.GetLevel();
+        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
+        minionScaledHealth *= healthMultiplier;
 
-    float GetReservePool() { return m_flReservePool; }
-    
-    void SetReservePoolZero() { m_flReservePool = 0.0f; }
-    
-    float GetMinionRegen() { return m_flHealthRegen; }
-
-    float GetLifestealPercent() 
-    { 
-        return m_flLifestealPercent;
+        return minionScaledHealth;
     }
 
-    bool HasStats() { return m_pStats !is null; }
+    float GetScaledDamage() // Damage scaling is applied through MonsterTakeDamage.
+    {
+        if(m_pStats is null)
+            return 1.0f; // Restore to default, but is always null when we have no minions.
+
+        float minionScaledDamage = 1.0f; // Default multiplier.
+
+        float level = m_pStats.GetLevel();
+        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
+        minionScaledDamage += damagePerLevel * level;
+
+        return minionScaledDamage;
+    }
+    
+    float GetMinionRegen() // Get minion regen based on level.
+    { 
+        if(m_pStats is null)
+            return 0.0f; // Default if no stats.
+
+        float minionRegen = 0.0f; // Default to zero.
+
+        float level = m_pStats.GetLevel();
+        minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
+
+        return minionRegen; 
+    }
+
+    float GetLifestealPercent() // Get minion lifesteal based on level.
+    { 
+        if(m_pStats is null)
+            return 0.0f; // Default if no stats.
+
+        float lifeSteal = 0.0f; // Default to zero.
+
+        float level = m_pStats.GetLevel();
+        lifeSteal = m_flLifestealPercentAtMaxLevel * (float(level) / g_iMaxLevel);
+
+        return lifeSteal;
+    }
     
     bool IsMinionTypeUnlocked(int minionType)
     {
@@ -574,7 +617,9 @@ class NecroMinionData
                         pMinion.pev.max_health = GetScaledHealth();
                     }
 
-                    float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
+                    // Get scaled regen based on player level.
+                    float regenAmount = GetMinionRegen(); // This already scales with level.
+                    float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
 
                     if(pMinion.pev.health < pMinion.pev.max_health)
                     {
@@ -586,26 +631,6 @@ class NecroMinionData
                 }
             }
         }
-    }
-
-    float GetScaledHealth()
-    {
-        if(m_pStats is null)
-            return m_flBaseHealth; // Base health without scaling if no stats.
-
-        float level = m_pStats.GetLevel();
-        float flScaledHealth = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
-        return flScaledHealth;
-    }
-
-    float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
-    {
-        if(m_pStats is null)
-            return 0.0f; // Technically should never be zero, but is always null when we have no minions.
-
-        float level = m_pStats.GetLevel();
-        float flScaledDamage = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level as there is no base damage.
-        return flScaledDamage;
     }
     
     void ApplyMinionGlow(CBaseEntity@ pMinion)
@@ -656,12 +681,12 @@ class NecroMinionData
             return;
 
         // Calculate health to return to player and minion.
-        float flHealthToGive = flDamageDealt * m_flLifestealPercent;
+        float healthToGive = flDamageDealt * m_flLifestealPercentAtMaxLevel;
         
         // Apply the healing if the player isn't already at max health.
         if(pPlayer.pev.health < pPlayer.pev.max_health)
         {
-            pPlayer.pev.health = Math.min(pPlayer.pev.health + flHealthToGive, pPlayer.pev.max_health);
+            pPlayer.pev.health = Math.min(pPlayer.pev.health + healthToGive, pPlayer.pev.max_health);
             
             // Visual feedback for the lifesteal effect - Heal sprites - Player.
             Vector pos = pPlayer.pev.origin;
@@ -699,7 +724,7 @@ class NecroMinionData
                     // Apply healing to the minion if it's not at max health.
                     if(pMinion.pev.health < pMinion.pev.max_health)
                     {
-                        pMinion.pev.health = Math.min(pMinion.pev.health + flHealthToGive, pMinion.pev.max_health);
+                        pMinion.pev.health = Math.min(pMinion.pev.health + healthToGive, pMinion.pev.max_health);
 
                         // Visual feedback for the lifesteal effect - Heal sprites - Minion.
                         Vector pos = pMinion.pev.origin;

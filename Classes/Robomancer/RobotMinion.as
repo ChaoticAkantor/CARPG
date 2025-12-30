@@ -68,19 +68,27 @@ class MinionData
     private MinionMenu@ m_pMenu;
     private array<MinionInfo> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 250.0; // Base health of Robogrunts.
-    private float m_flHealthScale = 0.18; // Health % scaling per level. Robogrunts are armored.
-    private float m_flHealthRegen = 0.001; // Health recovery % per second of Robogrunts.
-    private float m_flLastRegenTime = 0.0f; // Track last regen time.
+    private float m_flBaseHealth = 200.0; // Base health of Robogrunts.
+    private float m_flHealthScaleAtMaxLevel = 4.0; // Health modifier at max level.
+    private float m_flHealthRegenAtMaxLevel = 0.02; // Health recovery % per second at max level.
+    private float m_flDamageScaleAtMaxLevel = 3.5; // Damage modifier at max level.
+    private float m_flAnimationSpeed = 1.25; // Animation speed modifier, as there are no multiple types and is static.
     private float m_flRegenInterval = 1.0f; // Interval for regen.
-    private float m_flDamageScale = 0.10; // Damage % scaling per level.
-    private float m_flAnimationSpeed = 1.25; // Animation speed modifier for Robogrunts.
     private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
+    private float m_flLastRegenTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
     private ClassStats@ m_pStats = null;
+
+    void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    ClassStats@ GetStats() { return m_pStats; }
+
+    int GetMinionCount() { return m_hMinions.length(); }
+    float GetReservePool() { return m_flReservePool; }
+    void SetReservePoolZero() { m_flReservePool = 0.0f; }
+    bool HasStats() { return m_pStats !is null; }
 
     bool IsActive() 
     { 
@@ -106,19 +114,46 @@ class MinionData
         return m_hMinions.length() > 0;
     }
 
-    void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    float GetScaledHealth()
+    {
+        if(m_pStats is null)
+            return m_flBaseHealth; // Return base health without scaling if no stats.
 
-    ClassStats@ GetStats() { return m_pStats; }
+        float minionScaledHealth = m_flBaseHealth; // Start with base health.
 
-    int GetMinionCount() { return m_hMinions.length(); }
+        float level = m_pStats.GetLevel();
+        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
+        minionScaledHealth *= healthMultiplier;
 
-    float GetReservePool() { return m_flReservePool; }
+        return minionScaledHealth;
+    }
+
+    float GetScaledDamage() // Damage scaling is applied through MonsterTakeDamage.
+    {
+        if(m_pStats is null)
+            return 1.0f; // Restore to default, but is always null when we have no minions.
+
+        float minionScaledDamage = 1.0f; // Default multiplier.
+
+        float level = m_pStats.GetLevel();
+        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
+        minionScaledDamage += damagePerLevel * level;
+
+        return minionScaledDamage;
+    }
     
-    void SetReservePoolZero() { m_flReservePool = 0.0f; }
+    float GetMinionRegen() // Get minion regen based on level.
+    { 
+        if(m_pStats is null)
+            return 0.0f; // Default if no stats.
 
-    float GetMinionRegen() { return m_flHealthRegen; }
+        float minionRegen = 0.0f; // Default to zero.
 
-    bool HasStats() { return m_pStats !is null; }
+        float level = m_pStats.GetLevel();
+        minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
+
+        return minionRegen; 
+    }
     
     array<MinionInfo>@ GetMinions() { return m_hMinions; }
 
@@ -435,7 +470,9 @@ class MinionData
                     pMinion.pev.max_health = GetScaledHealth();
                 }
                 
-                float flHealAmount = pMinion.pev.max_health * m_flHealthRegen; // Calculate amount from max health.
+                // Get scaled regen based on player level.
+                float regenAmount = GetMinionRegen(); // This already scales with level.
+                float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
 
                 if(pMinion.pev.health < pMinion.pev.max_health)
                 {
@@ -446,26 +483,6 @@ class MinionData
                 }
             }
         }
-    }
-
-    float GetScaledHealth() // Health scaling for minions.
-    {
-        if(m_pStats is null)
-            return m_flBaseHealth; // Base health without scaling if no stats.
-
-        float level = m_pStats.GetLevel();
-        float flScaledHealth = m_flBaseHealth * (1.0f + (float(level) * m_flHealthScale));
-        return flScaledHealth;
-    }
-
-    float GetScaledDamage() // Damage scaling works a little differently, through MonsterTakeDamage.
-    {
-        if(m_pStats is null)
-            return 1.0f; // Technically should never be null, but would always be null when we have no minions.
-
-        float level = m_pStats.GetLevel();
-        float flScaledDamage = (float(level) * m_flDamageScale); // Essentially just increasing the multiplier per level.
-        return flScaledDamage;
     }
     
     void ApplyMinionGlow(CBaseEntity@ pMinion)

@@ -7,17 +7,22 @@ string strDragonsBreathFireSprite = "sprites/fire.spr"; // Fire effect.
 
 class DragonsBreathData
 {
-    // Dragons breath reworked to now have a single stacking area damage component: 
-    private float m_flDragonsBreathFireDamage = 3.0f; // Base damage for DoT.
-    private int m_iDragonsBreathFireTicks = 10; // Number of damage over time ticks.
-    private float m_flDragonsBreathFireInterval = 1.0f; // Interval in seconds between DoT ticks.
-    private float m_flDragonsBreathFireDamageScaling = 0.02f; // % Damage increase of DoT per level.
-    private int m_iDragonsBreathPoolBase = 15; // Base max ammo pool for Dragons Breath.
-    private float m_flDragonsBreathPoolScaling = 0.06f; // % Ammo Pool size increase per level.
+    // Dragons breath shots will place a DoT effect at impact location PER shot, with no limit, that stack over each other.
+
+    // Fire Damage over Time.
+    private float m_flDragonsBreathFireDamageBase = 2.0f; // Base damage for each DoT.
+    private int m_iDragonsBreathFireTicks = 10; // Number of damage over time ticks PER DoT.
+    private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
+    private float m_flDragonsBreathFireDamageScalingAtMaxLevel = 5.0f; // Damage increase modifier of DoT damage at max level.
     private float m_flDragonsBreathRadius = 320.0f; // Radius of fire damage DoT for Dragons Breath.
     private float m_flEnergyCostPerActivation = 1.0f; // Amount of energy to use per activation.
-    private float m_flRoundsFillPercentage = 1.00f; // Give % of max ammo pool per activation.
+
+    // Ammo pool.
+    private int m_iDragonsBreathPoolBase = 15; // Base max ammo pool for Dragons Breath.
+    private float m_flDragonsBreathPoolScalingAtMaxLevel = 3.0f; // Ammo Pool size increase at max level.
+    private float m_flRoundsFillPercentage = 1.00f; // Percentage of max ammo pool to fill per activation.
     private float m_flRoundsInPool = 0.0f; // Used to store rounds currently in pool.
+
     private float m_flLastToggleTime = 0.0f; // Used for last toggle time.
     private float m_flToggleCooldown = 0.10f; // Used to delay toggling to prevent spam.
     private ClassStats@ m_pStats = null;
@@ -26,16 +31,20 @@ class DragonsBreathData
     bool HasRounds() { return m_flRoundsInPool > 0; }
     float GetRounds() { return m_flRoundsInPool; }
     float GetEnergyCost() { return m_flEnergyCostPerActivation; }
+    float GetDotCount() { return m_iDragonsBreathFireTicks; }
     void ResetRounds() { m_flRoundsInPool = 0; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
     float GetScaledFireDamage() // Calculate scaled fire damage.
     {
         if(m_pStats is null)
-            return m_flDragonsBreathFireDamage;
+            return m_flDragonsBreathFireDamageBase;
 
         float DragonsBreathFire = 0.0f;
-        DragonsBreathFire = m_flDragonsBreathFireDamage * (1.0f + (m_pStats.GetLevel() * m_flDragonsBreathFireDamageScaling));
+        
+        float level = m_pStats.GetLevel();
+        float damagePerLevel = m_flDragonsBreathFireDamageScalingAtMaxLevel / g_iMaxLevel;
+        DragonsBreathFire = m_flDragonsBreathFireDamageBase * (1.0f + (damagePerLevel * level));
 
         return DragonsBreathFire;
     }
@@ -113,7 +122,9 @@ class DragonsBreathData
         if(m_pStats is null)
             return m_iDragonsBreathPoolBase;
 
-        return int(m_iDragonsBreathPoolBase * (1.0f + (m_pStats.GetLevel() * m_flDragonsBreathPoolScaling)));
+        float level = m_pStats.GetLevel();
+        float poolPerLevel = m_flDragonsBreathPoolScalingAtMaxLevel / g_iMaxLevel;
+        return int(m_iDragonsBreathPoolBase * (1.0f + (poolPerLevel * level)));
     }
 
     void ActivateDragonsBreath(CBasePlayer@ pPlayer)
@@ -187,9 +198,9 @@ class DragonsBreathData
                 
                 // Use more realistic shotgun spread pattern.
                 Vector spread = Vector(
-                    Math.RandomFloat(-0.1, 0.1),
-                    Math.RandomFloat(-0.1, 0.1),
-                    Math.RandomFloat(-0.1, 0.1)
+                    Math.RandomFloat(-0.05, 0.05),
+                    Math.RandomFloat(-0.05, 0.05),
+                    Math.RandomFloat(-0.05, 0.05)
                 );
                 vecAiming = vecAiming + spread;
 
@@ -445,7 +456,7 @@ class DragonsBreathData
             msgTrail.WriteCoord(endPoint.z);
             msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
             msgTrail.WriteByte(3);  // Count - more sprites for a denser burst.
-            msgTrail.WriteByte(10);   // Life in 0.1's.
+            msgTrail.WriteByte(5);   // Life in 0.1's.
             msgTrail.WriteByte(2);   // Scale in 0.1's.
             msgTrail.WriteByte(25);  // Velocity along vector in 10's.
             msgTrail.WriteByte(15);  // Random velocity in 10's - higher for more spread.
@@ -496,7 +507,7 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
         dragonsBreath.GetScaledFireDamage(), // Damage per tick.
         dragonsBreath.GetRadius(), // Radius.
         CLASS_PLAYER, // Will not damage player or allies.
-        DMG_POISON | DMG_ALWAYSGIB // Damage type (Poison for DoT and stacking).
+        DMG_GENERIC | DMG_ALWAYSGIB // Damage type (Poison for DoT and stacking).
     );
 
     Vector startPoint = impactPoint;
@@ -517,9 +528,9 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     msgFireArea.WriteCoord(endPoint.y);
     msgFireArea.WriteCoord(endPoint.z);
     msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
-    msgFireArea.WriteByte(3);  // Count - more sprites for a denser burst.
-    msgFireArea.WriteByte(10);   // Life in 0.1's.
-    msgFireArea.WriteByte(2);   // Scale in 0.1's.
+    msgFireArea.WriteByte(2);  // Count - more sprites for a denser burst.
+    msgFireArea.WriteByte(3);   // Life in 0.1's.
+    msgFireArea.WriteByte(1);   // Scale in 0.1's.
     msgFireArea.WriteByte(25);  // Velocity along vector in 10's.
     msgFireArea.WriteByte(50);  // Random velocity in 10's - higher for more spread.
     msgFireArea.End();

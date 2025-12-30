@@ -17,19 +17,17 @@ class CloakData
     private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 1.0f; // Base drain rate.
-    private float m_flBaseDamageBonus = 1.0f; // Base % damage increase (should really be left at 1.0).
-    private float m_flDamageBonusPerLevel = 0.02f; // Bonus % per level.
+    private float m_flBaseDamageBonus = 1.0f; // Base % damage increase modifier (should really be left at 1.0).
+    private float m_flDamageBonusAtMaxLevel = 3.0f; // Bonus % damage increase modifier at max level (full cloak).
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastEnergyConsumed = 0.0f;
 
     //Nova.
-    private float m_flNovaRadius = 480.0f; // Radius of the nova.
-    private float m_flNovaDamageMultiplier = 4.0f; // How much to scale the nova damage after max and remaining are combined.
-
-    // Perk 1 - AP Stealing Nova.
     private bool m_bNovaActive = false;
-    private float m_flAPStealPercent = 0.25f; // % of damage dealt that is returned as AP to the player, or health if AP is 0.
+    private float m_flNovaRadius = 480.0f; // Radius of the nova.
+    private float m_flNovaDamageMultiplierAtMaxLevel = 4.0f; // Nova damage modifier at max level (base damage is scaled on max and remaining energy).
+    private float m_flAPStealPercentAtMaxLevel = 0.25f; // Damage dealt from Nova that is returned as AP to the player (or health if AP is 0), at max level. 
 
     private ClassStats@ m_pStats = null;
 
@@ -40,20 +38,47 @@ class CloakData
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
-    // Used specifically for stats menu to display full potential damage bonus.
-    float GetDamageBonus() { return m_flBaseDamageBonus + (m_flBaseDamageBonus + m_pStats.GetLevel() * m_flDamageBonusPerLevel); }
-
-    float GetAPStealPercent() { return m_flAPStealPercent; }
     float GetNovaRadius() { return m_flNovaRadius; }
+
+    // Used specifically for stats menu to display full potential damage bonus, without energy scaling.
+    float GetDamageMultiplierTotal() 
+    { 
+        if(m_pStats is null)
+            return m_flBaseDamageBonus; // Return default if no stats.
+
+        int level = m_pStats.GetLevel();
+        float bonusPerLevel = (m_flDamageBonusAtMaxLevel - m_flBaseDamageBonus) / g_iMaxLevel;
+        float totalBonus = m_flBaseDamageBonus + (bonusPerLevel * level);
+
+        return totalBonus;
+    }
+
+    float GetAPStealPercent() 
+    {
+        if(m_pStats is null)
+            return 0.0f; // Return 0 if no stats.
+
+        int level = m_pStats.GetLevel();
+        float stealPerLevel = m_flAPStealPercentAtMaxLevel / g_iMaxLevel;
+        float apSteal = stealPerLevel * level;
+
+        return apSteal; 
+    }
 
     float GetNovaDamage(CBasePlayer@ pPlayer)
     { 
+        if(m_pStats is null)
+            return 0.0f; // Return 0 if no stats.
+
         // Scale nova damage.
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
         float maxEnergy = 0.0f; // Initialise.
         float remainingEnergy = 0.0f; // Initialise.
-        
-        if(g_PlayerClassResources.exists(steamID))
+        float novadamage = 0.0f; // Initialise.
+
+        int level = m_pStats.GetLevel();
+
+        if(g_PlayerClassResources.exists(steamID)) // Grab player energy values, for scaling nova damage.
         {
             dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
             if(resources !is null)
@@ -63,24 +88,24 @@ class CloakData
             }
         }
 
-        float novadamage = 0.0f;
-        novadamage = (maxEnergy + remainingEnergy) * m_flNovaDamageMultiplier;
+        // Scale nova damage based on max and remaining energy and increase bonus multiplier with level.
+        novadamage = (maxEnergy + remainingEnergy) * (m_flNovaDamageMultiplierAtMaxLevel * (float(level) / g_iMaxLevel));
 
         return novadamage;
     }
 
     float GetDamageMultiplier(CBasePlayer@ pPlayer)
     {
-        if(!m_bActive || m_flLastEnergyConsumed <= 0)
+        if(!m_bActive || m_flLastEnergyConsumed <= 0) // Normal damage if cloak is inactive.
+            return 1.0f;
+
+        if(m_pStats is null) // Normal damage if no stats.
             return 1.0f;
                 
         // Get total potential damage bonus based on level.
-        float totalPossibleBonus = m_flBaseDamageBonus; // First set it to base.
-        if(m_pStats !is null)
-        {
-            int level = m_pStats.GetLevel();
-            totalPossibleBonus *= (m_flBaseDamageBonus + (level * m_flDamageBonusPerLevel)); // Now multiply with level bonus.
-        }
+        int level = m_pStats.GetLevel();
+        float bonusPerLevel = (m_flDamageBonusAtMaxLevel - m_flBaseDamageBonus) / g_iMaxLevel; // Damage bonus increase per level.
+        float totalPossibleBonus = m_flBaseDamageBonus + (bonusPerLevel * level); // Total possible bonus at current level.
         
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
         if(g_PlayerClassResources.exists(steamID))
@@ -90,13 +115,11 @@ class CloakData
             {
                 float maxEnergy = float(resources['max']);
                 float energyScale = Math.min(1.0f, m_flLastEnergyConsumed / maxEnergy);
-                float actualBonus = totalPossibleBonus * energyScale;
-                
-                return 1.0f + actualBonus;
+                return totalPossibleBonus * energyScale;
             }
         }
-        
-        return 1.0f;
+
+        return totalPossibleBonus;
     }
 
     void ToggleCloak(CBasePlayer@ pPlayer)

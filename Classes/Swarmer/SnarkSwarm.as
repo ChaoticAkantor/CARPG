@@ -4,10 +4,10 @@ class SnarkNestData
 {
     private float m_flEnergyCost = 1.0f; // Base cost per use (charges).
     private int m_iBaseSnarkCount = 30; // Base number of snarks to spawn.
-    private float m_flSnarkHealth = 50.0f; // Health of each snark.
-    private float m_flSnarkHealthScale = 0.02f; // Health % increase per level.
-    private float m_flSnarkDamageScale = 0.08f; // Damage % increase per level.
-    private float m_flSnarkCountScale = 0.02f; // Count % increase in snarks in swarm per level.
+    private float m_flBaseHealth = 50.0f; // Health of each snark.
+    private float m_flHealthScaleAtMaxLevel = 5.0f; // Health modifier at max level.
+    private float m_flSnarkDamageScaleAtMaxLevel = 5.0f; // Damage modifier at max level.
+    private float m_flSnarkCountScaleAtMaxLevel = 2.00f; // Count modifier at max level.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 4.0f; // Cooldown between spawns.
     private float m_flLaunchForce = 1000.0f; // Velocity that snarks are thrown outward.
@@ -57,31 +57,43 @@ class SnarkNestData
     int GetSnarkCount()
     {
         if(m_pStats is null)
-            return m_iBaseSnarkCount;
+            return m_iBaseSnarkCount; // Default if no stats.
+
+        float scaledCount = m_iBaseSnarkCount; // Default number of snarks.
 
         float level = float(m_pStats.GetLevel());
-        float scaledCount = m_iBaseSnarkCount * (1.0f + (level * m_flSnarkCountScale));
+        float countPerLevel = (m_flSnarkCountScaleAtMaxLevel * m_iBaseSnarkCount) / g_iMaxLevel;
+        scaledCount += countPerLevel * level;
+
         return int(scaledCount);
     }
-    
-    float GetScaledDamage() // Damage scaling works similarly to XenMinion, through MonsterTakeDamage hook
+
+    float GetScaledDamage() // Damage scaling applied through MonsterTakeDamage hook.
     {
         if(m_pStats is null)
-            return 0.0f;
+            return 1.0f; // Default if no stats.
+
+        float ScaledDamage = 1.0f; // Default multiplier.
 
         float level = m_pStats.GetLevel();
-        float flScaledDamage = (float(level) * m_flSnarkDamageScale);
-        return flScaledDamage;
+        float damagePerLevel = m_flSnarkDamageScaleAtMaxLevel / g_iMaxLevel;
+        ScaledDamage += damagePerLevel * level;
+
+        return ScaledDamage;
     }
     
     float GetScaledHealth()
     {
         if(m_pStats is null)
-            return m_flSnarkHealth; // Base health without scaling if no stats.
-            
+            return m_flBaseHealth; // Return base health without scaling if no stats.
+
+        float minionScaledHealth = m_flBaseHealth; // Start with base health.
+
         float level = m_pStats.GetLevel();
-        float flScaledHealth = m_flSnarkHealth * (1.0f + (float(level) * m_flSnarkHealthScale));
-        return flScaledHealth;
+        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
+        minionScaledHealth *= healthMultiplier;
+
+        return minionScaledHealth;
     }
 
     void SummonSnarks(CBasePlayer@ pPlayer)

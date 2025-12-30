@@ -3,7 +3,7 @@ const string strLevelUpSound = "misc/secret.wav";
 dictionary g_PlayerRPGData;
 
 // Used for debug menu.
-int g_iMaxLevel = 50;
+int g_iMaxLevel = 100;
 
 dictionary g_ClassNames = 
 {
@@ -56,40 +56,60 @@ enum PlayerClass
 class ClassDefinition 
 {
     // Base stats for each class. Typically overridden on a per class basis.
+    // If a class has no overrides, these base values are used.
     string name;
-    float baseHP = 100.0f; // Base HP.
-    float baseAP = 100.0f; // Base AP.
-    float baseResource = 100.0f; // Base max ability charge/duration.
-    float fullRegenTime = 60.0f; // Default time in seconds to regenerate from empty to full if not specified.
+    float baseHP = 100.0f; // Reset Default Base HP.
+    float maxHP = 200.0f; // Maximum HP (At max level).
 
-    float healthPerLevel = 0.02f; // Health % of base raise per level.
-    float armorPerLevel = 0.02f; // Armor % of base raise per level.
-    float energyPerLevel = 0.1f; // Ability Charge/Duration % of base raise per level.
+    float baseAP = 100.0f; // Base AP.
+    float maxAP = 200.0f; // Maximum AP (At max level).
+
+    float baseResource = 100.0f; // Base max ability charge/duration.
+    float maxResource = 200.0f; // Max ability charge/duration at max level.
+
+    float fullRegenTime = 60.0f; // Default time in seconds to regenerate from empty to full if not specified.
 
     ClassDefinition(string _name) 
     {
         name = _name;
     }
 
+    // HP/AP calculation methods.
+    //HP.
     float GetPlayerHealth(int level)
     {
-        return baseHP * (1.0f + (level * healthPerLevel));
+        float totalHP = 0.0f; // Reset total HP.
+
+        float healthPerLevel = (maxHP - baseHP) / g_iMaxLevel;
+        totalHP = baseHP + (level * healthPerLevel);
+        return totalHP;
     }
 
+    //AP.
     float GetPlayerArmor(int level)
-    {
-        return baseAP * (1.0f + (level * armorPerLevel));
+    {   
+        float totalAP = 0.0f; // Reset total AP.
+
+        float armorPerLevel = (maxAP - baseAP) / g_iMaxLevel;
+        totalAP = baseAP + (level * armorPerLevel);
+        return totalAP;
     }
 
+    // Energy (ability charge/duration).
     float GetPlayerEnergy(int level)
     {
-        float maxEnergy = baseResource;
-        return maxEnergy * (1.0f + (level * energyPerLevel));
+        float totalResource = 0.0f; // Reset total resource.
+
+        float resourcePerLevel = (maxResource - baseResource) / g_iMaxLevel;
+        totalResource = baseResource + (level * resourcePerLevel);
+        return totalResource;
     }
 
+    // Ability cooldown.
     float GetPlayerEnergyRegen(int level, float maxEnergy)
     {
         // This ensures it always takes fullRegenTime seconds to fully regenerate.
+        // Ability recharge rate is fixed and does not decreease with level.
         return maxEnergy / fullRegenTime;
     }
 }
@@ -113,81 +133,136 @@ void InitializeClassDefinitions()
             switch(pClass)
             {
                 case PlayerClass::CLASS_MEDIC:
-                    def.baseHP = 125.0f;
-                    def.baseAP = 100.0f;
-                    def.baseResource = 30.0f; // Duration in seconds.
-                    def.fullRegenTime = 30.0f;
-                    def.energyPerLevel = 0.00f;
+                    def.baseHP = 100.0f; // Starting health.
+                        def.maxHP = 200.0f; // Max health at max level.
+
+                    def.baseAP = 100.0f; // Starting armor.
+                        def.maxAP = 200.0f; // Max armor at max level.
+
+                    def.baseResource = 30.0f; // Ability Duration in seconds, or number of charges.
+                        def.maxResource = 30.0f; // No increase.
+
+                    def.fullRegenTime = 30.0f; // Time to fully regen ability.
                     break;
                 case PlayerClass::CLASS_ENGINEER:
-                    def.baseHP = 125.0f;
+                    def.baseHP = 100.0f;
+                        def.maxHP = 150.0f;
+
                     def.baseAP = 100.0f;
+                        def.maxAP = 250.0f;
+
                     def.baseResource = 60.0f; // Duration in seconds.
+                        def.maxResource = 60.0f; // No increase.
+
                     def.fullRegenTime = 20.0f;
-                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 125.0f;
+                        def.maxHP = 150.0f;
+
+                    def.baseAP = 100.0f;
+                        def.maxAP = 250.0f;
+
                     def.baseResource = 2.0f; // Minion Point Max.
+                        def.maxResource = 2.0f; // No increase.
+
                     def.fullRegenTime = 90.0f; // 90s for all minion points.
-                    def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 125.0f;
+                        def.maxHP = 200.0f;
+
+                    def.baseAP = 100.0f;
+                        def.maxAP = 200.0f;
+
                     def.baseResource = 2.0f; // Minion Point Max.
+                        def.maxResource = 2.0f; // No increase.
+
                     def.fullRegenTime = 90.0f; // 90s for all minion points.
-                    def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
-                    def.baseHP = 125.0f;
+                    def.baseHP = 100.0f;
+                        def.maxHP = 250.0f;
+
                     def.baseAP = 100.0f;
+                        def.maxAP = 150.0f;
+
                     def.baseResource = 4.0f; // Minion Point Max.
+                        def.maxResource = 4.0f; // No increase.
+
                     def.fullRegenTime = 90.0f; // 120s for all minion points.
-                    def.energyPerLevel = 0.00f; // No increase. Minion classes start with max minion count with leveled minion unlocks.
                     break;
                 case PlayerClass::CLASS_BERSERKER:
-                    def.baseHP = 150.0f;
-                    def.baseAP = 75.0f;
+                    def.baseHP = 100.0f;
+                        def.maxHP = 250.0f;
+
+                    def.baseAP = 100.0f;
+                        def.maxAP = 150.0f;
+
                     def.baseResource = 30.0f; // Duration in seconds.
+                        def.maxResource = 30.0f; // No increase.
+
                     def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_DEFENDER:
-                    def.baseHP = 125.0f;
+                    def.baseHP = 100.0f;
+                        def.maxHP = 200.0f;
+
                     def.baseAP = 100.0f;
-                    def.baseResource = 200.0f; // Shield Base HP.
-                    def.fullRegenTime = 20.0f;
-                    def.energyPerLevel = 0.03f; // 500 HP at level 50.
+                        def.maxAP = 200.0f;
+
+                    def.baseResource = 250.0f; // Shield Base HP.
+                        def.maxResource = 500.0f; // Shield health at max level.
+
+                    def.fullRegenTime = 20.0f; // Shield active regen time will scale from this!
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 125.0f;
+                        def.maxHP = 200.0f;
+
+                    def.baseAP = 100.0f;
+                        def.maxAP = 200.0f;
+
                     def.baseResource = 100.0f; // Base Shock Rifle Battery capacity.
+                        def.maxResource = 800.0f; // Max capacity at max level.
+
                     def.fullRegenTime = 90.0f;
-                    def.energyPerLevel = 0.14f; // 800 capacity at level 50.
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 125.0f;
+                        def.maxHP = 150.0f;
+
+                    def.baseAP = 100.0f;
+                        def.maxAP = 250.0f;
+
                     def.baseResource = 30.0f; // Duration in seconds.
+                        def.maxResource = 30.0f; // No increase.
+
                     def.fullRegenTime = 18.0f;
-                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 125.0f;
+                        def.maxHP = 200.0f;
+
+                    def.baseAP = 100.0f;
+                        def.maxAP = 200.0f;
+
                     def.baseResource = 1.0f; // Base charges.
+                        def.maxResource = 1.0f; // No increase.
+
                     def.fullRegenTime = 60.0f;
-                    def.energyPerLevel = 0.00f;
                     break;
                 case PlayerClass::CLASS_SWARMER:
                     def.baseHP = 100.0f;
-                    def.baseAP = 125.0f;
+                        def.maxHP = 200.0f;
+
+                    def.baseAP = 100.0f;
+                        def.maxAP = 200.0f;
+
                     def.baseResource = 1.0f; // Base charges.
+                        def.maxResource = 3.0f; // Max snark nests at max level.
+
                     def.fullRegenTime = 30.0f;
-                    def.energyPerLevel = 0.00f;
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
@@ -196,35 +271,21 @@ void InitializeClassDefinitions()
 }
 
 class ClassStats
-{
-    private int m_iLevel = 1;
-    private int m_iXP = 0;
-    private int m_iCurrentLevelXP = 0;
-    private int XP_BASE = 25;          // Base XP for calculation.
-    private int XP_MULTIPLIER = 2;     // Exponential growth factor. How much increase extra per level up.
+{   
+    // XP System.
+    private int m_iLevel = 1; // Default/starting level.
+    private int m_iXP = 0; // Total XP.
+    private int m_iCurrentLevelXP = 0; // XP into current level.
+private int XP_BASE = 20;          // Base needed XP.
+    private int XP_MULTIPLIER = 1.5;     // Growth factor.
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
-    
-    // Ability perk level requirements. - Depriciated, to be removed. Gonna add the extra effects permanently instead.
-    private int m_iAbilityPerk1LvReq = 5; // Level required to unlock first perk.
-    private int m_iAbilityPerk2LvReq = 10; // Level required to unlock second perk.
-    private int m_iAbilityPerk3LvReq = 15; // Level required to unlock third perk.
     
     int GetLevel() { return m_iLevel; }
     int GetXP() { return m_iXP; }
     int GetNextLevelXP() { return GetXPForLevel(m_iLevel); }
     int GetCurrentLevelXP() { return m_iCurrentLevelXP; }
     int GetNeededXP() { return GetXPForLevel(m_iLevel); }
-    
-    // Accessor methods for perk level requirements.
-    int GetPerk1LevelReq() { return m_iAbilityPerk1LvReq; }
-    int GetPerk2LevelReq() { return m_iAbilityPerk2LvReq; }
-    int GetPerk3LevelReq() { return m_iAbilityPerk3LvReq; }
-    
-    // Method to check if a player has unlocked a specific perk.
-    bool HasUnlockedPerk1() { return m_iLevel >= m_iAbilityPerk1LvReq; }
-    bool HasUnlockedPerk2() { return m_iLevel >= m_iAbilityPerk2LvReq; }
-    bool HasUnlockedPerk3() { return m_iLevel >= m_iAbilityPerk3LvReq; }
 
     bool IsMaxLevel() { return m_iLevel >= MAX_LEVEL; }
     
@@ -279,7 +340,7 @@ class ClassStats
                 if(pPlayer !is null && playerData !is null)
                 {
                     string className = playerData.GetClassName(playerData.GetCurrentClass());
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Your (" + className + ") is now Level " + m_iLevel + "!\n");
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] (" + className + ") is now Level " + m_iLevel + "!\n");
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
                     NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);

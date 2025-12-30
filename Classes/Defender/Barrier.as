@@ -14,16 +14,15 @@ class BarrierData
 {
     private ClassStats@ m_pStats = null;
     private bool m_bActive = false;
-    private float m_flBarrierDamageReduction = 1.00f; // Base damage reduction, anything lower will not block all damage.
+    private float m_flBarrierDamageReduction = 1.00f; // Base damage reduction, anything lower will not block all damage to HP/AP.
     private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
-    private float m_flBarrierDurabilityMultiplier = 1.0f; // % of total incoming damage dealt to shield, lower = tougher.
-    private float m_flLastDrainTime = 0.0f; // Initialising.
-    private float m_flBarrierReflectDamageMultiplier = 0.5f; // Base damage reflect multiplier.
-    private float m_flBarrierReflectDamageScaling = 0.04f; // How much % to scale damage reflection per level.
-    private float m_flBarrierReflectFreeze = 0.999f; // Reduction of animation speed for enemies frozen by damage reflection.
-    private float m_flBarrierReflectBaseFreezeDuration = 2.0f; // Freeze effect base duration.
-    private float m_flBarrierReflectFreezeDuration = 0.02f; // Freeze effect duration per level.
+    private float m_flBarrierDurabilityMultiplier = 1.0f; // % of total incoming damage dealt to shield, used to make shield tougher or weaker overall.
+    private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.5f; // Damage damage reflection at max level.
+    private float m_flBarrierReflectFreeze = 0.99f; // Reduction of animation speed for enemies frozen by damage reflection.
+    private float m_flBarrierReflectBaseFreezeDuration = 2.0f; // Freeze effect base duration (in seconds).
+    private float m_flBarrierReflectFreezeDurationAtMaxLevel = 8.00f; // Freeze effect added duration at max level (in seconds).
     private float m_flBarrierActiveRechargePenalty = 0.20f; // Ability recharge rate when barrier is active.
+    private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
 
@@ -39,10 +38,12 @@ class BarrierData
     float GetScaledDamageReflection()
     {
         if(m_pStats is null)
-            return m_flBarrierReflectDamageMultiplier; // Return base if no stats.
+            return 0.0f; // Return base if no stats.
         
-        // Scale reflect damage based on level.
-        return m_flBarrierReflectDamageMultiplier * (1.0f + (m_pStats.GetLevel() * m_flBarrierReflectDamageScaling));
+        // Scale damage reflected based on level.
+        int level = m_pStats.GetLevel();
+        float scalingPerLevel = m_flBarrierReflectDamageScalingAtMaxLevel / g_iMaxLevel;
+        return scalingPerLevel * level;
     }
 
     float GetBarrierReflectFreeze() { return 1.0f - m_flBarrierReflectFreeze; } // Freeze animation speed reduction.
@@ -51,10 +52,12 @@ class BarrierData
     float GetBarrierReflectFreezeDuration() // Total duration to freeze enemies for.
     { 
         if(m_pStats is null)
-            return m_flBarrierReflectFreezeDuration; // Return base if no stats.
+            return m_flBarrierReflectFreezeDurationAtMaxLevel; // Return base if no stats.
 
+            int level = m_pStats.GetLevel();
+            float freezeDurationPerLevel = m_flBarrierReflectFreezeDurationAtMaxLevel / g_iMaxLevel;
             float barrierFreeze = 0.0f;
-            barrierFreeze = m_flBarrierReflectBaseFreezeDuration * (1.0f + m_pStats.GetLevel() * m_flBarrierReflectFreezeDuration);
+            barrierFreeze = m_flBarrierReflectBaseFreezeDuration + (freezeDurationPerLevel * level);
         
         return barrierFreeze; 
     }

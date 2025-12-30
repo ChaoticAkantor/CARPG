@@ -25,19 +25,20 @@ class SentryData
     private EHandle m_hSentry;
     private bool m_bActive = false;
     private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
-    private float m_flHealthScale = 0.18; // Health scaling % per level.
-    private float m_flDamageScale = 0.06; // Damage scaling % per level.
-    private int m_iCryoShotsRadius = 64; // Radius of bonus damage on shots.
-    private float m_flCryoShotsDamage = 0.02f; // Damage modifier for elemental radius damage per level.
-    private float m_flCryoShotsSlowPerLevel = 0.015f; // Slow effect increase per level (animation speed multiplier, actual speed).
-    private float m_flCryoShotsSlowDuration = 6.0f; // Duration of slow effect in seconds.
-    private float m_flRadius = 8000.0; // Radius in which the sentry can heal players.
+    private float m_flHealthScaleAtMaxLevel = 4.0; // Health modifier at max level.
+    private float m_flDamageScaleAtMaxLevel = 3.0; // Damage modifier at max level.
     private float m_flBaseHealAmount = 1.0; // Base healing per second.
-    private float m_flHealScale = 0.18f; // Heal scaling % per level.
+    private float m_flHealScaleAtMaxLevel = 5.0f; // Healing modifier at max level.
     private float m_flSelfHealModifier = 5.0f; // Sentry self-healing multiplier.
+    private float m_flHealRadius = 8000.0; // Radius in which the sentry can heal players.
+    private int m_iCryoShotsRadius = 64; // Radius of bonus damage on shots.
+    private float m_flCryoShotsDamageAtMaxLevel = 0.30f; // Damage modifier for cryo shots at max level.
+    private float m_flCryoShotsSlowAtMaxLevel = 0.80f; // Slow effect at max level.
+    private float m_flCryoShotsSlowDuration = 6.0f; // Duration of slow effect in seconds.
     private float m_flEnergyDrain = 1.0; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
     private float m_flRecallEnergyCost = 0.0f; // Energy % cost to recall.
+
     private float m_flNextDrain = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
@@ -48,6 +49,10 @@ class SentryData
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
 
     private ClassStats@ m_pStats = null;
+
+    ClassStats@ GetStats() { return m_pStats; }
+    void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    bool HasStats() { return m_pStats !is null; }
 
     bool IsActive() 
     { 
@@ -76,10 +81,48 @@ class SentryData
 
         return true;
     }
-    
-    bool HasStats() { return m_pStats !is null; }
-    ClassStats@ GetStats() { return m_pStats; }
-    void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+
+    float GetScaledHealth()
+    {
+        if(m_pStats is null)
+            return m_flBaseHealth; // Return base health without scaling if no stats.
+
+        float minionScaledHealth = m_flBaseHealth; // Start with base health.
+
+        float level = m_pStats.GetLevel();
+        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
+        minionScaledHealth *= healthMultiplier;
+
+        return minionScaledHealth;
+    }
+
+    float GetScaledDamage() // Damage scaling is applied through MonsterTakeDamage.
+    {
+        if(m_pStats is null)
+            return 1.0f; // Restore to default, but is always null when we have no minions.
+
+        float minionScaledDamage = 1.0f; // Default multiplier.
+
+        float level = m_pStats.GetLevel();
+        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
+        minionScaledDamage += damagePerLevel * level;
+
+        return minionScaledDamage;
+    }
+
+    float GetScaledHealAmount()
+    {
+        if(!HasStats() || m_pStats is null)
+            return m_flBaseHealAmount; // Return default if no stats.
+
+        float healAmount = m_flBaseHealAmount; // Default heal amount.
+
+        float level = float(m_pStats.GetLevel());
+        float healPerLevel = m_flHealScaleAtMaxLevel / g_iMaxLevel;
+        healAmount += healPerLevel * level;
+
+        return healAmount;
+    }
 
     CBaseEntity@ GetSentryEntity()
     {
@@ -91,10 +134,13 @@ class SentryData
     float GetCryoShotsDamageMult() 
     { 
         if(m_pStats is null)
-            return m_flCryoShotsDamage;
+            return m_flCryoShotsDamageAtMaxLevel; // Default if no stats.
 
-        float damageMult = 0.0f;
-        damageMult = 1.0f + (m_pStats.GetLevel() * m_flCryoShotsDamage);
+        float damageMult = 1.0f; // Default damage multiplier.
+
+        float level = float(m_pStats.GetLevel());
+        float damagePerLevel = m_flCryoShotsDamageAtMaxLevel / g_iMaxLevel;
+        damageMult *= damagePerLevel * level;
 
         return damageMult;
     }
@@ -102,10 +148,13 @@ class SentryData
     float GetCryoShotsSlow() // Reduce animation speed for slowing effect.
     { 
         if(m_pStats is null)
-            return m_flCryoShotsSlowPerLevel;
+            return m_flCryoShotsSlowAtMaxLevel;
 
-        float SlowStrength = 0.0f;
-        SlowStrength = (m_pStats.GetLevel() * m_flCryoShotsSlowPerLevel);
+        float SlowStrength = 1.0f; // Default modifier.
+
+        float level = float(m_pStats.GetLevel());
+        float slowPerLevel = m_flCryoShotsSlowAtMaxLevel / g_iMaxLevel;
+        SlowStrength *= slowPerLevel * level;
 
         return 1.0f - SlowStrength; // Replace framerate with this returned number.
     }
@@ -113,12 +162,14 @@ class SentryData
     float GetCryoShotsSlowInverse() // For stat display, to show inverse value.
     { 
         if(m_pStats is null)
-            return m_flCryoShotsSlowPerLevel;
+            return m_flCryoShotsSlowAtMaxLevel; // Default if no stats.
 
-        float SlowStrength = 0.0f;
-        SlowStrength = (m_pStats.GetLevel() * m_flCryoShotsSlowPerLevel);
+        float SlowStrength = 1.0f; // Default modifier.
 
-        return SlowStrength * 100.0f;
+        float level = float(m_pStats.GetLevel());
+        SlowStrength *= m_flCryoShotsSlowAtMaxLevel * (float(level) / g_iMaxLevel);
+
+        return SlowStrength * 100.0f; // Return as percentage.
     }
 
     void ToggleSentry(CBasePlayer@ pPlayer)
@@ -485,22 +536,6 @@ class SentryData
         victim.pev.renderamt = 10; // Thickness.
     }
 
-    float GetScaledHealAmount()
-    {
-        if(!HasStats() || m_pStats is null)
-            return m_flBaseHealAmount;
-
-        float level = float(m_pStats.GetLevel());
-        float healAmount = m_flBaseHealAmount * (1.0f + (level * m_flHealScale));
-
-        return healAmount;
-    }
-
-    float GetHealAmount()
-    {
-        return GetScaledHealAmount();
-    }
-
     private void SentryHeal(CBaseEntity@ pSentry)
     {
         float currentTime = g_Engine.time;
@@ -508,7 +543,7 @@ class SentryData
             return;
             
         m_flNextHeal = currentTime + m_flHealInterval;
-        float healAmount = GetHealAmount();
+        float healAmount = GetScaledHealAmount();
 
         // The sentry should include itself when healing.
         if(pSentry.pev.health < pSentry.pev.max_health)
@@ -525,7 +560,7 @@ class SentryData
             if(pTarget !is null && pTarget.IsConnected() && pTarget.IsAlive())
             {
                 float distance = (pTarget.pev.origin - pSentry.pev.origin).Length();
-                if(distance <= m_flRadius)
+                if(distance <= m_flHealRadius)
                 {
                     if(pTarget.pev.health < pTarget.pev.max_health)
                     {
@@ -623,21 +658,12 @@ class SentryData
             aura2msg.End();
     }
 
-    // Required getter methods for stats menu.
-    float GetScaledHealth()
-    {
-        if(m_pStats is null)
-            return m_flBaseHealth;
-
-        return m_flBaseHealth * (1.0f + (m_pStats.GetLevel() * m_flHealthScale));
-    }
-
     float GetHealRadius()
     {
         if(!HasStats() || m_pStats is null)
-            return m_flRadius;
+            return m_flHealRadius;
 
-        float radius = m_flRadius;
+        float radius = m_flHealRadius;
 
         return radius;
     }
@@ -650,15 +676,6 @@ class SentryData
         float drain = m_flEnergyDrain;
 
         return drain;
-    }
-
-    float GetScaledDamage()
-    {
-        if(m_pStats is null)
-            return 1.0f;
-
-        // Return just the multiplier part, not including the base 1.0f, since that gets added in the MonsterTakeDamage hook.
-        return (m_pStats.GetLevel() * m_flDamageScale);
     }
 }
 

@@ -5,13 +5,28 @@ dictionary g_ShockRifleData;
 class ShockRifleData 
 {
     private ClassStats@ m_pStats = null;
-    private float m_flLastUseTime = 0.0f;
+    private float m_flDamageScaleAtMaxLevel = 3.00f; // Damage modifier for shockrifle at max level.
+
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
-    private float m_flDamageScalePerLevel = 0.03f; // Damage increase % for shockrifle per level.
+    private float m_flLastUseTime = 0.0f;
 
     bool HasStats() { return m_pStats !is null; }    
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     
+    float GetScaledDamage()
+    {
+        if(m_pStats is null)
+            return 1.0f; // Normal damage if no stats.
+
+        float shockrifleDamage = 1.0f; // Default damage multiplier.
+            
+        int level = m_pStats.GetLevel();
+        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
+        shockrifleDamage = damagePerLevel * level;
+
+        return shockrifleDamage;
+    }
+
     void EquipShockRifle(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null || !HasStats()) 
@@ -115,15 +130,6 @@ class ShockRifleData
         CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pPlayer.HasNamedPlayerItem("weapon_shockrifle"));
         if(pWeapon !is null)
             g_EntityFuncs.Remove(pWeapon);
-    }
-
-    float GetScaledDamage()
-    {
-        if(m_pStats is null)
-            return 1.0f;
-            
-        float damageBonus = m_pStats.GetLevel() * m_flDamageScalePerLevel;
-        return 1.0f + damageBonus;
     }
 }
 

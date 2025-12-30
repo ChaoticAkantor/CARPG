@@ -34,13 +34,13 @@ class HealingAura
 {
     // Healing Aura.
     private bool m_bIsActive = false;
-    private float m_flRadius = 480.0f; // Radius of the aura.
+    private float m_flHealingRadius = 480.0f; // Radius of the healing aura.
     private float m_flBaseHealAmount = 10.0f; // Base heal amount.
-    private float m_flHealScaling = 0.06f; // % per level scaling.
+    private float m_flHealScalingAtMaxLevel = 4.0f; // Healing modifier at max level.
     private int m_iDrainAmount = 1.0f; // Energy drain per interval.
     private int m_iHealAuraDrainRevive = m_iDrainAmount * 2; // Energy drain per entity revived.
     private float m_flHealAuraReviveHealthPercent = 0.25f; // Health percent when revived.
-    private float m_flPoisonDamagePercent = 1.0f; // Percentage of healing amount dealt as poison damage. Using RadiusDamage.
+    private float m_flPoisonDamagePercent = 1.0f; // Modifier of healing amount dealt as poison damage. Using RadiusDamage.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
@@ -48,7 +48,7 @@ class HealingAura
     private float m_flLastPoisonTime = 0.0f;
     private float m_flHealInterval = 1.0f;
 
-    // Visual.
+
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = m_flHealAuraInterval; // Time between visual updates. Same as heal rate.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
@@ -62,7 +62,7 @@ class HealingAura
 
     bool IsActive() { return m_bIsActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
-    float GetHealingRadius() { return m_flRadius; }
+    float GetHealingRadius() { return m_flHealingRadius; }
     float GetEnergyCost() { return m_iDrainAmount; }
     float GetEnergyCostRevive() { return m_iHealAuraDrainRevive; }
 
@@ -74,10 +74,15 @@ class HealingAura
     float GetScaledHealAmount()
     {
         if (m_pStats is null)
-            return m_flBaseHealAmount;
+            return m_flBaseHealAmount; // Return base if no stats.
+
+        float healAmount = m_flBaseHealAmount; // Set base heal amount.
             
         int level = m_pStats.GetLevel();
-        return m_flBaseHealAmount * (1.0f + (float(level) * m_flHealScaling));
+        float bonusPerLevel = (m_flHealScalingAtMaxLevel * m_flBaseHealAmount) / g_iMaxLevel;
+        healAmount += bonusPerLevel * level;
+
+        return healAmount;
     }
     
     void ToggleAura(CBasePlayer@ pPlayer)
@@ -183,9 +188,6 @@ class HealingAura
             }
         }
 
-        // Update healing bonus for stats menu.
-        GetScaledHealAmount();
-
         if (m_bIsActive) 
         {
             ProcessHealing(pPlayer);
@@ -214,8 +216,8 @@ class HealingAura
             pPlayer.pev, // Inflictor.
             pPlayer.pev, // Attacker.
             poisonDamage, // Damage - scaled from max energy.
-            m_flRadius, // Radius.
-            CLASS_PLAYER, // Will not damage player or allies. (No need for complex searches and checks).
+            m_flHealingRadius, // Radius.
+            CLASS_PLAYER, // Will not damage player or allies.
             DMG_POISON // Damage type - poison.
         );
 
@@ -274,7 +276,7 @@ class HealingAura
             auramsg.WriteCoord(pos.z);
             auramsg.WriteCoord(pos.x);
             auramsg.WriteCoord(pos.y);
-            auramsg.WriteCoord(pos.z + m_flRadius); // Height.
+            auramsg.WriteCoord(pos.z + m_flHealingRadius); // Height.
             auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame.
             auramsg.WriteByte(0); // Frame rate (no effect).
@@ -336,7 +338,7 @@ class HealingAura
         
         Vector playerOrigin = pPlayer.pev.origin;
         CBaseEntity@ pEntity = null;
-        while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flRadius, "*", "classname")) !is null)
+        while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flHealingRadius, "*", "classname")) !is null)
         {
             // Skip squadmakers.
             if(pEntity.GetClassname() == "squadmaker")
@@ -357,7 +359,7 @@ class HealingAura
                             pTarget.pev.health = pTarget.pev.max_health * m_flHealAuraReviveHealthPercent; // Revive at % of max health.
                             current -= reviveCost;
                             resources['current'] = current;
-                            pPlayer.pev.frags += 3; // Award frags for reviving.
+                            pPlayer.pev.frags += 5; // Award frags for reviving a player.
                             ApplyHealEffect(pEntity);
                             g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
                             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pEntity.pev.netname + "!\n");
@@ -376,7 +378,7 @@ class HealingAura
                                 pMonster.pev.health = pMonster.pev.max_health * m_flHealAuraReviveHealthPercent;
                                 current -= reviveCost;
                                 resources['current'] = current;
-                                pPlayer.pev.frags += 3;
+                                pPlayer.pev.frags += 4; // Award frags for reviving a monster.
                                 ApplyHealEffect(pEntity);
                                 g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
                                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
@@ -434,7 +436,7 @@ class HealingAura
             float healAmount = GetScaledHealAmount();
             
             if(!pEntity.IsPlayer())
-                healAmount *= 1.5f; // NPC's get healing modifier.
+                healAmount *= 2.0f; // NPC healing modifier.
 
             // Process healing, effects and sounds.
             pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
