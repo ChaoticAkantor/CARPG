@@ -10,20 +10,25 @@ dictionary g_PlayerBloodlusts;
 
 class BloodlustData
 {
-    private bool m_bActive = false;
-    private float m_flBloodlustEnergyDrainInterval = 0.5f; // Interval to remove energy.
+    // Remember to account for bloodlust double bonus when balancing!
+    private bool m_bActive = false; // Used for active state of ability.
+
+    // Bloodlust Energy cost and drain interval.
+    private float m_flBloodlustEnergyDrainInterval = 1.0f; // Interval to remove energy.
     private float m_flBloodlustEnergyCost = 1.0f; // Energy drain per interval.
-    private float m_flBaseDamageReduction = 0.10f; // Base damage reduction at lowest health.
-    private float m_flDamageReductionBonusPerLevel = 0.01f; // Bonus damage reduction scaling per level.
-    private float m_flBaseDamageLifesteal = 0.05f; // % Base damage dealt returned as health, reduced when bloodlust is not active.
-    private float m_flLifestealPerLevel = 0.02f; // % Increase lifesteal per level.
-    private float m_flEnergysteal = 0.04f; // % Energy steal, doubled when bloodlust is not active.
+
+    // Bloodlust stat scaling values.
+    private float m_flDamageBonusAtMaxLevel = 2.5f; // Max Damage bonus multiplier at max level, increases per tic while in bloodlust. NOT IMPLEMENTED.
+    private float m_flDamageReductionAtMaxLevel = 0.45f; // Damage reduction multiplier at maximum level. Doubles during bloodlust!
+    private float m_flLifestealAtMaxLevel = 0.50f; // Lifesteal %, as a multiplier at max level. Doubles during bloodlust!
+    private float m_flEnergystealAtMaxLevel = 0.15f; // Energy steal %, as a multiplier at max level. Doubles during bloodlust!
+    private float m_flEnergystealFixedAmount = 0.05f; // Fixed energy steal % if scaling is disabled. Doubles during bloodlust!
+    private bool m_bEnergyStealIsFixed = false; // Whether energy steal is a fixed % or scales with level.
+
+    // Cooldown and activation timers.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
-    
-    // Perk 1 - Bloodlust stacking damage bonus, added per tic, reset on toggle.
-    private float m_flBloodlustDamageBonus = 0.02f; // Damage bonus added per tic.
 
     private ClassStats@ m_pStats = null;
 
@@ -33,15 +38,76 @@ class BloodlustData
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
     float GetEnergyCost() { return m_flBloodlustEnergyCost; } // Grab energy cost.
-    float GetEnergySteal() { return (m_flEnergysteal * 100); } // Grab Energy steal percentage.
+    float GetEnergySteal() { return (m_flEnergystealAtMaxLevel * 100); } // Grab Energy steal percentage.
 
-    // Perk 1 damage bonus for each tic bloodlust is active.
+    // Bloodlust active damage bonus rampup - NOT IMPLEMENTED.
     float GetDamageBonus()
     {
-        if(m_pStats is null)
-            return 1.0f;
+        float damageBonus = 1.0f; // Base multiplier.
+        
+        if(m_pStats !is null)
+        {
+            int level = m_pStats.GetLevel();
+
+            // Bloodlust stacking damage bonus.
+            if(m_bActive)
+            {
+                float bonusPerLevel = m_flDamageBonusAtMaxLevel / g_iMaxLevel;
+                damageBonus += bonusPerLevel * level; // This is applied per tic.
+            }
+            else
+                return 0.0f; // Damage bonus reduced to 0 when ability is not active.
+        }
             
-            return m_flBloodlustDamageBonus;
+        return damageBonus;
+    }
+
+    float GetLifestealAmount()
+    {
+        if(m_pStats is null)
+            return 0.0f; // No lifesteal if no stats.
+
+        float lifestealAmount = 1.0f; // Initialise.
+
+        int level = m_pStats.GetLevel();
+        float stealPerLevel = m_flLifestealAtMaxLevel / g_iMaxLevel;
+
+        // If bloodlust is active, double the lifesteal.
+        if(!m_bActive)
+            lifestealAmount *= (stealPerLevel * level);
+        else
+            lifestealAmount *= (stealPerLevel * level) * 2.0f;
+            
+        return lifestealAmount;
+    }
+
+    float GetEnergystealAmount()
+    {
+        if(m_pStats is null)
+            return 0.0f; // No energy steal if no stats.
+
+        float energystealAmount = 1.0f; // Base multiplier.
+
+        int level = m_pStats.GetLevel();
+
+        if(!m_bEnergyStealIsFixed)
+        {
+            float stealPerLevel = m_flEnergystealAtMaxLevel / g_iMaxLevel;
+            // Check if bloodlust is active, double the energy steal.
+            if(!m_bActive)
+                energystealAmount *= (stealPerLevel * level);
+            else
+                energystealAmount *= (stealPerLevel * level) * 2.0f;
+        }
+        else
+        {   
+            if(!m_bActive)
+                energystealAmount *= m_flEnergystealFixedAmount;
+            else
+                energystealAmount *= m_flEnergystealFixedAmount * 2.0f;
+        }
+
+        return energystealAmount;
     }
 
     // Damage reduction based on current health.
@@ -50,12 +116,13 @@ class BloodlustData
         if(pPlayer is null)
             return 0.0f;
 
-        float damageReduction = m_flBaseDamageReduction;
+        float damageReduction = 1.0f; // Base multiplier.
 
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            damageReduction *= 1.0f + (m_flBaseDamageReduction + level * m_flDamageReductionBonusPerLevel);
+            float reductionPerLevel = m_flDamageReductionAtMaxLevel / g_iMaxLevel;
+            damageReduction += (1.0f - (reductionPerLevel * level));
         }
 
         // Calculate missing health percentage
@@ -78,12 +145,13 @@ class BloodlustData
     // Maximum possible damage reduction for stat menu display (at 1% health).
     float GetDamageReductionMax()
     {
-        float maxDamageReduction = m_flBaseDamageReduction;
+        float maxDamageReduction = 1.0f; // Base multiplier.
 
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
-            maxDamageReduction *= 1.0f + (m_flBaseDamageReduction + level * m_flDamageReductionBonusPerLevel);
+            float reductionPerLevel = m_flDamageReductionAtMaxLevel / g_iMaxLevel;
+            maxDamageReduction *= (1.0f - (reductionPerLevel * level));
         }
 
         float maxMissingHealthPercent = 99.0f; // Calculate at maximum missing health, we will never reach 100%.
@@ -154,10 +222,9 @@ class BloodlustData
             return;
         }
 
-        float reduction = GetDamageReduction(pPlayer) / 100.0f; // Convert back from percentage.
-        float blockedDamage = bloodlustDamageTaken * reduction;
-        bloodlustReducedDamage = bloodlustDamageTaken - blockedDamage;
-
+        float reductionPercent = GetDamageReduction(pPlayer); // Get damage reduction as percentage (0-100).
+        float reductionMultiplier = 1.0f - (reductionPercent / 100.0f); // Convert it to a multiplier (0-1).
+        bloodlustReducedDamage = bloodlustDamageTaken * reductionMultiplier; // Apply it as a multiplier.
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -210,64 +277,39 @@ class BloodlustData
         }
     }
 
-    float GetLifestealAmount()
-    {
-        float baseAmount = m_flBaseDamageLifesteal;
-        
-        if(m_pStats !is null)
-        {
-            int level = m_pStats.GetLevel();
-
-            // If bloodlust is active, double the lifesteal.
-            if(!m_bActive)
-                baseAmount *= (1.0f + (level * m_flLifestealPerLevel));
-            else
-                baseAmount *= (1.0f + (level * m_flLifestealPerLevel)) * 2.0f;
-        }
-            
-        return baseAmount;
-    }
-
-    float GetEnergystealAmount()
-    {
-        float baseAmount = m_flEnergysteal;
-        
-        // Check if bloodlust is active, double the energy steal.
-        if(m_bActive)
-            baseAmount *= 2.0f;
-
-        //if(m_pStats !is null)
-        //{
-        //    int level = m_pStats.GetLevel();
-        //    baseAmount *= (1.0f + (level * m_flEnergysteal));
-        //}
-            
-        return baseAmount;
-    }
-
     float ProcessLifesteal(CBasePlayer@ pPlayer, float damageDealt)
     {
         if(pPlayer is null)
             return 0.0f;
 
-        if(m_pStats is null)
+        if(m_pStats is null) // If no stats, no lifesteal.
             return 0.0f;
 
-        if(!pPlayer.IsAlive())
+        if(!pPlayer.IsAlive()) // Deactivate Bloodlust if player dies.
         {
             DeactivateBloodlust(pPlayer);
             return 0.0f;
         }
 
-        float flLifestealMult = GetLifestealAmount();
-        float flHealAmount = damageDealt * flLifestealMult;
+        float lifestealMult = GetLifestealAmount();
+        float healAmount = damageDealt * lifestealMult; // Heal amount from lifesteal.
+        float healAmountAP = damageDealt * lifestealMult * 0.5f; // 50% effectiveness to AP instead if HP is full.
 
-        pPlayer.pev.health = Math.min(pPlayer.pev.health + flHealAmount, pPlayer.pev.max_health);
+        if(pPlayer.pev.health < pPlayer.pev.max_health) // Heal HP if below max, or AP at 50% reduction if at max.
+        {
+            pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, pPlayer.pev.max_health);
+                return healAmount;
+        }
+        else if (pPlayer.pev.health >= pPlayer.pev.max_health && pPlayer.pev.armorvalue < pPlayer.pev.armortype)
+        {
+            pPlayer.pev.armorvalue = Math.min(pPlayer.pev.armorvalue + healAmountAP, pPlayer.pev.armortype); // Cap at max armor.
+                return healAmountAP;
+        }
         
         ApplyLifestealEffect(pPlayer); // Visual effect for healing from lifesteal.
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
-        return flHealAmount;
+        return healAmount;
     }
 
     float ProcessEnergySteal(CBasePlayer@ pPlayer, float damageDealt)
@@ -275,19 +317,17 @@ class BloodlustData
         if(pPlayer is null)
             return 0.0f;
 
-        // Check for valid stats
-        if(m_pStats is null)
+        if(m_pStats is null) // If no stats, no energy steal.
             return 0.0f;
 
-        // Check if player died
-        if(!pPlayer.IsAlive())
+        if(!pPlayer.IsAlive()) // Deactivate if player dies.
         {
             DeactivateBloodlust(pPlayer);
             return 0.0f;
         }
 
-        float flEnergyStealMult = GetEnergystealAmount();
-        float flGainAmount = damageDealt * flEnergyStealMult;
+        float energyStealMult = GetEnergystealAmount();
+        float gainAmount = damageDealt * energyStealMult;
 
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerClassResources.exists(steamID))
@@ -295,16 +335,16 @@ class BloodlustData
                 dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
                 if(resources !is null)
                 {
-                    float flCurrentEnergy = float(resources['current']);
-                    float flMaxEnergy = float(resources['max']);
+                    float currentEnergy = float(resources['current']);
+                    float maxEnergy = float(resources['max']);
 
-                    flCurrentEnergy = Math.min(flCurrentEnergy + flGainAmount, flMaxEnergy); // Add energy to variable, but don't exceed max.
+                    currentEnergy = Math.min(currentEnergy + gainAmount, maxEnergy); // Add energy to variable, but don't exceed max.
 
-                    resources['current'] = flCurrentEnergy; // Add back to energy.
+                    resources['current'] = currentEnergy; // Add back to energy.
                 }
             }
 
-        return flGainAmount;
+        return gainAmount;
     }
 
     void ApplyLifestealEffect(CBasePlayer@ pPlayer)
