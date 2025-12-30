@@ -657,7 +657,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             return HOOK_CONTINUE;
 
         // Sentry damage scaling.
-        float damageSentryMultiplier = 1.0f + sentry.GetScaledDamage();
+        float damageSentryMultiplier = sentry.GetScaledDamage();
         info.flDamage *= damageSentryMultiplier;
 
         //Sentry cryo effect.
@@ -683,7 +683,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             return HOOK_CONTINUE;
             
         // Apply the damage multiplier.
-        float damageRoboMultiplier = 1.0f + minion.GetScaledDamage();
+        float damageRoboMultiplier = minion.GetScaledDamage();
         info.flDamage *= damageRoboMultiplier;
     }
     else if(targetname.StartsWith("_xenminion_"))
@@ -706,7 +706,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             return HOOK_CONTINUE;
             
         // Apply the damage multiplier.
-        float damageXenMultiplier = 1.0f + xenMinion.GetScaledDamage();
+        float damageXenMultiplier = xenMinion.GetScaledDamage();
         info.flDamage *= damageXenMultiplier;
 
         // Process life steal - when xenminion deals damage, give health to owner.
@@ -732,7 +732,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             return HOOK_CONTINUE;
             
         // Apply the damage multiplier.
-        float damageNecroMultiplier = 1.0f + necroMinion.GetScaledDamage();
+        float damageNecroMultiplier = necroMinion.GetScaledDamage();
         info.flDamage *= damageNecroMultiplier;
 
         // Process lifesteal - when necrominion deals damage, give health to owner and all minions.
@@ -763,7 +763,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             return HOOK_CONTINUE;
             
         // Apply the damage multiplier.
-        float damageSnarkMultiplier = 1.0f + snarkNest.GetScaledDamage();
+        float damageSnarkMultiplier = snarkNest.GetScaledDamage();
         info.flDamage *= damageSnarkMultiplier;
     }
 
@@ -852,7 +852,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     if(g_PlayerCloaks.exists(steamID))
     {
         CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
-        if(cloak !is null && cloak.IsNovaActive() && cloak.GetStats().HasUnlockedPerk1())
+        if(cloak !is null && cloak.IsNovaActive())
         {
             float healAmount = info.flDamage * cloak.GetAPStealPercent(); // Get damage dealt to repair.
 
