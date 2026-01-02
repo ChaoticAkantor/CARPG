@@ -1,47 +1,31 @@
-//This is includes file, all includes go here and are loaded in CARPG.
-#include "AmmoRegen"
-#include "Recovery"
-#include "Difficulty"
-#include "PlayerData"
-#include "DebugMenu"
+//All includes go here.
 
+// Data Handling.
+#include "PlayerData"
+
+// Menus.
 #include "Classes/ClassMenu"
 #include "Classes/ClassResource"
 #include "classes/ClassStatsMenu"
 
-// Class Features.
+// Classes.
+#include "Classes/Engineer/SentryMinion"
+#include "Classes/Robomancer/RobotMinion"
+#include "Classes/Xenomancer/XenMinion"
+#include "Classes/Necromancer/NecroMinion"
+#include "Classes/Swarmer/SnarkSwarm"
+#include "Classes/Medic/HealAura"
+#include "Classes/Defender/Barrier"
+#include "Classes/Shocktrooper/ShockRifle"
+#include "Classes/Berserker/Bloodlust"
+#include "Classes/Cloaker/Cloak"
+#include "Classes/Vanquisher/DragonsBreath"
+
+// Weapon Giver.
 #include "Classes/GiveWeapons"
 
-// Medic.
-#include "Classes/Medic/HealAura"
-
-// Engineer.
-#include "Classes/Engineer/SentryMinion"
-
-// Engineer.
-#include "Classes/Robomancer/RobotMinion"
-
-// Xenologist.
-#include "Classes/Xenomancer/XenMinion"
-
-// Necromancer.
-#include "Classes/Necromancer/NecroMinion"
-
-// Defender
-#include "Classes/Defender/Barrier"
-
-// Shocktrooper.
-#include "Classes/Shocktrooper/ShockRifle"
-
-// Berserker.
-#include "Classes/Berserker/Bloodlust"
-
-// Cloaker.
-#include "Classes/Cloaker/Cloak"
-
-// Vanquisher.
-#include "Classes/Vanquisher/DragonsBreath"
-//#include "Classes/Vanquisher/MortarStrike" // Unused mortar strike ability, may be reused for another class.
-
-// Swarmer.
-#include "Classes/Swarmer/SnarkSwarm"
+// Gameplay modules.
+#include "Difficulty"
+#include "AmmoRegen"
+#include "Recovery"
+#include "DebugMenu"
