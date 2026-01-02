@@ -4,11 +4,13 @@ dictionary g_ShockRifleData;
 
 class ShockRifleData 
 {
-    private ClassStats@ m_pStats = null;
+    // Shocktrooper ability scaling values.
     private float m_flDamageScaleAtMaxLevel = 3.00f; // Damage modifier for shockrifle at max level.
 
-    private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
-    private float m_flLastUseTime = 0.0f;
+    private float m_flCooldown = 10.0f; // SHOULD NOT BE CHANGED. To account for ingame delay before being allowed to collect another shockroach.
+    private float m_flLastUseTime = 0.0f; // Stores last use time.
+
+    private ClassStats@ m_pStats = null;
 
     bool HasStats() { return m_pStats !is null; }    
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -101,7 +103,7 @@ class ShockRifleData
         if(timeSinceLastUse < m_flCooldown)
         {
             float remainingCooldown = m_flCooldown - timeSinceLastUse;
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle equip cooldown: " + int(remainingCooldown + 0.5) + "s\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle equip cooldown: " + int(remainingCooldown) + "s\n");
             return;
         }
 
