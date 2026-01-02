@@ -1,16 +1,23 @@
+string strSnarkModel = "models/w_squeak.mdl";
+string strSnarkSpriteTinySpit = "sprites/tinyspit.spr"; // Should already be precached by from bullsquid in XenMinion, but still crashes on They Hunger maps!
+
 dictionary g_PlayerSnarkNests;
 
 class SnarkNestData
-{
+{   
+    // Snark Swarm ability parameters.
     private float m_flEnergyCost = 1.0f; // Base cost per use (charges).
-    private int m_iBaseSnarkCount = 30; // Base number of snarks to spawn.
-    private float m_flBaseHealth = 50.0f; // Health of each snark.
-    private float m_flHealthScaleAtMaxLevel = 5.0f; // Health modifier at max level.
-    private float m_flSnarkDamageScaleAtMaxLevel = 5.0f; // Damage modifier at max level.
-    private float m_flSnarkCountScaleAtMaxLevel = 2.00f; // Count modifier at max level.
+    private float m_flBaseHealth = 50.0f; // Base HP of each snark.
+    private float m_flHealthScaleAtMaxLevel = 6.0f; // Health modifier at max level.
+    private float m_flSnarkDamageScaleAtMaxLevel = 8.0f; // Damage modifier at max level. Snark base damage is derived from sk setting.
+    private int m_iBaseSnarkCount = 10; // Base number of snarks to spawn.
+    private float m_flSnarkCountScaleAtMaxLevel = 5.00f; // Number of snarks modifier at max level.
+    private float m_flLifestealPercentAtMaxLevel = 0.05f; // Percentage of damage dealt returned to player as health.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 4.0f; // Cooldown between spawns.
     private float m_flLaunchForce = 1000.0f; // Velocity that snarks are thrown outward.
+
+    // As far as I know, snark lifespan is hardcoded, would be nice to be able to change it.
 
     private ClassStats@ m_pStats = null;
     bool HasStats() { return m_pStats !is null; }
@@ -94,6 +101,20 @@ class SnarkNestData
         minionScaledHealth *= healthMultiplier;
 
         return minionScaledHealth;
+    }
+
+    float GetLifestealPercent() // Get minion lifesteal based on level.
+    { 
+        if(m_pStats is null)
+            return 0.0f; // Default if no stats.
+
+        float lifeSteal = 0.0f; // Default to zero.
+
+        float level = m_pStats.GetLevel();
+        lifeSteal = m_flLifestealPercentAtMaxLevel * (float(level) / g_iMaxLevel);
+
+
+        return lifeSteal;
     }
 
     void SummonSnarks(CBasePlayer@ pPlayer)
@@ -268,6 +289,39 @@ class SnarkNestData
         // Schedule the next spawn.
         g_Scheduler.SetTimeout("ContinueSnarkSpawning", 0.05f, spawnParams);
     }
+
+    // Called when a minion deals damage to an enemy. This version only heals owner.
+    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+            return;
+
+        // Calculate health to return to player based on level scaling.
+        float lifeStealPercent = GetLifestealPercent(); // Use scaled lifesteal instead of raw max value
+        float healthToGive = flDamageDealt * lifeStealPercent;
+        
+        // Apply the healing.
+        pPlayer.pev.health = Math.min(pPlayer.pev.health + healthToGive, pPlayer.pev.max_health);
+        
+        // Visual feedback for the lifesteal effect - Heal sprites - Player.
+        Vector pos = pPlayer.pev.origin;
+        Vector mins = pos - Vector(16, 16, 0);
+        Vector maxs = pos + Vector(16, 16, 64);
+
+        NetworkMessage healeffect(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        healeffect.WriteByte(TE_BUBBLES);
+        healeffect.WriteCoord(mins.x);
+        healeffect.WriteCoord(mins.y);
+        healeffect.WriteCoord(mins.z);
+        healeffect.WriteCoord(maxs.x);
+        healeffect.WriteCoord(maxs.y);
+        healeffect.WriteCoord(maxs.z);
+        healeffect.WriteCoord(80.0f); // Height of the bubble effect
+        healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+        healeffect.WriteByte(18); // Count
+        healeffect.WriteCoord(6.0f); // Speed
+        healeffect.End();
+    }
 }
 
 // Function to continue the staggered snark spawning.
@@ -322,7 +376,6 @@ void CheckSnarkNests()
                     }
                 }
                 
-                /*
                 // Check for any snarks belonging to this player and check their frags.
                 CBaseEntity@ snarkEntity = null;
                 string searchPattern = "_snark_" + i + "_*";
@@ -330,14 +383,13 @@ void CheckSnarkNests()
                 {
                     
                     // Check if snark has gained a frag.
-                    //if(snarkEntity.pev.frags > 0)
+                    if(snarkEntity.pev.frags > 0)
                     {
                         // Transfer frags to player.
                         pPlayer.pev.frags += snarkEntity.pev.frags;
                         snarkEntity.pev.frags = 0;
                     }
                 }
-                */
             }
         }
     }

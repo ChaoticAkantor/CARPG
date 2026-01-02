@@ -791,10 +791,11 @@ class XenMinionData
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
-        // Calculate health to return to player and minion.
-        float healthToGive = flDamageDealt * m_flLifestealPercentAtMaxLevel;
+        // Calculate health to return to player based on level scaling.
+        float lifeStealPercent = GetLifestealPercent(); // Use scaled lifesteal instead of raw max value
+        float healthToGive = flDamageDealt * lifeStealPercent;
         
-        // Apply the healing if the player isn't already at max health.
+        // Apply the healing to the player.
         if(pPlayer.pev.health < pPlayer.pev.max_health)
         {
             pPlayer.pev.health = Math.min(pPlayer.pev.health + healthToGive, pPlayer.pev.max_health);
