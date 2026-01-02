@@ -49,12 +49,17 @@ class DragonsBreathData
         return DragonsBreathFire;
     }
 
-    float GetFireDuration() { return m_iDragonsBreathFireTicks * m_flDragonsBreathFireInterval; }
+    float GetFireDuration() { return m_iDragonsBreathFireTicks * m_flDragonsBreathFireInterval; } // Get fire DoT duration.
 
-    float GetRadius() { return m_flDragonsBreathRadius; }
+    float GetRadius() { return m_flDragonsBreathRadius; } // Get fire DoT radius.
+
+    float GetAmmoRefillPercent() { return m_flRoundsFillPercentage; } // Get refill percentage.
 
     int GetAmmoPerPack() // Calculate number of rounds to add per pack.
     {
+        if(m_pStats is null)
+            return m_iDragonsBreathPoolBase; // If no stats, return base.
+
         int maxRounds = GetMaxRounds();
         int roundsToAdd = int(maxRounds * m_flRoundsFillPercentage);
         return Math.max(1, roundsToAdd); // Always return at least 1 round.
@@ -196,7 +201,7 @@ class DragonsBreathData
                 Math.MakeVectors(angles);
                 Vector vecAiming = g_Engine.v_forward;
                 
-                // Use more realistic shotgun spread pattern.
+                // Shotgun spread pattern.
                 Vector spread = Vector(
                     Math.RandomFloat(-0.05, 0.05),
                     Math.RandomFloat(-0.05, 0.05),
@@ -224,7 +229,7 @@ class DragonsBreathData
                     }
                 }
 
-                // IMPORTANT: Always play the explosion sound for each shotgun pellet.
+                // Always play the explosion sound for each shotgun pellet.
                 g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_STATIC, strDragonsBreathImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
                 
                 // Create smaller explosion effects for shotgun pellets.
