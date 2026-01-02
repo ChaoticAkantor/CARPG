@@ -531,6 +531,11 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strBabyGargSoundStep2);
         g_SoundSystem.PrecacheSound(strBabyGargSoundStomp1);
 
+    // Snark.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strSnarkModel);
+        g_Game.PrecacheModel(strSnarkSpriteTinySpit);
+
 /*  Had to disable Alien Grunt for now as the hornets it fires aren't owned by it, 
     so you gain no XP from score transfer as it doesn't gain any score.
     Known bug, hopefully fixed in the next Sven update.
@@ -666,7 +671,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     else if(targetname.StartsWith("_minion_"))
     {
         // Find owner's MinionData by the index in targetname.
-        string ownerIndex = targetname.SubString(8); // Look specifically for only targetnames with indexes added.
+        string ownerIndex = targetname.SubString(8); // Skip "_minion_".
         if(ownerIndex.IsEmpty())
             return HOOK_CONTINUE;
             
@@ -689,7 +694,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     else if(targetname.StartsWith("_xenminion_"))
     {
         // Find owner's XenMinionData by the index in targetname.
-        string ownerIndex = targetname.SubString(11); // Look specifically for only targetnames with indexes added.
+        string ownerIndex = targetname.SubString(11); // Skip "_xenminion_".
         if(ownerIndex.IsEmpty())
             return HOOK_CONTINUE;
             
@@ -709,13 +714,13 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageXenMultiplier = xenMinion.GetScaledDamage();
         info.flDamage *= damageXenMultiplier;
 
-        // Process life steal - when xenminion deals damage, give health to owner.
+        // Process life steal - when xenminions deal damage, give health to owner and minions.
         xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_necrominion_"))
     {
         // Find owner's NecroMinionData by the index in targetname.
-        string ownerIndex = targetname.SubString(12); // Look specifically for only targetnames with indexes added.
+        string ownerIndex = targetname.SubString(12); // Skip "_necrominion_".
         if(ownerIndex.IsEmpty())
             return HOOK_CONTINUE;
             
@@ -735,7 +740,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageNecroMultiplier = necroMinion.GetScaledDamage();
         info.flDamage *= damageNecroMultiplier;
 
-        // Process lifesteal - when necrominion deals damage, give health to owner and all minions.
+        // Process lifesteal - when necrominions deal damage, give health to owner and minions.
         necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_snark_"))
@@ -765,6 +770,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Apply the damage multiplier.
         float damageSnarkMultiplier = snarkNest.GetScaledDamage();
         info.flDamage *= damageSnarkMultiplier;
+
+        // Process lifesteal - when snarks deal damage, give health to owner.
+        snarkNest.ProcessMinionDamage(pOwner, info.flDamage);
     }
 
     if(info.pAttacker is null || !info.pAttacker.IsPlayer())
@@ -848,7 +856,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         }
     }
 
-    // Perk 1 - AP Steal Nova.
+    // Cloaker - AP Steal from Nova damage.
     if(g_PlayerCloaks.exists(steamID))
     {
         CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
