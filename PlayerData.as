@@ -223,8 +223,8 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                         def.maxAP = 200.0f;
 
-                    def.baseResource = 100.0f; // Base Shock Rifle Battery capacity.
-                        def.maxResource = 800.0f; // Max capacity at max level.
+                    def.baseResource = 100.0f; // Base shock rifle battery capacity.
+                        def.maxResource = 800.0f; // Max shock rifle battery capacity, at max level.
 
                     def.fullRegenTime = 90.0f;
                     break;
@@ -260,9 +260,9 @@ void InitializeClassDefinitions()
                         def.maxAP = 200.0f;
 
                     def.baseResource = 1.0f; // Base charges.
-                        def.maxResource = 3.0f; // Max snark nests at max level.
+                        def.maxResource = 1.0f; // Max snark nests at max level.
 
-                    def.fullRegenTime = 30.0f;
+                    def.fullRegenTime = 20.0f;
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
@@ -276,8 +276,8 @@ class ClassStats
     private int m_iLevel = 1; // Default/starting level.
     private int m_iXP = 0; // Total XP.
     private int m_iCurrentLevelXP = 0; // XP into current level.
-private int XP_BASE = 20;          // Base needed XP.
-    private int XP_MULTIPLIER = 1.5;     // Growth factor.
+    private int XP_BASE = 10;          // Base needed XP.
+    private float XP_MULTIPLIER = 1.5;     // Growth factor.
     private int MAX_LEVEL = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
     
@@ -291,7 +291,7 @@ private int XP_BASE = 20;          // Base needed XP.
     
     private int GetXPForLevel(int level)
     {
-        return XP_BASE * XP_MULTIPLIER * level;
+        return int(XP_BASE * level * XP_MULTIPLIER);
     }
     
     private int GetTotalXPForLevel(int level)
