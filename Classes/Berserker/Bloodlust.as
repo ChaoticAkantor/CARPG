@@ -17,18 +17,18 @@ class BloodlustData
     private float m_flBloodlustEnergyDrainInterval = 1.0f; // Interval to remove energy.
     private float m_flBloodlustEnergyCost = 1.0f; // Energy drain per interval.
 
-    // Bloodlust stat scaling values.
+    // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
     private float m_flDamageBonusAtMaxLevel = 2.5f; // Max Damage bonus multiplier at max level, increases per tic while in bloodlust. NOT IMPLEMENTED.
     private float m_flDamageReductionAtMaxLevel = 0.45f; // Damage reduction multiplier at maximum level. Doubles during bloodlust!
     private float m_flLifestealAtMaxLevel = 0.50f; // Lifesteal %, as a multiplier at max level. Doubles during bloodlust!
     private float m_flEnergystealAtMaxLevel = 0.15f; // Energy steal %, as a multiplier at max level. Doubles during bloodlust!
     private float m_flEnergystealFixedAmount = 0.05f; // Fixed energy steal % if scaling is disabled. Doubles during bloodlust!
-    private bool m_bEnergyStealIsFixed = false; // Whether energy steal is a fixed % or scales with level.
+    private bool m_bEnergyStealIsFixed = false; // Whether energy steal is a fixed or scales with level.
 
     // Cooldown and activation timers.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
-    private float m_flLastDrainTime = 0.0f;
-    private float m_flLastToggleTime = 0.0f;
+    private float m_flLastDrainTime = 0.0f; // Stores last drain time.
+    private float m_flLastToggleTime = 0.0f; // Stores last toggle time.
 
     private ClassStats@ m_pStats = null;
 
@@ -39,28 +39,6 @@ class BloodlustData
 
     float GetEnergyCost() { return m_flBloodlustEnergyCost; } // Grab energy cost.
     float GetEnergySteal() { return (m_flEnergystealAtMaxLevel * 100); } // Grab Energy steal percentage.
-
-    // Bloodlust active damage bonus rampup - NOT IMPLEMENTED.
-    float GetDamageBonus()
-    {
-        float damageBonus = 1.0f; // Base multiplier.
-        
-        if(m_pStats !is null)
-        {
-            int level = m_pStats.GetLevel();
-
-            // Bloodlust stacking damage bonus.
-            if(m_bActive)
-            {
-                float bonusPerLevel = m_flDamageBonusAtMaxLevel / g_iMaxLevel;
-                damageBonus += bonusPerLevel * level; // This is applied per tic.
-            }
-            else
-                return 0.0f; // Damage bonus reduced to 0 when ability is not active.
-        }
-            
-        return damageBonus;
-    }
 
     float GetLifestealAmount()
     {
