@@ -9,127 +9,83 @@
 # Classes?!
 Rather than having lots of skills, most of the old SCXPM skills were coalested into auto-increasing stats on level up and regen was merged into it's own recovery system.
 
-All abilities gain increased duration or extra charges as they level.
-All abilities require full charge to activate, but can be ended early to either refund cost or start recharging.
-Most ability features or strength scale with level.
+All abilities scale in various ways as they level.
 
-1 Frag/score = 1 XP, no nonsence calculations and bloated numbers.
-All XP is shared between players! And minion classes share XP with their team. No more hogging. Even in whilst dead or in observer mode you continue to earn XP!
+1 Frag/score = 1 XP, no bloated numbers.
+All XP is shared between players! And minion classes share XP with their team. No more hogging. Even whilst dead or in observer mode you will continue to earn XP!
 
 # How do I use Skills?
  Typing useability in chat, or binding a button to it and pressing it will activate your class ability.
  Type bind mouse3 say "useability" in console and replace mouse3 with the key you want to use. 
- 
- Most if not all abilities are togglable, but can only be activated when full.
 
 # Current Classes
-# Medic - Healer
+# Medic - Healer/AoE Damage Dealer
 Whilst active creates a Healing aura with a large radius, can heal yourself as well as friendly players and friendly NPC's every second, this includes other player's minions. Can also revive players for an increased cost.
 
 Deals equivalent poison damage as heal value to all enemies caught in the aura.
 
-NPC healing is 50% stronger.
+NPC healing is stronger.
 
-Has a moderate recharge rate.
+# Berserker - Lifesteal Tank
+Passively gains Life Steal and damage reduction the lower their health. Activating ability toggles a Bloodlust rage state, which doubles all bonuses whilst active.
 
-# Berserker - HP/Lifesteal Tank
-Toggles a Bloodlust rage state, giving % damage dealt as lifesteal. It relies on dealing damage to gain charge and maintain it whilst active as it recharges very slowly on it's own.
-
-Also gain a damage bonus the lower your current HP, that scales with level.
-
-Has a slow recharge rate.
+Life steal will return HP as AP at a severely reduced value if HP is full.
 
 # Engineer - Healer/Minion Hybrid
-Can summon a single friendly Sentry that heals all allies every second, has an extremely large radius. Activating the ability again will recall the Sentry. Uses duration rather than minion points system. 
+Can summon a single friendly Sentry for a duration that regenerates HP for all players and itself. Activating the ability again will recall the Sentry. The sentry turret uses Cryo rounds that can slow targets.
 
-Health, damage and heal amount scales with level. Sentry turrets are very brittle, so it has very high base health to compensate.
-
-Sentry heal affects itself at 20x strength. Can also hit it with the wrench to heal it by a large amount.
-
-Triggers detonation sequence on death! Medium damage.
+Health, damage and healing and cryo slow strength scales with level.
 
 Any XP (frags/score) it gains is sent to you instead.
 
-Has a moderate recharge rate.
-
 # Robomancer - Robogrunt Minions
-Can summon friendly robogrunts based on points remaining via a menu, robots with stronger weapons cost more points.
-
-Points regenerate very slowly when not in use, number of points increase with level.
-
-They can be be killed or teleported from the menu.
-
-Can be controlled with Sven NPC keybinds.  
+Can summon friendly robogrunts that will follow you, can be teleported or killed via the minion menu.
 
 Their health and damage scales with level. Robogrunts have thick armor and are resistant to bullets.
 
-Robogrunts regenerate 1% health per second. Can hit them with the wrench to heal them by a large amount.
-
-Triggers detonation sequence on death! High damage.
+Regenerates HP.
 
 Any XP (frags/score) they gain is sent to you instead.
 
-Has a slow recharge rate.
-
 # Xenomancer - Xen Minions
-Can summon friendly creatures based on points remaining via a menu, larger creature types cost more points but have more health.
-
-Points regenerate very slowly when not in use, number of points increase with level.
-
-They can be be killed or teleported from the menu.
-
-Can be controlled with Sven NPC keybinds.  
+Can summon friendly Xen creatures that will follow you, can be teleported or killed via the minion menu. 
 
 Their health and damage scales with level.
 
-Creatures regenerate 1% health per second. Can heal them with the medkit, but it is not very effective.
+Regenerates HP.
 
-Can be revived if they die, is only considered truly dead once their corpse has faded. Can be teleported to you in revivable state.
+Can be revived if they are dying, is only considered truly dead once their corpse has faded. Can be teleported to you in revivable state.
 
 Any XP (frags/score) they gain is sent to you instead.
 
-Has a slow recharge rate.
-
 # Warden - Ice Shield Tank
-Whilst active it absorbs all incoming damage until it shatters, there is no bleed-through, making you functionally immortal against all damage types, but does not stop recovery delay from triggering.
+Forms a shield of ice around the user that absorbs all damage. The shield has it's own HP. Recharges slower whilst it is active.
 
-Whilst active it will still recover over time, but 50% slower.
-
-Has a faster recharge rate.
+All damage taken is reflected back at the attacker, dealing damage as Radius Damage.
 
 # Shocktrooper - Power Weapon Damage Dealer
-Can equip a Shockrifle, can re-stow it by pressing ability button whilst holding one. Even if you throw it away, you will always get another.
+Can equip a Shockrifle at will, can re-stow it by pressing ability button whilst holding one.
 
-Picked up Shockroaches can also be stowed to restore a battery, stowing restores half of current ammo to battery.
+Stowing restores half of remaining ammo to battery. Picked up Shockroaches can also be stowed to restore battery this way.
 
-Damage of Shockrifle increases with level, this damage bonus counts for any Shockroach you hold.
-
-Battery Capacity increases with level, far beyond a normal Shockroach.
-
-Has a slow recharge rate.
+Damage and Capacity of Shockrifles scale with level.
 
 # Cloaker - Stealthy Damage Dealer 
-Invisiblity cloak that gains a damage bonus, based on how full the battery is.
+Invisiblity cloak that gains a damage bonus, based on how full the battery is. Ending the cloak will activate a damaging nova, dealing damage based on remaining energy. Also become completely invisible to AI.
 
-Becomes completely invisible to AI.
-
-Battery drains by a large amount when dealing damage.
-
-Has a faster recharge rate.
+A percent of damage dealt by the nova will restore AP.
 
 # Vanquisher - AoE Damage Dealer
-Can consume Explosive Ammo Packs to grant Explosive Ammo to all bullet-type weapons, adding extra radius explosive damage.
+Can consume Explosive Ammo Packs to grant a portion of Explosive Ammo to the ammo pool. All hitscan weapons will deal extra radius explosive damage, as well as creating a fire DoT at the impact location for a duration, DoT's stack infinitely.
 
-One Explosive Ammo Pack fills 20% of your maximum capacity.
+Fire damage will scale with level.
 
-Slow-firing weapons get a radius damage multiplier with Explosive Ammo.
+Fire duration and AoE is fixed.
 
-Maximum Explosive Ammo capacity, radius damage and Explosive Ammo Pack charges increase with level.
+# Leveling
+ Default Max Level is 100.
 
-Has a slow recharge rate.
-
-# Stat Scaling/Leveling
- Max HP/AP/Energy and certain ability features will scale with your level. Max level is 50.
+ Max HP and AP will scale with your level, based on your class.
 
  Each class has it's own max level and stats saved individually.
 
@@ -138,22 +94,22 @@ Has a slow recharge rate.
  Type "stats" without quotes in chat to bring up the stats menu to see your current stat and ability bonuses and see any other modifiers like ammo regen (WIP).
 
 # Ammo Regeneration
- The mod also features an ammo regeneration system similar to Borderlands 1's ammo regen modifier, every bullet type is on it's own timer. Some classes get bonus reduction to these depending on levels gained.
+ The mod also features an ammo regeneration system similar to Borderlands 1's ammo regen modifier, every bullet type is on it's own timer. Some classes get bonus reduction to these timers depending on levels gained.
 
  Explosives regeneration is extremely limited to most classes. Usually a threshold that stops you from regenerating it fully.
 
- The ammo system also multiplies ammo timers for horror map series for They Hunger and Afraid of Monsters Classic/DC.
+ The ammo system also multiplies ammo timers for different map series such as They Hunger and Afraid of Monsters Classic/DC.
 
 # Recovery
  The mod also features it's own recovery system. 
- Regeneration will halt for a 2s delay after taking damage, displaying an icon in the hud.
+ Regeneration will halt a small delay after taking damage, displaying an icon in the hud.
  HP restores 1% of Max HP every 1.0s.
- AP restores 1% of Max AP every 0.5s.
+ AP restores 1% of Max AP every 2.0s.
 
 # Difficulty
  The mod also features it's own difficulty normalising system.
  Damage dealt by players is slightly increased, most weapons are rebalanced.
- Zombies and headcrabs specifically hit harder.
+ Zombies and headcrabs specifically hit harder. Certain bullet types from enemies do more damage due to the player changes.
 
 # Installation instructions:
 
