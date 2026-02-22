@@ -4,6 +4,7 @@ string strHealSound = "player/heartbeat1.wav"; // Aura heal hit sound.
 string strHealAuraSprite = "sprites/zbeam6.spr"; // Aura sprite.
 string strHealAuraEffectSprite = "sprites/saveme.spr"; // Aura healing sprite.
 string strHealAuraPoisonEffectSprite = "sprites/tinyspit.spr"; // Poison damage sprite for enemies.
+string strPoisonSound = "bullchicken/bc_spithit1.wav"; // Sound played when poison damages an enemy.
 
 dictionary g_HealingAuras;
 
@@ -225,8 +226,9 @@ class HealingAura
                 int relationship = pMonster.IRelationship(pPlayer);
                 if (relationship != R_AL) // Only poison them if NOT an ally of the player.
                 {
-                    pMonster.TakeDamage(pPlayer.pev, pPlayer.pev, poisonDamage, DMG_POISON);
+                    pMonster.TakeDamage(pPlayer.pev, pPlayer.pev, poisonDamage, DMG_ACID);
                     ApplyPoisonEffect(pMonster);
+                    g_SoundSystem.EmitSoundDyn(pMonster.edict(), CHAN_ITEM, strPoisonSound, 0.5f, ATTN_NORM, SND_FORCE_SINGLE);
                 }
             }
         }
