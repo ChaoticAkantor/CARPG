@@ -207,19 +207,29 @@ class HealingAura
             return;
 
         Vector playerOrigin = pPlayer.pev.origin;
-        float poisonDamage = GetPoisonDamageAmount(); // Has harsh damage falloff due to RadiusDamage.
+        float poisonDamage = GetPoisonDamageAmount();
         
-        // Apply the poison damage using RadiusDamage, not as complex and less control, but easier to handle than relationships.
-        g_WeaponFuncs.RadiusDamage
-        (
-            playerOrigin, // Explosion center (Player).
-            pPlayer.pev, // Inflictor.
-            pPlayer.pev, // Attacker.
-            poisonDamage, // Damage - scaled from max energy.
-            m_flHealingRadius, // Radius.
-            CLASS_PLAYER, // Will not damage player or allies.
-            DMG_POISON // Damage type - poison.
-        );
+        // Apply poison damage to entities in radius, checking relationship first.
+        CBaseEntity@ pEntity = null;
+        while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flHealingRadius, "*", "classname")) !is null)
+        {
+            // Skip the aura owner.
+            if (pEntity is pPlayer)
+                continue;
+
+            // Only damage entities that are NOT allies.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
+            if (pMonster !is null && pMonster.IsAlive())
+            {
+                // Check relationship to ensure we won't damage allies.
+                int relationship = pMonster.IRelationship(pPlayer);
+                if (relationship != R_AL) // Only poison them if NOT an ally of the player.
+                {
+                    pMonster.TakeDamage(pPlayer.pev, pPlayer.pev, poisonDamage, DMG_POISON);
+                    ApplyPoisonEffect(pMonster);
+                }
+            }
+        }
 
         m_flLastPoisonTime = currentTime; 
     }
