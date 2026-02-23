@@ -163,8 +163,10 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
     // Baby Gargantua. Adult one is way too strong :P.
     // Models/Sprites.
     string strBabyGargModel = "models/babygarg.mdl";
+    string strBabyGargModelGibs = "models/metalplategibs.mdl";
     string strBabyGargSpriteEye = "sprites/gargeye1.spr";
     string strBabyGargSpriteBeam = "sprites/xbeam3.spr";
+
 
     // Sounds.
     string strBabyGargSoundAlert1 = "babygarg/gar_alert1.wav";

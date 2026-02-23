@@ -502,6 +502,7 @@ void PrecacheAll()
     // Baby Gargantua.
         //Models/Sprites.
         g_Game.PrecacheModel(strBabyGargModel);
+        g_Game.PrecacheModel(strBabyGargModelGibs);
         g_Game.PrecacheModel(strBabyGargSpriteEye);
         g_Game.PrecacheModel(strBabyGargSpriteBeam);
 
