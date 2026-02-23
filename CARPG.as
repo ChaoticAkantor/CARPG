@@ -211,6 +211,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strHealAuraToggleSound);
         g_SoundSystem.PrecacheSound(strHealAuraActiveSound);
         g_SoundSystem.PrecacheSound(strHealSound);
+        g_SoundSystem.PrecacheSound(strReviveSound);
         g_SoundSystem.PrecacheSound(strPoisonSound);
 
     // Xenomancer Ability Precache.
