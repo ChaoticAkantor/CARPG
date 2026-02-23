@@ -3,7 +3,8 @@ const string strLevelUpSound = "misc/secret.wav";
 dictionary g_PlayerRPGData;
 
 // Used for debug menu.
-int g_iMaxLevel = 100;
+int g_iMaxLevel = 100; // Max player level, all ability power will scale with the new maximum. Increasing this will not make players stronger!
+float g_fXPMultiplier = 1.0f; // Score to XP multiplier, 1.0 = 1 score is 1 XP.
 
 dictionary g_ClassNames = 
 {
@@ -276,9 +277,9 @@ class ClassStats
     private int m_iLevel = 1; // Default/starting level.
     private int m_iXP = 0; // Total XP.
     private int m_iCurrentLevelXP = 0; // XP into current level.
-    private int XP_BASE = 10;          // Base needed XP.
-    private float XP_MULTIPLIER = 1.5;     // Growth factor.
-    private int MAX_LEVEL = g_iMaxLevel;         // Max level.
+    private int m_iXPNeededBase = 5;          // Base needed XP.
+    private float m_fXPNeededMult = 1.5;     // Growth factor.
+    private int m_iMaxLevel = g_iMaxLevel;         // Max level.
     private string m_szSteamID; // Store player's SteamID.
     
     int GetLevel() { return m_iLevel; }
@@ -287,11 +288,11 @@ class ClassStats
     int GetCurrentLevelXP() { return m_iCurrentLevelXP; }
     int GetNeededXP() { return GetXPForLevel(m_iLevel); }
 
-    bool IsMaxLevel() { return m_iLevel >= MAX_LEVEL; }
+    bool IsMaxLevel() { return m_iLevel >= m_iMaxLevel; }
     
     private int GetXPForLevel(int level)
     {
-        return int(XP_BASE * level * XP_MULTIPLIER);
+        return int(m_iXPNeededBase * level * m_fXPNeededMult);
     }
     
     private int GetTotalXPForLevel(int level)
@@ -310,10 +311,32 @@ class ClassStats
         m_iCurrentLevelXP = m_iXP - prevLevelTotal;
     }
 
+    void ValidateLevelFromXP()
+    {
+        // Recalculate level from total XP to ensure consistency.
+        // Handles cases where XP formula parameters (XP_BASE, XP_MULTIPLIER) change.
+        m_iLevel = 1;
+        
+        while(!IsMaxLevel())
+        {
+            int neededForNext = GetXPForLevel(m_iLevel);
+            int currentLevelXP = m_iXP - GetTotalXPForLevel(m_iLevel);
+            
+            if(currentLevelXP >= neededForNext)
+            {
+                m_iLevel++;
+            }
+            else
+                break;
+        }
+        
+        UpdateCurrentLevelXP();
+    }
+
     void SetLevel(int level) 
     { 
         if(level < 1) level = 1;
-        if(level > MAX_LEVEL) level = MAX_LEVEL;
+        if(level > m_iMaxLevel) level = m_iMaxLevel;
         m_iLevel = level;
     }
     
@@ -324,7 +347,7 @@ class ClassStats
         // Handle max level case.
         if(IsMaxLevel())
         {
-            m_iXP = GetTotalXPForLevel(MAX_LEVEL);
+            m_iXP = GetTotalXPForLevel(m_iMaxLevel);
             m_iCurrentLevelXP = 0;
         }
         
@@ -370,7 +393,7 @@ class ClassStats
         
         if(IsMaxLevel())
         {
-            m_iXP = GetTotalXPForLevel(MAX_LEVEL);
+            m_iXP = GetTotalXPForLevel(m_iMaxLevel);
             m_iCurrentLevelXP = 0;
             return;
         }
@@ -864,7 +887,7 @@ class PlayerData
             int scoreDiff = currentScore - m_iLastScore;
             if(scoreDiff > 0)
             {
-                m_iScore += scoreDiff;
+                m_iScore += scoreDiff * g_fXPMultiplier;
                 
                 // Share XP with all players.
                 const int iMaxPlayers = g_Engine.maxClients;
@@ -965,6 +988,9 @@ class PlayerData
                     line = "";
                     file.ReadLine(line);
                     stats.SetXP(atoi(line));
+                    
+                    // Validate level from XP to ensure consistency if formula parameters changed.
+                    stats.ValidateLevelFromXP();
                 }
             }
             
