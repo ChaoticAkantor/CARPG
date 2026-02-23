@@ -1,10 +1,25 @@
 string strHealAuraToggleSound = "tfc/items/protect3.wav"; // Aura on/off sound.
 string strHealAuraActiveSound = "ambience/alien_beacon.wav"; // Aura active looping sound.
 string strHealSound = "player/heartbeat1.wav"; // Aura heal hit sound.
+string strReviveSound = "items/suitchargeok1.wav"; // Aura revive sound.
 string strHealAuraSprite = "sprites/zbeam6.spr"; // Aura sprite.
 string strHealAuraEffectSprite = "sprites/saveme.spr"; // Aura healing sprite.
 string strHealAuraPoisonEffectSprite = "sprites/tinyspit.spr"; // Poison damage sprite for enemies.
 string strPoisonSound = "bullchicken/bc_spithit1.wav"; // Sound played when poison damages an enemy.
+
+// Class names to skip during revival.
+array<string> g_SkipRevivalClassNames = 
+{
+    "squadmaker",
+    "monster_scientist_dead",
+    "monster_barney_dead",
+    "monster_hevsuit_dead",
+    "monster_hgrunt_dead",
+    "monster_human_grunt_ally_dead",
+    "monster_otis_dead",
+    "monster_scientist_dead"
+
+};
 
 dictionary g_HealingAuras;
 
@@ -40,7 +55,7 @@ class HealingAura
     private float m_flHealScalingAtMaxLevel = 4.0f; // Healing modifier at max level.
     private int m_iDrainAmount = 1.0f; // Energy drain per interval.
     private int m_iHealAuraDrainRevive = m_iDrainAmount * 2; // Energy drain per entity revived.
-    private float m_flHealAuraReviveHealthPercent = 0.25f; // Health percent when revived.
+    private float m_flHealAuraReviveHealthPercent = 0.50f; // Health percent when revived.
     private float m_flPoisonDamagePercent = 1.0f; // Modifier of healing amount dealt as poison damage. Using RadiusDamage.
     private float m_flHealAuraInterval = 1.0f; // Time between heals.
     private float m_flLastToggleTime = 0.0f;
@@ -352,8 +367,18 @@ class HealingAura
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flHealingRadius, "*", "classname")) !is null)
         {
-            // Skip squadmakers.
-            if(pEntity.GetClassname() == "squadmaker")
+            // Skip classnames in the skip list.
+            string classname = pEntity.GetClassname();
+            bool shouldSkip = false;
+            for(uint i = 0; i < g_SkipRevivalClassNames.length(); i++)
+            {
+                if(classname == g_SkipRevivalClassNames[i])
+                {
+                    shouldSkip = true;
+                    break;
+                }
+            }
+            if(shouldSkip)
                 continue;
 
             // Check for dead entities.
@@ -371,9 +396,9 @@ class HealingAura
                             pTarget.pev.health = pTarget.pev.max_health * m_flHealAuraReviveHealthPercent; // Revive at % of max health.
                             current -= reviveCost;
                             resources['current'] = current;
-                            pPlayer.pev.frags += 5; // Award frags for reviving a player.
-                            ApplyHealEffect(pEntity);
-                            g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                            pPlayer.pev.frags += 6; // Award frags for reviving a player.
+                            ApplyReviveEffect(pEntity);
+                            g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strReviveSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
                             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pEntity.pev.netname + "!\n");
                         }
                     }
@@ -390,9 +415,9 @@ class HealingAura
                                 pMonster.pev.health = pMonster.pev.max_health * m_flHealAuraReviveHealthPercent;
                                 current -= reviveCost;
                                 resources['current'] = current;
-                                pPlayer.pev.frags += 4; // Award frags for reviving a monster.
-                                ApplyHealEffect(pEntity);
-                                g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                                pPlayer.pev.frags += 3; // Award frags for reviving a monster.
+                                ApplyReviveEffect(pEntity);
+                                g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strReviveSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
                                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
                             }
                         }
@@ -483,6 +508,35 @@ class HealingAura
             msg.WriteByte(10);  // Count.
             msg.WriteByte(2);  // Life in 0.1's.
             msg.WriteByte(5);  // Scale in 0.1's.
+            msg.WriteByte(15); // Velocity along vector in 10's.
+            msg.WriteByte(5);  // Random velocity in 10's.
+        msg.End();
+    }
+
+    private void ApplyReviveEffect(CBaseEntity@ target)
+    {
+        if(target is null)
+            return;
+
+        Vector origin = target.pev.origin;
+        origin.z += 32; // Offset to center of entity.
+        
+        Vector endPoint = origin;
+        endPoint.z += 10; // Trail moves upward.
+
+        // Create sprite trail effect.
+        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+            msg.WriteByte(TE_SPRITETRAIL);
+            msg.WriteCoord(origin.x);
+            msg.WriteCoord(origin.y);
+            msg.WriteCoord(origin.z);
+            msg.WriteCoord(endPoint.x);
+            msg.WriteCoord(endPoint.y);
+            msg.WriteCoord(endPoint.z);
+            msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            msg.WriteByte(5);  // Count.
+            msg.WriteByte(3);  // Life in 0.1's.
+            msg.WriteByte(20);  // Scale in 0.1's.
             msg.WriteByte(15); // Velocity along vector in 10's.
             msg.WriteByte(5);  // Random velocity in 10's.
         msg.End();
