@@ -50,21 +50,31 @@ class HealingAura
 {
     // Healing Aura.
     private bool m_bIsActive = false;
-    private float m_flHealingRadius = 480.0f; // Radius of the healing aura.
-    private float m_flBaseHealAmount = 10.0f; // Base heal amount.
+    private float m_flHealingRadius = 512.0f; // Radius of the healing aura. (32ft)
+    private float m_flBaseHealAmount = 6.0f; // Base heal amount.
     private float m_flHealScalingAtMaxLevel = 4.0f; // Healing modifier at max level.
-    private int m_iDrainAmount = 1.0f; // Energy drain per interval.
-    private int m_iHealAuraDrainRevive = m_iDrainAmount * 2; // Energy drain per entity revived.
-    private float m_flHealAuraReviveHealthPercent = 0.50f; // Health percent when revived.
-    private float m_flPoisonDamagePercent = 1.0f; // Modifier of healing amount dealt as poison damage. Using RadiusDamage.
-    private float m_flHealAuraInterval = 1.0f; // Time between heals.
+    private float m_flHealAuraReviveHealthPercent = 0.50f; // Health percent to revive at.
+    private float m_flPoisonDamagePercent = 1.6f; // Modifier for poison damage dealt to enemies, scales from healing amount.
+    private float m_flHealAuraInterval = 1.0f; // Time between heals/damage tick.
+
+    // Energy costs.
+    private int m_iDrainAmount = 1.0f; // Energy drained per interval tick.
+    private int m_iHealAuraDrainRevive = m_iDrainAmount * 2; // Energy drain per revival.
+
+    // Score bonuses.
+    private int m_iHealFragBonus = 2; // Frags awarded for healing once.
+    private int m_iReviveFragBonusPlayer = 6; // Frags awarded for reviving a player once.
+    private int m_iReviveFragBonusMonster = 3; // Frags awarded for reviving an allied monster once.
+    
+
+    // Timers.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
     private float m_flLastHealTime = 0.0f;
     private float m_flLastPoisonTime = 0.0f;
     private float m_flHealInterval = 1.0f;
 
-
+    // Visual and vectors.
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = m_flHealAuraInterval; // Time between visual updates. Same as heal rate.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
@@ -132,7 +142,7 @@ class HealingAura
         }
 
         m_bIsActive = !m_bIsActive;
-        string message = m_bIsActive ? "Healing Aura Activated!\n" : "Healing Aura Deactivated!\n";
+        string message = m_bIsActive ? "Healing Aura On!\n" : "Healing Aura Off!\n";
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, message);
 
         if (m_bIsActive) 
@@ -184,7 +194,7 @@ class HealingAura
             {
                 m_bIsActive = false;
                 UpdateVisualEffect(pPlayer);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Deactivated!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Off!\n");
                 g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
                 RemoveAuraGlow(pPlayer);
             }
@@ -349,7 +359,7 @@ class HealingAura
         if(current < m_iDrainAmount)
         {
             m_bIsActive = false;
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Deactivated!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Off!\n");
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             RemoveAuraGlow(pPlayer);
             return;
@@ -396,7 +406,7 @@ class HealingAura
                             pTarget.pev.health = pTarget.pev.max_health * m_flHealAuraReviveHealthPercent; // Revive at % of max health.
                             current -= reviveCost;
                             resources['current'] = current;
-                            pPlayer.pev.frags += 6; // Award frags for reviving a player.
+                            pPlayer.pev.frags += m_iReviveFragBonusPlayer; // Award frags for reviving a player.
                             ApplyReviveEffect(pEntity);
                             g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strReviveSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
                             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pEntity.pev.netname + "!\n");
@@ -415,7 +425,7 @@ class HealingAura
                                 pMonster.pev.health = pMonster.pev.max_health * m_flHealAuraReviveHealthPercent;
                                 current -= reviveCost;
                                 resources['current'] = current;
-                                pPlayer.pev.frags += 3; // Award frags for reviving a monster.
+                                pPlayer.pev.frags += m_iReviveFragBonusMonster; // Award frags for reviving a monster.
                                 ApplyReviveEffect(pEntity);
                                 g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strReviveSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
                                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
@@ -477,7 +487,7 @@ class HealingAura
 
             // Process healing, effects and sounds.
             pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
-            pPlayer.pev.frags += 2; // Award frags for healing.
+            pPlayer.pev.frags += m_iHealFragBonus; // Award frags for healing.
             
             ApplyHealEffect(pEntity);
             g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
