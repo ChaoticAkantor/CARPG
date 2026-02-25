@@ -887,7 +887,7 @@ class PlayerData
             int scoreDiff = currentScore - m_iLastScore;
             if(scoreDiff > 0)
             {
-                m_iScore += scoreDiff * g_fXPMultiplier;
+                m_iScore += int(scoreDiff * g_fXPMultiplier);
                 
                 // Share XP with all players.
                 const int iMaxPlayers = g_Engine.maxClients;
