@@ -27,7 +27,7 @@ class CloakData
     private bool m_bNovaActive = false;
     private float m_flNovaRadius = 480.0f; // Radius of the nova.
     private float m_flNovaDamageMultiplierAtMaxLevel = 4.0f; // Nova damage modifier at max level (base damage is scaled on max and remaining energy).
-    private float m_flAPStealPercentAtMaxLevel = 0.25f; // Damage dealt from Nova that is returned as AP to the player (or health if AP is 0), at max level. 
+    private float m_flLifestealPercentAtMaxLevel = 0.25f; // Damage dealt from Nova that is returned as HP. 
 
     private ClassStats@ m_pStats = null;
 
@@ -53,16 +53,16 @@ class CloakData
         return totalBonus;
     }
 
-    float GetAPStealPercent() 
+    float GetHPStealPercent() 
     {
         if(m_pStats is null)
             return 0.0f; // Return 0 if no stats.
 
         int level = m_pStats.GetLevel();
-        float stealPerLevel = m_flAPStealPercentAtMaxLevel / g_iMaxLevel;
-        float apSteal = stealPerLevel * level;
+        float stealPerLevel = m_flLifestealPercentAtMaxLevel / g_iMaxLevel;
+        float hpSteal = stealPerLevel * level;
 
-        return apSteal; 
+        return hpSteal; 
     }
 
     float GetNovaDamage(CBasePlayer@ pPlayer)

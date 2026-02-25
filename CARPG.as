@@ -859,45 +859,38 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         }
     }
 
-    // Cloaker - AP Steal from Nova damage.
+    // Lifesteal from Nova damage.
     if(g_PlayerCloaks.exists(steamID))
     {
         CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
         if(cloak !is null && cloak.IsNovaActive())
         {
-            float healAmount = info.flDamage * cloak.GetAPStealPercent(); // Get damage dealt to repair.
+            float healAmount = info.flDamage * cloak.GetHPStealPercent(); // Get health to restore based on damage dealt.
 
-            // Apply to AP, don't repair over maximum.
-            pAttacker.pev.armorvalue = Math.min(pAttacker.pev.armorvalue + healAmount, pAttacker.pev.armortype);
-            
-            // After healing, check if AP actually changed, if it didn't, AP must be disabled by map, apply to HP instead.
-            if (pAttacker.pev.armorvalue > 0)
-            {
-                //Apply to HP, don't repair over maximum.
-                pAttacker.pev.health = Math.min(pAttacker.pev.health + healAmount, pAttacker.pev.max_health);
+            // Apply to HP, don't heal over maximum.
+            pAttacker.pev.health = Math.min(pAttacker.pev.health + healAmount, pAttacker.pev.max_health);
 
-                // Health Bubbles Effect.
-                Vector pos = pAttacker.pev.origin;
-                Vector mins = pos - Vector(16, 16, 0);
-                Vector maxs = pos + Vector(16, 16, 64);
+            // Health Bubbles Effect.
+            Vector pos = pAttacker.pev.origin;
+            Vector mins = pos - Vector(16, 16, 0);
+            Vector maxs = pos + Vector(16, 16, 64);
 
-                NetworkMessage healbubblesmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
-                    healbubblesmsg.WriteByte(TE_BUBBLES);
-                    healbubblesmsg.WriteCoord(mins.x);
-                    healbubblesmsg.WriteCoord(mins.y);
-                    healbubblesmsg.WriteCoord(mins.z);
-                    healbubblesmsg.WriteCoord(maxs.x);
-                    healbubblesmsg.WriteCoord(maxs.y);
-                    healbubblesmsg.WriteCoord(maxs.z);
-                    healbubblesmsg.WriteCoord(80.0f); // Height of the bubble effect.
-                    healbubblesmsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-                    healbubblesmsg.WriteByte(18); // Count.
-                    healbubblesmsg.WriteCoord(6.0f); // Speed.
-                    healbubblesmsg.End();
+            NetworkMessage healbubblesmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                healbubblesmsg.WriteByte(TE_BUBBLES);
+                healbubblesmsg.WriteCoord(mins.x);
+                healbubblesmsg.WriteCoord(mins.y);
+                healbubblesmsg.WriteCoord(mins.z);
+                healbubblesmsg.WriteCoord(maxs.x);
+                healbubblesmsg.WriteCoord(maxs.y);
+                healbubblesmsg.WriteCoord(maxs.z);
+                healbubblesmsg.WriteCoord(80.0f); // Height of the bubble effect.
+                healbubblesmsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+                healbubblesmsg.WriteByte(18); // Count.
+                healbubblesmsg.WriteCoord(6.0f); // Speed.
+                healbubblesmsg.End();
 
-                // Play HP healing sound.
-                //g_SoundSystem.EmitSoundDyn(pAttacker.edict(), CHAN_ITEM, "items/smallmedkit1.wav", 0.5f, ATTN_NORM, 0, PITCH_NORM);
-            }
+            // Play HP healing sound.
+            //g_SoundSystem.EmitSoundDyn(pAttacker.edict(), CHAN_ITEM, "items/smallmedkit1.wav", 0.5f, ATTN_NORM, 0, PITCH_NORM);
         }
     }
     
