@@ -75,16 +75,16 @@ namespace Menu
                     if(bloodlust !is null)
                     {
                         string BerserkerStatsText = "=== Bloodlust (Passive): ===" + "\n";
-                        BerserkerStatsText += "Damage Reduction at 50% HP: " + bloodlust.GetDamageReductionMax() + "%\n";
-                        BerserkerStatsText += "Ability Charge Steal: " + bloodlust.GetEnergySteal() + "%\n";
+                        BerserkerStatsText += "Damage Reduction Max (50% HP): " + bloodlust.GetDamageReductionMax() + "%\n";
+                        BerserkerStatsText += "Bloodlust Gain from Damage: " + bloodlust.GetEnergySteal() + "%\n";
                         BerserkerStatsText += "Lifesteal: " + bloodlust.GetLifestealAmount() * 100 + "%\n";
-                        BerserkerStatsText += "AP Steal (when at full HP): " + bloodlust.GetLifestealAmount() * 100 * 0.5 + "%\n\n";
+                        BerserkerStatsText += "Max HP (Overheal): " + (pPlayer.pev.max_health * bloodlust.GetOverhealPercentFlat()) + " HP\n\n";
 
                         BerserkerStatsText += "=== Bloodlust (Active): ===" + "\n";
-                        BerserkerStatsText += "Damage Reduction at 50% HP: " + bloodlust.GetDamageReductionMax() * 2 + "%\n";
-                        BerserkerStatsText += "Ability Charge Steal: " + bloodlust.GetEnergySteal() * 2 + "%\n";
+                        BerserkerStatsText += "Damage Reduction Max (50% HP): " + bloodlust.GetDamageReductionMax() * 2 + "%\n";
+                        BerserkerStatsText += "Bloodlust Gain from Damage: " + bloodlust.GetEnergySteal() * 2 + "%\n";
                         BerserkerStatsText += "Lifesteal: " + bloodlust.GetLifestealAmount() * 100 * 2 + "%\n";
-                        BerserkerStatsText += "AP Steal (when at full HP): " + bloodlust.GetLifestealAmount() * 100 + "%\n\n";
+                        BerserkerStatsText += "Max HP (Overheal): " + ((pPlayer.pev.max_health * bloodlust.GetOverhealPercentFlat()) * 2) + " HP\n\n";
 
                         m_pMenu.AddItem(BerserkerStatsText, null);
                     }
@@ -174,7 +174,7 @@ namespace Menu
                             CloakerStatsText += "Cloak Damage Bonus: +" + cloak.GetDamageMultiplierTotal() * 100 + "%\n";
                             CloakerStatsText += "Shock Nova Damage: " + cloak.GetNovaDamage(pPlayer) + "\n";
                             CloakerStatsText += "Shock Nova Radius: " + cloak.GetNovaRadius() + "u\n";
-                            CloakerStatsText += "Shock Nova AP Steal (HP if AP disabled): " + cloak.GetAPStealPercent() * 100 + "%\n";
+                            CloakerStatsText += "Shock Nova Lifesteal: " + cloak.GetHPStealPercent() * 100 + "%\n";
 
                         m_pMenu.AddItem(CloakerStatsText, null);
                     }
