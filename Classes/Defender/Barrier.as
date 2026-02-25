@@ -18,9 +18,6 @@ class BarrierData
     private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBarrierDurabilityMultiplier = 1.0f; // % of total incoming damage dealt to shield, used to make shield tougher or weaker overall.
     private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.5f; // Damage damage reflection at max level.
-    private float m_flBarrierReflectFreeze = 0.99f; // Reduction of animation speed for enemies frozen by damage reflection.
-    private float m_flBarrierReflectBaseFreezeDuration = 2.0f; // Freeze effect base duration (in seconds).
-    private float m_flBarrierReflectFreezeDurationAtMaxLevel = 8.00f; // Freeze effect added duration at max level (in seconds).
     private float m_flBarrierActiveRechargePenalty = 0.20f; // Ability recharge rate when barrier is active.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
@@ -44,22 +41,6 @@ class BarrierData
         int level = m_pStats.GetLevel();
         float scalingPerLevel = m_flBarrierReflectDamageScalingAtMaxLevel / g_iMaxLevel;
         return scalingPerLevel * level;
-    }
-
-    float GetBarrierReflectFreeze() { return 1.0f - m_flBarrierReflectFreeze; } // Freeze animation speed reduction.
-    float GetBarrierReflectFreezeInverse() { return m_flBarrierReflectFreeze * 100.0f;} // For stat display, to show inverse value.
-
-    float GetBarrierReflectFreezeDuration() // Total duration to freeze enemies for.
-    { 
-        if(m_pStats is null)
-            return m_flBarrierReflectFreezeDurationAtMaxLevel; // Return base if no stats.
-
-            int level = m_pStats.GetLevel();
-            float freezeDurationPerLevel = m_flBarrierReflectFreezeDurationAtMaxLevel / g_iMaxLevel;
-            float barrierFreeze = 0.0f;
-            barrierFreeze = m_flBarrierReflectBaseFreezeDuration + (freezeDurationPerLevel * level);
-        
-        return barrierFreeze; 
     }
 
     float GetActiveRechargePenalty() { return m_flBarrierActiveRechargePenalty; } // Ability recharge penalty when active.
@@ -90,17 +71,6 @@ class BarrierData
             // Apply damage reflection as a specific damage type and proc the debuff.
             float reflectDamage = incomingDamage * GetScaledDamageReflection();
             attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_FREEZE); // Apply the damage with the player as the attacker.
-
-            // Alter framerate for a Freeze effect on the enemy that is hit.
-            CBaseMonster@ FreezeTarget = cast<CBaseMonster@>(attacker);
-            if(FreezeTarget !is null)
-            {
-                if (FreezeTarget.pev.framerate >= 1.0f) // Only apply if not already frozen.
-                {
-                    FreezeTarget.pev.framerate = GetBarrierReflectFreeze(); // Apply freeze effect by reducing animation speed.
-                    g_Scheduler.SetTimeout("RemoveFreezeEffect", GetBarrierReflectFreezeDuration(), attacker.entindex());
-                }
-            }
         }
 
         // Play barrier damage chunks effect on player.
@@ -309,11 +279,7 @@ class BarrierData
         if(target is null)
             return;
 
-            // Add glow shell effect to entity taking damage.
-            target.pev.renderfx = kRenderFxGlowShell;
-            target.pev.rendermode = kRenderNormal;
-            target.pev.rendercolor = BARRIER_COLOR;
-            target.pev.renderamt = 10; // Thickness.
+        // Add glow shell effect to entity taking damage later, with timeout to remove it.
 
         // Also add dynamic light effect to entity.
         NetworkMessage glowreflectMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
@@ -353,22 +319,4 @@ class BarrierData
             snowmsg.WriteByte(15);  // Random velocity in 10's.
             snowmsg.End();
     }
-}
-
-void RemoveFreezeEffect(int attackerIndex)
-{
-    CBaseEntity@ attacker = g_EntityFuncs.Instance(attackerIndex);
-    if(attacker is null)
-        return;
-
-    CBaseMonster@ FreezeTarget = cast<CBaseMonster@>(attacker);
-    if(FreezeTarget !is null)
-    {
-        FreezeTarget.pev.framerate = 1.0f; // Reset animation speed to normal.
-            
-        // Remove the glow shell effect.
-        FreezeTarget.pev.renderfx = kRenderFxNone;
-        FreezeTarget.pev.rendermode = kRenderNormal;
-        FreezeTarget.pev.renderamt = 0;
-    }   
 }
