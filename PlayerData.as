@@ -147,10 +147,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 150.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 250.0f;
+                        def.maxAP = 200.0f;
 
                     def.baseResource = 60.0f; // Duration in seconds.
                         def.maxResource = 60.0f; // No increase.
@@ -159,10 +159,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 150.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 250.0f;
+                        def.maxAP = 200.0f;
 
                     def.baseResource = 2.0f; // Minion Point Max.
                         def.maxResource = 2.0f; // No increase.
@@ -183,10 +183,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 250.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 150.0f;
+                        def.maxAP = 200.0f;
 
                     def.baseResource = 4.0f; // Minion Point Max.
                         def.maxResource = 4.0f; // No increase.
@@ -195,10 +195,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 250.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 150.0f;
+                        def.maxAP = 200.0f;
 
                     def.baseResource = 30.0f; // Duration in seconds.
                         def.maxResource = 30.0f; // No increase.
@@ -231,10 +231,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 150.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 250.0f;
+                        def.maxAP = 200.0f;
 
                     def.baseResource = 30.0f; // Duration in seconds.
                         def.maxResource = 30.0f; // No increase.
