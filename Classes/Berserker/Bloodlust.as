@@ -18,12 +18,12 @@ class BloodlustData
     private float m_flBloodlustEnergyCost = 1.0f; // Energy drain per interval.
 
     // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
-    private float m_flDamageReductionAtMaxLevel = 0.45f; // Damage reduction multiplier at maximum level. Doubles during bloodlust!
-    private float m_flLifestealAtMaxLevel = 0.50f; // Lifesteal %, as a multiplier at max level. Doubles during bloodlust!
-    private float m_flAPStealAtFullHealth = 0.5f; // Multiplier of lifesteal to AP instead of HP when at full health.
-    private float m_flEnergystealAtMaxLevel = 0.15f; // Energy steal %, as a multiplier at max level. Doubles during bloodlust!
-    private float m_flEnergystealFixedAmount = 0.05f; // Fixed energy steal % if scaling is disabled. Doubles during bloodlust!
-    private bool m_bEnergyStealIsFixed = false; // Whether energy steal is a fixed or scales with level.
+    private float m_flDamageReductionAtMaxLevel = 0.495f; // Damage reduction multiplier at maximum level. Doubles during bloodlust!
+    private float m_flLifestealAtMaxLevel = 0.25f; // Lifesteal %, as a multiplier at max level. Doubles during bloodlust!
+    private float m_flAPStealAtFullHealth = 0.15f; // Multiplier for amount of total lifesteal converted to armorsteal when HP is full.
+    private float m_flEnergystealAtMaxLevel = 0.10f; // Energy steal %, as a multiplier at max level. Doubles during bloodlust!
+    private float m_flEnergystealFixedAmount = 0.10f; // Fixed energy steal % if scaling is disabled. Doubles during bloodlust!
+    private bool m_bEnergyStealIsFixed = true; // Whether energy steal is a fixed or scales with level.
 
     // Cooldown and activation timers.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
@@ -94,51 +94,43 @@ class BloodlustData
         if(pPlayer is null)
             return 0.0f;
 
-        float damageReduction = 1.0f; // Base multiplier.
+        float damageReduction = 0.0f; // The actual damage REDUCTION.
 
         if(m_pStats !is null)
         {
             int level = m_pStats.GetLevel();
             float reductionPerLevel = m_flDamageReductionAtMaxLevel / g_iMaxLevel;
-            damageReduction += (1.0f - (reductionPerLevel * level));
+            damageReduction = (reductionPerLevel * level);
         }
 
         // Calculate missing health percentage
         float maxHealth = pPlayer.pev.max_health;
         float currentHealth = Math.max(1.0f, pPlayer.pev.health); // Ensure at least 1 health.
         float missingHealth = maxHealth - currentHealth;
-        float missingHealthPercent = Math.min(99.0f, (missingHealth / maxHealth) * 100.0f); // Cap at 99%, as we will never reach 100%.
+        float missingHealthPercent = Math.min(100.0f, (missingHealth / maxHealth) * 200.0f); // Full bonus at 50% HP lost.
 
         // Apply missing health scaling
         if(!m_bActive)
-            damageReduction *= (missingHealthPercent / 100.0f); // 1:1 ratio when not active.
+            damageReduction *= (missingHealthPercent / 100.0f); // Passive.
         else
-            damageReduction *= (missingHealthPercent / 50.0f);  // 2:1 ratio when active.
+            damageReduction *= (missingHealthPercent / 100.0f) * 2.0f; // Active is double.
 
         // Convert to percentage for display.
         damageReduction = Math.min(damageReduction * 100.0f, 100.0f);
         return damageReduction;
     }
 
-    // Maximum possible damage reduction for stat menu display (at 1% health).
+    // Maximum possible damage reduction for stat menu display.
     float GetDamageReductionMax()
     {
-        float maxDamageReduction = 1.0f; // Base multiplier.
+        if(m_pStats is null)
+            return 0.0f;
 
-        if(m_pStats !is null)
-        {
-            int level = m_pStats.GetLevel();
-            float reductionPerLevel = m_flDamageReductionAtMaxLevel / g_iMaxLevel;
-            maxDamageReduction *= (1.0f - (reductionPerLevel * level));
-        }
+        int level = m_pStats.GetLevel();
+        float reductionPerLevel = m_flDamageReductionAtMaxLevel / g_iMaxLevel;
+        float maxReduction = (reductionPerLevel * level) * 100.0f;
 
-        float maxMissingHealthPercent = 99.0f; // Calculate at maximum missing health, we will never reach 100%.
-
-        maxDamageReduction *= (maxMissingHealthPercent / 100.0f); // Apply maximum missing health scaling.
-
-        // Convert to percentage and cap.
-        maxDamageReduction = Math.min(maxDamageReduction * 100.0f, 100.0f);
-        return maxDamageReduction;
+        return Math.min(maxReduction, 100.0f);
     }
     
     void ToggleBloodlust(CBasePlayer@ pPlayer)

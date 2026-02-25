@@ -75,13 +75,13 @@ namespace Menu
                     if(bloodlust !is null)
                     {
                         string BerserkerStatsText = "=== Bloodlust (Passive): ===" + "\n";
-                        BerserkerStatsText += "Damage Reduction as HP Reduces: " + bloodlust.GetDamageReductionMax() + "%\n";
+                        BerserkerStatsText += "Damage Reduction at 50% HP: " + bloodlust.GetDamageReductionMax() + "%\n";
                         BerserkerStatsText += "Ability Charge Steal: " + bloodlust.GetEnergySteal() + "%\n";
                         BerserkerStatsText += "Lifesteal: " + bloodlust.GetLifestealAmount() * 100 + "%\n";
                         BerserkerStatsText += "AP Steal (when at full HP): " + bloodlust.GetLifestealAmount() * 100 * 0.5 + "%\n\n";
 
                         BerserkerStatsText += "=== Bloodlust (Active): ===" + "\n";
-                        BerserkerStatsText += "Damage Reduction as HP Reduces: " + bloodlust.GetDamageReductionMax() * 2 + "%\n";
+                        BerserkerStatsText += "Damage Reduction at 50% HP: " + bloodlust.GetDamageReductionMax() * 2 + "%\n";
                         BerserkerStatsText += "Ability Charge Steal: " + bloodlust.GetEnergySteal() * 2 + "%\n";
                         BerserkerStatsText += "Lifesteal: " + bloodlust.GetLifestealAmount() * 100 * 2 + "%\n";
                         BerserkerStatsText += "AP Steal (when at full HP): " + bloodlust.GetLifestealAmount() * 100 + "%\n\n";

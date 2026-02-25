@@ -961,7 +961,9 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
             PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
             if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
             {
-                bloodlust.HandleDamageReduction(pPlayer, pDamageInfo.flDamage, pDamageInfo.flDamage);
+                float reducedDamage = 0.0f;
+                bloodlust.HandleDamageReduction(pPlayer, pDamageInfo.flDamage, reducedDamage);
+                pDamageInfo.flDamage = reducedDamage;
             }
         }
     }
