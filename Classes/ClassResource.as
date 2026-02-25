@@ -460,8 +460,9 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     float damageReduction = bloodlust.GetDamageReduction(pPlayer);
                                     
                                     resourceInfo += "[DMG Reduction: " + int(damageReduction) + "%]\n";
-                                    resourceInfo += "[Ability Charge Steal: " + int(bloodlust.GetEnergystealAmount() * 100) + "%]\n";
-                                    resourceInfo += "[Lifesteal: " + int(lifesteal * 100) + "%]";
+                                    resourceInfo += "[Bloodlust DMG Gain: " + int(bloodlust.GetEnergystealAmount() * 100) + "%]\n";
+                                    resourceInfo += "[Lifesteal: " + int(lifesteal * 100) + "%] ";
+                                    resourceInfo += "[Overheal Limit: " + int(pPlayer.pev.max_health * bloodlust.GetOverhealPercent()) + " HP]";
                                 }
                             }
                             break;
