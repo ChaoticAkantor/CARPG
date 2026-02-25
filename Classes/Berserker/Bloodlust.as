@@ -19,11 +19,11 @@ class BloodlustData
 
     // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
     private float m_flDamageReductionAtMaxLevel = 0.495f; // Damage reduction multiplier at maximum level. Doubles during bloodlust!
-    private float m_flLifestealAtMaxLevel = 0.25f; // Lifesteal %, as a multiplier at max level. Doubles during bloodlust!
-    private float m_flAPStealAtFullHealth = 0.15f; // Multiplier for amount of total lifesteal converted to armorsteal when HP is full.
-    private float m_flEnergystealAtMaxLevel = 0.10f; // Energy steal %, as a multiplier at max level. Doubles during bloodlust!
-    private float m_flEnergystealFixedAmount = 0.10f; // Fixed energy steal % if scaling is disabled. Doubles during bloodlust!
-    private bool m_bEnergyStealIsFixed = true; // Whether energy steal is a fixed or scales with level.
+    private float m_flLifestealAtMaxLevel = 0.30f; // Lifesteal %, as a multiplier at max level. Doubles during bloodlust!
+    private float m_flOverhealPercent = 0.75f; // Percent of max health that can be overhealed to.
+    private float m_flEnergystealAtMaxLevel = 0.08f; // Energy steal %, as a multiplier at max level. Doubles during bloodlust!
+    private float m_flEnergystealFixedAmount = 0.08f; // Fixed energy steal % if scaling is disabled. Doubles during bloodlust!
+    private bool m_bEnergyStealIsFixed = false; // Whether energy steal is a fixed or scales with level.
 
     // Cooldown and activation timers.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
@@ -107,7 +107,7 @@ class BloodlustData
         float maxHealth = pPlayer.pev.max_health;
         float currentHealth = Math.max(1.0f, pPlayer.pev.health); // Ensure at least 1 health.
         float missingHealth = maxHealth - currentHealth;
-        float missingHealthPercent = Math.min(100.0f, (missingHealth / maxHealth) * 200.0f); // Full bonus at 50% HP lost.
+        float missingHealthPercent = Math.max(0.0f, Math.min(100.0f, (missingHealth / maxHealth) * 200.0f)); // Full bonus at 50% HP lost, clamped to 0% at full health.
 
         // Apply missing health scaling
         if(!m_bActive)
@@ -247,6 +247,25 @@ class BloodlustData
         }
     }
 
+    float GetOverhealPercent() 
+    { 
+        if(m_pStats is null)
+            return 1.0f; // No overheal if no stats.
+            
+        if(m_bActive)
+            return (1.0f + m_flOverhealPercent) * 2.0f; // Double if active.
+        else
+            return 1.0f + m_flOverhealPercent; // Passive overheal.
+    }
+
+    float GetOverhealPercentFlat() 
+    { 
+        if(m_pStats is null)
+            return 1.0f; // No overheal if no stats.
+            
+        return 1.0f + m_flOverhealPercent; // Passive overheal.
+    }
+
     float ProcessLifesteal(CBasePlayer@ pPlayer, float damageDealt)
     {
         if(pPlayer is null)
@@ -263,17 +282,12 @@ class BloodlustData
 
         float lifestealMult = GetLifestealAmount();
         float healAmount = damageDealt * lifestealMult; // Heal amount from lifesteal.
-        float healAmountAP = damageDealt * lifestealMult * m_flAPStealAtFullHealth; // Mutliplier to restore AP instead, if HP is full.
+        float overhealPercent = pPlayer.pev.max_health * GetOverhealPercent(); // Max health including overheal.
 
-        if(pPlayer.pev.health < pPlayer.pev.max_health) // Heal HP if below max, or AP at 50% reduction if at max.
+        if(pPlayer.pev.health < overhealPercent) // Heal HP if below max.
         {
-            pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, pPlayer.pev.max_health);
+            pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, overhealPercent);
                 return healAmount;
-        }
-        else if (pPlayer.pev.health >= pPlayer.pev.max_health && pPlayer.pev.armorvalue < pPlayer.pev.armortype)
-        {
-            pPlayer.pev.armorvalue = Math.min(pPlayer.pev.armorvalue + healAmountAP, pPlayer.pev.armortype); // Cap at max armor.
-                return healAmountAP;
         }
         
         ApplyLifestealEffect(pPlayer); // Visual effect for healing from lifesteal.
