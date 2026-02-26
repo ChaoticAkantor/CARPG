@@ -1044,6 +1044,7 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
         {
             minion.DestroyAllMinions(pPlayer);
         }
+        g_PlayerMinions.delete(steamID); // Delete the dictionary entry.
     }
     
     if(g_XenologistMinions.exists(steamID))
@@ -1053,6 +1054,7 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
         {
             xenMinion.DestroyAllMinions(pPlayer);
         }
+        g_XenologistMinions.delete(steamID); // Delete the dictionary entry.
     }
     
     if(g_NecromancerMinions.exists(steamID))
@@ -1062,6 +1064,7 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
         {
             necroMinion.DestroyAllMinions(pPlayer);
         }
+        g_NecromancerMinions.delete(steamID); // Delete the dictionary entry.
     }
     
     // Then save player data.
@@ -1073,8 +1076,7 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
             data.SaveToFile(); // Save player data when they disconnect.
         }
     }
-    
-    //ClearMinions();
+
     return HOOK_CONTINUE;
 }
 
@@ -1478,10 +1480,9 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
         if(minion !is null)
         {
-            // Log that we're destroying minions from ResetPlayer.
-            //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Robomancer minions for " + steamID + "\n");
             minion.DestroyAllMinions(pPlayer);
         }
+        g_PlayerMinions.delete(steamID); // Delete to ensure fresh initialization
     }
 
     // Reset Xenologist Minions and pools.
@@ -1490,10 +1491,9 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
         if(xenMinion !is null)
         {
-            // Log that we're destroying minions from ResetPlayer.
-            //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Xenomancer minions for " + steamID + "\n");
             xenMinion.DestroyAllMinions(pPlayer);
         }
+        g_XenologistMinions.delete(steamID); // Delete to ensure fresh initialization
     }
     
     // Reset Necromancer Minions and pools.
@@ -1502,10 +1502,9 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
         if(necroMinion !is null)
         {
-            // Log that we're destroying minions from ResetPlayer.
-            //g_Game.AlertMessage(at_console, "CARPG: ResetPlayer - Destroying Necromancer minions for " + steamID + "\n");
             necroMinion.DestroyAllMinions(pPlayer);
         }
+        g_NecromancerMinions.delete(steamID); // Delete to ensure fresh initialization
     }
     
     // Reset Swarmer's Snark Nests
@@ -1677,8 +1676,13 @@ void ShowHints()
 void RefillHealthArmor(CBasePlayer@ pPlayer)
 {
     {
-        // Refill HP/AP.
-        pPlayer.pev.health = pPlayer.pev.max_health;
-        pPlayer.pev.armorvalue = pPlayer.pev.armortype;
+        // Refill HP and a percentage of AP.
+        float APRefillPercent = 0.15f;
+
+        APRefillPercent = pPlayer.pev.armortype * APRefillPercent; // Get armor percent to refill.
+
+        pPlayer.pev.health = pPlayer.pev.max_health; // Always set 100% HP on spawn.
+
+        pPlayer.pev.armorvalue = APRefillPercent; // Refill percentage of AP on spawn.
     }
 }
