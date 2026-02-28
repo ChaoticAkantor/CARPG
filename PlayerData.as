@@ -60,10 +60,10 @@ class ClassDefinition
     // If a class has no overrides, these base values are used.
     string name;
     float baseHP = 100.0f; // Reset Default Base HP.
-    float maxHP = 200.0f; // Maximum HP (At max level).
+    float maxHP = 300.0f; // Maximum HP (At max level).
 
     float baseAP = 100.0f; // Base AP.
-    float maxAP = 200.0f; // Maximum AP (At max level).
+    float maxAP = 100.0f; // Maximum AP (At max level).
 
     float baseResource = 100.0f; // Base max ability charge/duration.
     float maxResource = 200.0f; // Max ability charge/duration at max level.
@@ -135,34 +135,34 @@ void InitializeClassDefinitions()
             {
                 case PlayerClass::CLASS_MEDIC:
                     def.baseHP = 100.0f; // Starting health.
-                        def.maxHP = 200.0f; // Max health at max level.
+                        def.maxHP = 300.0f; // Max health at max level.
 
                     def.baseAP = 100.0f; // Starting armor.
-                        def.maxAP = 200.0f; // Max armor at max level.
+                        def.maxAP = 100.0f; // Max armor at max level.
 
                     def.baseResource = 30.0f; // Ability Duration in seconds, or number of charges.
-                        def.maxResource = 30.0f; // No increase.
+                        def.maxResource = 25.0f; // No increase.
 
                     def.fullRegenTime = 30.0f; // Time to fully regen ability.
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 60.0f; // Duration in seconds.
                         def.maxResource = 60.0f; // No increase.
 
-                    def.fullRegenTime = 20.0f;
+                    def.fullRegenTime = 25.0f;
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 2.0f; // Minion Point Max.
                         def.maxResource = 2.0f; // No increase.
@@ -171,10 +171,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 2.0f; // Minion Point Max.
                         def.maxResource = 2.0f; // No increase.
@@ -183,10 +183,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 4.0f; // Minion Point Max.
                         def.maxResource = 4.0f; // No increase.
@@ -195,10 +195,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 30.0f; // Duration in seconds.
                         def.maxResource = 30.0f; // No increase.
@@ -207,10 +207,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 250.0f; // Shield Base HP.
                         def.maxResource = 500.0f; // Shield health at max level.
@@ -219,10 +219,10 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 100.0f; // Base shock rifle battery capacity.
                         def.maxResource = 800.0f; // Max shock rifle battery capacity, at max level.
@@ -231,22 +231,22 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 30.0f; // Duration in seconds.
                         def.maxResource = 30.0f; // No increase.
 
-                    def.fullRegenTime = 18.0f;
+                    def.fullRegenTime = 20.0f;
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 1.0f; // Base charges.
                         def.maxResource = 1.0f; // No increase.
@@ -255,15 +255,15 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_SWARMER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 200.0f;
+                        def.maxHP = 300.0f;
 
                     def.baseAP = 100.0f;
-                        def.maxAP = 200.0f;
+                        def.maxAP = 100.0f;
 
                     def.baseResource = 1.0f; // Base charges.
                         def.maxResource = 1.0f; // Max snark nests at max level.
 
-                    def.fullRegenTime = 20.0f;
+                    def.fullRegenTime = 15.0f;
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
