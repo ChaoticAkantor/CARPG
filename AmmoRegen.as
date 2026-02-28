@@ -68,16 +68,16 @@ void InitializeAmmoRegen()
     }
     
     // Initialize ammo types with current map multiplier.
-    g_AmmoTypes.insertLast(AmmoType("health", 1, 5, 100, true, 100));
-    g_AmmoTypes.insertLast(AmmoType("9mm", 1, 1, 300));
-    g_AmmoTypes.insertLast(AmmoType("buckshot", 12, 1, 125));
-    g_AmmoTypes.insertLast(AmmoType("357", 16, 1, 36));
-    g_AmmoTypes.insertLast(AmmoType("556", 2, 1, 600));
+    g_AmmoTypes.insertLast(AmmoType("health", 1, 2, 100, true, 100));
+    g_AmmoTypes.insertLast(AmmoType("9mm", 1, 2, 300));
+    g_AmmoTypes.insertLast(AmmoType("buckshot", 10, 1, 125));
+    g_AmmoTypes.insertLast(AmmoType("357", 15, 1, 36));
+    g_AmmoTypes.insertLast(AmmoType("556", 1, 2, 600));
     g_AmmoTypes.insertLast(AmmoType("m40a1", 20, 1, 25));
     g_AmmoTypes.insertLast(AmmoType("bolts", 25, 1, 30));
-    g_AmmoTypes.insertLast(AmmoType("sporeclip", 30, 1, 20));
-    g_AmmoTypes.insertLast(AmmoType("Hornets", 3, 1, 100));
-    g_AmmoTypes.insertLast(AmmoType("shock charges", 3, 1, 100));
+    g_AmmoTypes.insertLast(AmmoType("sporeclip", 25, 1, 20));
+    g_AmmoTypes.insertLast(AmmoType("Hornets", 2, 1, 100));
+    g_AmmoTypes.insertLast(AmmoType("shock charges", 2, 1, 100));
     g_AmmoTypes.insertLast(AmmoType("uranium", 10, 1, 100));
     
     // Threshold-based ammo types (explosives, etc).
@@ -167,7 +167,7 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
             if(healthAmmo !is null) 
             {
                 healthAmmo.amount = 1 + (classLevel / 2);
-                healthAmmo.threshold = 100 + (classLevel * 5);
+                healthAmmo.threshold = 100 + (classLevel * 2);
             }
             break;
         }
@@ -199,34 +199,6 @@ void AdjustAmmoForPlayerClass(CBasePlayer@ pPlayer, array<AmmoType@>@ playerAmmo
             AdjustAmmoDelay(playerAmmoTypes, "m40a1", 25, classLevel, 0.2f);
             AdjustAmmoDelay(playerAmmoTypes, "Trip Mine", 120, classLevel, 0.5f);
 
-            break;
-        }
-            
-        case PlayerClass::CLASS_VANQUISHER:
-        {
-            // Adjust explosive ammo capacities.
-            AmmoType@ grenadeAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "Hand Grenade");
-            if(grenadeAmmo !is null) 
-            {
-                grenadeAmmo.threshold = 15;
-            }
-
-            AmmoType@ satchelAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "Satchel Charge");
-            if(satchelAmmo !is null) 
-            {
-                satchelAmmo.threshold = 7;
-            }
-            
-            AmmoType@ rocketAmmo = GetAmmoTypeByNameFromArray(playerAmmoTypes, "rockets");
-            if(rocketAmmo !is null) 
-            {
-                rocketAmmo.threshold = 15;
-            }
-
-            // Use helper for all delay adjustments.
-            AdjustAmmoDelay(playerAmmoTypes, "hand grenade", 60, classLevel, 0.3f);
-            AdjustAmmoDelay(playerAmmoTypes, "satchel charge", 120, classLevel, 0.5f);
-            AdjustAmmoDelay(playerAmmoTypes, "rockets", 90, classLevel, 0.5f);
             break;
         }
     }
