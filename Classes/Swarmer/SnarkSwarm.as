@@ -9,8 +9,8 @@ class SnarkNestData
     private float m_flEnergyCost = 1.0f; // Base cost per use (charges).
     private float m_flBaseHealth = 50.0f; // Base HP of each snark.
     private float m_flHealthScaleAtMaxLevel = 6.0f; // Health modifier at max level.
-    private float m_flSnarkDamageScaleAtMaxLevel = 8.0f; // Damage modifier at max level. Snark base damage is derived from sk setting.
-    private int m_iBaseSnarkCount = 10; // Base number of snarks to spawn.
+    private float m_flSnarkDamageScaleAtMaxLevel = 10.0f; // Damage modifier at max level. Snark base damage is derived from sk setting.
+    private int m_iBaseSnarkCount = 9; // Base number of snarks to spawn.
     private float m_flSnarkCountScaleAtMaxLevel = 5.00f; // Number of snarks modifier at max level.
     private float m_flLifestealPercentAtMaxLevel = 0.05f; // Percentage of damage dealt returned to player as health.
     private float m_flLastToggleTime = 0.0f;
