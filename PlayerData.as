@@ -135,7 +135,7 @@ void InitializeClassDefinitions()
             {
                 case PlayerClass::CLASS_MEDIC:
                     def.baseHP = 100.0f; // Starting health.
-                        def.maxHP = 300.0f; // Max health at max level.
+                        def.maxHP = 200.0f; // Max health at max level.
 
                     def.baseAP = 100.0f; // Starting armor.
                         def.maxAP = 100.0f; // Max armor at max level.
@@ -147,7 +147,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -159,7 +159,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -171,7 +171,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -183,7 +183,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -195,7 +195,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -207,7 +207,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -219,7 +219,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -231,7 +231,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -243,7 +243,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
@@ -255,7 +255,7 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_SWARMER:
                     def.baseHP = 100.0f;
-                        def.maxHP = 300.0f;
+                        def.maxHP = 200.0f;
 
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
