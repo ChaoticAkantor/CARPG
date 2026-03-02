@@ -76,7 +76,7 @@ void InitializeAmmoRegen()
     
     // Initialize ammo types (all regen on same universal tick).
     g_AmmoTypes.insertLast(AmmoType("health", 50, 100, true, 100));
-    g_AmmoTypes.insertLast(AmmoType("9mm", 60, 300));
+    g_AmmoTypes.insertLast(AmmoType("9mm", 45, 300));
     g_AmmoTypes.insertLast(AmmoType("buckshot", 8, 125));
     g_AmmoTypes.insertLast(AmmoType("357", 6, 36));
     g_AmmoTypes.insertLast(AmmoType("556", 30, 600));
@@ -213,22 +213,19 @@ void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType)
     if(pPlayer is null || ammoType is null)
         return;
     
-    // Apply map multiplier to ammo amount.
+    // Apply map multiplier to ammo amount only (not max or threshold).
     int modifiedAmount = Math.max(1, int(float(ammoType.amount) * g_CurrentAmmoMapMultiplier));
     
-    if(g_bShowAmmoPickupNotification)
+    int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
+    if(gameAmmoIndex >= 0)
     {
-        // Give ammo with pickup notification (shows on HUD).
-        pPlayer.GiveAmmo(modifiedAmount, ammoType.name, ammoType.maxAmount);
-    }
-    else
-    {
-        // Silent ammo addition (no pickup notification).
-        int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
-        if(gameAmmoIndex >= 0)
+        int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
+        pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + modifiedAmount);
+        
+        if(g_bShowAmmoPickupNotification)
         {
-            int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
-            pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + modifiedAmount);
+            // Show pickup notification on HUD.
+            pPlayer.HintMessage("Ammo: " + ammoType.name);
         }
     }
 }
