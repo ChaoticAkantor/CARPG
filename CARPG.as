@@ -189,7 +189,7 @@ void SetupTimers()
     g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
     
     // Swarmer.
-    g_Scheduler.SetInterval("CheckSnarkNests", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
+    g_Scheduler.SetInterval("CheckSnarks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
 }
 
 void PrecacheAll()
@@ -715,13 +715,15 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageXenMultiplier = xenMinion.GetScaledDamage();
         info.flDamage *= damageXenMultiplier;
 
+        info.bitsDamageType = DMG_ACID | DMG_ALWAYSGIB; // Alter the damage type.
+
         // Process life steal - when xenminions deal damage, give health to owner and minions.
         xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_necrominion_"))
     {
         // Find owner's NecroMinionData by the index in targetname.
-        string ownerIndex = targetname.SubString(12); // Skip "_necrominion_".
+        string ownerIndex = targetname.SubString(13); // Skip "_necrominion_".
         if(ownerIndex.IsEmpty())
             return HOOK_CONTINUE;
             
@@ -741,8 +743,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageNecroMultiplier = necroMinion.GetScaledDamage();
         info.flDamage *= damageNecroMultiplier;
 
-        info.bitsDamageType |= DMG_POISON; // Alter the damage type.
-        info.bitsDamageType |= DMG_ALWAYSGIB; // Always gib.
+        info.bitsDamageType = DMG_ACID | DMG_ALWAYSGIB; // Alter the damage type.
 
         // Process lifesteal - when necrominions deal damage, give health to owner and minions.
         necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
@@ -750,12 +751,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     else if(targetname.StartsWith("_snark_"))
     {
         // Find owner's player index from targetname.
-        string targetStr = targetname.SubString(7); // Skip "_snark_".
-        int delimPos = targetStr.Find("_");
-        if(delimPos == -1)
-            return HOOK_CONTINUE;
-            
-        string ownerIndex = targetStr.SubString(0, delimPos);
+        string ownerIndex = targetname.SubString(7); // Skip "_snark_"
         if(ownerIndex.IsEmpty())
             return HOOK_CONTINUE;
             
@@ -775,8 +771,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageSnarkMultiplier = snarkNest.GetScaledDamage();
         info.flDamage *= damageSnarkMultiplier;
 
-        info.bitsDamageType |= DMG_POISON; // Alter the damage type.
-        info.bitsDamageType |= DMG_ALWAYSGIB; // Always gib.
+        info.bitsDamageType = DMG_ACID | DMG_ALWAYSGIB; // Alter the damage type.
 
         // Process lifesteal - when snarks deal damage, give health to owner.
         snarkNest.ProcessMinionDamage(pOwner, info.flDamage);
