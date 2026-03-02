@@ -150,7 +150,7 @@ void SetupTimers()
     g_Scheduler.ClearTimerList(); // Always clear timers first before setting them up again.
 
     // Ammo Recovery System.
-    g_Scheduler.SetInterval("AmmoTimerTick", flAmmoTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Schedule timer for ammo recovery system.
+    g_Scheduler.SetInterval("AmmoTimerTick", 1.0f, g_Scheduler.REPEAT_INFINITE_TIMES); // Schedule timer for ammo recovery system.
 
     // HP/AP Recovery System.
     g_Scheduler.SetInterval("RegenTickHP", flRegenTickHP, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for HP regen.

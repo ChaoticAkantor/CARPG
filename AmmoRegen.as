@@ -1,7 +1,9 @@
 // Plugin Created by Chaotic Akantor as ammo recovery system for CARPG.
 // This file handles player ammo recovery.
 
-float flAmmoTick = 31.0; // How long between each ammo resupply.
+float flAmmoResupplyTimerMax = 30.0; // How long between each ammo resupply.
+float flAmmoResupplyTimer = flAmmoResupplyTimerMax; // Track timer change.
+
 string g_AmmoPrefixMessage = ""; // Store prefix message to display to connecting players.
 
 bool g_bShowAmmoPickupNotification = true; // Toggle for method of giving ammo, with or without notification and sounds.
@@ -10,7 +12,6 @@ bool g_bShowAmmoPrefixMessage = true; // Toggle for displaying prefix message in
 dictionary g_AmmoMapMultipliers;
 
 float g_CurrentAmmoMapMultiplier = 1.0f;
-float g_LastAmmoRegenTime = 0.0f; // Track when last ammo regen occurred.
 
 // Define an AmmoType class to store all properties for each ammo type.
 class AmmoType 
@@ -43,9 +44,6 @@ void InitializeAmmoRegen()
 {
     // Clear existing ammo types first.
     g_AmmoTypes.resize(0);
-    
-    // Initialize timer tracking.
-    g_LastAmmoRegenTime = g_Engine.time;
 
     // Balance ammo resupply separately for different map series by multiplying the amount of ammo given.
     g_AmmoMapMultipliers["th_"] = 0.5f;    // They Hunger.
@@ -98,7 +96,10 @@ void InitializeAmmoRegen()
 
 void AmmoTimerTick()
 {
-    g_LastAmmoRegenTime = g_Engine.time; // Update last regen time.
+    flAmmoResupplyTimer--; // Decrease timer.
+
+    if(flAmmoResupplyTimer > 0)
+        return; // Not enough time passed.
     
     const int iMaxPlayers = g_Engine.maxClients;
     for(int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex)
@@ -121,13 +122,6 @@ void AmmoTimerTick()
             int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
             if(gameAmmoIndex >= 0)
             {
-                // Ensure player has explosive weapon even if ammo is full.
-                string weaponName = GetWeaponNameFromAmmoType(ammoType.name);
-                if(!weaponName.IsEmpty())
-                {
-                    EnsurePlayerHasExplosiveWeapon(pPlayer, weaponName);
-                }
-                
                 int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
                 
                 if(currentAmmo < ammoType.maxAmount)
@@ -145,66 +139,8 @@ void AmmoTimerTick()
             }
         }
     }
-}
-
-// Get remaining time until next ammo regen tick (for HUD display).
-float GetTimeUntilNextAmmoRegen()
-{
-    if(g_LastAmmoRegenTime <= 0.0f)
-        return flAmmoTick; // Return base.
-        
-    float effectiveTickTime = flAmmoTick * g_CurrentAmmoMapMultiplier;
-    float timeSinceLastRegen = g_Engine.time - g_LastAmmoRegenTime;
-    float timeRemaining = effectiveTickTime - timeSinceLastRegen;
     
-    // Reset timer if it goes over.
-    if(timeRemaining <= 0.0f)
-    {
-        g_LastAmmoRegenTime = g_Engine.time;
-        return effectiveTickTime;
-    }
-    
-    return timeRemaining;
-}
-
-// Give certain weapons if player is missing them, or they cannot be used (Only throwables).
-string GetWeaponNameFromAmmoType(string ammoName)
-{
-    if(ammoName == "Hand Grenade")
-        return "weapon_handgrenade";
-    else if(ammoName == "Satchel Charge")
-        return "weapon_satchel";
-    else if(ammoName == "Trip Mine")
-        return "weapon_tripmine";
-    else if(ammoName == "Snarks")
-        return "weapon_snark";
-    
-    return ""; // Not an explosive or not supported.
-}
-
-// Check if player has the explosive weapon, give them one if not.
-void EnsurePlayerHasExplosiveWeapon(CBasePlayer@ pPlayer, string weaponName)
-{
-    if(pPlayer is null || weaponName.IsEmpty())
-        return;
-    
-    // Check if player already has this weapon.
-    bool hasWeapon = false;
-    for(int i = 0; i < 10; i++)
-    {
-        CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pPlayer.m_rgpPlayerItems(i));
-        if(pWeapon !is null && pWeapon.GetClassname() == weaponName)
-        {
-            hasWeapon = true;
-            break;
-        }
-    }
-    
-    // If they don't have a weapon for any of the throwables, give it to them.
-    if(!hasWeapon)
-    {
-        pPlayer.GiveNamedItem(weaponName);
-    }
+    flAmmoResupplyTimer = flAmmoResupplyTimerMax; // Reset timer.
 }
 
 // Give ammo to player using selected method (silent or with pickup notification).
@@ -216,16 +152,19 @@ void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType)
     // Apply map multiplier to ammo amount only (not max or threshold).
     int modifiedAmount = Math.max(1, int(float(ammoType.amount) * g_CurrentAmmoMapMultiplier));
     
-    int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
-    if(gameAmmoIndex >= 0)
+    if(g_bShowAmmoPickupNotification)
     {
-        int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
-        pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + modifiedAmount);
-        
-        if(g_bShowAmmoPickupNotification)
+        // Give ammo with pickup notification (shows on HUD).
+        pPlayer.GiveAmmo(modifiedAmount, ammoType.name, ammoType.baseMaxAmount);
+    }
+    else
+    {
+        // Silent ammo addition (no pickup notification).
+        int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
+        if(gameAmmoIndex >= 0)
         {
-            // Show pickup notification on HUD.
-            pPlayer.HintMessage("Ammo: " + ammoType.name);
+            int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
+            pPlayer.m_rgAmmo(gameAmmoIndex, currentAmmo + modifiedAmount);
         }
     }
 }

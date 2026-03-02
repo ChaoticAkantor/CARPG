@@ -1065,7 +1065,7 @@ class PlayerData
         
         string RPGHudText = "Lvl: " + stats.GetLevel() + " | " + GetClassName(m_CurrentClass) + "\n";
         RPGHudText += "XP: " + (stats.IsMaxLevel() ? "(--/--)" : "(" + stats.GetCurrentLevelXP() + "/" + stats.GetNeededXP() + ")") + "\n\n";
-        RPGHudText += "Ammo Resupply: " + int(GetTimeUntilNextAmmoRegen()) + "s\n";
+        RPGHudText += "Ammo Resupply: " + int(flAmmoResupplyTimer) + "s\n";
         
         g_PlayerFuncs.HudMessage(pPlayer, RPGHudParams, RPGHudText);
     }
