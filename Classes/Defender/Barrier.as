@@ -12,16 +12,19 @@ dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
 
 class BarrierData
 {
-    private ClassStats@ m_pStats = null;
     private bool m_bActive = false;
-    private float m_flBarrierDamageReduction = 1.00f; // Base damage reduction, anything lower will not block all damage to HP/AP.
+    private float m_flBarrierDamageReduction = 1.00f; // Player damage reduction multiplier whilst shield is active. 1.0 = 100% damage reduction (no damage to HP/AP).
     private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
-    private float m_flBarrierDurabilityMultiplier = 1.0f; // % of total incoming damage dealt to shield, used to make shield tougher or weaker overall.
-    private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.5f; // Damage damage reflection at max level.
-    private float m_flBarrierActiveRechargePenalty = 0.20f; // Ability recharge rate when barrier is active.
+    private float m_flBarrierDurabilityMultiplier = 1.0f; // Shield damage reduction multiplier, used to make shield tougher or weaker overall.
+    private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.5f; // Shield damage reflection at max level.
+    private float m_flBarrierActiveRechargePenalty = 0.15f; // Ability recharge modifier whilst shield is active.
+
+    // Timers.
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
+
+    private ClassStats@ m_pStats = null;
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
