@@ -4,6 +4,9 @@
 float flAmmoResupplyTimerMax = 30.0; // How long between each ammo resupply.
 float flAmmoResupplyTimer = flAmmoResupplyTimerMax; // Track timer change.
 
+float flExplosivesResupplyTimerMax = 60.0; // How long between each explosives resupply.
+float flExplosivesResupplyTimer = flExplosivesResupplyTimerMax; // Track timer change.
+
 string g_AmmoPrefixMessage = ""; // Store prefix message to display to connecting players.
 
 bool g_bShowAmmoPickupNotification = true; // Toggle for method of giving ammo, with or without notification and sounds.
@@ -96,51 +99,86 @@ void InitializeAmmoRegen()
 
 void AmmoTimerTick()
 {
-    flAmmoResupplyTimer--; // Decrease timer.
-
-    if(flAmmoResupplyTimer > 0)
-        return; // Not enough time passed.
+    flAmmoResupplyTimer--;
+    flExplosivesResupplyTimer--;
     
     const int iMaxPlayers = g_Engine.maxClients;
-    for(int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex)
-    {   
-        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(playerIndex);
-        if(pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
-            continue;
+    
+    // Process ammo timer.
+    if(flAmmoResupplyTimer <= 0)
+    {
+        for(int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex)
+        {   
+            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(playerIndex);
+            if(pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
+                continue;
 
-        // Process ammo regeneration for all ammo types on every tick.
-        for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
-        {
-            AmmoType@ ammoType = g_AmmoTypes[ammoIndex];
-            if(ammoType is null)
-                continue;
-            
-            // Skip explosives if map modifier is active
-            if(ammoType.isExplosive && g_CurrentAmmoMapMultiplier != 1.0f)
-                continue;
-                
-            int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
-            if(gameAmmoIndex >= 0)
+            for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
             {
-                int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
+                AmmoType@ ammoType = g_AmmoTypes[ammoIndex];
+                if(ammoType is null || ammoType.isExplosive)
+                    continue; // Skip explosives, only handle regular ammo
                 
-                if(currentAmmo < ammoType.maxAmount)
+                int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
+                if(gameAmmoIndex >= 0)
                 {
-                    bool canRegenerate = true;
-                    if(ammoType.hasThreshold && currentAmmo > ammoType.threshold)
-                        canRegenerate = false;
+                    int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
                     
-                    if(canRegenerate)
+                    if(currentAmmo < ammoType.maxAmount)
                     {
-                        // Add ammo.
-                        GiveAmmoToPlayer(pPlayer, ammoType);
+                        bool canRegenerate = true;
+                        if(ammoType.hasThreshold && currentAmmo > ammoType.threshold)
+                            canRegenerate = false;
+                        
+                        if(canRegenerate)
+                        {
+                            GiveAmmoToPlayer(pPlayer, ammoType);
+                        }
                     }
                 }
             }
         }
+        
+        flAmmoResupplyTimer = flAmmoResupplyTimerMax;
     }
     
-    flAmmoResupplyTimer = flAmmoResupplyTimerMax; // Reset timer.
+    // Process explosives timer.
+    if(flExplosivesResupplyTimer <= 0 && g_CurrentAmmoMapMultiplier == 1.0f)
+    {
+        for(int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex)
+        {   
+            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(playerIndex);
+            if(pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
+                continue;
+
+            for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
+            {
+                AmmoType@ ammoType = g_AmmoTypes[ammoIndex];
+                if(ammoType is null || !ammoType.isExplosive)
+                    continue; // Only handle explosives here
+                
+                int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
+                if(gameAmmoIndex >= 0)
+                {
+                    int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
+                    
+                    if(currentAmmo < ammoType.maxAmount)
+                    {
+                        bool canRegenerate = true;
+                        if(ammoType.hasThreshold && currentAmmo > ammoType.threshold)
+                            canRegenerate = false;
+                        
+                        if(canRegenerate)
+                        {
+                            GiveAmmoToPlayer(pPlayer, ammoType);
+                        }
+                    }
+                }
+            }
+        }
+        
+        flExplosivesResupplyTimer = flExplosivesResupplyTimerMax;
+    }
 }
 
 // Give ammo to player using selected method (silent or with pickup notification).
