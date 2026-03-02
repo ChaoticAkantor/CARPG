@@ -988,6 +988,16 @@ HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer)
         data.CalculateStats(pPlayer); // Calculate stats on join. Calculate also initializes them!
         ResetPlayer(pPlayer); //  Defaults abilities if they rejoined.
         RefillHealthArmor(pPlayer); // Refill health and armor to full.
+        
+        // Display prefix messages to player if enabled.
+        if(g_bShowAmmoPrefixMessage && !g_AmmoPrefixMessage.IsEmpty())
+        {
+            g_PlayerFuncs.SayText(pPlayer, g_AmmoPrefixMessage + "\n");
+        }
+        if(g_bShowRecoveryPrefixMessage && !g_RecoveryPrefixMessage.IsEmpty())
+        {
+            g_PlayerFuncs.SayText(pPlayer, g_RecoveryPrefixMessage + "\n");
+        }
     }
     
     // Show class menu if no class selected.

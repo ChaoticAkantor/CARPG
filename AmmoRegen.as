@@ -2,12 +2,15 @@
 // This file handles player ammo recovery.
 
 float flAmmoTick = 30.0; // How long between each ammo resupply.
+string g_AmmoPrefixMessage = ""; // Store prefix message to display to connecting players.
+
+bool g_bShowAmmoPickupNotification = true; // Toggle for method of giving ammo, with or without notification and sounds.
+bool g_bShowAmmoPrefixMessage = true; // Toggle for displaying prefix message in chat.
 
 dictionary g_AmmoMapMultipliers;
 
 float g_CurrentAmmoMapMultiplier = 1.0f;
 float g_LastAmmoRegenTime = 0.0f; // Track when last ammo regen occurred.
-bool g_bShowAmmoPickupNotification = true; // Toggle for method of giving ammo, with or without notification and sounds.
 
 // Define an AmmoType class to store all properties for each ammo type.
 class AmmoType 
@@ -64,7 +67,8 @@ void InitializeAmmoRegen()
         if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix)
         {
             g_CurrentAmmoMapMultiplier = float(prefixes[prefixKeys[i]]);
-            g_Game.AlertMessage(at_console, "=== CARPG Ammo Resupply: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nAmmo Resupply: " + g_CurrentAmmoMapMultiplier + "x. Throwables | DISABLED.\n\n");
+            g_AmmoPrefixMessage = "=== CARPG Ammo Resupply: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nAmmo Resupply: " + g_CurrentAmmoMapMultiplier + "x. Throwables | DISABLED.";
+            g_Game.AlertMessage(at_console, g_AmmoPrefixMessage + "\n\n");
             break;
         }
     }
@@ -84,11 +88,11 @@ void InitializeAmmoRegen()
     
     // Threshold-based ammo types (explosives, etc).
     g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 1, true));
+    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true));
     g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 1, 10, true, 1, true));
     g_AmmoTypes.insertLast(AmmoType("Trip Mine", 1, 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("rockets", 1, 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("Snarks", 5, 15, true, 1, true));
+    g_AmmoTypes.insertLast(AmmoType("rockets", 1, 10, true, 2, true));
+    g_AmmoTypes.insertLast(AmmoType("Snarks", 5, 15, true, 15, true));
 }
 
 void AmmoTimerTick()

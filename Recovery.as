@@ -5,6 +5,8 @@ dictionary g_PlayerRecoveryData; // Dictionary for recovery data.
 dictionary g_RecoveryMapMultipliers; // Dictionary for map-specific multipliers.
 
 float g_CurrentRecoveryMapMultiplier = 1.0f; // Global map multiplier for recovery systems.
+bool g_bShowRecoveryPrefixMessage = true; // Toggle for displaying prefix message in chat.
+string g_RecoveryPrefixMessage = ""; // Store prefix message to display to connecting players.
 
 class RecoveryData
 {
@@ -52,7 +54,8 @@ void InitializeRecovery() // Called in PluginInit().
             if(multipliers !is null)
             {
                 g_CurrentRecoveryMapMultiplier = multipliers.hpRegenTickMultiplier;
-                g_Game.AlertMessage(at_console, "=== CARPG Recovery: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nHP Regen: " + multipliers.hpRegenTickMultiplier + "x | AP Regen: " + multipliers.apRegenTickMultiplier + "x | Hurt Delay: " + multipliers.hurtDelayMultiplier + "x\n\n");
+                g_RecoveryPrefixMessage = "=== CARPG Recovery: ===\\nMap prefix'" + prefixKeys[i] + "' detected.\nHP Regen: " + multipliers.hpRegenTickMultiplier + "x | AP Regen: " + multipliers.apRegenTickMultiplier + "x | Hurt Delay: " + multipliers.hurtDelayMultiplier + "x";
+                g_Game.AlertMessage(at_console, g_RecoveryPrefixMessage + "\n\n");
             }
             break;
         }
