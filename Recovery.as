@@ -1,4 +1,4 @@
-// Plugin Created by Chaotic Akantor.
+// Created by Chaotic Akantor.
 // This file handles player recovery and hurt delay.
 
 dictionary g_PlayerRecoveryData;
@@ -10,15 +10,17 @@ class RecoveryData
     float lastHurtTime = 0.0f;
 }
 
-const float flRegenTickHP = 1.0f; // Time between HP regen ticks.
-const float flRegenTickAP = 4.0f; // Time between AP regen ticks.
-const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks.
-const float flHurtDelay = 1.0f; // Total time to stay "hurt" before regen starts.
-const float flPercentHPRegen = 1.0f; // % of HP to regen per tick.
-const float flPercentAPRegen = 1.0f; // % of AP to regen per tick.
-const bool bAllowHPRegen = true;
-const bool bAllowAPRegen = true;
-const string strMedkitSound = "items/weapondrop1.wav";
+// Configurable variables for recovery system.
+    const float flRegenTickHP = 1.0f; // Time between HP regen ticks (in seconds).
+    const float flRegenTickAP = 4.0f; // Time between AP regen ticks (in seconds).
+    const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks (in seconds).
+    const float flHurtDelay = 1.0f; // Total time to stay "hurt" before regen starts again (in seconds).
+    const float flPercentHPRegen = 0.01f; // As a multiplier, % of HP to regen per tick.
+    const float flPercentAPRegen = 0.01f; // As a multiplier, % of AP to regen per tick.
+    const bool bAllowHPRegen = true;
+    const bool bAllowAPRegen = true;
+
+// Sprite on hud for icon when hurt delay is active.
 const string strHurtDelaySprite = "tfchud06.spr";
 
 void RegenTickHP() // Regen HP.
@@ -39,7 +41,7 @@ void RegenTickHP() // Regen HP.
             RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
             if(data !is null && data.isRegenerating && bAllowHPRegen)
             {
-                float flCalcPercHP = pPlayer.pev.max_health * flPercentHPRegen / 100;
+                float flCalcPercHP = pPlayer.pev.max_health * flPercentHPRegen;
                 float flRegenHP = Math.max(int(flCalcPercHP), 1);
 
                 if (pPlayer.pev.health < pPlayer.pev.max_health)
