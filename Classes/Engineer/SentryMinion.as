@@ -436,7 +436,8 @@ class SentryData
                 // Handle frag transfer.
                 if(pSentry.pev.frags > 0)
                 {
-                    pPlayer.pev.frags += 1;
+                    // Transfer frags to player.
+                    pPlayer.pev.frags += pSentry.pev.frags;
                     pSentry.pev.frags = 0;
                 }
             }

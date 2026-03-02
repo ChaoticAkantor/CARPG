@@ -463,7 +463,8 @@ class NecroMinionData
             // Check if minion has gained a frag.
             if(pExistingMinion.pev.frags > 0)
             {
-                pPlayer.pev.frags += 1;
+                // Transfer frags to player.
+                pPlayer.pev.frags += pExistingMinion.pev.frags;
                 pExistingMinion.pev.frags = 0;
             }
             

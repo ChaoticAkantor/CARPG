@@ -335,10 +335,8 @@ class MinionData
             // Check if minion has gained a frag, transfer to owner.
             if(pExistingMinion.pev.frags > 0)
             {
-                // Add frag to player.
-                pPlayer.pev.frags += 1; // May not be needed if set to player's owner?
-
-                // Reset minion's frag counter.
+                // Transfer frags to player.
+                pPlayer.pev.frags += pExistingMinion.pev.frags;
                 pExistingMinion.pev.frags = 0;
             }
             

@@ -8,11 +8,13 @@ class SnarkNestData
     // Snark Swarm ability parameters.
     private float m_flEnergyCost = 1.0f; // Base cost per use (charges).
     private float m_flBaseHealth = 50.0f; // Base HP of each snark.
-    private float m_flHealthScaleAtMaxLevel = 6.0f; // Health modifier at max level.
-    private float m_flSnarkDamageScaleAtMaxLevel = 10.0f; // Damage modifier at max level. Snark base damage is derived from sk setting.
-    private int m_iBaseSnarkCount = 9; // Base number of snarks to spawn.
-    private float m_flSnarkCountScaleAtMaxLevel = 5.00f; // Number of snarks modifier at max level.
+    private float m_flHealthScaleAtMaxLevel = 5.0f; // Health modifier at max level.
+    private float m_flSnarkDamageScaleAtMaxLevel = 15.0f; // Damage modifier at max level. Snark base damage is derived from sk setting.
+    private int m_iBaseSnarkCount = 6; // Base number of snarks to spawn.
+    private float m_flSnarkCountScaleAtMaxLevel = 6.00f; // Number of snarks modifier at max level.
     private float m_flLifestealPercentAtMaxLevel = 0.05f; // Percentage of damage dealt returned to player as health.
+
+    // Timers.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 4.0f; // Cooldown between spawns.
     private float m_flLaunchForce = 1000.0f; // Velocity that snarks are thrown outward.
@@ -344,7 +346,7 @@ void ContinueSnarkSpawning(dictionary@ spawnParams)
     snarkNest.ContinueSpawning(spawnParams);
 }
 
-void CheckSnarkNests()
+void CheckSnarks()
 {   
     // Process player data.
     for(int i = 1; i <= g_Engine.maxClients; ++i)
