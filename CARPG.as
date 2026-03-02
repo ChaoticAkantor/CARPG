@@ -667,7 +667,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         info.flDamage *= damageSentryMultiplier;
 
         //Sentry cryo effect.
-        sentry.ApplyElementalShots(targetPos, attacker, victim, info.flDamage);
+        sentry.ApplyElementalShots(targetPos, attacker, victim);
     }
     else if(targetname.StartsWith("_minion_"))
     {
