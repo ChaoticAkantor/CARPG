@@ -14,10 +14,12 @@ class BarrierData
 {
     private bool m_bActive = false;
     private float m_flBarrierDamageReduction = 1.00f; // Player damage reduction multiplier whilst shield is active. 1.0 = 100% damage reduction (no damage to HP/AP).
-    private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBarrierDurabilityMultiplier = 1.0f; // Shield damage reduction multiplier, used to make shield tougher or weaker overall.
     private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.5f; // Shield damage reflection at max level.
-    private float m_flBarrierActiveRechargePenalty = 0.15f; // Ability recharge modifier whilst shield is active.
+    private float m_flBarrierActiveRechargePenalty = 0.10f; // Ability recharge modifier whilst shield is active.
+    private float m_flBarrierHealthAbsorbAtMaxLevel = 0.20; // Percentage of damage taken that is absorbed as health.
+    private float m_flBarrierDeactivateEnergyCost = 0.15f; // Energy cost percentage when manually deactivating barrier.
+    private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
 
     // Timers.
     private float m_flLastDrainTime = 0.0f;
@@ -34,6 +36,8 @@ class BarrierData
     
     float GetBaseDamageReduction() { return m_flBarrierDamageReduction; }
     float GetBarrierDurabilityMultiplier() { return m_flBarrierDurabilityMultiplier; }
+    float GetBarrierHealthAbsorb() { return m_flBarrierHealthAbsorbAtMaxLevel; }
+    float GetBarrierDeactivateEnergyCost() { return m_flBarrierDeactivateEnergyCost; }
     
     float GetScaledDamageReflection()
     {
@@ -43,6 +47,17 @@ class BarrierData
         // Scale damage reflected based on level.
         int level = m_pStats.GetLevel();
         float scalingPerLevel = m_flBarrierReflectDamageScalingAtMaxLevel / g_iMaxLevel;
+        return scalingPerLevel * level;
+    }
+
+    float GetScaledHealthAbsorb()
+    {
+        if(m_pStats is null)
+            return 0.0f; // Return base if no stats.
+        
+        // Scale health absorb based on level.
+        int level = m_pStats.GetLevel();
+        float scalingPerLevel = m_flBarrierHealthAbsorbAtMaxLevel / g_iMaxLevel;
         return scalingPerLevel * level;
     }
 
@@ -81,6 +96,32 @@ class BarrierData
         
         // Drain barrier health (energy).
         DrainEnergy(pPlayer, blockedDamage);
+
+        // Absorb a portion of the damage as health.
+        if(pPlayer.pev.health < pPlayer.pev.max_health) // Only absorb if not at full health.
+        {
+            float healthAbsorb = incomingDamage * m_flBarrierHealthAbsorbAtMaxLevel;
+            pPlayer.pev.health += healthAbsorb; // Add the modified absorbed damage to health.
+
+            Vector pos = pPlayer.pev.origin;
+            Vector mins = pos - Vector(16, 16, 0);
+            Vector maxs = pos + Vector(16, 16, 64);
+
+            // Bubbles Effect.
+            NetworkMessage absorbmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                absorbmsg.WriteByte(TE_BUBBLES);
+                absorbmsg.WriteCoord(mins.x);
+                absorbmsg.WriteCoord(mins.y);
+                absorbmsg.WriteCoord(mins.z);
+                absorbmsg.WriteCoord(maxs.x);
+                absorbmsg.WriteCoord(maxs.y);
+                absorbmsg.WriteCoord(maxs.z);
+                absorbmsg.WriteCoord(80.0f); // Height of the bubble effect.
+                absorbmsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite)); // Borrow sprite from heal aura.
+                absorbmsg.WriteByte(12); // Count.
+                absorbmsg.WriteCoord(6.0f); // Speed.
+                absorbmsg.End();
+        }
     }
 
     void ToggleBarrier(CBasePlayer@ pPlayer)
@@ -108,9 +149,9 @@ class BarrierData
                     float currentEnergy = float(resources['current']);
                     float maxEnergy = float(resources['max']);
                     
-                    if(currentEnergy < maxEnergy)
+                    if(currentEnergy <= 0) // No longer requires full energy to activate.
                     {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield recharging...\n");
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield is broken!\n");
                         return;
                     }
 
@@ -130,7 +171,17 @@ class BarrierData
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP, 100);
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // MANUALLY SHATTERED.
-                    EffectBarrierShatter(pPlayer.pev.origin);
+                    EffectBarrierShatter(pPlayer.pev.origin); // Do barrier shatter.
+
+                    // Apply energy cost for manual deactivation.
+                    float currentEnergy = float(resources['current']);
+                    float maxEnergy = float(resources['max']);
+                    currentEnergy -= maxEnergy * m_flBarrierDeactivateEnergyCost; // Apply energy cost for manual deactivation.
+
+                    // If energy goes below 0, set it back to 0.
+                    if(currentEnergy < 0)
+                        currentEnergy = 0;
+                    resources['current'] = currentEnergy;
                 }
             }
         }

@@ -221,7 +221,7 @@ void InitializeClassDefinitions()
                     def.baseResource = 200.0f; // Shield Base HP.
                         def.maxResource = 600.0f; // Shield health at max level.
 
-                    def.fullRegenTime = 20.0f; // Shield active regen time will scale from this!
+                    def.fullRegenTime = 15.0f; // Shield active regen time will scale from this!
 
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
