@@ -60,9 +60,9 @@ namespace Menu
                     if(healingAura !is null)
                     {
                         string MedicStatsText = "=== Heal Aura: ===" + "\n"; 
-                        MedicStatsText += "Healing: " + healingAura.GetScaledHealAmount() + " HP/s\n";
-                        MedicStatsText += "Poison Damage: " + healingAura.GetPoisonDamageAmount() + "/s\n";
-                        MedicStatsText += "Radius: " + healingAura.GetHealingRadius() + "u\n";
+                        MedicStatsText += "Healing: " + healingAura.GetScaledHealAmount() + "% HP /s\n";
+                        MedicStatsText += "Poison Damage: " + healingAura.GetPoisonDamageAmount() + "% HP/s\n";
+                        MedicStatsText += "Radius: " + healingAura.GetHealingRadius() / 16 + "ft\n";
                         MedicStatsText += "Ally Revival Duration Cost: " + healingAura.GetEnergyCostRevive() + "s\n";
 
                         m_pMenu.AddItem(MedicStatsText, null);
@@ -96,9 +96,9 @@ namespace Menu
                     if(roboMinion !is null)
                     {
                         string EngineerStatsText = "=== Robogrunts: ===" + "\n"; 
-                        EngineerStatsText += "Health: " + int(roboMinion.GetScaledHealth()) + " HP\n"; 
-                        EngineerStatsText += "Damage: " + roboMinion.GetScaledDamage() * 100 + "%\n";
-                        EngineerStatsText += "Health Regen: " + roboMinion.GetMinionRegen() * 100 + "%\n";
+                        EngineerStatsText += "Robogrunt Health: " + int(roboMinion.GetScaledHealth()) + " HP\n"; 
+                        EngineerStatsText += "Robogrunt Damage: " + roboMinion.GetScaledDamage() * 100 + "%\n";
+                        EngineerStatsText += "Robogrunt Health Regen: " + roboMinion.GetMinionRegen() * 100 + "%\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
@@ -110,10 +110,10 @@ namespace Menu
                     if(xenMinion !is null)
                     {
                         string XenologistStatsText = "=== Xen Creatures: ===" + "\n"; 
-                        XenologistStatsText += "Health: " + int(xenMinion.GetScaledHealth()) + " HP\n";
-                        XenologistStatsText += "Damage: " + xenMinion.GetScaledDamage() * 100 + "%\n";
-                        XenologistStatsText += "Health Regen: " + xenMinion.GetMinionRegen() * 100 + "%\n";
-                        XenologistStatsText += "Minion Lifesteal (Minion and Player): " + xenMinion.GetLifestealPercent() * 100 + "%\n";
+                        XenologistStatsText += "Creature Health: " + int(xenMinion.GetScaledHealth()) + " HP\n";
+                        XenologistStatsText += "Creature Damage: " + xenMinion.GetScaledDamage() * 100 + "%\n";
+                        XenologistStatsText += "Creature Health Regen: " + xenMinion.GetMinionRegen() * 100 + "%\n";
+                        XenologistStatsText += "Creature Lifesteal (Minion and Player): " + xenMinion.GetLifestealPercent() * 100 + "%\n";
 
                         XenologistStatsText += "\n";
 
@@ -127,10 +127,10 @@ namespace Menu
                     if(necroMinion !is null)
                     {
                         string NecromancerStatsText = "=== Zombies: ===" + "\n"; 
-                        NecromancerStatsText += "Health: " + int(necroMinion.GetScaledHealth()) + " HP\n";
-                        NecromancerStatsText += "Damage: " + necroMinion.GetScaledDamage() * 100 + "%\n";
-                        NecromancerStatsText += "Health Regen: " + necroMinion.GetMinionRegen() * 100 + "%\n";
-                        NecromancerStatsText += "Minion Lifesteal (Minion and Player): " + necroMinion.GetLifestealPercent() * 100 + "%\n";
+                        NecromancerStatsText += "Zombie Health: " + int(necroMinion.GetScaledHealth()) + " HP\n";
+                        NecromancerStatsText += "Zombie Damage: " + necroMinion.GetScaledDamage() * 100 + "%\n";
+                        NecromancerStatsText += "Zombie Health Regen: " + necroMinion.GetMinionRegen() * 100 + "%\n";
+                        NecromancerStatsText += "Zombie Lifesteal (Minion and Player): " + necroMinion.GetLifestealPercent() * 100 + "%\n";
 
                         NecromancerStatsText += "\n";
 
@@ -204,10 +204,10 @@ namespace Menu
                     {
                         string EngineerStatsText = "=== Sentry Turret: ===\n";
                             EngineerStatsText += "Health: " + int(sentry.GetScaledHealth()) + " HP\n";
-                            EngineerStatsText += "Team Regeneration: " + sentry.GetScaledHealAmount() + " HP/s\n\n";
-                            EngineerStatsText += "Damage Bonus: " + sentry.GetScaledDamage() * 100 + "%\n";
-                            EngineerStatsText += "Cryo Damage Bonus: " + sentry.GetCryoShotsDamageMult() * 100 + "%\n";
-                            EngineerStatsText += "Freeze Effect: " + sentry.GetCryoShotsSlowInverse() + "%\n";
+                            EngineerStatsText += "Healing: " + sentry.GetScaledHealAmount() + "% HP/s\n";
+                            EngineerStatsText += "Heal Radius: " + sentry.GetHealRadius() / 16 + "ft\n";
+                            EngineerStatsText += "Sentry Damage: " + sentry.GetScaledDamage() * 100 + "%\n";
+                            EngineerStatsText += "Slow Strength: " + sentry.GetCryoShotsSlowInverse() + "%\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }

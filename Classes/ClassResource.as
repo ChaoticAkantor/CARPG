@@ -414,8 +414,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 HealingAura@ healingAura = cast<HealingAura@>(g_HealingAuras[steamID]);
                                 if(healingAura !is null)
                                 {
-                                    resourceInfo += "[Healing: " + (healingAura.GetScaledHealAmount()) + "/s]\n";
-                                    resourceInfo += "[Poison DMG: " + (healingAura.GetPoisonDamageAmount()) + "/s]";
+                                    resourceInfo += "[Healing: " + (healingAura.GetScaledHealAmount()) + "% HP/s]\n";
+                                    resourceInfo += "[Poison: " + (healingAura.GetPoisonDamageAmount()) + "% HP/s]";
                                 }
                             }
                             break;
@@ -633,8 +633,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                         float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
                                         int healthPercentInt = int(healthPercent);
                                         resourceInfo += "[Sentry HP: " + healthPercentInt + "%]";
-                                        resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + " HP/s]\n";
-                                        resourceInfo += " [Freeze Effect: " + (sentryData.GetCryoShotsSlowInverse()) + "%]\n";
+                                        resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() + "% HP/s]\n";
+                                        resourceInfo += " [Slow Strength: " + (sentryData.GetCryoShotsSlowInverse()) + "%]\n";
                                     }
                                 }
                             }
