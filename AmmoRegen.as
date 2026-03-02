@@ -191,20 +191,10 @@ void EnsurePlayerHasExplosiveWeapon(CBasePlayer@ pPlayer, string weaponName)
         }
     }
     
-    // If they don't have it, give it to them.
+    // If they don't have a weapon for any of the throwables, give it to them.
     if(!hasWeapon)
     {
-        CBaseEntity@ pEntity = g_EntityFuncs.Create(weaponName, pPlayer.GetOrigin(), g_vecZero, true);
-        if(pEntity !is null)
-        {
-            CBasePlayerItem@ pItem = cast<CBasePlayerItem@>(pEntity);
-            if(pItem !is null)
-            {
-                // Remove spawn flags to prevent respawning
-                pEntity.pev.spawnflags = 0;
-                pPlayer.AddPlayerItem(pItem);
-            }
-        }
+        pPlayer.GiveNamedItem(weaponName);
     }
 }
 
@@ -214,10 +204,8 @@ void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType)
     if(pPlayer is null || ammoType is null)
         return;
     
-    // Apply map multiplier to ammo amount
-    int modifiedAmount = int(float(ammoType.amount) * g_CurrentAmmoMapMultiplier);
-    if(modifiedAmount <= 0)
-        modifiedAmount = 1; // Ensure at least 1 ammo is given
+    // Apply map multiplier to ammo amount.
+    int modifiedAmount = Math.max(1, int(float(ammoType.amount) * g_CurrentAmmoMapMultiplier));
     
     if(g_bShowAmmoPickupNotification)
     {
