@@ -57,6 +57,7 @@ void InitializeAmmoRegen()
 
     string mapName = string(g_Engine.mapname).ToLowercase(); // Update map multiplier before creating ammo types.
     g_CurrentAmmoMapMultiplier = 1.0f; // Default multiplier.
+    g_AmmoPrefixMessage = ""; // Reset message to default.
     
     dictionary@ prefixes = g_AmmoMapMultipliers;
     array<string>@ prefixKeys = prefixes.getKeys();

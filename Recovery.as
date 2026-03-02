@@ -41,6 +41,7 @@ void InitializeRecovery() // Called in PluginInit().
 
     string mapName = string(g_Engine.mapname).ToLowercase(); // Update map multiplier first.
     g_CurrentRecoveryMapMultiplier = 1.0f; // Default multiplier.
+    g_RecoveryPrefixMessage = ""; // Reset message to default.
     
     dictionary@ prefixes = g_RecoveryMapMultipliers;
     array<string>@ prefixKeys = prefixes.getKeys();
