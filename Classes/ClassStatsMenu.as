@@ -159,7 +159,9 @@ namespace Menu
                         string DefenderStatsText = "=== Ice Shield: ===" + "\n";
                             DefenderStatsText += "Max Durability: " + int(maxEnergy) + " HP\n";
                             DefenderStatsText += "Damage Reflect: " + barrier.GetScaledDamageReflection() * 100 + "%\n";
-                            DefenderStatsText += "Ability Recharge Rate whilst active: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
+                            DefenderStatsText += "Health Absorb: " + barrier.GetBarrierHealthAbsorb() * 100 + "%\n";
+                            DefenderStatsText += "Recharge Speed whilst active: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
+                            DefenderStatsText += "Deactivation Cost: " + int(barrier.GetBarrierDeactivateEnergyCost() * 100) + "%\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
                     }
