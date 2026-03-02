@@ -35,8 +35,8 @@ class SentryData
 
     // Cryo.
     private int m_iCryoShotsRadius = 64; // Radius of bonus damage on shots.
-    private float m_flCryoShotsSlowAtMaxLevel = 0.80f; // Slow effect at max level.
-    private float m_flCryoShotsSlowDuration = 6.0f; // Duration of slow effect in seconds.
+    private float m_flCryoShotsSlowAtMaxLevel = 0.95f; // Slow effect at max level.
+    private float m_flCryoShotsSlowDuration = 5.0f; // Duration of slow effect in seconds.
     private float m_flEnergyDrain = 1.0; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
     private float m_flRecallEnergyCost = 0.0f; // Energy % cost to recall.
