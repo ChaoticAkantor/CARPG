@@ -141,7 +141,7 @@ void InitializeClassDefinitions()
                         def.maxAP = 100.0f; // Max armor at max level.
 
                     def.baseResource = 30.0f; // Ability Duration in seconds, or number of charges.
-                        def.maxResource = 25.0f; // No increase.
+                        def.maxResource = 30.0f; // No increase.
 
                     def.fullRegenTime = 30.0f; // Time to fully regen ability.
 
@@ -156,7 +156,7 @@ void InitializeClassDefinitions()
                     def.baseResource = 60.0f; // Duration in seconds.
                         def.maxResource = 60.0f; // No increase.
 
-                    def.fullRegenTime = 25.0f;
+                    def.fullRegenTime = 30.0f;
 
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
