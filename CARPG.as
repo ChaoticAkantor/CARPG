@@ -87,7 +87,8 @@ void PluginReset() // Used to force a full reload.
     ClearMinions(); // Clear all minion data.
     ResetData(); // Clear all dictionaries.
     RegisterHooks(); // Re-register Hooks.
-    InitializeAmmoRegen(); // Re-apply ammo types for ammo recovery.
+    InitializeAmmoRegen(); // Re-apply multipliers for ammo recovery.
+    InitializeRecovery(); // Re-apply multipliers for HP/AP recovery and hurt delay.
     ApplyDifficultySettings(); // Re-apply difficulty settings.
     SetupTimers(); // Re-setup timers.
 
@@ -1652,18 +1653,7 @@ void ClearMinions()
 
 void AdjustAmmoForClass(CBasePlayer@ pPlayer)
 {
-    // Create temporary copies of ammo types for this player.
-    array<AmmoType@> playerAmmoTypes;
-    for (uint i = 0; i < g_AmmoTypes.length(); i++) 
-    {
-        AmmoType@ original = g_AmmoTypes[i];
-        AmmoType@ copy = AmmoType(original.name, original.delay, original.amount, original.maxAmount, 
-                                 original.hasThreshold, original.threshold);
-        playerAmmoTypes.insertLast(copy);
-    }
-    
-    // Call the existing function with the player's ammo types.
-    AdjustAmmoForPlayerClass(pPlayer, playerAmmoTypes);
+    AdjustAmmoForPlayerClass(pPlayer);
 }
 
 void ShowHints()

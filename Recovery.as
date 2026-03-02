@@ -1,13 +1,62 @@
 // Created by Chaotic Akantor.
 // This file handles player recovery and hurt delay.
 
-dictionary g_PlayerRecoveryData;
+dictionary g_PlayerRecoveryData; // Dictionary for recovery data.
+dictionary g_RecoveryMapMultipliers; // Dictionary for map-specific multipliers.
+
+float g_CurrentRecoveryMapMultiplier = 1.0f; // Global map multiplier for recovery systems.
 
 class RecoveryData
 {
     bool isRegenerating = true;
     float hurtDelayCounter = 0.0f;
     float lastHurtTime = 0.0f;
+}
+
+class RecoveryMapMultipliers
+{
+    float hpRegenTickMultiplier;
+    float apRegenTickMultiplier;
+    float hurtDelayMultiplier;
+    
+    RecoveryMapMultipliers(float hpMult = 1.0f, float apMult = 1.0f, float hurtMult = 1.0f)
+    {
+        hpRegenTickMultiplier = hpMult;
+        apRegenTickMultiplier = apMult;
+        hurtDelayMultiplier = hurtMult;
+    }
+}
+
+void InitializeRecovery() // Called in PluginInit().
+{
+// Balance recovery separately for different map series by multiplying the regen timers and hurt delay.
+    @g_RecoveryMapMultipliers["th_"] = RecoveryMapMultipliers(2.0f, 2.0f, 3.0f);    // They Hunger.
+    @g_RecoveryMapMultipliers["aom_"] = RecoveryMapMultipliers(2.0f, 2.0f, 3.0f);   // Afraid of Monsters Classic.
+    @g_RecoveryMapMultipliers["aomdc_"] = RecoveryMapMultipliers(2.0f, 2.0f, 3.0f); // Afraid of Monsters Directors-Cut.
+    @g_RecoveryMapMultipliers["hl_"] = RecoveryMapMultipliers(1.2f, 1.2f, 1.0f);    // Half-Life Campaign.
+    @g_RecoveryMapMultipliers["of_"] = RecoveryMapMultipliers(1.2f, 1.2f, 1.0f);    // Opposing-Force Campaign.
+    @g_RecoveryMapMultipliers["bs_"] = RecoveryMapMultipliers(1.2f, 1.2f, 1.0f);    // Blue-Shift Campaign.
+
+    string mapName = string(g_Engine.mapname).ToLowercase(); // Update map multiplier first.
+    g_CurrentRecoveryMapMultiplier = 1.0f; // Default multiplier.
+    
+    dictionary@ prefixes = g_RecoveryMapMultipliers;
+    array<string>@ prefixKeys = prefixes.getKeys();
+    
+    for(uint i = 0; i < prefixKeys.length(); i++)
+    {
+        string prefix = prefixKeys[i].ToLowercase();
+        if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix)
+        {
+            RecoveryMapMultipliers@ multipliers = cast<RecoveryMapMultipliers@>(prefixes[prefixKeys[i]]);
+            if(multipliers !is null)
+            {
+                g_CurrentRecoveryMapMultiplier = multipliers.hpRegenTickMultiplier;
+                g_Game.AlertMessage(at_console, "=== CARPG Recovery: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nHP Regen: " + multipliers.hpRegenTickMultiplier + "x | AP Regen: " + multipliers.apRegenTickMultiplier + "x | Hurt Delay: " + multipliers.hurtDelayMultiplier + "x\n\n");
+            }
+            break;
+        }
+    }
 }
 
 // Configurable variables for recovery system.
@@ -41,7 +90,7 @@ void RegenTickHP() // Regen HP.
             RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
             if(data !is null && data.isRegenerating && bAllowHPRegen)
             {
-                float flCalcPercHP = pPlayer.pev.max_health * flPercentHPRegen;
+                float flCalcPercHP = pPlayer.pev.max_health * flPercentHPRegen * g_CurrentRecoveryMapMultiplier;
                 float flRegenHP = Math.max(int(flCalcPercHP), 1);
 
                 if (pPlayer.pev.health < pPlayer.pev.max_health)
@@ -71,7 +120,7 @@ void RegenTickAP() // Regen AP.
             RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
             if(data !is null && data.isRegenerating && bAllowAPRegen)
             {
-                float flCalcPercAP = pPlayer.pev.armortype * flPercentAPRegen / 100;
+                float flCalcPercAP = pPlayer.pev.armortype * flPercentAPRegen * g_CurrentRecoveryMapMultiplier / 100;
                 float iRegenAP = Math.max(int(flCalcPercAP), 1);
 
                 if (pPlayer.pev.armorvalue < pPlayer.pev.armortype)
@@ -101,7 +150,7 @@ void HurtDelayTick() // Think.
                 data.hurtDelayCounter -= flHurtDelayTick;
                 if(data.hurtDelayCounter <= 0)
                 {
-                    data.hurtDelayCounter = flHurtDelay;
+                    data.hurtDelayCounter = flHurtDelay * g_CurrentRecoveryMapMultiplier;
                     data.isRegenerating = true;
                 }
             }
@@ -165,7 +214,7 @@ void StopPlayerRegen(CBasePlayer@ pPlayer) // Stop Player Regen when hurt, calle
     if(data !is null)
     {
         data.isRegenerating = false;
-        data.hurtDelayCounter = flHurtDelay;
+        data.hurtDelayCounter = flHurtDelay * g_CurrentRecoveryMapMultiplier;
         data.lastHurtTime = g_Engine.time;
     }
 }
