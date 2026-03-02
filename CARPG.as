@@ -1,8 +1,8 @@
 /*
-My personal crack at writing an RPG mod for Sven Co-op from the ground up, to replace the SCXPM style mods.
-This plugin uses a class based system with singular abilities and passives similar to killing floor.
-Attempts to strike a better balance than other RPG mods. Whilst featuring tons of classes each with a unique ability.
-In order to keep gameplay similar to vanilla Sven Co-op.
+My personal attempt at writing an RPG mod for Sven Co-op from the ground up, to replace the SCXPM style mods.
+This plugin uses a class based system with singular abilities
+.
+Attempts to strike a better balance than other RPG mods. Whilst featuring simple classes each with a single unique ability.
 
 All aspects of classes abilities and passives scale directly with class level.
 Classes XP/Level is saved independently, all classes must be leveled to the cap individually.
@@ -11,13 +11,11 @@ Player damage dealt is reworked, some enemies are now more deadly.
 Players passively recover health and armor at a fixed rate after a delay, if damaged.
 Armor recovers much faster than health.
 
-Credit to Johnnboy his RPG mod as inspiration for learning and also some of his coding logic is used for PlayerData.
+Credit to Johnboy, his RPG mod was an inspiration for learning.
 
-Credit to Namira, Zebigdt and Mister Copper for testing, as well as class and ability ideas.
+Credit to Namira, Zebigdt and LostHeart (and friends) for most testing, as well as balancing, class and ability ideas.
 
-Thanks for letting me annoy the shit out of you all by tweaking.
-
-This is our core file. Hooks, timers, initialisations of functions.
+This is our core file.
 */
 
 
