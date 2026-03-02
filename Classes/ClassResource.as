@@ -397,12 +397,13 @@ void UpdateClassResource() // Update the class resource hud display for all play
 
                                     if (!isActive)
                                     {
-                                        resourceInfo += "[Ability Recharge: 100%]\n";
+                                        resourceInfo += "[Recharge Speed: 100%]\n";
                                     }
                                     else
                                     {
-                                        resourceInfo += "[Ability Recharge: " + int(barrier.GetActiveRechargePenalty() * 100) + "%]\n";
-                                        resourceInfo += "[DMG Reflect: " + int(barrier.GetScaledDamageReflection() * 100) + "%]";
+                                        resourceInfo += "[Recharge Speed: " + int(barrier.GetActiveRechargePenalty() * 100) + "%]\n";
+                                        resourceInfo += "[DMG Reflect: " + int(barrier.GetScaledDamageReflection() * 100) + "%] ";
+                                        resourceInfo += "[HP Absorb: " + int(barrier.GetBarrierHealthAbsorb() * 100) + "%]";
                                     }
                                 }
                             }
