@@ -50,11 +50,11 @@ class HealingAura
 {
     // Healing Aura.
     private bool m_bIsActive = false;
-    private float m_flHealingRadius = 512.0f; // Radius of the healing aura. (32ft)
-    private float m_flBaseHealAmount = 6.0f; // Base heal amount.
-    private float m_flHealScalingAtMaxLevel = 4.0f; // Healing modifier at max level.
+    private float m_flHealingRadius = 60.0f * 16; // // Radius of the healing aura (ft converted to units).
+    private float m_flBaseHealAmount = 10.0f; // Base health restored, as a percentage of max health.
+    private float m_flHealScalingAtMaxLevel = 2.0f; // Healing modifier at max level.
     private float m_flHealAuraReviveHealthPercent = 0.50f; // Health percent to revive at.
-    private float m_flPoisonDamagePercent = 1.6f; // Modifier for poison damage dealt to enemies, scales from healing amount.
+    private float m_flPoisonDamagePercent = 0.5f; // Modifier for poison damage dealt to enemies, scales from healing amount.
     private float m_flHealAuraInterval = 1.0f; // Time between heals/damage tick.
 
     // Energy costs.
@@ -233,7 +233,6 @@ class HealingAura
             return;
 
         Vector playerOrigin = pPlayer.pev.origin;
-        float poisonDamage = GetPoisonDamageAmount();
         
         // Apply poison damage to entities in radius, checking relationship first.
         CBaseEntity@ pEntity = null;
@@ -251,6 +250,8 @@ class HealingAura
                 int relationship = pMonster.IRelationship(pPlayer);
                 if (relationship != R_AL) // Only poison them if NOT an ally of the player.
                 {
+                    float poisonDamage = GetPoisonDamageAmount() * pMonster.pev.max_health / 100; // Poison damage scales with target's max health.
+
                     pMonster.TakeDamage(pPlayer.pev, pPlayer.pev, poisonDamage, DMG_ACID);
                     ApplyPoisonEffect(pMonster);
                     g_SoundSystem.EmitSoundDyn(pMonster.edict(), CHAN_ITEM, strPoisonSound, 0.5f, ATTN_NORM, SND_FORCE_SINGLE);
@@ -317,9 +318,9 @@ class HealingAura
             auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame.
             auramsg.WriteByte(0); // Frame rate (no effect).
-            auramsg.WriteByte(uint8(m_flHealAuraInterval * 10)); // Life * 0.1s (hits max every interval).
+            auramsg.WriteByte(uint8(m_flHealAuraInterval * 10)); // Life * 0.1s (make life match duration).
             auramsg.WriteByte(32); // Width.
-            auramsg.WriteByte(0); // Noise.
+            auramsg.WriteByte(0); // Noise (No effect).
             auramsg.WriteByte(int(m_vAuraColor.x));
             auramsg.WriteByte(int(m_vAuraColor.y));
             auramsg.WriteByte(int(m_vAuraColor.z));
@@ -480,7 +481,7 @@ class HealingAura
             if(pEntity.pev.health >= pEntity.pev.max_health)
                 continue;
 
-            float healAmount = GetScaledHealAmount();
+            float healAmount = GetScaledHealAmount() * pEntity.pev.max_health / 100; // Heal amount scaled with max health.
             
             if(!pEntity.IsPlayer())
                 healAmount *= 2.0f; // NPC healing modifier.

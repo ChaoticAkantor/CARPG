@@ -22,23 +22,26 @@ dictionary g_PlayerSentries;
 
 class SentryData
 {
+    // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
     private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
-    private float m_flHealthScaleAtMaxLevel = 4.0; // Health modifier at max level.
-    private float m_flDamageScaleAtMaxLevel = 3.0; // Damage modifier at max level.
-    private float m_flBaseHealAmount = 1.0; // Base healing per second.
-    private float m_flHealScaleAtMaxLevel = 5.0f; // Healing modifier at max level.
-    private float m_flSelfHealModifier = 5.0f; // Sentry self-healing multiplier.
-    private float m_flHealRadius = 8000.0; // Radius in which the sentry can heal players.
+    private float m_flHealthScaleAtMaxLevel = 4.0; // Health multiplier at max level.
+    private float m_flDamageScaleAtMaxLevel = 3.0; // Damage multiplier at max level.
+    private float m_flBaseHealAmount = 1.0; // Base health restored as a percentage of max health, per second.
+    private float m_flHealScaleAtMaxLevel = 2.0f; // Healing modifier at max level.
+    private float m_flSelfHealModifier = 3.0f; // Sentry self-healing multiplier.
+    private float m_flHealRadius = 50.0f * 16.0f; // Radius in which the sentry can heal players (ft converted to units).
+
+    // Cryo.
     private int m_iCryoShotsRadius = 64; // Radius of bonus damage on shots.
-    private float m_flCryoShotsDamageAtMaxLevel = 0.30f; // Damage modifier for cryo shots at max level.
     private float m_flCryoShotsSlowAtMaxLevel = 0.80f; // Slow effect at max level.
     private float m_flCryoShotsSlowDuration = 6.0f; // Duration of slow effect in seconds.
     private float m_flEnergyDrain = 1.0; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
     private float m_flRecallEnergyCost = 0.0f; // Energy % cost to recall.
 
+    // Timers.
     private float m_flNextDrain = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
@@ -101,13 +104,13 @@ class SentryData
         if(m_pStats is null)
             return 1.0f; // Restore to default, but is always null when we have no minions.
 
-        float minionScaledDamage = 1.0f; // Default multiplier.
+        float sentryScaledDamage = 1.0f; // Default multiplier.
 
         float level = m_pStats.GetLevel();
         float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
-        minionScaledDamage += damagePerLevel * level;
+        sentryScaledDamage += damagePerLevel * level;
 
-        return minionScaledDamage;
+        return sentryScaledDamage;
     }
 
     float GetScaledHealAmount()
@@ -130,20 +133,6 @@ class SentryData
     }
 
     int GetCryoShotsRadius() { return m_iCryoShotsRadius; }
-
-    float GetCryoShotsDamageMult() 
-    { 
-        if(m_pStats is null)
-            return m_flCryoShotsDamageAtMaxLevel; // Default if no stats.
-
-        float damageMult = 1.0f; // Default damage multiplier.
-
-        float level = float(m_pStats.GetLevel());
-        float damagePerLevel = m_flCryoShotsDamageAtMaxLevel / g_iMaxLevel;
-        damageMult *= damagePerLevel * level;
-
-        return damageMult;
-    }
 
     float GetCryoShotsSlow() // Reduce animation speed for slowing effect.
     { 
@@ -197,9 +186,9 @@ class SentryData
         float maximum = float(resources['max']);
 
         // Check energy - require FULL energy to activate.
-        if(current < maximum)
+        if(current <= 0) // Changed to allow activation any time.
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recharging...\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry out of battery!\n");
             return;
         }
 
@@ -445,7 +434,7 @@ class SentryData
     }
 
     // Apply Elemental Shots.
-    void ApplyElementalShots(Vector targetPos, CBaseEntity@ attacker, CBaseEntity@ victim, float damage)
+    void ApplyElementalShots(Vector targetPos, CBaseEntity@ attacker, CBaseEntity@ victim)
     {
         if(attacker is null || attacker.pev.owner is null || victim is null)
             return;
@@ -490,20 +479,6 @@ class SentryData
             radiusSlowmsg.WriteByte(15);  // Random velocity in 10's.
             radiusSlowmsg.End();
 
-        // Calculate explosive damage based on original damage.
-        float explosiveDamage = damage * sentryData.GetCryoShotsDamageMult();
-
-        // Apply radius damage with the sentry as inflictor and owner as attacker.
-        g_WeaponFuncs.RadiusDamage(
-            targetPos,                // Center on where the target was hit.
-            attacker.pev,            // Inflictor (the sentry).
-            pOwner.pev,              // Attacker (the player).
-            explosiveDamage,         // Scaled explosive damage.
-            sentryData.GetCryoShotsRadius(),
-            CLASS_PLAYER,              // Ignore players.
-            DMG_FREEZE | DMG_ALWAYSGIB
-        );
-
         ApplySlowEffect(victim); // Turret applies slow effect to targets.
     }
 
@@ -544,12 +519,13 @@ class SentryData
             return;
             
         m_flNextHeal = currentTime + m_flHealInterval;
-        float healAmount = GetScaledHealAmount();
+        float healAmount = 0.0f;
 
         // The sentry should include itself when healing.
         if(pSentry.pev.health < pSentry.pev.max_health)
         {
             // Sentry self-healing is modified.
+            healAmount = GetScaledHealAmount() * pSentry.pev.max_health / 100; // Calculate heal amount based on sentry's max health and scaling.
             pSentry.pev.health = Math.min(pSentry.pev.health + (healAmount * m_flSelfHealModifier), pSentry.pev.max_health);
         }
 
@@ -565,6 +541,7 @@ class SentryData
                 {
                     if(pTarget.pev.health < pTarget.pev.max_health)
                     {
+                        healAmount = GetScaledHealAmount() * pTarget.pev.max_health / 100; // Calculate heal amount based on target's max health.
                         pTarget.pev.health = Math.min(pTarget.pev.health + healAmount, pTarget.pev.max_health);
                     }
 
@@ -620,8 +597,8 @@ class SentryData
         Vector pos = pSentry.pev.origin;
         Vector mins = pos - Vector(16, 16, 0);
         Vector maxs = pos + Vector(16, 16, 64);
-        
-        // Beam cylinder effect.
+
+        // Aura Beam Cylinder Effect.
         NetworkMessage auramsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, pos);
             auramsg.WriteByte(TE_BEAMCYLINDER);
             auramsg.WriteCoord(pos.x);
@@ -629,18 +606,18 @@ class SentryData
             auramsg.WriteCoord(pos.z);
             auramsg.WriteCoord(pos.x);
             auramsg.WriteCoord(pos.y);
-            auramsg.WriteCoord(pos.z + 24); // Height.
+            auramsg.WriteCoord(pos.z + m_flHealRadius); // Height.
             auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame.
             auramsg.WriteByte(0); // Frame rate (no effect).
-            auramsg.WriteByte(5); // Life.
+            auramsg.WriteByte(uint8(m_flHealInterval * 10)); // Life * 0.1s (make life match duration).
             auramsg.WriteByte(32); // Width.
             auramsg.WriteByte(0); // Noise.
             auramsg.WriteByte(int(m_vAuraColor.x));
             auramsg.WriteByte(int(m_vAuraColor.y));
             auramsg.WriteByte(int(m_vAuraColor.z));
             auramsg.WriteByte(128); // Brightness.
-            auramsg.WriteByte(0); // Scroll speed.
+            auramsg.WriteByte(0); // Scroll speed (no effect).
             auramsg.End();
 
         // Health Bubbles Effect.
