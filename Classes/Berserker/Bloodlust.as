@@ -20,7 +20,7 @@ class BloodlustData
     // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
     private float m_flDamageReductionAtMaxLevel = 0.495f; // Damage reduction multiplier at maximum level. Doubles during bloodlust!
     private float m_flLifestealAtMaxLevel = 0.30f; // Lifesteal %, as a multiplier at max level. Doubles during bloodlust!
-    private float m_flOverhealPercent = 0.75f; // Percent of max health that can be overhealed to.
+    private float m_flOverhealPercent = 0.60f; // Percent of max health that can be overhealed to.
     private float m_flEnergystealAtMaxLevel = 0.08f; // Energy steal %, as a multiplier at max level. Doubles during bloodlust!
     private float m_flEnergystealFixedAmount = 0.08f; // Fixed energy steal % if scaling is disabled. Doubles during bloodlust!
     private bool m_bEnergyStealIsFixed = false; // Whether energy steal is a fixed or scales with level.
