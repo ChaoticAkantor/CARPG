@@ -1,9 +1,9 @@
-const string strLevelUpSound = "misc/secret.wav";
+const string strLevelUpSound = "misc/secret.wav"; // Sound played on level up.
 
 dictionary g_PlayerRPGData;
 
-// Used for debug menu.
-int g_iMaxLevel = 100; // Max player level, all ability power will scale with the new maximum. Increasing this will not make players stronger!
+// Max level and XP multiplier.
+int g_iMaxLevel = 100; // Max player level. Increasing this will not make players stronger! Abilities scale against max level.
 float g_fXPMultiplier = 1.0f; // Score to XP multiplier, 1.0 = 1 score is 1 XP.
 
 dictionary g_ClassNames = 
@@ -59,8 +59,8 @@ class ClassDefinition
     // Base stats for each class. Typically overridden on a per class basis.
     // If a class has no overrides, these base values are used.
     string name;
-    float baseHP = 100.0f; // Reset Default Base HP.
-    float maxHP = 300.0f; // Maximum HP (At max level).
+    float baseHP = 100.0f; // Base HP.
+    float maxHP = 200.0f; // Maximum HP (At max level).
 
     float baseAP = 100.0f; // Base AP.
     float maxAP = 100.0f; // Maximum AP (At max level).
@@ -144,6 +144,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 25.0f; // No increase.
 
                     def.fullRegenTime = 30.0f; // Time to fully regen ability.
+
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     def.baseHP = 100.0f;
@@ -156,6 +157,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 60.0f; // No increase.
 
                     def.fullRegenTime = 25.0f;
+
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     def.baseHP = 100.0f;
@@ -168,6 +170,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 2.0f; // No increase.
 
                     def.fullRegenTime = 90.0f; // 90s for all minion points.
+
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseHP = 100.0f;
@@ -180,6 +183,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 2.0f; // No increase.
 
                     def.fullRegenTime = 90.0f; // 90s for all minion points.
+
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
                     def.baseHP = 100.0f;
@@ -192,6 +196,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 4.0f; // No increase.
 
                     def.fullRegenTime = 90.0f; // 120s for all minion points.
+
                     break;
                 case PlayerClass::CLASS_BERSERKER:
                     def.baseHP = 100.0f;
@@ -204,6 +209,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 30.0f; // No increase.
 
                     def.fullRegenTime = 90.0f;
+
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseHP = 100.0f;
@@ -212,10 +218,11 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
 
-                    def.baseResource = 250.0f; // Shield Base HP.
-                        def.maxResource = 500.0f; // Shield health at max level.
+                    def.baseResource = 200.0f; // Shield Base HP.
+                        def.maxResource = 600.0f; // Shield health at max level.
 
                     def.fullRegenTime = 20.0f; // Shield active regen time will scale from this!
+
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     def.baseHP = 100.0f;
@@ -228,6 +235,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 800.0f; // Max shock rifle battery capacity, at max level.
 
                     def.fullRegenTime = 90.0f;
+
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     def.baseHP = 100.0f;
@@ -240,6 +248,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 30.0f; // No increase.
 
                     def.fullRegenTime = 20.0f;
+
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
                     def.baseHP = 100.0f;
@@ -252,6 +261,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 1.0f; // No increase.
 
                     def.fullRegenTime = 60.0f;
+
                     break;
                 case PlayerClass::CLASS_SWARMER:
                     def.baseHP = 100.0f;
@@ -264,6 +274,7 @@ void InitializeClassDefinitions()
                         def.maxResource = 1.0f; // Max snark nests at max level.
 
                     def.fullRegenTime = 15.0f;
+
                     break;
             }
             @g_ClassDefinitions[pClass] = @def;
