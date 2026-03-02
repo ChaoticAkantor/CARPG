@@ -153,9 +153,18 @@ float GetTimeUntilNextAmmoRegen()
     if(g_LastAmmoRegenTime <= 0.0f)
         return flAmmoTick; // Return base.
         
+    float effectiveTickTime = flAmmoTick * g_CurrentAmmoMapMultiplier;
     float timeSinceLastRegen = g_Engine.time - g_LastAmmoRegenTime;
-    float timeRemaining = flAmmoTick - timeSinceLastRegen;
-    return Math.max(0.0f, timeRemaining);
+    float timeRemaining = effectiveTickTime - timeSinceLastRegen;
+    
+    // Reset timer if it goes over.
+    if(timeRemaining <= 0.0f)
+    {
+        g_LastAmmoRegenTime = g_Engine.time;
+        return effectiveTickTime;
+    }
+    
+    return timeRemaining;
 }
 
 // Give certain weapons if player is missing them, or they cannot be used (Only throwables).
