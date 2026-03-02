@@ -143,7 +143,7 @@ void InitializeClassDefinitions()
                     def.baseResource = 30.0f; // Ability Duration in seconds, or number of charges.
                         def.maxResource = 30.0f; // No increase.
 
-                    def.fullRegenTime = 30.0f; // Time to fully regen ability.
+                    def.fullRegenTime = 25.0f; // Time to fully regen ability.
 
                     break;
                 case PlayerClass::CLASS_ENGINEER:
@@ -218,8 +218,8 @@ void InitializeClassDefinitions()
                     def.baseAP = 100.0f;
                         def.maxAP = 100.0f;
 
-                    def.baseResource = 200.0f; // Shield Base HP.
-                        def.maxResource = 600.0f; // Shield health at max level.
+                    def.baseResource = 100.0f; // Shield Base HP.
+                        def.maxResource = 500.0f; // Shield health at max level.
 
                     def.fullRegenTime = 15.0f; // Shield active regen time will scale from this!
 
