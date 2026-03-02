@@ -1,7 +1,7 @@
 // Plugin Created by Chaotic Akantor as ammo recovery system for CARPG.
 // This file handles player ammo recovery.
 
-float flAmmoTick = 30.0; // How long between each ammo resupply.
+float flAmmoTick = 31.0; // How long between each ammo resupply.
 string g_AmmoPrefixMessage = ""; // Store prefix message to display to connecting players.
 
 bool g_bShowAmmoPickupNotification = true; // Toggle for method of giving ammo, with or without notification and sounds.
@@ -200,6 +200,8 @@ void EnsurePlayerHasExplosiveWeapon(CBasePlayer@ pPlayer, string weaponName)
             CBasePlayerItem@ pItem = cast<CBasePlayerItem@>(pEntity);
             if(pItem !is null)
             {
+                // Remove spawn flags to prevent respawning
+                pEntity.pev.spawnflags = 0;
                 pPlayer.AddPlayerItem(pItem);
             }
         }
