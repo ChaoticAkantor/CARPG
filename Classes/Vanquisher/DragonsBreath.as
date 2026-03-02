@@ -10,10 +10,10 @@ class DragonsBreathData
     // Dragons breath shots will place a DoT effect at impact location PER shot, with no limit, that stack over each other.
 
     // Fire Damage over Time.
-    private float m_flDragonsBreathFireDamageBase = 2.0f; // Base damage for each DoT.
-    private int m_iDragonsBreathFireTicks = 10; // Number of damage over time ticks PER DoT.
+    private float m_flDragonsBreathFireDamageBase = 1.0f; // Base damage for each DoT.
+    private int m_iDragonsBreathFireTicks = 5; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
-    private float m_flDragonsBreathFireDamageScalingAtMaxLevel = 5.0f; // Damage increase modifier of DoT damage at max level.
+    private float m_flDragonsBreathFireDamageScalingAtMaxLevel = 6.0f; // Damage increase modifier of DoT damage at max level.
     private float m_flDragonsBreathRadius = 320.0f; // Radius of fire damage DoT for Dragons Breath.
     private float m_flEnergyCostPerActivation = 1.0f; // Amount of energy to use per activation.
 
