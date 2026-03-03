@@ -260,7 +260,7 @@ void InitializeClassDefinitions()
                     def.baseResource = 1.0f; // Base charges.
                         def.maxResource = 1.0f; // No increase.
 
-                    def.fullRegenTime = 60.0f;
+                    def.fullRegenTime = 90.0f;
 
                     break;
                 case PlayerClass::CLASS_SWARMER:
