@@ -190,10 +190,10 @@ namespace Menu
                         string VanquisherStatsText = "=== Dragon's Breath Ammo: ===" + "\n"; 
                             VanquisherStatsText += "Fire DoT Damage: " + DragonsBreath.GetScaledFireDamage() + "/s\n";
                             VanquisherStatsText += "Fire DoT Duration: " + DragonsBreath.GetFireDuration() + "s\n";
-                            VanquisherStatsText += "Fire DoT Radius: " + DragonsBreath.GetRadius() + "u\n";
+                            VanquisherStatsText += "Fire DoT Radius: " + DragonsBreath.GetRadius() / 16 + "ft\n";
                         
                         VanquisherStatsText += "\nMax Ammo Capacity: " + int(DragonsBreath.GetMaxRounds()) + "\n";
-                        VanquisherStatsText += "Ammo Pool Refill: " + DragonsBreath.GetAmmoRefillPercent() + "% (" + DragonsBreath.GetAmmoPerPack() + " rounds)\n\n";
+                        VanquisherStatsText += "Dragon's Breath Rounds Per Activation: " + DragonsBreath.GetAmmoRefillPercent() + "% (" + DragonsBreath.GetAmmoPerPack() + " rounds)\n\n";
 
                         m_pMenu.AddItem(VanquisherStatsText, null);
                     }

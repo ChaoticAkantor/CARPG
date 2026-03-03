@@ -13,12 +13,12 @@ class DragonsBreathData
     private float m_flDragonsBreathFireDamageBase = 1.0f; // Base damage for each DoT.
     private int m_iDragonsBreathFireTicks = 5; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
-    private float m_flDragonsBreathFireDamageScalingAtMaxLevel = 6.0f; // Damage increase modifier of DoT damage at max level.
-    private float m_flDragonsBreathRadius = 320.0f; // Radius of fire damage DoT for Dragons Breath.
+    private float m_flDragonsBreathFireDamageScalingAtMaxLevel = 4.0f; // Damage increase modifier of DoT damage at max level.
+    private float m_flDragonsBreathRadius = 40.0f * 16; // Radius of fire damage DoT for Dragons Breath.
     private float m_flEnergyCostPerActivation = 1.0f; // Amount of energy to use per activation.
 
     // Ammo pool.
-    private int m_iDragonsBreathPoolBase = 15; // Base max ammo pool for Dragons Breath.
+    private int m_iDragonsBreathPoolBase = 30; // Base max ammo pool for Dragons Breath.
     private float m_flDragonsBreathPoolScalingAtMaxLevel = 3.0f; // Ammo Pool size increase at max level.
     private float m_flRoundsFillPercentage = 1.00f; // Percentage of max ammo pool to fill per activation.
     private float m_flRoundsInPool = 0.0f; // Used to store rounds currently in pool.
@@ -55,6 +55,8 @@ class DragonsBreathData
 
     float GetAmmoRefillPercent() { return m_flRoundsFillPercentage; } // Get refill percentage.
 
+    float GetFireInterval() { return m_flDragonsBreathFireInterval; } // Get fire DoT tick interval.
+
     int GetAmmoPerPack() // Calculate number of rounds to add per pack.
     {
         if(m_pStats is null)
@@ -71,8 +73,7 @@ class DragonsBreathData
         if(pPlayer is null)
             return;
 
-        // Apply Area effect to display size of fire radius (Dyn light probably too resource intensive, change to disk or beam torus).
-        // Also add dynamic light effect to entity.
+        // Apply dynamic light for flash effect.
         NetworkMessage fireAreaMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
             fireAreaMsg.WriteByte(TE_DLIGHT);
             fireAreaMsg.WriteCoord(impactPoint.x);
@@ -82,8 +83,8 @@ class DragonsBreathData
             fireAreaMsg.WriteByte(255); // Red.
             fireAreaMsg.WriteByte(100); // Green.
             fireAreaMsg.WriteByte(15); // Blue.
-            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10)); // Life * 0.1s.
-            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10)); // Fade speed * 1s.
+            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10 * m_iDragonsBreathFireTicks)); // Life * 0.1s.
+            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval)); // Fade speed * 1s.
             fireAreaMsg.End();
 
         ApplyDragonsBreathFire(pPlayer, impactPoint); // Apply damage over time fire at location.
@@ -107,7 +108,7 @@ class DragonsBreathData
         //pTarget.pev.rendercolor = Vector(255, 100, 10); // Orange glow.
         //pTarget.pev.renderamt = 10;
 
-        // Schedule DoT ticks at fire location.
+        // Schedule DoT ticks at fire location and play effect each time a tic occurs.
         for(int firetick = 0; firetick < m_iDragonsBreathFireTicks; firetick++)
         {
             g_Scheduler.SetTimeout("ApplyFireDamage", m_flDragonsBreathFireInterval * firetick, pPlayer.entindex(), impactPoint);
@@ -512,7 +513,7 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
         dragonsBreath.GetScaledFireDamage(), // Damage per tick.
         dragonsBreath.GetRadius(), // Radius.
         CLASS_PLAYER, // Will not damage player or allies.
-        DMG_GENERIC | DMG_ALWAYSGIB // Damage type (Poison for DoT and stacking).
+        DMG_GENERIC | DMG_BURN | DMG_ALWAYSGIB // Damage type (Fire for DoT and stacking).
     );
 
     Vector startPoint = impactPoint;
@@ -539,6 +540,28 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     msgFireArea.WriteByte(25);  // Velocity along vector in 10's.
     msgFireArea.WriteByte(50);  // Random velocity in 10's - higher for more spread.
     msgFireArea.End();
+
+    // Fire DoT Beam Cylinder Effect.
+    NetworkMessage fireRadiusMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, impactPoint);
+        fireRadiusMsg.WriteByte(TE_BEAMCYLINDER);
+        fireRadiusMsg.WriteCoord(impactPoint.x);
+        fireRadiusMsg.WriteCoord(impactPoint.y);
+        fireRadiusMsg.WriteCoord(impactPoint.z);
+        fireRadiusMsg.WriteCoord(impactPoint.x);
+        fireRadiusMsg.WriteCoord(impactPoint.y);
+        fireRadiusMsg.WriteCoord(impactPoint.z + dragonsBreath.GetRadius()); // Height.
+        fireRadiusMsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite)); // Again borrowing heal beam sprite, for now.
+        fireRadiusMsg.WriteByte(0); // Starting frame.
+        fireRadiusMsg.WriteByte(0); // Frame rate (no effect).
+        fireRadiusMsg.WriteByte(uint8(dragonsBreath.GetFireInterval() * 10)); // Life * 0.1s (make life match duration).
+        fireRadiusMsg.WriteByte(16); // Width.
+        fireRadiusMsg.WriteByte(0); // Noise.
+        fireRadiusMsg.WriteByte(255); //R. Orange colour.
+        fireRadiusMsg.WriteByte(100); // G.
+        fireRadiusMsg.WriteByte(0); // B.
+        fireRadiusMsg.WriteByte(128); // Brightness.
+        fireRadiusMsg.WriteByte(0); // Scroll speed (no effect).
+        fireRadiusMsg.End();
 }
 
 // Helper function to get ammo name from index.
