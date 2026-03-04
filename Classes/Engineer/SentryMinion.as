@@ -469,7 +469,7 @@ class SentryData
             radiusSlowmsg.WriteByte(1);   // Life in 0.1's.
             radiusSlowmsg.WriteByte(1);   // Scale in 0.1's.
             radiusSlowmsg.WriteByte(25);  // Velocity along vector in 10's.
-            radiusSlowmsg.WriteByte(20);  // Random velocity in 10's.
+            radiusSlowmsg.WriteByte(15);  // Random velocity in 10's.
             radiusSlowmsg.End();
 
             // Add glow shell effect to entity taking damage.
