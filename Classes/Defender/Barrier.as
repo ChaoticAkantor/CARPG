@@ -3,8 +3,6 @@ string strBarrierHitSound = "debris/glass1.wav";
 string strBarrierBreakSound = "debris/bustglass2.wav";
 string strBarrierActiveSound = "ambience/alien_powernode.wav";
 
-string strBarrierReflectDamageSprite = "sprites/snow.spr";
-
 const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B.
 const float BARRIER_PROTECTION_RANGE = 2400.0f; // Range in units for the barrier protection to work.
 
@@ -333,7 +331,7 @@ class BarrierData
         if(target is null)
             return;
 
-        // Add glow shell effect to entity taking damage later, with timeout to remove it.
+        // Add glow shell effect to entity taking damage later, with timeout to remove it. *TO DO
 
         // Also add dynamic light effect to entity.
         NetworkMessage glowreflectMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
@@ -349,26 +347,21 @@ class BarrierData
             glowreflectMsg.WriteByte(2); // Fade speed.
             glowreflectMsg.End();
 
-        // Offsets for sprite trail.
-        Vector originOffset = target.pev.origin;
-        originOffset.z += 32; // Offset to top of entity.
-
-        Vector endPoint = originOffset;
-        endPoint.z += 10; // Trail moves upward.
+        Vector centerPos = target.pev.origin + (target.pev.mins + target.pev.maxs) * 0.5f;
 
         // Create sprite trail effect for snow/ice particles.
         NetworkMessage snowmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
             snowmsg.WriteByte(TE_SPRITETRAIL);
-            snowmsg.WriteCoord(origin.x);
-            snowmsg.WriteCoord(origin.y);
-            snowmsg.WriteCoord(origin.z);
-            snowmsg.WriteCoord(endPoint.x);
-            snowmsg.WriteCoord(endPoint.y);
-            snowmsg.WriteCoord(endPoint.z);
-            snowmsg.WriteShort(g_EngineFuncs.ModelIndex(strBarrierReflectDamageSprite));
-            snowmsg.WriteByte(3);   // Count.
+            snowmsg.WriteCoord(centerPos.x);
+            snowmsg.WriteCoord(centerPos.y);
+            snowmsg.WriteCoord(centerPos.z);
+            snowmsg.WriteCoord(centerPos.x);
+            snowmsg.WriteCoord(centerPos.y);
+            snowmsg.WriteCoord(centerPos.z);
+            snowmsg.WriteShort(g_EngineFuncs.ModelIndex(strSentrySlowEffectSprite));
+            snowmsg.WriteByte(5);   // Count.
             snowmsg.WriteByte(1);   // Life in 0.1's.
-            snowmsg.WriteByte(3);   // Scale in 0.1's.
+            snowmsg.WriteByte(2);   // Scale in 0.1's.
             snowmsg.WriteByte(25);  // Velocity along vector in 10's.
             snowmsg.WriteByte(15);  // Random velocity in 10's.
             snowmsg.End();
