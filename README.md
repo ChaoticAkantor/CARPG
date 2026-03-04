@@ -4,27 +4,77 @@
  https://discord.gg/FbsxHMvPGN
 
 # What is it?
- This plugin takes the basic principals of SCXPM but in an attempt to simplify features and turn it into a class-based mod similar to Killing Floor.
+ This plugin takes the basic principals of SCXPM but in an attempt to simplify features and do something completely different. The goal is always balance, no more immortal tanks bunny hopping through maps without a care.
 
-# Classes?!
-Rather than having lots of skills, most of the old SCXPM skills were coalested into auto-increasing stats on level up and regen was merged into it's own recovery system.
+ Most classes bring something to the fight and push them into a specific role based on the holy trinity. Tank, DPS, Support.
 
-All abilities scale in various ways as they level.
+# Leveling
+ Default Max Level is 100, this can be changed, but the abilities will always scale UP to the max level.
 
-1 Frag/score = 1 XP, no bloated numbers.
-All XP is shared between players! And minion classes share XP with their team. No more hogging. Even whilst dead or in observer mode you will continue to earn XP!
+ Max HP scales with your class level.
+
+ Max AP DOES NOT increase in any way, but you can always regenerate up to the default maximum slowly, the reasoning for this is that armor in Sven is VERY strong compared to Half-Life.
+
+ Each class has it's own max level and stats saved individually.
+
+ Type "class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
+
+ Type "stats" without quotes in chat to bring up the stats menu to see your current stat and ability bonuses.
+
+# Ammo Resupply (and Explosives)
+ The mod also features an ammo resupply system.
+
+ Explosives resupply is extremely limited, using a threshold system that only allows you a maximum usually of 1 at a time, unless you find more in a level.
+
+ It also does not give you the weapons pertaining to any of the ammo types to retain map balance.
+
+ Please see "Difficulty" for notes on further map balancing for horror map series.
+
+# Recovery
+ Regeneration will halt a small delay after taking damage, displaying an icon in the hud.
+ By default, HP and AP restore 1% per tic.
+
+ HP restores every 1s.
+ AP restores every 4s.
+
+ Recovery DOES NOT scale with level in any way.
+
+ Please see "Difficulty" for notes on further map balancing for horror map series.
+
+# Difficulty
+ Player weapon damage is slightly increased, and will be forced, regardless of map.
+
+ Sven's Auto-player balancing for the moment is forcibly disabled (for now).
+
+ Certain things do increased damage to the player:
+ Zombies
+ Headcrabs
+ Grunts with 556 (as it's also tied to player damage grrr).
 
 # How do I use Skills?
  Typing useability in chat, or binding a button to it and pressing it will activate your class ability.
- Type bind mouse3 say "useability" in console and replace mouse3 with the key you want to use. 
+ Type bind mouse3 say "useability" in console and replace mouse3 with the key you want to use.
+
+# XP Gain
+ XP gain is naturally quite fast.
+
+ All XP is shared between players.
+ 
+ Minion classes share all of their accumulated XP with their team. 
+ 
+ Continue to earn XP even if dead or spectating.
+
+ By default 1 Score/Frag = 1 XP. A customisable multiplier does exist in PlayerData, but no console commands yet.
+
+# Classes?!
+ Classes have a single abilitiy that automatically scales in various ways as you level up.
 
 # Current Classes
 # Medic - Healer/AoE Damage Dealer
-Whilst active creates a Healing aura with a large radius, can heal yourself as well as friendly players and friendly NPC's every second, this includes other player's minions. Can also revive players for an increased cost.
+Healing Aura that restores a percentage of HP for allies (including NPC's).
+Also deals a percentage of HP as poison damage to enemies.
 
-Deals equivalent poison damage as heal value to all enemies caught in the aura.
-
-NPC healing is stronger.
+Can revive, but drains more charge.
 
 # Berserker - Lifesteal Tank
 Passively gains Life Steal and damage reduction the lower their health. Activating ability toggles a Bloodlust rage state, which doubles all bonuses whilst active.
@@ -81,35 +131,6 @@ Can consume Explosive Ammo Packs to grant a portion of Explosive Ammo to the amm
 Fire damage will scale with level.
 
 Fire duration and AoE is fixed.
-
-# Leveling
- Default Max Level is 100.
-
- Max HP and AP will scale with your level, based on your class.
-
- Each class has it's own max level and stats saved individually.
-
- Type "class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
-
- Type "stats" without quotes in chat to bring up the stats menu to see your current stat and ability bonuses and see any other modifiers like ammo regen (WIP).
-
-# Ammo Regeneration
- The mod also features an ammo regeneration system similar to Borderlands 1's ammo regen modifier, every bullet type is on it's own timer. Some classes get bonus reduction to these timers depending on levels gained.
-
- Explosives regeneration is extremely limited to most classes. Usually a threshold that stops you from regenerating it fully.
-
- The ammo system also multiplies ammo timers for different map series such as They Hunger and Afraid of Monsters Classic/DC.
-
-# Recovery
- The mod also features it's own recovery system. 
- Regeneration will halt a small delay after taking damage, displaying an icon in the hud.
- HP restores 1% of Max HP every 1.0s.
- AP restores 1% of Max AP every 2.0s.
-
-# Difficulty
- The mod also features it's own difficulty normalising system.
- Damage dealt by players is slightly increased, most weapons are rebalanced.
- Zombies and headcrabs specifically hit harder. Certain bullet types from enemies do more damage due to the player changes.
 
 # Installation instructions:
 
