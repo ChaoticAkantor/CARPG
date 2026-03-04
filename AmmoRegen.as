@@ -4,7 +4,7 @@
 float flAmmoResupplyTimerMax = 30.0; // How long between each ammo resupply.
 float flAmmoResupplyTimer = flAmmoResupplyTimerMax; // Track timer change.
 
-float flExplosivesResupplyTimerMax = 60.0; // How long between each explosives resupply.
+float flExplosivesResupplyTimerMax = 90.0; // How long between each explosives resupply.
 float flExplosivesResupplyTimer = flExplosivesResupplyTimerMax; // Track timer change.
 
 string g_AmmoPrefixMessage = ""; // Store prefix message to display to connecting players.
