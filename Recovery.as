@@ -1,6 +1,27 @@
 // Created by Chaotic Akantor.
 // This file handles player recovery and hurt delay.
 
+// Configurable variables for recovery system.
+
+// Timer intervals.
+const float flRegenTickHP = 1.0f; // Time between HP regen ticks (in seconds).
+const float flRegenTickAP = 4.0f; // Time between AP regen ticks (in seconds).
+
+// Regen percentages.
+const float flPercentHPRegen = 1.0f; // Percentage of HP to regen per tick.
+const float flPercentAPRegen = 1.0f; // Percentage of AP to regen per tick.
+
+// Hurt delay.
+const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks (in seconds).
+const float flHurtDelay = 2.0f; // Total time to stay "hurt" before regen starts again (in seconds).
+
+// Toggles for enabling/disabling regen separately.
+const bool bAllowHPRegen = true;
+const bool bAllowAPRegen = true;
+
+// Sprite on hud for icon when hurt delay is active.
+const string strHurtDelaySprite = "tfchud06.spr";
+
 dictionary g_PlayerRecoveryData; // Dictionary for recovery data.
 dictionary g_RecoveryMapMultipliers; // Dictionary for map-specific multipliers.
 
@@ -63,19 +84,6 @@ void InitializeRecovery() // Called in PluginInit().
     }
 }
 
-// Configurable variables for recovery system.
-    const float flRegenTickHP = 1.0f; // Time between HP regen ticks (in seconds).
-    const float flRegenTickAP = 4.0f; // Time between AP regen ticks (in seconds).
-    const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks (in seconds).
-    const float flHurtDelay = 1.0f; // Total time to stay "hurt" before regen starts again (in seconds).
-    const float flPercentHPRegen = 0.01f; // As a multiplier, % of HP to regen per tick.
-    const float flPercentAPRegen = 0.01f; // As a multiplier, % of AP to regen per tick.
-    const bool bAllowHPRegen = true;
-    const bool bAllowAPRegen = true;
-
-// Sprite on hud for icon when hurt delay is active.
-const string strHurtDelaySprite = "tfchud06.spr";
-
 void RegenTickHP() // Regen HP.
 {   
     const int iMaxPlayers = g_Engine.maxClients;
@@ -94,7 +102,7 @@ void RegenTickHP() // Regen HP.
             RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
             if(data !is null && data.isRegenerating && bAllowHPRegen)
             {
-                float flCalcPercHP = pPlayer.pev.max_health * flPercentHPRegen * g_CurrentRecoveryMapMultiplier;
+                float flCalcPercHP = (pPlayer.pev.max_health * flPercentHPRegen / 100) * g_CurrentRecoveryMapMultiplier;
                 float flRegenHP = Math.max(int(flCalcPercHP), 1);
 
                 if (pPlayer.pev.health < pPlayer.pev.max_health)
@@ -124,7 +132,7 @@ void RegenTickAP() // Regen AP.
             RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
             if(data !is null && data.isRegenerating && bAllowAPRegen)
             {
-                float flCalcPercAP = pPlayer.pev.armortype * flPercentAPRegen * g_CurrentRecoveryMapMultiplier / 100;
+                float flCalcPercAP = (pPlayer.pev.armortype * flPercentAPRegen / 100) * g_CurrentRecoveryMapMultiplier;
                 float iRegenAP = Math.max(int(flCalcPercAP), 1);
 
                 if (pPlayer.pev.armorvalue < pPlayer.pev.armortype)
