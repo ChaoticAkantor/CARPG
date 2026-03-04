@@ -4,6 +4,7 @@ string strSentryRecall = "turret/tu_die.wav";
 // Sentry Models.
 string strSentryModel = "models/sentry.mdl";
 string strSentryGibs = "models/computergibs.mdl";
+string strSentrySlowEffectSprite = "sprites/glow_bg.spr";
 
 // Sentry Sounds.
 string strSentryFire = "weapons/hks_hl3.wav";
@@ -433,8 +434,8 @@ class SentryData
         }
     }
 
-    // Apply Elemental Shots.
-    void ApplyElementalShots(Vector targetPos, CBaseEntity@ attacker, CBaseEntity@ victim)
+    // Apply Shot Effects.
+    void ApplyShotEffects(Vector targetPos, CBaseEntity@ attacker, CBaseEntity@ victim)
     {
         if(attacker is null || attacker.pev.owner is null || victim is null)
             return;
@@ -452,34 +453,32 @@ class SentryData
         if(sentryData is null)
             return;
 
-        // Add glow shell effect to entity taking damage.
-        ApplyDamageGlow(victim);
-
-        // Offsets for sprite trail.
-        Vector originOffset = targetPos;
-        originOffset.z += 32; // Offset to top of entity.
-
-        Vector endPoint = originOffset;
-        endPoint.z += 10; // Trail moves upward.
+        Vector centerPos = victim.pev.origin + (victim.pev.mins + victim.pev.maxs) * 0.5f;
 
         // Create sprite trail effect for snow/ice particles.
-        NetworkMessage radiusSlowmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, targetPos);
+        NetworkMessage radiusSlowmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, centerPos);
             radiusSlowmsg.WriteByte(TE_SPRITETRAIL);
-            radiusSlowmsg.WriteCoord(targetPos.x);
-            radiusSlowmsg.WriteCoord(targetPos.y);
-            radiusSlowmsg.WriteCoord(targetPos.z);
-            radiusSlowmsg.WriteCoord(endPoint.x);
-            radiusSlowmsg.WriteCoord(endPoint.y);
-            radiusSlowmsg.WriteCoord(endPoint.z);
-            radiusSlowmsg.WriteShort(g_EngineFuncs.ModelIndex(strBarrierReflectDamageSprite));
+            radiusSlowmsg.WriteCoord(centerPos.x);
+            radiusSlowmsg.WriteCoord(centerPos.y);
+            radiusSlowmsg.WriteCoord(centerPos.z);
+            radiusSlowmsg.WriteCoord(centerPos.x);
+            radiusSlowmsg.WriteCoord(centerPos.y);
+            radiusSlowmsg.WriteCoord(centerPos.z);
+            radiusSlowmsg.WriteShort(g_EngineFuncs.ModelIndex(strSentrySlowEffectSprite));
             radiusSlowmsg.WriteByte(2);   // Count.
             radiusSlowmsg.WriteByte(1);   // Life in 0.1's.
-            radiusSlowmsg.WriteByte(3);   // Scale in 0.1's.
+            radiusSlowmsg.WriteByte(1);   // Scale in 0.1's.
             radiusSlowmsg.WriteByte(25);  // Velocity along vector in 10's.
-            radiusSlowmsg.WriteByte(15);  // Random velocity in 10's.
+            radiusSlowmsg.WriteByte(20);  // Random velocity in 10's.
             radiusSlowmsg.End();
 
-        ApplySlowEffect(victim); // Turret applies slow effect to targets.
+            // Add glow shell effect to entity taking damage.
+            victim.pev.renderfx = kRenderFxGlowShell;
+            victim.pev.rendermode = kRenderNormal;
+            victim.pev.rendercolor = ELEMENT_COLOR; // Light Blue.
+            victim.pev.renderamt = 10; // Thickness.
+
+            ApplySlowEffect(victim); // Turret applies slow effect to targets.
     }
 
     void ApplySlowEffect(CBaseEntity@ victim)
@@ -490,26 +489,15 @@ class SentryData
         CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
         if(slowTargetSentry !is null)
         {
-            if (slowTargetSentry.pev.framerate >= 1.0f) // Check if framerate is already reduced.
-            {
-                slowTargetSentry.pev.framerate = GetCryoShotsSlow(); // Reduce the target's animation speed.
+            if (slowTargetSentry.pev.framerate == GetCryoShotsSlow()) // Skip if target's framerate is already reduced.
+                return;
+                
+                // Set the target's animation speed and apply visual effect.
+                slowTargetSentry.pev.framerate = GetCryoShotsSlow();
 
-                // Schedule a think function to remove the slow effect after the duration.
+                // Schedule a think function to remove the slow effect on this target after the specified duration.
                 g_Scheduler.SetTimeout("RemoveSlowEffect", m_flCryoShotsSlowDuration, victim.entindex());
-            }
         }
-    }
-
-    void ApplyDamageGlow(CBaseEntity@ victim)
-    {
-        if(victim is null)
-            return;
-
-        // Add glow shell effect to entity taking damage.
-        victim.pev.renderfx = kRenderFxGlowShell;
-        victim.pev.rendermode = kRenderNormal;
-        victim.pev.rendercolor = ELEMENT_COLOR; // Light Blue.
-        victim.pev.renderamt = 10; // Thickness.
     }
 
     private void SentryHeal(CBaseEntity@ pSentry)

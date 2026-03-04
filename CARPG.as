@@ -213,6 +213,10 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strReviveSound);
         g_SoundSystem.PrecacheSound(strPoisonSound);
 
+    // Engineer Ability Precache.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strSentrySlowEffectSprite);
+
     // Xenomancer Ability Precache.
         // Sounds.
         g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
@@ -668,7 +672,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         info.flDamage *= damageSentryMultiplier;
 
         //Sentry cryo effect.
-        sentry.ApplyElementalShots(targetPos, attacker, victim);
+        sentry.ApplyShotEffects(targetPos, attacker, victim);
     }
     else if(targetname.StartsWith("_minion_"))
     {
