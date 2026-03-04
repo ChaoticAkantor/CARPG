@@ -293,7 +293,8 @@ void PrecacheAll()
         g_Game.PrecacheModel(strRobogruntRope);
         g_Game.PrecacheModel(strRobogruntModelChromegibs);
         g_Game.PrecacheModel(strRobogruntModelComputergibs);
-        g_Game.PrecacheModel(strRobogruntModelShotgunShell);
+        g_Game.PrecacheModel(strRobogruntModelClassicShell);
+        g_Game.PrecacheModel(strRobogruntModelClassicShotgunShell);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);

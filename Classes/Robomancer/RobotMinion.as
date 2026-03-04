@@ -7,7 +7,8 @@ string strRobogruntModelF = "models/rgruntf.mdl";
 string strRobogruntRope = "sprites/rope.spr";
 string strRobogruntModelChromegibs = "models/chromegibs.mdl";
 string strRobogruntModelComputergibs = "models/computergibs.mdl";
-string strRobogruntModelShotgunShell = "models/shotgunshell.mdl";
+string strRobogruntModelClassicShell = "models/hlclassic/shell.mdl";
+string strRobogruntModelClassicShotgunShell = "models/hlclassic/shotgunshell.mdl";
 
 //  Death Sounds.
 string strRobogruntSoundDeath = "turret/tu_die.wav";
