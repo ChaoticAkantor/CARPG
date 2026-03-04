@@ -70,67 +70,128 @@
  Classes have a single abilitiy that automatically scales in various ways as you level up.
 
 # Current Classes
-# Medic - Healer/AoE Damage Dealer
-Healing Aura that restores a percentage of HP for allies (including NPC's).
-Also deals a percentage of HP as poison damage to enemies.
+# Medic
+ Healing Aura that restores a percentage of HP for allies (including NPC's).
+ Also deals a percentage of HP as poison damage to enemies.
 
-Can revive, but drains more charge.
+ Can revive both players and NPC's, but drains more charge.
 
-# Berserker - Lifesteal Tank
-Passively gains Life Steal and damage reduction the lower their health. Activating ability toggles a Bloodlust rage state, which doubles all bonuses whilst active.
 
-Life steal will return HP as AP at a severely reduced value if HP is full.
+# Berserker
+Bloodlust is a passive ability, that can be activated to double all bonuses, draining charge.
 
-# Engineer - Healer/Minion Hybrid
-Can summon a single friendly Sentry for a duration that regenerates HP for all players and itself. Activating the ability again will recall the Sentry. The sentry turret uses Cryo rounds that can slow targets.
+ # Passives:
+  Can leech health by dealing damage.
 
-Health, damage and healing and cryo slow strength scales with level.
+  Can overheal a percentage of Max HP as extra temporary HP.
 
-Any XP (frags/score) it gains is sent to you instead.
+  Gains damage reduction as health decreases.
 
-# Robomancer - Robogrunt Minions
-Can summon friendly robogrunts that will follow you, can be teleported or killed via the minion menu.
+  Gain ability recharge by dealing damage (even whilst ability is active!)
 
-Their health and damage scales with level. Robogrunts have thick armor and are resistant to bullets.
 
-Regenerates HP.
+# Engineer
+ Summons a single friendly Sentry.
 
-Any XP (frags/score) they gain is sent to you instead.
+ Sentry can slow down enemies.
+ 
+ Has a weaker version of Heal Aura without poison damage.
 
-# Xenomancer - Xen Minions
-Can summon friendly Xen creatures that will follow you, can be teleported or killed via the minion menu. 
+ Activating whilst active will recall the turret for a cost.
 
-Their health and damage scales with level.
 
-Regenerates HP.
+# Robomancer
+ Can summon friendly robogrunts, amount depends on points used.
 
-Can be revived if they are dying, is only considered truly dead once their corpse has faded. Can be teleported to you in revivable state.
+ Uses a summon menu to choose weapon type, teleport or kill them.
 
-Any XP (frags/score) they gain is sent to you instead.
+ Robogrunts are naturally armored and take significantly reduced damage from most damage types.
 
-# Warden - Ice Shield Tank
-Forms a shield of ice around the user that absorbs all damage. The shield has it's own HP. Recharges slower whilst it is active.
+ They move faster than normal.
 
-All damage taken is reflected back at the attacker, dealing damage as Radius Damage.
+ Will repair over time.
 
-# Shocktrooper - Power Weapon Damage Dealer
-Can equip a Shockrifle at will, can re-stow it by pressing ability button whilst holding one.
 
-Stowing restores half of remaining ammo to battery. Picked up Shockroaches can also be stowed to restore battery this way.
+# Xenomancer
+ Can summon friendly robogrunts, amount depends on points used.
 
-Damage and Capacity of Shockrifles scale with level.
+ Uses a summon menu to choose monster type, teleport or kill them.
 
-# Cloaker - Stealthy Damage Dealer 
-Invisiblity cloak that gains a damage bonus, based on how full the battery is. Ending the cloak will activate a damaging nova, dealing damage based on remaining energy. Also become completely invisible to AI.
+ They move faster than normal.
 
-A percent of damage dealt by the nova will restore AP.
+ Will heal over time.
 
-# Vanquisher - AoE Damage Dealer
-Can consume Explosive Ammo Packs to grant a portion of Explosive Ammo to the ammo pool. All hitscan weapons will deal extra radius explosive damage, as well as creating a fire DoT at the impact location for a duration, DoT's stack infinitely.
 
-Fire damage will scale with level.
+# Necromancer
+ Can summon friendly Undead, amount depends on points used.
 
-Fire duration and AoE is fixed.
+ Has higher HP than other minion types.
+
+ Can summon more of the weaker variant than other minion types.
+
+ Uses a summon menu to choose monster type, teleport or kill them.
+
+ They move faster than normal.
+
+ Will heal over time.
+
+ Damage leeches life to themself and owner.
+
+
+# Warden
+ Ice Shield that absorbs all damage and has it's own HP.
+
+ Restores Shield HP when not active.
+
+ Reflects a percentage of damage at attacking enemies (including grenades and projectiles).
+ 
+ Absorbs a percentage of absorbed damage and restores HP.
+
+ Can restore Shield HP whilst active, but at a severely reduced rate.
+ 
+ Activating whilst active will break the shield for a cost.
+
+
+# Shocktrooper
+ Equips an improved Shockrifle.
+
+ Has significantly increased capacity and increased damage.
+
+ Can activate whilst holding a Shockrifle to stow it and restore a portion of ammo to battery.
+
+ More features will come for this class later.
+
+
+# Cloaker
+ Cloaking device that will render you completely undetectable to NPC's.
+
+ Gains a massive damage bonus to shots whilst active. Shooting drains battery, damage bonus depends on remaining battery.
+
+ Activating while active will create a damaging Nova. Also happens if Cloak runs out.
+
+ Nova Damage depends on remaining battery.
+
+ Nova damage leeches HP.
+
+
+# Vanquisher
+ Can load Dragon's Breath rounds into a seperate ammo pool.
+
+ If you have Dragon's Breath ammo, all shots will cause a fire damage area of effect where you shoot.
+
+ Fire damage is low but will stack for each area of effect.
+
+ Area of effects have no limit.
+
+# Swarmer
+ Summons a swarm of improved snarks.
+
+ Snarks have considerably increased HP and damage.
+
+ Snarks are thrown out at random infront of you, at signifcant velocity. Allowing you to throw them over or bounce them around obsticles.
+
+ Damage leeches HP to self and owner.
+
 
 # Installation instructions:
 
