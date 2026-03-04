@@ -241,7 +241,6 @@ void PrecacheAll()
 
     // Defender Ability Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strBarrierReflectDamageSprite);
         
         // Sounds.
         g_SoundSystem.PrecacheSound(strBarrierToggleSound);
@@ -294,6 +293,7 @@ void PrecacheAll()
         g_Game.PrecacheModel(strRobogruntRope);
         g_Game.PrecacheModel(strRobogruntModelChromegibs);
         g_Game.PrecacheModel(strRobogruntModelComputergibs);
+        g_Game.PrecacheModel(strRobogruntModelShotgunShell);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
