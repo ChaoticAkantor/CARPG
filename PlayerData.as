@@ -153,21 +153,21 @@ void InitializeClassDefinitions()
                     def.baseResource = 3.0f; // Minion Point Max.
                         def.maxResource = 3.0f; // No increase.
 
-                    def.fullRegenTime = 90.0f; // 90s for all minion points.
+                    def.fullRegenTime = 90.0f;
 
                     break;
                 case PlayerClass::CLASS_XENOMANCER:
                     def.baseResource = 6.0f; // Minion Point Max.
                         def.maxResource = 6.0f; // No increase.
 
-                    def.fullRegenTime = 90.0f; // 90s for all minion points.
+                    def.fullRegenTime = 90.0f;
 
                     break;
                 case PlayerClass::CLASS_NECROMANCER:
                     def.baseResource = 12.0f; // Minion Point Max.
                         def.maxResource = 12.0f; // No increase.
 
-                    def.fullRegenTime = 90.0f; // 120s for all minion points.
+                    def.fullRegenTime = 90.0f;
 
                     break;
                 case PlayerClass::CLASS_BERSERKER:
@@ -202,7 +202,7 @@ void InitializeClassDefinitions()
                     def.baseResource = 1.0f; // Base charges.
                         def.maxResource = 1.0f; // No increase.
 
-                    def.fullRegenTime = 90.0f;
+                    def.fullRegenTime = 30.0f;
 
                     break;
                 case PlayerClass::CLASS_SWARMER:
