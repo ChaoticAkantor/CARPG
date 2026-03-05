@@ -96,9 +96,9 @@ namespace Menu
                     if(roboMinion !is null)
                     {
                         string EngineerStatsText = "=== Robogrunts: ===" + "\n"; 
-                        EngineerStatsText += "Robogrunt Health: " + int(roboMinion.GetScaledHealth()) + " HP\n"; 
+                        EngineerStatsText += "Robogrunt Base Health: " + int(roboMinion.GetScaledHealth()) + " HP\n"; 
                         EngineerStatsText += "Robogrunt Damage: " + roboMinion.GetScaledDamage() * 100 + "%\n";
-                        EngineerStatsText += "Robogrunt Health Regen: " + roboMinion.GetMinionRegen() * 100 + "%\n";
+                        EngineerStatsText += "Robogrunt Auto-Repair: " + roboMinion.GetMinionRegen() + "%\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
@@ -110,9 +110,9 @@ namespace Menu
                     if(xenMinion !is null)
                     {
                         string XenologistStatsText = "=== Xen Creatures: ===" + "\n"; 
-                        XenologistStatsText += "Creature Health: " + int(xenMinion.GetScaledHealth()) + " HP\n";
+                        XenologistStatsText += "Creature Base Health: " + int(xenMinion.GetScaledHealth()) + " HP\n";
                         XenologistStatsText += "Creature Damage: " + xenMinion.GetScaledDamage() * 100 + "%\n";
-                        XenologistStatsText += "Creature Health Regen: " + xenMinion.GetMinionRegen() * 100 + "%\n";
+                        XenologistStatsText += "Creature Health Regen: " + xenMinion.GetMinionRegen() + "%\n";
                         XenologistStatsText += "Creature Lifesteal (Minion and Player): " + xenMinion.GetLifestealPercent() * 100 + "%\n";
 
                         XenologistStatsText += "\n";
@@ -127,9 +127,9 @@ namespace Menu
                     if(necroMinion !is null)
                     {
                         string NecromancerStatsText = "=== Zombies: ===" + "\n"; 
-                        NecromancerStatsText += "Zombie Health: " + int(necroMinion.GetScaledHealth()) + " HP\n";
+                        NecromancerStatsText += "Zombie Base Health: " + int(necroMinion.GetScaledHealth()) + " HP\n";
                         NecromancerStatsText += "Zombie Damage: " + necroMinion.GetScaledDamage() * 100 + "%\n";
-                        NecromancerStatsText += "Zombie Health Regen: " + necroMinion.GetMinionRegen() * 100 + "%\n";
+                        NecromancerStatsText += "Zombie Health Regen: " + necroMinion.GetMinionRegen() + "%\n";
                         NecromancerStatsText += "Zombie Lifesteal (Minion and Player): " + necroMinion.GetLifestealPercent() * 100 + "%\n";
 
                         NecromancerStatsText += "\n";
