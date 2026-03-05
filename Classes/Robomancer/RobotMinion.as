@@ -7,8 +7,10 @@ string strRobogruntModelF = "models/rgruntf.mdl";
 string strRobogruntRope = "sprites/rope.spr";
 string strRobogruntModelChromegibs = "models/chromegibs.mdl";
 string strRobogruntModelComputergibs = "models/computergibs.mdl";
-string strRobogruntModelClassicShell = "models/hlclassic/shell.mdl";
-string strRobogruntModelClassicShotgunShell = "models/hlclassic/shotgunshell.mdl";
+string strRobogruntModelShell = "models/shell.mdl"; // Classic mode enabled fallback (It seems to get removed from precache list).
+string strRobogruntModelShotgunShell = "models/shotgunshell.mdl"; // Classic mode enabled fallback (It seems to get removed from precache list).
+string strRobogruntModelClassicShell = "models/hlclassic/shell.mdl"; // Used when Classic mode is enabled.
+string strRobogruntModelClassicShotgunShell = "models/hlclassic/shotgunshell.mdl"; // Used when Classic mode is enabled.
 
 //  Death Sounds.
 string strRobogruntSoundDeath = "turret/tu_die.wav";
