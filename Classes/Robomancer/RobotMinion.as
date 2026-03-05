@@ -54,7 +54,7 @@ const array<int> MINION_COSTS =
 {
     1,  // MP5.
     1,  // Shotgun.
-    2   // M16.
+    3   // M16.
 };
 
 // Structure to track minion type.
@@ -72,13 +72,17 @@ class MinionData
     private MinionMenu@ m_pMenu;
     private array<MinionInfo> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 200.0; // Base health of Robogrunts.
+
+    // Monster variables.
+    private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
     private float m_flHealthScaleAtMaxLevel = 4.0; // Health modifier at max level.
-    private float m_flHealthRegenAtMaxLevel = 0.02; // Health recovery % per second at max level.
-    private float m_flDamageScaleAtMaxLevel = 3.5; // Damage modifier at max level.
-    private float m_flAnimationSpeed = 1.25; // Animation speed modifier, as there are no multiple types and is static.
-    private float m_flRegenInterval = 1.0f; // Interval for regen.
-    private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion.
+    private float m_flHealthRegen = 0.2; // Health recovery percentage per interval.
+    private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
+    private float m_flDamageScaleAtMaxLevel = 3.0; // Damage modifier at max level.
+    private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
+    private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion default.
+
+    // Timers and trackers.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
@@ -153,8 +157,10 @@ class MinionData
 
         float minionRegen = 0.0f; // Default to zero.
 
-        float level = m_pStats.GetLevel();
-        minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
+        minionRegen = m_flHealthRegen;
+
+        //float level = m_pStats.GetLevel();
+        //minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
 
         return minionRegen; 
     }
@@ -268,7 +274,9 @@ class MinionData
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1";
         keys["friendly"] = "1";
-        keys["spawnflag"] = "32";
+        keys["spawnflags"] = "16384";
+        //keys["mins"] = "0 0 0"; // Bounding box mins.
+        //keys["maxs"] = "0 0 0"; // Bounding box maxs.
         keys["is_player_ally"] = "1";
         keys["skin"] = "2";
 
@@ -281,7 +289,8 @@ class MinionData
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
 
             // Stuff to set after dispatch.
-            @pRoboMinion.pev.owner = @pPlayer.edict(); // Set owner to spawning player.
+            //@pRoboMinion.pev.owner = @pPlayer.edict(); // Set owner to spawning player.
+            pRoboMinion.pev.solid = SOLID_NOT;
 
             // Store both the minion handle and its type
             MinionInfo info;
@@ -456,7 +465,7 @@ class MinionData
     {
         // Only process regen if enough time has passed.
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastRegenTime < m_flRegenInterval)
+        if(currentTime - m_flLastRegenTime < m_flHealthRegenInterval)
             return;
             
         m_flLastRegenTime = currentTime;
@@ -474,7 +483,7 @@ class MinionData
                 
                 // Get scaled regen based on player level.
                 float regenAmount = GetMinionRegen(); // This already scales with level.
-                float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
+                float flHealAmount = pMinion.pev.max_health / 100 * regenAmount; // Apply scaled regen.
 
                 if(pMinion.pev.health < pMinion.pev.max_health)
                 {

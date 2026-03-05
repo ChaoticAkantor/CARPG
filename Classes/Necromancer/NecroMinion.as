@@ -91,11 +91,18 @@ const array<int> ZOMBIE_BODYGROUPS =
     11  // Male patient.
 };
 
+const array<float> NECRO_HP_MODIFIERS = 
+{
+    1.5,  // Zombie.
+    1.0,  // Skeleton.
+    2.0   // Abomination (Gonome).
+};
+
 const array<float> NECRO_ANIMATION_SPEEDS = 
 {
     3.00,  // Zombie.
-    1.50,  // Skeleton.
-    2.00   // Abomination (Gonome).
+    1.40,  // Skeleton.
+    1.60   // Abomination (Gonome).
 };
 
 // Used to change monster name in UI.
@@ -124,9 +131,9 @@ const array<string> NECRO_MODELS =
 
 const array<int> NECRO_COSTS = // Pool cost per summon of each type.
 {
-    1, // Zombie.
-    2, // Skeleton (Vortigaunt).
-    2 // Abomination (Gonome).
+    3, // Zombie.
+    3, // Skeleton (Vortigaunt).
+    6 // Abomination (Gonome).
 };
 
 // Level requirements for each Zombie type.
@@ -152,13 +159,17 @@ class NecroMinionData
     private NecroMinionMenu@ m_pMenu;
     private array<NecroMinionInfo> m_hMinions;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 200.0; // Base health of Minions, currently the same for all of them.
-    private float m_flHealthScaleAtMaxLevel = 9.0; // Health modifier at max level.
-    private float m_flHealthRegenAtMaxLevel = 0.01; // // Health recovery % per second at max level.
-    private float m_flDamageScaleAtMaxLevel = 4.0; // Damage modifier at max level.
+
+    // Monster variables.
+    private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
+    private float m_flHealthScaleAtMaxLevel = 4.0; // Health modifier at max level.
+    private float m_flHealthRegen = 0.2; // // Health recovery percentage per interval.
+    private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
+    private float m_flDamageScaleAtMaxLevel = 2.5; // Damage modifier at max level.
     private float m_flLifestealPercentAtMaxLevel = 0.25; // Lifesteal at max level.
-    private float m_flRegenInterval = 1.0f; // Interval for regen.
-    private int m_iMinionResourceCost = 1; // Cost to summon specific minion.
+    private int m_iMinionResourceCost = 1; // Cost to summon specific minion default.
+
+    // Timers and trackers.
     private float m_flReservePool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
@@ -198,16 +209,17 @@ class NecroMinionData
         return m_hMinions.length() > 0;
     }
 
-    float GetScaledHealth()
+    float GetScaledHealth(int minionType = 0)
     {
         if(m_pStats is null)
-            return m_flBaseHealth; // Return base health without scaling if no stats.
+            return m_flBaseHealth * NECRO_HP_MODIFIERS[minionType]; // Return base health with type modifier if no stats.
 
         float minionScaledHealth = m_flBaseHealth; // Start with base health.
 
         float level = m_pStats.GetLevel();
         float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
         minionScaledHealth *= healthMultiplier;
+        minionScaledHealth *= NECRO_HP_MODIFIERS[minionType]; // Apply minion type modifier.
 
         return minionScaledHealth;
     }
@@ -232,9 +244,11 @@ class NecroMinionData
             return 0.0f; // Default if no stats.
 
         float minionRegen = 0.0f; // Default to zero.
+        
+        minionRegen = m_flHealthRegen;
 
-        float level = m_pStats.GetLevel();
-        minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
+        //float level = m_pStats.GetLevel();
+        //minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
 
         return minionRegen; 
     }
@@ -368,7 +382,7 @@ class NecroMinionData
         vecSrc = vecSrc + (spawnForward * 64);
         vecSrc.z -= 32;
 
-        float scaledHealth = GetScaledHealth();
+        float scaledHealth = GetScaledHealth(minionType);
         float scaledDamage = GetScaledDamage();
 
         dictionary keys;
@@ -380,7 +394,9 @@ class NecroMinionData
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1";
         keys["friendly"] = "1";
-        keys["spawnflag"] = "32";
+        keys["spawnflags"] = "16384";
+        //keys["mins"] = "0 0 0"; // Bounding box mins.
+        //keys["maxs"] = "0 0 0"; // Bounding box maxs.
         keys["is_player_ally"] = "1";
         keys["body"] = string(Math.RandomLong(1, 11)); // Random bodygroup for zombies.
         //keys["skin"] = string(randomBody); // Random skin for zombies.
@@ -394,7 +410,8 @@ class NecroMinionData
             g_EntityFuncs.DispatchSpawn(pNecroMinion.edict()); // Dispatch the entity.
 
             // Stuff to set after dispatch.
-            @pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
+            //@pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
+            pNecroMinion.pev.solid = SOLID_NOT;
 
             // Store both the minion handle and its type.
             NecroMinionInfo info;
@@ -592,7 +609,7 @@ class NecroMinionData
     {
         // Only process regen if enough time has passed.
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastRegenTime < m_flRegenInterval)
+        if(currentTime - m_flLastRegenTime < m_flHealthRegenInterval)
             return;
             
         m_flLastRegenTime = currentTime;
@@ -620,7 +637,7 @@ class NecroMinionData
 
                     // Get scaled regen based on player level.
                     float regenAmount = GetMinionRegen(); // This already scales with level.
-                    float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
+                    float flHealAmount = pMinion.pev.max_health / 100 * regenAmount; // Apply scaled regen.
 
                     if(pMinion.pev.health < pMinion.pev.max_health)
                     {
