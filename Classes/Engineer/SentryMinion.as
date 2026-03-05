@@ -228,7 +228,7 @@ class SentryData
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1"; // Size of the sentry.
         keys["friendly"] = "1"; // Force friendly.
-        keys["spawnflags"] = "32"; // 32 (ACTIVE).
+        keys["spawnflags"] = "16384"; // 16384 No Dyn Collision, 32 (ACTIVE).
         keys["is_player_ally"] = "1"; // Force ally with player.
 
         CBaseEntity@ pSentry = g_EntityFuncs.CreateEntity("monster_sentry", keys, true);
@@ -238,7 +238,8 @@ class SentryData
 
             g_EntityFuncs.DispatchSpawn(pSentry.edict()); // Dispatch the spawn.
 
-            @pSentry.pev.owner = @pPlayer.edict(); // Set player as owner to stop collision.
+            //@pSentry.pev.owner = @pPlayer.edict(); // Set player as owner to stop collision.
+            pSentry.pev.solid = SOLID_NOT;
 
             // Sentry won't wake unless touched or damaged, regardless of spawnflags. Gently encourage it.
             pSentry.TakeDamage(pPlayer.pev, pPlayer.pev, 0.0f, DMG_GENERIC);
