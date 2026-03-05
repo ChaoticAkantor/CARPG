@@ -15,7 +15,7 @@
 #include "Classes/Necromancer/NecroMinion"
 #include "Classes/Swarmer/SnarkSwarm"
 #include "Classes/Medic/HealAura"
-#include "Classes/Defender/Barrier"
+#include "Classes/Warden/Barrier"
 #include "Classes/Shocktrooper/ShockRifle"
 #include "Classes/Berserker/Bloodlust"
 #include "Classes/Cloaker/Cloak"
