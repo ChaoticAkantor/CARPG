@@ -105,7 +105,7 @@ class BarrierData
             Vector mins = pos - Vector(16, 16, 0);
             Vector maxs = pos + Vector(16, 16, 64);
 
-            // Bubbles Effect.
+            // Heal Bubbles Effect.
             NetworkMessage absorbmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
                 absorbmsg.WriteByte(TE_BUBBLES);
                 absorbmsg.WriteCoord(mins.x);
