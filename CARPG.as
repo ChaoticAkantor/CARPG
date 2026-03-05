@@ -52,7 +52,7 @@ void PluginInit()
 
 void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
 {
-    PrecacheAll(); // Precache our models, sounds and sprites.
+    PrecacheAll(); // Precache everything needed for plugin.
 }
 
 void MapActivate() // Like MapInit, only called after all mapper placed entities have been activated and the sound list has been written.
@@ -239,7 +239,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strBloodlustActiveSound);
         g_SoundSystem.PrecacheSound(strBloodlustHitSound);
 
-    // Defender Ability Precache.
+    // Warden Ability Precache.
         // Models/Sprites.
         
         // Sounds.
@@ -259,13 +259,13 @@ void PrecacheAll()
 
     // Vanquisher Class Precache.
         // Models/Sprites.
-    g_Game.PrecacheModel(strDragonsBreathExplosionSprite);
-    g_Game.PrecacheModel(strDragonsBreathExplosionCoreSprite);
-    g_Game.PrecacheModel(strDragonsBreathFireSprite);
+        g_Game.PrecacheModel(strDragonsBreathExplosionSprite);
+        g_Game.PrecacheModel(strDragonsBreathExplosionCoreSprite);
+        g_Game.PrecacheModel(strDragonsBreathFireSprite);
 
         // Sounds.
-    g_SoundSystem.PrecacheSound(strDragonsBreathActivateSound);
-    g_SoundSystem.PrecacheSound(strDragonsBreathImpactSound);
+        g_SoundSystem.PrecacheSound(strDragonsBreathActivateSound);
+        g_SoundSystem.PrecacheSound(strDragonsBreathImpactSound);
 
     // Precache for all spawnable NPC's.
     // Sentry.
@@ -293,6 +293,8 @@ void PrecacheAll()
         g_Game.PrecacheModel(strRobogruntRope);
         g_Game.PrecacheModel(strRobogruntModelChromegibs);
         g_Game.PrecacheModel(strRobogruntModelComputergibs);
+        g_Game.PrecacheModel(strRobogruntModelShell);
+        g_Game.PrecacheModel(strRobogruntModelShotgunShell);
         g_Game.PrecacheModel(strRobogruntModelClassicShell);
         g_Game.PrecacheModel(strRobogruntModelClassicShotgunShell);
 
