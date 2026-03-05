@@ -473,19 +473,22 @@ void UpdateClassResource() // Update the class resource hud display for all play
                             {   
                                 int rounds = 0;
                                 int maxRounds = 0;
-
+                                
                                 DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
                                 if(DragonsBreath !is null)
                                 {
                                     rounds = int(DragonsBreath.GetRounds());
                                     maxRounds = DragonsBreath.GetMaxRounds();
+                                    DragonsBreath.UpdateAmmoFromWeapon(pPlayer); // Keep ammo type current so that damage display can update.
                                 }
 
-                                resourceInfo += "[Dragon's Breath Rounds: (" + rounds + "/" + maxRounds + ")]\n";
+                                resourceInfo += "[Dragon's Breath Rounds: (" + rounds + "/" + maxRounds + ")] ";
+                                resourceInfo += "[Cost: " + DragonsBreath.GetPerShotCost() + "]\n";
 
                                 if(DragonsBreath.HasRounds())
                                 {
-                                    resourceInfo += "[Incendiary DMG: " + DragonsBreath.GetScaledFireDamage() + "/s]";
+                                    resourceInfo += "[Explosive DMG: " + DragonsBreath.GetScaledExplosionDamage() + "] ";
+                                    resourceInfo += "[Fire DMG: " + DragonsBreath.GetScaledFireDamage() + "/s]";
                                 }
                             }
                             break;

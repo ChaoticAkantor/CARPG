@@ -5,57 +5,110 @@ string strDragonsBreathExplosionSprite = "sprites/zerogxplode.spr"; // Explosion
 string strDragonsBreathExplosionCoreSprite = "sprites/explode1.spr"; // Core explosion sprite.
 string strDragonsBreathFireSprite = "sprites/fire.spr"; // Fire effect.
 
+// Damage multipliers per ammo type for Dragons Breath.
+float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
+{
+    if (ammoName == "9mm")      return 1.0f;
+    if (ammoName == "357")      return 2.5f;
+    if (ammoName == "buckshot") return 0.5f;
+    if (ammoName == "556")      return 1.0f;
+    if (ammoName == "bolts")    return 3.0f;
+    if (ammoName == "762")      return 3.0f;
+    if (ammoName == "uranium")  return 1.5f;
+    if (ammoName == "m40a1")    return 3.0f;
+    return 1.0f; // Default multiplier if ammo type not found.
+}
+
+// Energy cost multipliers per ammo type for Dragons Breath activation.
+float GetDragonsBreathAmmoCostMultiplier(const string& in ammoName)
+{
+    if (ammoName == "9mm")      return 1.0f;
+    if (ammoName == "357")      return 5.0f;
+    if (ammoName == "buckshot") return 1.0f; // Already set to use per pellet.
+    if (ammoName == "556")      return 1.0f;
+    if (ammoName == "bolts")    return 10.0f;
+    if (ammoName == "762")      return 10.0f;
+    if (ammoName == "uranium")  return 3.0f;
+    if (ammoName == "m40a1")    return 10.0f;
+    return 1.0f; // Default cost multiplier if ammo type not found.
+}
+
 class DragonsBreathData
 {
     // Dragons breath shots will place a DoT effect at impact location PER shot, with no limit, that stack over each other.
 
     // Fire Damage over Time.
-    private float m_flDragonsBreathFireDamageBase = 1.0f; // Base damage for each DoT.
-    private int m_iDragonsBreathFireTicks = 5; // Number of damage over time ticks PER DoT.
+    private float m_flDragonsBreathExplosionDamageBase = 5.0f; // Base damage for explosion on impact.
+    private float m_flDragonsBreathExplosionDamageScalingAtMaxLevel = 3.0f; // Damage increase modifier of explosion damage at max level.
+    private float m_flDragonsBreathFireDamage = 10.0f; // Fire tick damage as percentage of total explosion damage.
+    private int m_iDragonsBreathFireTicks = 3; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
-    private float m_flDragonsBreathFireDamageScalingAtMaxLevel = 4.0f; // Damage increase modifier of DoT damage at max level.
-    private float m_flDragonsBreathRadius = 40.0f * 16; // Radius of fire damage DoT for Dragons Breath.
-    private float m_flEnergyCostPerActivation = 1.0f; // Amount of energy to use per activation.
+    private float m_flDragonsBreathRadius = 20.0f * 16; // Radius of fire damage DoT for Dragons Breath.
+    private float m_flEnergyCostPerActivation = 1.0f; // Amount of energy to use per activation (Filling rounds).
 
     // Ammo pool.
-    private int m_iDragonsBreathPoolBase = 30; // Base max ammo pool for Dragons Breath.
+    private int m_iDragonsBreathPoolBase = 30.0f; // Base max ammo pool for Dragons Breath.
     private float m_flDragonsBreathPoolScalingAtMaxLevel = 3.0f; // Ammo Pool size increase at max level.
-    private float m_flRoundsFillPercentage = 1.00f; // Percentage of max ammo pool to fill per activation.
+    private float m_flRoundsFillPercentage = 50.0f; // Percentage of max ammo pool to fill per activation.
     private float m_flRoundsInPool = 0.0f; // Used to store rounds currently in pool.
 
     private float m_flLastToggleTime = 0.0f; // Used for last toggle time.
     private float m_flToggleCooldown = 0.10f; // Used to delay toggling to prevent spam.
+    private float m_flPreviousAmmo = 0.0f; // Used to track ammo changes.
+    private string m_strCurrentAmmoName = ""; // Set per shot based on ammo type.
     private ClassStats@ m_pStats = null;
+
+    void UpdateAmmoFromWeapon(CBasePlayer@ pPlayer) // Update ammo name from player's active weapon for HUD display.
+    {
+        if(pPlayer is null) return;
+        CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pPlayer.m_hActiveItem.GetEntity());
+        if(pWeapon is null) return;
+        int ammoType = pWeapon.PrimaryAmmoIndex();
+        if(ammoType != -1)
+            m_strCurrentAmmoName = GetAmmoName(ammoType);
+    }
 
     bool HasStats() { return m_pStats !is null; }
     bool HasRounds() { return m_flRoundsInPool > 0; }
     float GetRounds() { return m_flRoundsInPool; }
     float GetEnergyCost() { return m_flEnergyCostPerActivation; }
+    float GetPerShotCost() { return GetDragonsBreathAmmoCostMultiplier(m_strCurrentAmmoName); }
     float GetDotCount() { return m_iDragonsBreathFireTicks; }
     void ResetRounds() { m_flRoundsInPool = 0; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
+    float GetScaledExplosionDamage() // Calculate scaled explosion damage.
+    {
+        if(m_pStats is null)
+            return m_flDragonsBreathExplosionDamageBase;
+
+        float level = m_pStats.GetLevel();
+        float damagePerLevel = m_flDragonsBreathExplosionDamageScalingAtMaxLevel / g_iMaxLevel;
+        float dragonsBreathExplosion = m_flDragonsBreathExplosionDamageBase * (1.0f + (damagePerLevel * level));
+        dragonsBreathExplosion *= GetDragonsBreathAmmoMultiplier(m_strCurrentAmmoName); // Apply ammo type multiplier.
+
+        return dragonsBreathExplosion;
+    }
+
     float GetScaledFireDamage() // Calculate scaled fire damage.
     {
         if(m_pStats is null)
-            return m_flDragonsBreathFireDamageBase;
+            return m_flDragonsBreathFireDamage;
 
-        float DragonsBreathFire = 0.0f;
+        float dragonsBreathFire = 0.0f;
         
-        float level = m_pStats.GetLevel();
-        float damagePerLevel = m_flDragonsBreathFireDamageScalingAtMaxLevel / g_iMaxLevel;
-        DragonsBreathFire = m_flDragonsBreathFireDamageBase * (1.0f + (damagePerLevel * level));
+        dragonsBreathFire = GetScaledExplosionDamage() / 100 * m_flDragonsBreathFireDamage; // Dot damage is a percentage of explosion damage.
 
-        return DragonsBreathFire;
+        return dragonsBreathFire;
     }
 
     float GetFireDuration() { return m_iDragonsBreathFireTicks * m_flDragonsBreathFireInterval; } // Get fire DoT duration.
 
+    float GetFireInterval() { return m_flDragonsBreathFireInterval; } // Get fire DoT tick interval.
+
     float GetRadius() { return m_flDragonsBreathRadius; } // Get fire DoT radius.
 
     float GetAmmoRefillPercent() { return m_flRoundsFillPercentage; } // Get refill percentage.
-
-    float GetFireInterval() { return m_flDragonsBreathFireInterval; } // Get fire DoT tick interval.
 
     int GetAmmoPerPack() // Calculate number of rounds to add per pack.
     {
@@ -63,7 +116,7 @@ class DragonsBreathData
             return m_iDragonsBreathPoolBase; // If no stats, return base.
 
         int maxRounds = GetMaxRounds();
-        int roundsToAdd = int(maxRounds * m_flRoundsFillPercentage);
+        int roundsToAdd = int(maxRounds * (m_flRoundsFillPercentage / 100));
         return Math.max(1, roundsToAdd); // Always return at least 1 round.
     }
 
@@ -79,12 +132,12 @@ class DragonsBreathData
             fireAreaMsg.WriteCoord(impactPoint.x);
             fireAreaMsg.WriteCoord(impactPoint.y);
             fireAreaMsg.WriteCoord(impactPoint.z);
-            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathRadius * 0.1)); // Radius units * 10.
+            fireAreaMsg.WriteByte(uint8(GetRadius() * 0.1)); // Radius units * 10.
             fireAreaMsg.WriteByte(255); // Red.
             fireAreaMsg.WriteByte(100); // Green.
             fireAreaMsg.WriteByte(15); // Blue.
-            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval * 10 * m_iDragonsBreathFireTicks)); // Life * 0.1s.
-            fireAreaMsg.WriteByte(uint8(m_flDragonsBreathFireInterval)); // Fade speed * 1s.
+            fireAreaMsg.WriteByte(uint8(GetFireDuration() * 10)); // Life * 0.1s.
+            fireAreaMsg.WriteByte(uint8(GetFireInterval() * 10)); // Fade speed * 1s.
             fireAreaMsg.End();
 
         ApplyDragonsBreathFire(pPlayer, impactPoint); // Apply damage over time fire at location.
@@ -108,7 +161,10 @@ class DragonsBreathData
         //pTarget.pev.rendercolor = Vector(255, 100, 10); // Orange glow.
         //pTarget.pev.renderamt = 10;
 
-        // Schedule DoT ticks at fire location and play effect each time a tic occurs.
+        // First apply explosion at impact.
+        ApplyExplosionDamage(pPlayer.entindex(), impactPoint);
+
+        // Schedule DoT ticks at fire location.
         for(int firetick = 0; firetick < m_iDragonsBreathFireTicks; firetick++)
         {
             g_Scheduler.SetTimeout("ApplyFireDamage", m_flDragonsBreathFireInterval * firetick, pPlayer.entindex(), impactPoint);
@@ -120,7 +176,7 @@ class DragonsBreathData
 
     void ConsumeRound() 
     { 
-        m_flRoundsInPool = Math.max(0.0f, m_flRoundsInPool - 1.0f);
+        m_flRoundsInPool = Math.max(0.0f, m_flRoundsInPool - 1.0f * GetPerShotCost()); // Consume rounds based on ammo type cost multiplier.
     }
 
     int GetMaxRounds()
@@ -155,9 +211,10 @@ class DragonsBreathData
         dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamId]);
         float current = float(resources['current']);
 
-        if(current < m_flEnergyCostPerActivation)
+        float energyCost = GetEnergyCost();
+        if(current < energyCost)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flEnergyCostPerActivation) + " Dragon's Breath Ammo Pack!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(energyCost) + " Dragon's Breath Ammo Pack!\n");
             return;
         }
 
@@ -167,7 +224,7 @@ class DragonsBreathData
         m_flRoundsInPool = Math.min(m_flRoundsInPool + roundsToAdd, float(GetMaxRounds()));
         int actualAdded = int(m_flRoundsInPool) - oldRoundsInPool;
 
-        resources['current'] = Math.max(0, current - m_flEnergyCostPerActivation); // Deduct fixed energy cost.
+        resources['current'] = Math.max(0, current - energyCost); // Deduct energy cost (scaled by ammo type).
 
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strDragonsBreathActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + actualAdded + " Dragon's Breath Rounds\n");
@@ -191,6 +248,8 @@ class DragonsBreathData
 
         string ammoName = GetAmmoName(ammoType);
         string weaponName = pWeapon.GetClassname();
+
+        m_strCurrentAmmoName = ammoName; // Store ammo type for damage scaling.
 
         if(ammoName == "buckshot") // Special handling for specific ammo types.
         {
@@ -543,25 +602,78 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
 
     // Fire DoT Beam Cylinder Effect.
     NetworkMessage fireRadiusMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-        fireRadiusMsg.WriteByte(TE_BEAMCYLINDER);
-        fireRadiusMsg.WriteCoord(impactPoint.x);
-        fireRadiusMsg.WriteCoord(impactPoint.y);
-        fireRadiusMsg.WriteCoord(impactPoint.z);
-        fireRadiusMsg.WriteCoord(impactPoint.x);
-        fireRadiusMsg.WriteCoord(impactPoint.y);
-        fireRadiusMsg.WriteCoord(impactPoint.z + dragonsBreath.GetRadius()); // Height.
-        fireRadiusMsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite)); // Again borrowing heal beam sprite, for now.
-        fireRadiusMsg.WriteByte(0); // Starting frame.
-        fireRadiusMsg.WriteByte(0); // Frame rate (no effect).
-        fireRadiusMsg.WriteByte(uint8(dragonsBreath.GetFireInterval() * 10)); // Life * 0.1s (make life match duration).
-        fireRadiusMsg.WriteByte(16); // Width.
-        fireRadiusMsg.WriteByte(0); // Noise.
-        fireRadiusMsg.WriteByte(255); //R. Orange colour.
-        fireRadiusMsg.WriteByte(100); // G.
-        fireRadiusMsg.WriteByte(0); // B.
-        fireRadiusMsg.WriteByte(128); // Brightness.
-        fireRadiusMsg.WriteByte(0); // Scroll speed (no effect).
-        fireRadiusMsg.End();
+    fireRadiusMsg.WriteByte(TE_BEAMCYLINDER);
+    fireRadiusMsg.WriteCoord(impactPoint.x);
+    fireRadiusMsg.WriteCoord(impactPoint.y);
+    fireRadiusMsg.WriteCoord(impactPoint.z);
+    fireRadiusMsg.WriteCoord(impactPoint.x);
+    fireRadiusMsg.WriteCoord(impactPoint.y);
+    fireRadiusMsg.WriteCoord(impactPoint.z + dragonsBreath.GetRadius()); // Height.
+    fireRadiusMsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite)); // Again borrowing heal beam sprite, for now.
+    fireRadiusMsg.WriteByte(0); // Starting frame.
+    fireRadiusMsg.WriteByte(0); // Frame rate (no effect).
+    fireRadiusMsg.WriteByte(uint8(dragonsBreath.GetFireInterval() * 10)); // Life * 0.1s (make life match duration of effect).
+    fireRadiusMsg.WriteByte(16); // Width.
+    fireRadiusMsg.WriteByte(0); // Noise.
+    fireRadiusMsg.WriteByte(255); //R. Orange colour.
+    fireRadiusMsg.WriteByte(100); // G.
+    fireRadiusMsg.WriteByte(0); // B.
+    fireRadiusMsg.WriteByte(30); // Brightness.
+    fireRadiusMsg.WriteByte(0); // Scroll speed (no effect).
+    fireRadiusMsg.End();
+}
+
+void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
+{
+    CBasePlayer@ pPlayer = cast<CBasePlayer@>(g_EntityFuncs.Instance(playerIdx));
+    if(pPlayer is null)
+    return;
+
+    // Get the player's steam ID to find their dragons breath instance.
+    string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(!g_PlayerDragonsBreath.exists(steamId))
+        return;
+        
+    // Get the player's dragons breath data.
+    DragonsBreathData@ dragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamId]);
+    if(dragonsBreath is null)
+        return;
+
+    // Apply damage over time at location, with effects.
+    g_WeaponFuncs.RadiusDamage(
+        impactPoint,
+        pPlayer.pev,
+        pPlayer.pev,
+        dragonsBreath.GetScaledExplosionDamage(), // Damage per explosion (scaled by level and ammo type).
+        dragonsBreath.GetRadius(), // Radius.
+        CLASS_PLAYER, // Will not damage player or allies.
+        DMG_BLAST | DMG_BURN | DMG_ALWAYSGIB // Damage type.
+    );
+
+    Vector startPoint = impactPoint;
+    Vector endPoint = impactPoint;
+
+    // End point moves outward from impact in a random direction.
+    //endPoint.x = startPoint.x + Math.RandomFloat(-50, 50);
+    //endPoint.y = startPoint.y + Math.RandomFloat(-50, 50);
+    //endPoint.z = startPoint.z + Math.RandomFloat(20, 50); // Bias upward.
+
+    // Create sprite trail effect to show explosive damage (temporary, will change later).
+    NetworkMessage msgFireArea(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
+    msgFireArea.WriteByte(TE_SPRITETRAIL);
+    msgFireArea.WriteCoord(impactPoint.x);
+    msgFireArea.WriteCoord(impactPoint.y);
+    msgFireArea.WriteCoord(impactPoint.z);
+    msgFireArea.WriteCoord(impactPoint.x);
+    msgFireArea.WriteCoord(impactPoint.y);
+    msgFireArea.WriteCoord(impactPoint.z);
+    msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
+    msgFireArea.WriteByte(5);  // Count - more sprites for a denser burst.
+    msgFireArea.WriteByte(2);   // Life in 0.1's.
+    msgFireArea.WriteByte(3);   // Scale in 0.1's.
+    msgFireArea.WriteByte(25);  // Velocity along vector in 10's.
+    msgFireArea.WriteByte(50);  // Random velocity in 10's - higher for more spread.
+    msgFireArea.End();
 }
 
 // Helper function to get ammo name from index.

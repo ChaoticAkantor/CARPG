@@ -184,13 +184,13 @@ void SetupTimers()
     g_Scheduler.SetInterval("CheckBarrier", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Barrier.
 
     // Berserker.
-    g_Scheduler.SetInterval("UpdateBloodlusts", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
+    g_Scheduler.SetInterval("UpdateBloodlusts", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating bloodlust.
 
     // Cloaker.
-    g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
+    g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating cloak.
     
     // Swarmer.
-    g_Scheduler.SetInterval("CheckSnarks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES);
+    g_Scheduler.SetInterval("CheckSnarks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking snarks.
 }
 
 void PrecacheAll()
@@ -602,7 +602,7 @@ void PrecacheAll()
 // Hook handler for Primary Attack. This is used for Dragons Breath on each shot.
 HookReturnCode WeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
 {
-    if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0) // Make sure clip is not empty.
+    if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0 || pWeapon.m_fInReload == true) // Make sure clip is not empty.
         return HOOK_CONTINUE;
     
     string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -620,7 +620,7 @@ HookReturnCode WeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWea
 
 HookReturnCode WeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) // Hook handler for Secondary Attack.
 {
-    if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0 && pWeapon.m_iClip2 != -1 ) // Check if clip is not empty and clip2 isn't infinite.
+    if(pWeapon is null || pPlayer is null || pWeapon.m_iClip == 0 && pWeapon.m_iClip2 != -1 ) // Check if clip is not empty and clip2 isn't infinite.
         return HOOK_CONTINUE;
 
     string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());

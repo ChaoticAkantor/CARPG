@@ -187,13 +187,14 @@ namespace Menu
                     DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
                     if(DragonsBreath !is null)
                     {
-                        string VanquisherStatsText = "=== Dragon's Breath Ammo: ===" + "\n"; 
-                            VanquisherStatsText += "Fire DoT Damage: " + DragonsBreath.GetScaledFireDamage() + "/s\n";
-                            VanquisherStatsText += "Fire DoT Duration: " + DragonsBreath.GetFireDuration() + "s\n";
-                            VanquisherStatsText += "Fire DoT Radius: " + DragonsBreath.GetRadius() / 16 + "ft\n";
+                        string VanquisherStatsText = "=== Dragon's Breath Ammo (Current Weapon): ===" + "\n";
+                            VanquisherStatsText += "Explosive Damage: " + DragonsBreath.GetScaledExplosionDamage() + "\n";
+                            VanquisherStatsText += "Fire Damage: " + DragonsBreath.GetScaledFireDamage() + "/s\n";
+                            VanquisherStatsText += "Fire Duration: " + DragonsBreath.GetFireDuration() + "s\n";
+                            VanquisherStatsText += "Fire Radius: " + DragonsBreath.GetRadius() / 16 + "ft\n";
                         
                         VanquisherStatsText += "\nMax Ammo Capacity: " + int(DragonsBreath.GetMaxRounds()) + "\n";
-                        VanquisherStatsText += "Dragon's Breath Rounds Per Activation: " + DragonsBreath.GetAmmoRefillPercent() + "% (" + DragonsBreath.GetAmmoPerPack() + " rounds)\n\n";
+                        VanquisherStatsText += "Refill: " + DragonsBreath.GetAmmoRefillPercent() + "% (" + DragonsBreath.GetAmmoPerPack() + " rounds)\n\n";
 
                         m_pMenu.AddItem(VanquisherStatsText, null);
                     }
