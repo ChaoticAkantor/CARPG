@@ -751,7 +751,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageNecroMultiplier = necroMinion.GetScaledDamage();
         info.flDamage *= damageNecroMultiplier;
 
-        info.bitsDamageType = DMG_ACID | DMG_ALWAYSGIB; // Alter the damage type.
+        info.bitsDamageType = DMG_POISON | DMG_ALWAYSGIB; // Alter the damage type.
 
         // Process lifesteal - when necrominions deal damage, give health to owner and minions.
         necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
@@ -779,7 +779,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageSnarkMultiplier = snarkNest.GetScaledDamage();
         info.flDamage *= damageSnarkMultiplier;
 
-        info.bitsDamageType = DMG_ACID | DMG_ALWAYSGIB; // Alter the damage type.
+        info.bitsDamageType = DMG_POISON | DMG_ALWAYSGIB; // Alter the damage type.
 
         // Process lifesteal - when snarks deal damage, give health to owner.
         snarkNest.ProcessMinionDamage(pOwner, info.flDamage);
