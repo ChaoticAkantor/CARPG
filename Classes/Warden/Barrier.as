@@ -13,7 +13,7 @@ class BarrierData
     private bool m_bActive = false;
     private float m_flBarrierDamageReduction = 1.00f; // Player damage reduction multiplier whilst shield is active. 1.0 = 100% damage reduction (no damage to HP/AP).
     private float m_flBarrierDurabilityMultiplier = 1.0f; // Shield damage reduction multiplier, used to make shield tougher or weaker overall.
-    private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.5f; // Shield damage reflection at max level.
+    private float m_flBarrierReflectDamageScalingAtMaxLevel = 0.8f; // Shield damage reflection modifier at max level.
     private float m_flBarrierActiveRechargePenalty = 0.10f; // Ability recharge modifier whilst shield is active.
     private float m_flBarrierHealthAbsorbAtMaxLevel = 0.20; // Percentage of damage taken that is absorbed as health.
     private float m_flBarrierDeactivateEnergyCost = 0.15f; // Energy cost percentage when manually deactivating barrier.
@@ -86,7 +86,7 @@ class BarrierData
         {
             // Apply damage reflection as a specific damage type and proc the debuff.
             float reflectDamage = incomingDamage * GetScaledDamageReflection();
-            attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_FREEZE); // Apply the damage with the player as the attacker.
+            attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_FREEZE | DMG_NEVERGIB); // Apply the damage with the player as the attacker.
         }
 
         // Play barrier damage chunks effect on player.
@@ -98,7 +98,7 @@ class BarrierData
         // Absorb a portion of the damage as health.
         if(pPlayer.pev.health < pPlayer.pev.max_health) // Only absorb if not at full health.
         {
-            float healthAbsorb = incomingDamage * m_flBarrierHealthAbsorbAtMaxLevel;
+            float healthAbsorb = incomingDamage * GetScaledHealthAbsorb();
             pPlayer.pev.health += healthAbsorb; // Add the modified absorbed damage to health.
 
             Vector pos = pPlayer.pev.origin;
