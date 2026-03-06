@@ -10,7 +10,7 @@ float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
     if (ammoName == "9mm")      return 1.0f;
     if (ammoName == "357")      return 2.5f;
-    if (ammoName == "buckshot") return 0.5f;
+    if (ammoName == "buckshot") return 0.33f;
     if (ammoName == "556")      return 1.0f;
     if (ammoName == "bolts")    return 3.0f;
     if (ammoName == "762")      return 3.0f;
@@ -39,7 +39,7 @@ class DragonsBreathData
 
     // Fire Damage over Time.
     private float m_flDragonsBreathExplosionDamageBase = 5.0f; // Base damage for explosion on impact.
-    private float m_flDragonsBreathExplosionDamageScalingAtMaxLevel = 3.0f; // Damage increase modifier of explosion damage at max level.
+    private float m_flDragonsBreathExplosionDamageScalingAtMaxLevel = 2.0f; // Damage increase modifier of explosion damage at max level.
     private float m_flDragonsBreathFireDamage = 10.0f; // Fire tick damage as percentage of total explosion damage.
     private int m_iDragonsBreathFireTicks = 3; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
