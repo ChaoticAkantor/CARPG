@@ -861,7 +861,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             float damageMultiplier = cloak.GetDamageMultiplier(pAttacker); // Get multiplier.
             float originalDamage = info.flDamage; // Store original damage so we can use to to scale drain.
             info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
-            info.bitsDamageType |= DMG_ALWAYSGIB; // Add damage bit type always gib for the feels.
+            info.bitsDamageType = DMG_GENERIC | DMG_ENERGYBEAM | DMG_ALWAYSGIB; // Add damage bit type always gib for the feels.
             cloak.DrainEnergyFromShot(pAttacker, originalDamage); // Drain energy on dealing damage.
         }
     }
@@ -916,9 +916,6 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     // Get attacker before any damage calculations.
     CBaseEntity@ attacker = pDamageInfo.pAttacker;
 
-    if(attacker is null)
-        return HOOK_CONTINUE;
-
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     
     // Add hurt delay when player takes damage.
@@ -941,11 +938,21 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
             BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
             if(barrier !is null && barrier.IsActive())
             {
-                CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
-                if(pMonster !is null)
+                // Skip barrier for friendly players only.
+                CBasePlayer@ pAttackerPlayer = cast<CBasePlayer@>(attacker);
+                bool isFriendly = pAttackerPlayer !is null && pAttackerPlayer !is pPlayer;
+
+                if(!isFriendly)
                 {
-                    barrier.HandleBarrier(pPlayer, attacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
-                    barrier.ApplyReflectDamage(attacker.pev.origin, attacker);
+                    // Use pPlayer as fallback for null attacker (e.g. environmental/fall damage).
+                    CBaseEntity@ barrierAttacker = (attacker !is null) ? attacker : cast<CBaseEntity@>(pPlayer);
+                    barrier.HandleBarrier(pPlayer, barrierAttacker, pDamageInfo.flDamage, pDamageInfo.flDamage);
+
+                    CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
+                    if(pMonster !is null)
+                    {
+                        barrier.ApplyReflectDamage(attacker.pev.origin, attacker);
+                    }
                 }
             }
         }
