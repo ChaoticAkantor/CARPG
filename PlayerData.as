@@ -60,7 +60,7 @@ class ClassDefinition
     // If a class has no overrides, these base values are used.
     string name;
     float baseHP = 100.0f; // Base HP.
-    float maxHP = 300.0f; // Maximum HP (At max level).
+    float maxHP = 200.0f; // Maximum HP (At max level).
 
     // AP currently does not increase with level as it is very strong, even when regenerating to 100.
     float baseAP = 100.0f; // Base AP.
@@ -179,9 +179,9 @@ void InitializeClassDefinitions()
                     break;
                 case PlayerClass::CLASS_DEFENDER:
                     def.baseResource = 100.0f; // Shield Base HP.
-                        def.maxResource = 500.0f; // Shield health at max level.
+                        def.maxResource = 300.0f; // Shield health at max level.
 
-                    def.fullRegenTime = 15.0f; // Shield active regen time will scale from this!
+                    def.fullRegenTime = 20.0f; // Shield active regen time will scale from this!
 
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
