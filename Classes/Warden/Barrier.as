@@ -81,12 +81,16 @@ class BarrierData
             skipReflection = true;
         }
         
-        // Only apply damage reflection if it's not self.
+        // Only apply damage reflection if it's not self and the attacker is a valid monster.
         if(!skipReflection)
         {
-            // Apply damage reflection as a specific damage type and proc the debuff.
-            float reflectDamage = incomingDamage * GetScaledDamageReflection();
-            attacker.TakeDamage(pPlayer.pev, pPlayer.pev, reflectDamage, DMG_FREEZE | DMG_NEVERGIB); // Apply the damage with the player as the attacker.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
+            if(pMonster !is null)
+            {
+                // Apply damage reflection as a specific damage type and proc the debuff.
+                float reflectDamage = incomingDamage * GetScaledDamageReflection();
+                attacker.TakeDamage(pPlayer.pev, attacker.pev, reflectDamage, DMG_FREEZE | DMG_NEVERGIB); // Inflictor is player (shield), attacker is monster itself.
+            }
         }
 
         // Play barrier damage chunks effect on player.
