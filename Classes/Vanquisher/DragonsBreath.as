@@ -9,13 +9,13 @@ string strDragonsBreathFireSprite = "sprites/fire.spr"; // Fire effect.
 float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
     if (ammoName == "9mm")      return 1.0f;
-    if (ammoName == "357")      return 2.5f;
+    if (ammoName == "357")      return 2.0f;
     if (ammoName == "buckshot") return 0.33f;
     if (ammoName == "556")      return 1.0f;
-    if (ammoName == "bolts")    return 3.0f;
-    if (ammoName == "762")      return 3.0f;
+    if (ammoName == "bolts")    return 2.5f;
+    if (ammoName == "762")      return 2.5f;
     if (ammoName == "uranium")  return 1.5f;
-    if (ammoName == "m40a1")    return 3.0f;
+    if (ammoName == "m40a1")    return 2.5f;
     return 1.0f; // Default multiplier if ammo type not found.
 }
 
@@ -23,13 +23,13 @@ float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 float GetDragonsBreathAmmoCostMultiplier(const string& in ammoName)
 {
     if (ammoName == "9mm")      return 1.0f;
-    if (ammoName == "357")      return 5.0f;
+    if (ammoName == "357")      return 2.0f;
     if (ammoName == "buckshot") return 1.0f; // Already set to use per pellet.
     if (ammoName == "556")      return 1.0f;
-    if (ammoName == "bolts")    return 10.0f;
-    if (ammoName == "762")      return 10.0f;
-    if (ammoName == "uranium")  return 3.0f;
-    if (ammoName == "m40a1")    return 10.0f;
+    if (ammoName == "bolts")    return 2.0f;
+    if (ammoName == "762")      return 2.0f;
+    if (ammoName == "uranium")  return 2.0f;
+    if (ammoName == "m40a1")    return 5.0f;
     return 1.0f; // Default cost multiplier if ammo type not found.
 }
 
