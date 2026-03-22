@@ -9,8 +9,7 @@ float flExplosivesResupplyTimer = flExplosivesResupplyTimerMax; // Track timer c
 
 string g_AmmoPrefixMessage = ""; // Store prefix message to display to connecting players.
 
-bool g_bShowAmmoPickupNotification = true; // Toggle for method of giving ammo, with or without notification and sounds.
-bool g_bShowAmmoPrefixMessage = true; // Toggle for displaying prefix message in chat.
+bool g_bAmmoGive = false; // Toggle whether to give ammo directly (notification and sounds), or modify ammo directly instead (no notifications).
 
 dictionary g_AmmoMapMultipliers;
 
@@ -190,7 +189,7 @@ void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType)
     // Apply map multiplier to ammo amount only (not max or threshold).
     int modifiedAmount = Math.max(1, int(float(ammoType.amount) * g_CurrentAmmoMapMultiplier));
     
-    if(g_bShowAmmoPickupNotification)
+    if(g_bAmmoGive)
     {
         // Give ammo with pickup notification (shows on HUD).
         pPlayer.GiveAmmo(modifiedAmount, ammoType.name, ammoType.baseMaxAmount);
