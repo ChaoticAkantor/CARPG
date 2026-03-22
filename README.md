@@ -80,9 +80,8 @@
 
 
 # Berserker
-Bloodlust is a passive ability, that can be activated to double all bonuses, draining charge.
+  Bloodlust is a passive ability, that can be activated to double all bonuses, draining charge.
 
- # Passives:
   Can leech health by dealing damage.
 
   Can overheal a percentage of Max HP as extra temporary HP.
