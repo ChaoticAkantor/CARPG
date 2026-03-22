@@ -21,10 +21,12 @@
 
  Type "stats" without quotes in chat to bring up the stats menu to see your current stat and ability bonuses.
 
-# Ammo Resupply (and Explosives)
- The mod also features an ammo resupply system.
+# Ammo Regen (and Explosives)
+ The mod also features an ammo regen system.
 
- Explosives resupply is extremely limited, using a threshold system that only allows you a maximum usually of 1 at a time, unless you find more in a level.
+ Each ammo type has it's own individual regen timer, which will work even when not holding the weapon, current ammo type used is displayed on the hud.
+
+ Explosives regen is extremely limited, using a threshold system that only allows you a maximum usually of 1 at a time, unless you find more in a level.
 
  It also does not give you the weapons pertaining to any of the ammo types to retain map balance.
 
