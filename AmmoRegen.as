@@ -1,19 +1,18 @@
 // Plugin Created by Chaotic Akantor as ammo recovery system for CARPG.
 // This file handles player ammo recovery.
 
-float flAmmoResupplyTimerMax = 30.0; // How long between each ammo resupply.
-float flAmmoResupplyTimer = flAmmoResupplyTimerMax; // Track timer change.
-
-float flExplosivesResupplyTimerMax = 90.0; // How long between each explosives resupply.
-float flExplosivesResupplyTimer = flExplosivesResupplyTimerMax; // Track timer change.
-
 string g_AmmoPrefixMessage = ""; // Store prefix message to display to connecting players.
 
 bool g_bAmmoGive = false; // Toggle whether to give ammo directly (notification and sounds), or modify ammo directly instead (no notifications).
+// WARNING: Currently giving explosives directly causes an M16 to be given to the player when AR grenades are given.
+// Explosives need to be given silently to avoid this.
 
 dictionary g_AmmoMapMultipliers;
 
 float g_CurrentAmmoMapMultiplier = 1.0f;
+
+// How often AmmoTimerTick runs. Smaller = finer control over fractional regen intervals (more script work).
+float g_flAmmoRegenTickInterval = 0.1f;
 
 // Define an AmmoType class to store all properties for each ammo type.
 class AmmoType 
@@ -26,8 +25,10 @@ class AmmoType
     int threshold;      // Threshold for special ammo types.
     bool hasThreshold;  // Whether this ammo uses threshold logic.
     bool isExplosive;   // Whether this ammo is an explosive type (disabled if map modifier is active).
+    float regenIntervalMax; // Seconds between resupply ticks (fractional allowed, e.g. 0.5f).
+    float regenTimer;       // Seconds until next resupply (countdown; decremented by g_flAmmoRegenTickInterval).
     
-    AmmoType(string ammoName, int regenAmount, int maxAmmo, bool useThreshold = false, int thresholdValue = 0, bool explosive = false) 
+    AmmoType(string ammoName, int regenAmount, int maxAmmo, bool useThreshold = false, int thresholdValue = 0, bool explosive = false, float regenIntervalSeconds = 30.0f) 
     {
         name = ammoName;
         amount = regenAmount;
@@ -37,6 +38,8 @@ class AmmoType
         hasThreshold = useThreshold;
         threshold = thresholdValue;
         isExplosive = explosive;
+        regenIntervalMax = regenIntervalSeconds;
+        regenTimer = regenIntervalSeconds;
     }
 }
 
@@ -74,110 +77,134 @@ void InitializeAmmoRegen()
         }
     }
     
-    // Initialize ammo types (all regen on same universal tick).
-    g_AmmoTypes.insertLast(AmmoType("health", 50, 100, true, 100));
-    g_AmmoTypes.insertLast(AmmoType("9mm", 45, 300));
-    g_AmmoTypes.insertLast(AmmoType("buckshot", 8, 125));
-    g_AmmoTypes.insertLast(AmmoType("357", 6, 36));
-    g_AmmoTypes.insertLast(AmmoType("556", 30, 600));
-    g_AmmoTypes.insertLast(AmmoType("m40a1", 4, 25));
-    g_AmmoTypes.insertLast(AmmoType("bolts", 5, 30));
-    g_AmmoTypes.insertLast(AmmoType("sporeclip", 1, 20));
-    g_AmmoTypes.insertLast(AmmoType("Hornets", 25, 100));
-    g_AmmoTypes.insertLast(AmmoType("shock charges", 15, 100));
-    g_AmmoTypes.insertLast(AmmoType("uranium", 10, 100));
+    // Amount given, max ammo, threshold, timer.
+    g_AmmoTypes.insertLast(AmmoType("health", 1, 100, true, 100, false, 0.5f));
+    g_AmmoTypes.insertLast(AmmoType("9mm", 1, 300, false, 0, false, 0.5f));
+    g_AmmoTypes.insertLast(AmmoType("buckshot", 1, 125, false, 0, false, 6.0f));
+    g_AmmoTypes.insertLast(AmmoType("357", 1, 36, false, 0, false, 8.0f));
+    g_AmmoTypes.insertLast(AmmoType("556", 1, 600, false, 0, false, 1.0f));
+    g_AmmoTypes.insertLast(AmmoType("m40a1", 1, 25, false, 0, false, 8.0f));
+    g_AmmoTypes.insertLast(AmmoType("bolts", 1, 30, false, 0, false, 8.0f));
+    g_AmmoTypes.insertLast(AmmoType("sporeclip", 1, 20, false, 0, false, 20.0f));
+    g_AmmoTypes.insertLast(AmmoType("Hornets", 1, 100, false, 0, false, 2.0f));
+    g_AmmoTypes.insertLast(AmmoType("shock charges", 1, 100, false, 0, false, 2.0f));
+    g_AmmoTypes.insertLast(AmmoType("uranium", 1, 100, false, 0, false, 5.0f));
     
-    // Threshold-based ammo types (explosives, etc).
-    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true));
-    g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 1, 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("Trip Mine", 1, 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("rockets", 1, 10, true, 2, true));
-    g_AmmoTypes.insertLast(AmmoType("Snarks", 5, 15, true, 15, true));
+    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true, 45.0f));
+    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true, 30.0f));
+    g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 1, 10, true, 1, true, 90.0f));
+    g_AmmoTypes.insertLast(AmmoType("Trip Mine", 1, 10, true, 1, true, 90.0f));
+    g_AmmoTypes.insertLast(AmmoType("rockets", 1, 10, true, 2, true, 60.0f));
+    g_AmmoTypes.insertLast(AmmoType("Snarks", 1, 15, true, 15, true, 60.0f));
 }
 
 void AmmoTimerTick()
 {
-    flAmmoResupplyTimer--;
-    flExplosivesResupplyTimer--;
-    
     const int iMaxPlayers = g_Engine.maxClients;
     
-    // Process ammo timer.
-    if(flAmmoResupplyTimer <= 0)
+    for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
     {
+        AmmoType@ ammoType = g_AmmoTypes[ammoIndex];
+        if(ammoType is null)
+            continue;
+        
+        ammoType.regenTimer -= g_flAmmoRegenTickInterval;
+        
+        if(ammoType.regenTimer > 0)
+            continue;
+        
+        // Map series that disable throwables: do not resupply; reschedule with carryover.
+        if(ammoType.isExplosive && g_CurrentAmmoMapMultiplier != 1.0f)
+        {
+            ammoType.regenTimer += ammoType.regenIntervalMax;
+            while(ammoType.regenTimer <= 0)
+                ammoType.regenTimer += ammoType.regenIntervalMax;
+            continue;
+        }
+        
         for(int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex)
-        {   
+        {
             CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(playerIndex);
             if(pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
                 continue;
-
-            for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
+            
+            int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
+            if(gameAmmoIndex >= 0)
             {
-                AmmoType@ ammoType = g_AmmoTypes[ammoIndex];
-                if(ammoType is null || ammoType.isExplosive)
-                    continue; // Skip explosives, only handle regular ammo
+                int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
                 
-                int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
-                if(gameAmmoIndex >= 0)
+                if(currentAmmo < ammoType.maxAmount)
                 {
-                    int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
+                    bool canRegenerate = true;
+                    if(ammoType.hasThreshold && currentAmmo > ammoType.threshold)
+                        canRegenerate = false;
                     
-                    if(currentAmmo < ammoType.maxAmount)
-                    {
-                        bool canRegenerate = true;
-                        if(ammoType.hasThreshold && currentAmmo > ammoType.threshold)
-                            canRegenerate = false;
-                        
-                        if(canRegenerate)
-                        {
-                            GiveAmmoToPlayer(pPlayer, ammoType);
-                        }
-                    }
+                    if(canRegenerate)
+                        GiveAmmoToPlayer(pPlayer, ammoType);
                 }
             }
         }
         
-        flAmmoResupplyTimer = flAmmoResupplyTimerMax;
+        ammoType.regenTimer += ammoType.regenIntervalMax;
+        while(ammoType.regenTimer <= 0)
+            ammoType.regenTimer += ammoType.regenIntervalMax;
     }
+}
+
+// One decimal place for HUD (matches typical tick granularity).
+string FormatAmmoRegenSecondsForHud(float t)
+{
+    t = Math.max(0.0f, t);
+    int tenthsTotal = int(t * 10.0f + 0.5f);
+    int whole = tenthsTotal / 10;
+    int frac = tenthsTotal % 10;
+    return "" + whole + "." + frac + "s";
+}
+
+// Map engine ammo index to CARPG ammo type name (must match g_AmmoTypes entries).
+string GetAmmoTypeNameForGameAmmoIndex(int gameAmmoIndex)
+{
+    if(gameAmmoIndex < 0)
+        return "";
     
-    // Process explosives timer.
-    if(flExplosivesResupplyTimer <= 0 && g_CurrentAmmoMapMultiplier == 1.0f)
+    for(uint i = 0; i < g_AmmoTypes.length(); i++)
     {
-        for(int playerIndex = 1; playerIndex <= iMaxPlayers; ++playerIndex)
-        {   
-            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(playerIndex);
-            if(pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
-                continue;
-
-            for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
-            {
-                AmmoType@ ammoType = g_AmmoTypes[ammoIndex];
-                if(ammoType is null || !ammoType.isExplosive)
-                    continue; // Only handle explosives here
-                
-                int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
-                if(gameAmmoIndex >= 0)
-                {
-                    int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
-                    
-                    if(currentAmmo < ammoType.maxAmount)
-                    {
-                        bool canRegenerate = true;
-                        if(ammoType.hasThreshold && currentAmmo > ammoType.threshold)
-                            canRegenerate = false;
-                        
-                        if(canRegenerate)
-                        {
-                            GiveAmmoToPlayer(pPlayer, ammoType);
-                        }
-                    }
-                }
-            }
-        }
-        
-        flExplosivesResupplyTimer = flExplosivesResupplyTimerMax;
+        AmmoType@ at = g_AmmoTypes[i];
+        if(at is null)
+            continue;
+        if(g_PlayerFuncs.GetAmmoIndex(at.name) == gameAmmoIndex)
+            return at.name;
     }
+    return "";
+}
+
+string GetAmmoTypeNameForActiveWeapon(CBasePlayer@ pPlayer)
+{
+    if(pPlayer is null || !pPlayer.IsAlive())
+        return "";
+    
+    CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pPlayer.m_hActiveItem.GetEntity());
+    if(pWeapon is null)
+        return "";
+    
+    return GetAmmoTypeNameForGameAmmoIndex(pWeapon.PrimaryAmmoIndex());
+}
+
+// HUD line for the resupply timer matching the active weapon's primary ammo type.
+string GetAmmoRegenHudLine(CBasePlayer@ pPlayer)
+{
+    string name = GetAmmoTypeNameForActiveWeapon(pPlayer);
+    if(name.Length() == 0)
+        return "";
+    
+    AmmoType@ at = GetAmmoTypeByName(name);
+    if(at is null)
+        return "";
+    
+    if(at.isExplosive && g_CurrentAmmoMapMultiplier != 1.0f)
+        return "Throwables resupply: DISABLED\n";
+    
+    return "Ammo Regen: " + "(" + at.name + ") " + FormatAmmoRegenSecondsForHud(at.regenTimer) + "\n";
 }
 
 // Give ammo to player using selected method (silent or with pickup notification).
