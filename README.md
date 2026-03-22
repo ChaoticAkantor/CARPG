@@ -94,9 +94,9 @@
 # Engineer
  Summons a single friendly Sentry.
 
- Sentry can slow down enemies.
+ Sentry shots slow down enemies.
  
- Has a weaker version of Heal Aura without poison damage.
+ Has it's own healing aura.
 
  Activating whilst active will recall the turret for a cost.
 
