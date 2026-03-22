@@ -60,8 +60,8 @@ namespace Menu
                     if(healingAura !is null)
                     {
                         string MedicStatsText = "=== Heal Aura: ===" + "\n"; 
-                        MedicStatsText += "Healing: " + healingAura.GetScaledHealAmount() + "% HP /s\n";
-                        MedicStatsText += "Poison Damage: " + healingAura.GetPoisonDamageAmount() + "% HP/s\n";
+                        MedicStatsText += "Healing: " + healingAura.GetScaledHealAmount() + "% HP\n";
+                        MedicStatsText += "Poison Damage: " + healingAura.GetPoisonDamageAmount() + "% HP\n";
                         MedicStatsText += "Radius: " + healingAura.GetHealingRadius() / 16 + "ft\n";
                         MedicStatsText += "Ally Revival Duration Cost: " + healingAura.GetEnergyCostRevive() + "s\n";
 
@@ -207,7 +207,7 @@ namespace Menu
                     {
                         string EngineerStatsText = "=== Sentry Turret: ===\n";
                             EngineerStatsText += "Health: " + int(sentry.GetScaledHealth()) + " HP\n";
-                            EngineerStatsText += "Healing: " + sentry.GetScaledHealAmount() + "% HP/s\n";
+                            EngineerStatsText += "Healing: " + sentry.GetScaledHealAmount() + "% HP\n";
                             EngineerStatsText += "Heal Radius: " + sentry.GetHealRadius() / 16 + "ft\n";
                             EngineerStatsText += "Sentry Damage: " + sentry.GetScaledDamage() * 100 + "%\n";
                             EngineerStatsText += "Slow Strength: " + sentry.GetCryoShotsSlowInverse() + "%\n\n";
