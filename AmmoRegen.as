@@ -11,7 +11,7 @@ dictionary g_AmmoMapMultipliers;
 
 float g_CurrentAmmoMapMultiplier = 1.0f;
 
-// How often AmmoTimerTick runs. Smaller = finer control over fractional regen intervals (more script work).
+// How often AmmoTimerTick runs.
 float g_flAmmoRegenTickInterval = 0.1f;
 
 // Define an AmmoType class to store all properties for each ammo type.
@@ -25,8 +25,9 @@ class AmmoType
     int threshold;      // Threshold for special ammo types.
     bool hasThreshold;  // Whether this ammo uses threshold logic.
     bool isExplosive;   // Whether this ammo is an explosive type (disabled if map modifier is active).
-    float regenIntervalMax; // Seconds between resupply ticks (fractional allowed, e.g. 0.5f).
-    float regenTimer;       // Seconds until next resupply (countdown; decremented by g_flAmmoRegenTickInterval).
+    float regenIntervalBase; // Baseline seconds between resupply (from constructor; map scaling applied on init).
+    float regenIntervalMax;  // Effective seconds between resupply after map scaling.
+    float regenTimer;        // Countdown in seconds (decremented by g_flAmmoRegenTickInterval).
     
     AmmoType(string ammoName, int regenAmount, int maxAmmo, bool useThreshold = false, int thresholdValue = 0, bool explosive = false, float regenIntervalSeconds = 30.0f) 
     {
@@ -38,6 +39,7 @@ class AmmoType
         hasThreshold = useThreshold;
         threshold = thresholdValue;
         isExplosive = explosive;
+        regenIntervalBase = regenIntervalSeconds;
         regenIntervalMax = regenIntervalSeconds;
         regenTimer = regenIntervalSeconds;
     }
@@ -50,16 +52,15 @@ void InitializeAmmoRegen()
     // Clear existing ammo types first.
     g_AmmoTypes.resize(0);
 
-    // Balance ammo resupply separately for different map series by multiplying the amount of ammo given.
-    g_AmmoMapMultipliers["th_"] = 0.5f;    // They Hunger.
-    g_AmmoMapMultipliers["aom_"] = 0.5f;   // Afraid of Monsters Classic.
-    g_AmmoMapMultipliers["aomdc_"] = 0.5f; // Afraid of Monsters Directors-Cut.
-    g_AmmoMapMultipliers["hl_"] = 0.8f;    // Half-Life Campaign.
-    g_AmmoMapMultipliers["of_"] = 0.8f;    // Opposing-Force Campaign.
-    g_AmmoMapMultipliers["bs_"] = 0.8f;    // Blue-Shift Campaign.
+    g_AmmoMapMultipliers["th_"] = 10.0f;    // They Hunger.
+    g_AmmoMapMultipliers["aom_"] = 10.0f;   // Afraid of Monsters Classic.
+    g_AmmoMapMultipliers["aomdc_"] = 10.0f; // Afraid of Monsters Directors-Cut.
+    g_AmmoMapMultipliers["hl_"] = 2.0f;    // Half-Life Campaign.
+    g_AmmoMapMultipliers["of_"] = 2.0f;    // Opposing-Force Campaign.
+    g_AmmoMapMultipliers["bs_"] = 2.0f;    // Blue-Shift Campaign.
 
     string mapName = string(g_Engine.mapname).ToLowercase(); // Update map multiplier before creating ammo types.
-    g_CurrentAmmoMapMultiplier = 1.0f; // Default multiplier.
+    g_CurrentAmmoMapMultiplier = 1.0f; // Default.
     g_AmmoPrefixMessage = ""; // Reset message to default.
     
     dictionary@ prefixes = g_AmmoMapMultipliers;
@@ -71,31 +72,43 @@ void InitializeAmmoRegen()
         if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix)
         {
             g_CurrentAmmoMapMultiplier = float(prefixes[prefixKeys[i]]);
-            g_AmmoPrefixMessage = "=== CARPG Ammo Resupply: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nAmmo Resupply: " + g_CurrentAmmoMapMultiplier + "x. Throwables | DISABLED.";
+            g_AmmoPrefixMessage = "\n=== CARPG Ammo Resupply: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nAmmo Regen: " + g_CurrentAmmoMapMultiplier + "x. | Throwables DISABLED.";
             g_Game.AlertMessage(at_console, g_AmmoPrefixMessage + "\n\n");
             break;
         }
     }
     
-    // Amount given, max ammo, threshold, timer.
+    // Amount given, max ammo, use threshold? threshold, willgiveweapon(doesnt seem to work), timer.
     g_AmmoTypes.insertLast(AmmoType("health", 1, 100, true, 100, false, 0.5f));
     g_AmmoTypes.insertLast(AmmoType("9mm", 1, 300, false, 0, false, 0.5f));
     g_AmmoTypes.insertLast(AmmoType("buckshot", 1, 125, false, 0, false, 6.0f));
     g_AmmoTypes.insertLast(AmmoType("357", 1, 36, false, 0, false, 8.0f));
-    g_AmmoTypes.insertLast(AmmoType("556", 1, 600, false, 0, false, 1.0f));
-    g_AmmoTypes.insertLast(AmmoType("m40a1", 1, 25, false, 0, false, 8.0f));
-    g_AmmoTypes.insertLast(AmmoType("bolts", 1, 30, false, 0, false, 8.0f));
+    g_AmmoTypes.insertLast(AmmoType("556", 1, 600, false, 0, false, 0.8f));
+    g_AmmoTypes.insertLast(AmmoType("m40a1", 1, 25, false, 0, false, 10.0f));
+    g_AmmoTypes.insertLast(AmmoType("bolts", 1, 30, false, 0, false, 10.0f));
     g_AmmoTypes.insertLast(AmmoType("sporeclip", 1, 20, false, 0, false, 20.0f));
-    g_AmmoTypes.insertLast(AmmoType("Hornets", 1, 100, false, 0, false, 2.0f));
-    g_AmmoTypes.insertLast(AmmoType("shock charges", 1, 100, false, 0, false, 2.0f));
+    g_AmmoTypes.insertLast(AmmoType("Hornets", 1, 100, false, 0, false, 0.5f));
+    g_AmmoTypes.insertLast(AmmoType("shock charges", 1, 100, false, 0, false, 1.0f));
     g_AmmoTypes.insertLast(AmmoType("uranium", 1, 100, false, 0, false, 5.0f));
     
-    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true, 45.0f));
-    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true, 30.0f));
-    g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 1, 10, true, 1, true, 90.0f));
+    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true, 30.0f));
+    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true, 45.0f));
+    g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 1, 10, true, 1, true, 120.0f));
     g_AmmoTypes.insertLast(AmmoType("Trip Mine", 1, 10, true, 1, true, 90.0f));
     g_AmmoTypes.insertLast(AmmoType("rockets", 1, 10, true, 2, true, 60.0f));
-    g_AmmoTypes.insertLast(AmmoType("Snarks", 1, 15, true, 15, true, 60.0f));
+    g_AmmoTypes.insertLast(AmmoType("Snarks", 1, 15, false, 0, false, 45.0f));
+    
+    float m = g_CurrentAmmoMapMultiplier;
+    if(m < 0.001f)
+        m = 1.0f;
+    for(uint si = 0; si < g_AmmoTypes.length(); si++)
+    {
+        AmmoType@ at = g_AmmoTypes[si];
+        if(at is null)
+            continue;
+        at.regenIntervalMax = at.regenIntervalBase * m;
+        at.regenTimer = at.regenIntervalMax;
+    }
 }
 
 void AmmoTimerTick()
@@ -213,8 +226,7 @@ void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType)
     if(pPlayer is null || ammoType is null)
         return;
     
-    // Apply map multiplier to ammo amount only (not max or threshold).
-    int modifiedAmount = Math.max(1, int(float(ammoType.amount) * g_CurrentAmmoMapMultiplier));
+    int modifiedAmount = Math.max(1, ammoType.amount);
     
     if(g_bAmmoGive)
     {
