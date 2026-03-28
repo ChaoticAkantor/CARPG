@@ -14,7 +14,7 @@ class BarrierData
     private float m_flBarrierDamageReduction = 1.00f; // Player damage reduction multiplier whilst shield is active. 1.0 = 100% damage reduction (no damage to HP/AP).
     private float m_flBarrierDurabilityMultiplier = 1.0f; // Shield damage reduction multiplier, used to make shield tougher or weaker overall.
     private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.2f; // Shield damage reflection modifier at max level.
-    private float m_flBarrierActiveRechargePenalty = 0.30f; // Ability recharge modifier whilst shield is active.
+    private float m_flBarrierActiveRechargePenalty = 0.25f; // Ability recharge modifier whilst shield is active.
     private float m_flBarrierHealthAbsorbAtMaxLevel = 0.30f; // Percentage of damage taken that is absorbed as health.
     private float m_flBarrierDeactivateEnergyCost = 0.25f; // Energy cost percentage when manually deactivating barrier.
     private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
