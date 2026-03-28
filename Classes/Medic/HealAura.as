@@ -127,8 +127,8 @@ class HealingAura
     {
         float maxCd = GetReviveCooldown();
         if(m_flCurrentReviveCooldown > 0.0f)
-            return "[Revive: " + FormatHealAuraSecondsForHud(m_flCurrentReviveCooldown) + "]\n";
-        return "[Revive: (Ready)]\n";
+            return "[Revive: " + FormatHealAuraSecondsForHud(m_flCurrentReviveCooldown) + "]";
+        return "[Revive: Ready]";
     }
 
     float GetPoisonDamageAmount()
