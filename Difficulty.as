@@ -24,7 +24,7 @@ final class ForceDifficulty
 		18.0, //Crowbar - Default 15.
 		25.0, //Wrench - Default 22.
 		45.0, //Grapple (Barnacle) - Default 40.
-		14.0, //Handgun (9mm Handgun) - Default 12.
+		15.0, //Handgun (9mm Handgun) - Default 12.
 		70.0, //357 (Deagle is 2/3 of this) - Default 66.
 		13.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
 		14.0, //MP5 (9mm AR) - Default 8.
