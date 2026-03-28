@@ -208,7 +208,7 @@ class ExplosiveRoundsData
                 
                 // Create smaller explosion effects for shotgun pellets
                 // 1. Main explosion sprite
-                NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgExp.WriteByte(TE_SPRITE);
                 msgExp.WriteCoord(impactPoint.x);
                 msgExp.WriteCoord(impactPoint.y);
@@ -219,7 +219,7 @@ class ExplosiveRoundsData
                 msgExp.End();
                 
                 // 2. Core explosion sprite
-                NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgCore.WriteByte(TE_SPRITE);
                 msgCore.WriteCoord(impactPoint.x);
                 msgCore.WriteCoord(impactPoint.y);
@@ -230,7 +230,7 @@ class ExplosiveRoundsData
                 msgCore.End();
                 
                 // 3. Small glow effect
-                NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgGlow(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgGlow.WriteByte(TE_GLOWSPRITE);
                 msgGlow.WriteCoord(impactPoint.x);
                 msgGlow.WriteCoord(impactPoint.y);
@@ -316,7 +316,7 @@ class ExplosiveRoundsData
                 
                 // Create very small explosion effects for burst fire
                 // 1. Main explosion sprite
-                NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgExp.WriteByte(TE_SPRITE);
                 msgExp.WriteCoord(impactPoint.x);
                 msgExp.WriteCoord(impactPoint.y);
@@ -327,7 +327,7 @@ class ExplosiveRoundsData
                 msgExp.End();
                 
                 // 2. Core explosion sprite
-                NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgCore.WriteByte(TE_SPRITE);
                 msgCore.WriteCoord(impactPoint.x);
                 msgCore.WriteCoord(impactPoint.y);
@@ -338,7 +338,7 @@ class ExplosiveRoundsData
                 msgCore.End();
                 
                 // 3. Tiny glow effect
-                NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgGlow(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgGlow.WriteByte(TE_GLOWSPRITE);
                 msgGlow.WriteCoord(impactPoint.x);
                 msgGlow.WriteCoord(impactPoint.y);
@@ -413,7 +413,7 @@ class ExplosiveRoundsData
             
             // Create explosion effects
             // 1. Main explosion sprite
-            NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
             msgExp.WriteByte(TE_SPRITE);
             msgExp.WriteCoord(impactPoint.x);
             msgExp.WriteCoord(impactPoint.y);
@@ -424,7 +424,7 @@ class ExplosiveRoundsData
             msgExp.End();
             
             // 2. Core explosion sprite
-            NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
             msgCore.WriteByte(TE_SPRITE);
             msgCore.WriteCoord(impactPoint.x);
             msgCore.WriteCoord(impactPoint.y);
@@ -435,7 +435,7 @@ class ExplosiveRoundsData
             msgCore.End();
             
             // 3. Glow effect
-            NetworkMessage msgGlow(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            NetworkMessage msgGlow(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
             msgGlow.WriteByte(TE_GLOWSPRITE);
             msgGlow.WriteCoord(impactPoint.x);
             msgGlow.WriteCoord(impactPoint.y);

@@ -550,7 +550,7 @@ class SentryData
         Vector maxs = pos + Vector(16, 16, 64);
 
         // Bubbles Effect.
-        NetworkMessage aura2msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        NetworkMessage aura2msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
             aura2msg.WriteByte(TE_BUBBLES);
             aura2msg.WriteCoord(mins.x);
             aura2msg.WriteCoord(mins.y);
@@ -588,7 +588,7 @@ class SentryData
         Vector maxs = pos + Vector(16, 16, 64);
 
         // Aura Beam Cylinder Effect.
-        NetworkMessage auramsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, pos);
+        NetworkMessage auramsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
             auramsg.WriteByte(TE_BEAMCYLINDER);
             auramsg.WriteCoord(pos.x);
             auramsg.WriteCoord(pos.y);
@@ -610,7 +610,7 @@ class SentryData
             auramsg.End();
 
         // Health Bubbles Effect.
-        NetworkMessage aura2msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        NetworkMessage aura2msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
             aura2msg.WriteByte(TE_BUBBLES);
             aura2msg.WriteCoord(mins.x);
             aura2msg.WriteCoord(mins.y);

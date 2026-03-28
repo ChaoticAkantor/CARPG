@@ -340,7 +340,7 @@ class BloodlustData
         Vector mins = pos - Vector(16, 16, 0);
         Vector maxs = pos + Vector(16, 16, 64);
 
-        NetworkMessage bubbleMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        NetworkMessage bubbleMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
             bubbleMsg.WriteByte(TE_BUBBLES);
             bubbleMsg.WriteCoord(mins.x);
             bubbleMsg.WriteCoord(mins.y);
@@ -355,7 +355,7 @@ class BloodlustData
         bubbleMsg.End();
 
         // Add dynamic light
-        NetworkMessage msg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pPlayer.pev.origin);
             msg.WriteByte(TE_DLIGHT);
             msg.WriteCoord(pPlayer.pev.origin.x);
             msg.WriteCoord(pPlayer.pev.origin.y);

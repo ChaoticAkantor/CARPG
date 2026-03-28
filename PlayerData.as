@@ -313,7 +313,7 @@ class ClassStats
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] (" + className + ") is now Level " + m_iLevel + "!\n");
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
-                    NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
+                    NetworkMessage message(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pPlayer.pev.origin);
                     message.WriteByte(TE_PARTICLEBURST);
                     message.WriteCoord(pPlayer.pev.origin.x);
                     message.WriteCoord(pPlayer.pev.origin.y);
@@ -362,7 +362,7 @@ class ClassStats
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
                     // Level up effect.
-                    NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
+                    NetworkMessage message(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pPlayer.pev.origin);
                     message.WriteByte(TE_PARTICLEBURST);
                     message.WriteCoord(pPlayer.pev.origin.x);
                     message.WriteCoord(pPlayer.pev.origin.y);

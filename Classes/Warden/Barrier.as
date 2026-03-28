@@ -110,7 +110,7 @@ class BarrierData
             Vector maxs = pos + Vector(16, 16, 64);
 
             // Heal Bubbles Effect.
-            NetworkMessage absorbmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            NetworkMessage absorbmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
                 absorbmsg.WriteByte(TE_BUBBLES);
                 absorbmsg.WriteCoord(mins.x);
                 absorbmsg.WriteCoord(mins.y);
@@ -280,7 +280,7 @@ class BarrierData
     private void EffectBarrierShatter(Vector origin)
     {
         // Add effect to shatter barrier.
-        NetworkMessage breakMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, origin);
+        NetworkMessage breakMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
             breakMsg.WriteByte(TE_BREAKMODEL);
             breakMsg.WriteCoord(origin.x);
             breakMsg.WriteCoord(origin.y);

@@ -63,7 +63,7 @@ namespace Menu
                         MedicStatsText += "Healing: " + healingAura.GetScaledHealAmount() + "% HP\n";
                         MedicStatsText += "Poison Damage: " + healingAura.GetPoisonDamageAmount() + "% HP\n";
                         MedicStatsText += "Radius: " + healingAura.GetHealingRadius() / 16 + "ft\n";
-                        MedicStatsText += "Ally Revival Duration Cost: " + healingAura.GetEnergyCostRevive() + "s\n";
+                        MedicStatsText += "Revive Cooldown: " + healingAura.GetReviveCooldown() + "s\n";
 
                         m_pMenu.AddItem(MedicStatsText, null);
                     }

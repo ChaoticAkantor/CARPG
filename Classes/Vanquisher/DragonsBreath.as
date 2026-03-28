@@ -294,7 +294,7 @@ class DragonsBreathData
                 
                 // Create smaller explosion effects for shotgun pellets.
                 // 1. Main explosion sprite.
-                NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgExp.WriteByte(TE_SPRITE);
                 msgExp.WriteCoord(impactPoint.x);
                 msgExp.WriteCoord(impactPoint.y);
@@ -305,7 +305,7 @@ class DragonsBreathData
                 msgExp.End();
                 
                 // 2. Core explosion sprite
-                NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgCore.WriteByte(TE_SPRITE);
                 msgCore.WriteCoord(impactPoint.x);
                 msgCore.WriteCoord(impactPoint.y);
@@ -392,7 +392,7 @@ class DragonsBreathData
                 
                 // Create very small explosion effects for burst fire.
                 // 1. Main explosion sprite.
-                NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgExp.WriteByte(TE_SPRITE);
                 msgExp.WriteCoord(impactPoint.x);
                 msgExp.WriteCoord(impactPoint.y);
@@ -403,7 +403,7 @@ class DragonsBreathData
                 msgExp.End();
                 
                 // 2. Core explosion sprite.
-                NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
                 msgCore.WriteByte(TE_SPRITE);
                 msgCore.WriteCoord(impactPoint.x);
                 msgCore.WriteCoord(impactPoint.y);
@@ -479,7 +479,7 @@ class DragonsBreathData
             
             // Create explosion effects.
             // 1. Main explosion sprite.
-            NetworkMessage msgExp(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
             msgExp.WriteByte(TE_SPRITE);
             msgExp.WriteCoord(impactPoint.x);
             msgExp.WriteCoord(impactPoint.y);
@@ -490,7 +490,7 @@ class DragonsBreathData
             msgExp.End();
             
             // 2. Core explosion sprite.
-            NetworkMessage msgCore(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
             msgCore.WriteByte(TE_SPRITE);
             msgCore.WriteCoord(impactPoint.x);
             msgCore.WriteCoord(impactPoint.y);
@@ -601,7 +601,7 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     msgFireArea.End();
 
     // Fire DoT Beam Cylinder Effect.
-    NetworkMessage fireRadiusMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, impactPoint);
+    NetworkMessage fireRadiusMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
     fireRadiusMsg.WriteByte(TE_BEAMCYLINDER);
     fireRadiusMsg.WriteCoord(impactPoint.x);
     fireRadiusMsg.WriteCoord(impactPoint.y);

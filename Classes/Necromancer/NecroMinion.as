@@ -712,7 +712,7 @@ class NecroMinionData
             Vector mins = pos - Vector(16, 16, 0);
             Vector maxs = pos + Vector(16, 16, 64);
 
-            NetworkMessage healeffect(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
             healeffect.WriteByte(TE_BUBBLES);
             healeffect.WriteCoord(mins.x);
             healeffect.WriteCoord(mins.y);
@@ -750,7 +750,7 @@ class NecroMinionData
                         Vector mins = pos - Vector(16, 16, 0);
                         Vector maxs = pos + Vector(16, 16, 64);
 
-                        NetworkMessage healeffect(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+                        NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
                         healeffect.WriteByte(TE_BUBBLES);
                         healeffect.WriteCoord(mins.x);
                         healeffect.WriteCoord(mins.y);

@@ -416,7 +416,8 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 if(healingAura !is null)
                                 {
                                     resourceInfo += "[Healing: " + (healingAura.GetScaledHealAmount()) + "% HP]\n";
-                                    resourceInfo += "[Poison: " + (healingAura.GetPoisonDamageAmount()) + "% HP]";
+                                    resourceInfo += "[Poison: " + (healingAura.GetPoisonDamageAmount()) + "% HP]\n";
+                                    resourceInfo += healingAura.GetReviveCooldownDisplay();
                                 }
                             }
                             break;

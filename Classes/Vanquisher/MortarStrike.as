@@ -108,7 +108,7 @@ class MortarStrikeData
 
     private void CreateTargetMarker(Vector position)
     {
-        NetworkMessage targetMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        NetworkMessage targetMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, position);
             targetMsg.WriteByte(TE_BEAMCYLINDER);
             targetMsg.WriteCoord(position.x);
             targetMsg.WriteCoord(position.y);
@@ -194,7 +194,7 @@ class MortarStrikeData
 
     private void CreateExplosionEffect(Vector position)
     {
-        NetworkMessage expMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        NetworkMessage expMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, position);
             expMsg.WriteByte(TE_EXPLOSION);
             expMsg.WriteCoord(position.x);
             expMsg.WriteCoord(position.y);
@@ -218,7 +218,7 @@ class MortarStrikeData
     private void CreateAfterEffect(Vector position)
     {
         // Create smoke and scorch marks.
-        NetworkMessage decalMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        NetworkMessage decalMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, position);
             decalMsg.WriteByte(TE_WORLDDECAL);
             decalMsg.WriteCoord(position.x);
             decalMsg.WriteCoord(position.y);
@@ -226,7 +226,7 @@ class MortarStrikeData
             decalMsg.WriteByte(g_EngineFuncs.DecalIndex("{scorch1"));
         decalMsg.End();
         
-        NetworkMessage smokeMsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+        NetworkMessage smokeMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, position);
             smokeMsg.WriteByte(TE_SMOKE);
             smokeMsg.WriteCoord(position.x);
             smokeMsg.WriteCoord(position.y);

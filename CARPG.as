@@ -882,7 +882,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             Vector mins = pos - Vector(16, 16, 0);
             Vector maxs = pos + Vector(16, 16, 64);
 
-            NetworkMessage healbubblesmsg(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY);
+            NetworkMessage healbubblesmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
                 healbubblesmsg.WriteByte(TE_BUBBLES);
                 healbubblesmsg.WriteCoord(mins.x);
                 healbubblesmsg.WriteCoord(mins.y);

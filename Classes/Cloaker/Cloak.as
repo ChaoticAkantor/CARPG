@@ -162,7 +162,7 @@ class CloakData
                     pPlayer.pev.rendercolor = CLOAK_COLOR; // Set color of effect.
                     pPlayer.pev.renderamt = 5;  // Between 0-255.
                     
-                    NetworkMessage message(MSG_BROADCAST, NetworkMessages::SVC_TEMPENTITY, null);
+                    NetworkMessage message(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pPlayer.pev.origin);
                         message.WriteByte(TE_PARTICLEBURST);
                         message.WriteCoord(pPlayer.pev.origin.x);
                         message.WriteCoord(pPlayer.pev.origin.y);
