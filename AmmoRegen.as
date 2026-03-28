@@ -91,8 +91,8 @@ void InitializeAmmoRegen()
     g_AmmoTypes.insertLast(AmmoType("shock charges", 1, 100, false, 0, false, 1.0f));
     g_AmmoTypes.insertLast(AmmoType("uranium", 1, 100, false, 0, false, 5.0f));
     
-    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true, 30.0f));
-    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true, 45.0f));
+    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true, 45.0f));
+    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true, 60.0f));
     g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 1, 10, true, 1, true, 120.0f));
     g_AmmoTypes.insertLast(AmmoType("Trip Mine", 1, 10, true, 1, true, 90.0f));
     g_AmmoTypes.insertLast(AmmoType("rockets", 1, 10, true, 2, true, 60.0f));
