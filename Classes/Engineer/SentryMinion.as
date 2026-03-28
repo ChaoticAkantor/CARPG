@@ -30,7 +30,7 @@ class SentryData
     private float m_flHealthScaleAtMaxLevel = 4.0; // Health multiplier at max level.
     private float m_flDamageScaleAtMaxLevel = 3.0; // Damage multiplier at max level.
     private float m_flBaseHealAmount = 1.0; // Base health restored as a percentage of max health, per second.
-    private float m_flHealScaleAtMaxLevel = 2.0f; // Healing modifier at max level.
+    private float m_flHealScaleAtMaxLevel = 3.0f; // Healing modifier at max level.
     private float m_flSelfHealModifier = 3.0f; // Sentry self-healing multiplier.
     private float m_flHealRadius = 50.0f * 16.0f; // Radius in which the sentry can heal players (ft converted to units).
 
