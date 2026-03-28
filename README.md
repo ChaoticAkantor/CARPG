@@ -76,7 +76,7 @@
  Healing Aura that restores a percentage of HP for allies (including NPC's).
  Also deals a percentage of HP as poison damage to enemies.
 
- Can revive both players and NPC's, but drains more charge.
+ Can revive both players and NPC's, but has a cooldown.
 
 
 # Berserker
