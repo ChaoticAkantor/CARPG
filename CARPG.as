@@ -951,7 +951,12 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
                     CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
                     if(pMonster !is null)
                     {
-                        barrier.ApplyReflectDamage(attacker.pev.origin, attacker);
+                        string attackerClass = attacker.GetClassname();
+                        bool isTurret = (attackerClass == "monster_turret" || attackerClass == "monster_miniturret");
+                        if(!isTurret)
+                        {
+                            barrier.ApplyReflectDamage(attacker.pev.origin, attacker);
+                        }
                     }
                 }
             }

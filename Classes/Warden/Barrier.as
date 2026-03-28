@@ -13,10 +13,10 @@ class BarrierData
     private bool m_bActive = false;
     private float m_flBarrierDamageReduction = 1.00f; // Player damage reduction multiplier whilst shield is active. 1.0 = 100% damage reduction (no damage to HP/AP).
     private float m_flBarrierDurabilityMultiplier = 1.0f; // Shield damage reduction multiplier, used to make shield tougher or weaker overall.
-    private float m_flBarrierReflectDamageScalingAtMaxLevel = 0.8f; // Shield damage reflection modifier at max level.
-    private float m_flBarrierActiveRechargePenalty = 0.10f; // Ability recharge modifier whilst shield is active.
-    private float m_flBarrierHealthAbsorbAtMaxLevel = 0.20; // Percentage of damage taken that is absorbed as health.
-    private float m_flBarrierDeactivateEnergyCost = 0.15f; // Energy cost percentage when manually deactivating barrier.
+    private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.2f; // Shield damage reflection modifier at max level.
+    private float m_flBarrierActiveRechargePenalty = 0.30f; // Ability recharge modifier whilst shield is active.
+    private float m_flBarrierHealthAbsorbAtMaxLevel = 0.30f; // Percentage of damage taken that is absorbed as health.
+    private float m_flBarrierDeactivateEnergyCost = 0.25f; // Energy cost percentage when manually deactivating barrier.
     private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
 
     // Timers.
@@ -87,9 +87,17 @@ class BarrierData
             CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
             if(pMonster !is null)
             {
-                // Apply damage reflection as a specific damage type and proc the debuff.
-                float reflectDamage = incomingDamage * GetScaledDamageReflection();
-                attacker.TakeDamage(pPlayer.pev, attacker.pev, reflectDamage, DMG_FREEZE | DMG_NEVERGIB); // Inflictor is player (shield), attacker is monster itself.
+                // Skip reflection on turrets - reflected damage bypasses their death state machine,
+                // causing them to become unkillable while still targeting the player.
+                string attackerClass = attacker.GetClassname();
+                bool isTurret = (attackerClass == "monster_turret" || attackerClass == "monster_miniturret");
+
+                if(!isTurret)
+                {
+                    // Apply damage reflection as a specific damage type and proc the debuff.
+                    float reflectDamage = incomingDamage * GetScaledDamageReflection();
+                    attacker.TakeDamage(pPlayer.pev, attacker.pev, reflectDamage, DMG_FREEZE | DMG_NEVERGIB); // Inflictor is player (shield), attacker is monster itself.
+                }
             }
         }
 
