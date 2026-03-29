@@ -21,8 +21,8 @@ final class ForceDifficulty
 	private array<float> weapon_damage_values = 
 	{
 		25.0, //Medkit - Default 10 - This is charge used and also health healed.
-		20.0, //Crowbar - Default 15.
-		30.0, //Wrench - Default 22.
+		18.0, //Crowbar - Default 15.
+		25.0, //Wrench - Default 22.
 		45.0, //Grapple (Barnacle) - Default 40.
 		14.0, //Handgun (9mm Handgun) - Default 12.
 		72.0, //357 (Deagle is 2/3 of this) - Default 66.
@@ -40,7 +40,7 @@ final class ForceDifficulty
 		150.0, //Hand Grenade - Default 100.
 		200.0, //Satchel - Default 160.
 		200.0, //Tripmine - Default 150.
-		140.0, //762 (Sniper Rifle) - Default 110.
+		120.0, //762 (Sniper Rifle) - Default 110.
 		120.0, //Spore Launcher - Default 100.
 		320.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
