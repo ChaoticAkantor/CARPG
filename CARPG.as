@@ -1318,6 +1318,12 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 return HOOK_HANDLED;
             }
         }
+        else if(command == "info")
+        {
+            ShowClassInfo(pPlayer);
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
         else if(command == "help")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
