@@ -7,6 +7,7 @@
 #include "Classes/ClassMenu"
 #include "Classes/ClassResource"
 #include "classes/ClassStatsMenu"
+#include "Classes/ClassInfo"
 
 // Classes.
 #include "Classes/Engineer/SentryMinion"
