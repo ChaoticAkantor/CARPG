@@ -1,6 +1,6 @@
 string strCloakActivateSound = "player/hud_nightvision.wav";
 string strCloakActiveSound = "ambience/alien_twow.wav";
-string strCloakNovaSound = "weapons/shock_impact.wav";
+string strCloakNovaSound = "weapons/displacer_impact.wav";
 
 string strCloakNovaSprite = "sprites/laserbeam.spr";
 
