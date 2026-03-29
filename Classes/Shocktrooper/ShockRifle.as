@@ -1,4 +1,6 @@
 string strShockrifleEquipSound = "weapons/shock_draw.wav";
+string strShockLightningSound = "tor/tor-staff-discharge.wav";
+string strShockLightningSprite = "sprites/lgtning.spr"; // Chain lightning bolt visual.
 
 dictionary g_ShockRifleData;
 
@@ -6,13 +8,13 @@ class ShockRifleData
 {
     // Shocktrooper ability scaling values.
     private float m_flDamageScaleAtMaxLevel = 3.00f; // Damage modifier for shockrifle at max level.
-    private float m_flShockroachAmmoToHealthModifier = 5.0f; // Multiplier for shockroach health based on remaining ammo when deployed.
-    private float m_flShockroachDefaultMaxCapacity = 100.0f; // Default max ammo capacity for shock rifle.
-    private float m_flShockroachMaxCapacityAtMaxLevel = 250.0f; // Max ammo capacity for shock rifle at max level.
-    // Currently a dropped shockroach does nothing but be a decoy, needs a better idea to replace it.
+    private float m_flShockroachMaxCapacityAtMaxLevel = 150.0f; // Extra max ammo capacity for shock rifle at max level.
+    private float m_flLightningStrikePercent = 0.50f; // Percent of dealt damage applied as radius damage.
+    private float m_flLightningStrikeRadius = 100.0f * 16.0f; // Radius of the area strike in units.
+    private bool  m_bLightningActive = false; // Re-entrancy guard: prevents RadiusDamage from triggering another strike on nearby enemies.
 
     // Timers.
-    private float m_flCooldown = 10.0f; // SHOULD NOT BE CHANGED. To account for ingame delay before being allowed to collect another shockroach.
+    private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
     private float m_flLastUseTime = 0.0f; // Stores last use time.
 
     private ClassStats@ m_pStats = null;
@@ -37,9 +39,9 @@ class ShockRifleData
     float GetScaledMaxAmmo()
     {
         if(m_pStats is null)
-            return m_flShockroachDefaultMaxCapacity; // Base max ammo if no stats.
+            return 100.0f; // Base max ammo if no stats.
 
-        float maxAmmo = m_flShockroachDefaultMaxCapacity; // Default max ammo.
+        float maxAmmo = 100.0f; // Default max ammo.
             
         int level = m_pStats.GetLevel();
         float ammoPerLevel = m_flShockroachMaxCapacityAtMaxLevel  / g_iMaxLevel;
@@ -48,24 +50,6 @@ class ShockRifleData
         return maxAmmo;
     }
 
-    float GetShockroachHealth(CBasePlayer@ pPlayer)
-    {
-        if (pPlayer is null)
-            return 100.0f; // Return base health if no player reference.
-
-        if(m_pStats is null)
-            return 100.0f; // Return base health without scaling if no stats.
-
-        float ShockroachHealth = 100.0f; // Start with base health.
-
-        // Get ammo index and current ammo.
-        int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
-        int currentAmmo = pPlayer.m_rgAmmo(ammoIndex); // Get current ammo remaining.
-
-        ShockroachHealth *= m_flShockroachAmmoToHealthModifier * (float(currentAmmo) / 100); // Scale health based on remaining ammo.
-
-        return ShockroachHealth;
-    }
 
     void EquipShockRifle(CBasePlayer@ pPlayer)
     {
@@ -91,32 +75,24 @@ class ShockRifleData
         CBasePlayerItem@ pItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
         CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pItem);
         
-        // If player has shock rifle and is holding it, handle stowing it.
+        // If player has shock rifle and is holding it, handle dropping it as a shockroach.
         if(pWeapon !is null && pPlayer.m_hActiveItem.GetEntity() is pWeapon)
         {
-            // Check cooldown only when attempting to stow.
-            if(timeSinceLastUse < m_flCooldown)
-            {
-                float remainingCooldown = m_flCooldown - timeSinceLastUse;
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle on cooldown: " + int(remainingCooldown + 0.5) + "s\n");
-                return;
-            }
+            int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
+            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex); // Get current shock charge ammo.
+            float flcurrentAmmo = float(currentAmmo) / 100.0f; // Convert to float for energy calculation (1 ammo = 0.01 energy).
+            float flMaxAmmo = GetScaledMaxAmmo() / 100.0f; // Max ammo scaled by level (also converted to energy scale).
 
-            /*
-            // Sync player's energy with remaining ammo.
+            // Refund half of remaining battery into energy.
             float currentEnergy = float(resources['current']);
             float maxEnergy = float(resources['max']);
-            currentEnergy = Math.min(currentEnergy + (currentAmmo), maxEnergy); // Restore half remaining battery into energy from held rifle.
+            currentEnergy = Math.min(currentEnergy + (flcurrentAmmo / 2), maxEnergy); // Refund half remaining ammo as ability charge.
             resources['current'] = currentEnergy;
-            */
             
             // Force remove the weapon.
             g_EntityFuncs.Remove(pWeapon);
-
-            // Spawn a friendly shockroach with health based on remaining ammo.
-            SpawnShockroach(pPlayer);
             
-            //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "STORED: 50%% Battery Recovered (+" + currentAmmo + ")\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "(+" + currentAmmo + ") Battery Recovered\n");
             g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strShockrifleEquipSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             
             m_flLastUseTime = 0.0f;
@@ -124,7 +100,6 @@ class ShockRifleData
         }
         else if(pWeapon !is null) // If player has shock rifle but isn't holding it, do nothing.
         {
-            //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "You must be holding a Shock Rifle to stow it.\n");
             return;
         }
 
@@ -174,48 +149,60 @@ class ShockRifleData
             g_EntityFuncs.Remove(pWeapon);
     }
 
-    void SpawnShockroach(CBasePlayer@ pPlayer)
-        {
-            if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
-                return;
+    // Called from MonsterTakeDamage after the damage multiplier is applied.
+    // Fires a lightning bolt from the sky above the target and deals area damage.
+    void ApplyLightningStrike(CBasePlayer@ pAttacker, CBaseEntity@ pVictim, float flDealtDamage)
+    {
+        if(pAttacker is null || pVictim is null || flDealtDamage <= 0.0f)
+            return;
 
-            Vector vecSrc = pPlayer.GetGunPosition();
-            Vector spawnForward, spawnRight, spawnUp;
-            g_EngineFuncs.AngleVectors(pPlayer.pev.v_angle, spawnForward, spawnRight, spawnUp);
-            
-            vecSrc = vecSrc + (spawnForward * 64);
-            vecSrc.z -= 32;
+        if(m_bLightningActive)
+            return;
 
-            float scaledHealth = GetShockroachHealth(pPlayer);
-            
-            dictionary keys;
-            keys["origin"] = vecSrc.ToString();
-            keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
-            keys["targetname"] = "_minion_" + pPlayer.entindex();
-            keys["displayname"] = "Super Shockroach";
-            keys["health"] = string(GetShockroachHealth(pPlayer));
-            keys["scale"] = "1";
-            keys["friendly"] = "1";
-            keys["spawnflags"] = "16384";
-            keys["is_player_ally"] = "1";
-            keys["skin"] = "2";
+        Vector hitPos    = pVictim.pev.origin;
+        float  strikeDmg = flDealtDamage * m_flLightningStrikePercent;
+        int    sprIdx    = g_EngineFuncs.ModelIndex(strShockLightningSprite);
+        Vector skyPos    = Vector(hitPos.x, hitPos.y, hitPos.z + 2048);
 
-            CBaseEntity@ pShockroachMinion = g_EntityFuncs.CreateEntity("monster_shockroach", keys, true);
-            if(pShockroachMinion !is null)
-            {   
-                // Apply glow effect before dispatch.
-                ApplyMinionGlow(pShockroachMinion);
+        // Lightning bolt from the sky down to the target.
+        NetworkMessage bolt(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, hitPos);
+            bolt.WriteByte(TE_LIGHTNING);
+            bolt.WriteCoord(skyPos.x);
+            bolt.WriteCoord(skyPos.y);
+            bolt.WriteCoord(skyPos.z);
+            bolt.WriteCoord(hitPos.x);
+            bolt.WriteCoord(hitPos.y);
+            bolt.WriteCoord(hitPos.z);
+            bolt.WriteByte(10);   // Life * 0.1s.
+            bolt.WriteByte(50);   // Width.
+            bolt.WriteByte(80);  // Amplitude.
+            bolt.WriteShort(sprIdx);
+        bolt.End();
 
-                g_EntityFuncs.DispatchSpawn(pShockroachMinion.edict()); // Dispatch the entity.
+        // Dynamic light at the impact point.
+        NetworkMessage dlight(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, hitPos);
+            dlight.WriteByte(TE_DLIGHT);
+            dlight.WriteCoord(hitPos.x);
+            dlight.WriteCoord(hitPos.y);
+            dlight.WriteCoord(hitPos.z);
+            dlight.WriteByte(int(m_flLightningStrikeRadius)); // Radius.
+            dlight.WriteByte(0); // R
+            dlight.WriteByte(150); // G
+            dlight.WriteByte(255); // B
+            dlight.WriteByte(5);  // Life * 0.1s.
+            dlight.WriteByte(10);   // Decay per 0.1s.
+        dlight.End();
 
-                // Stuff to set after dispatch.
-                //@pShockroachMinion.pev.owner = @pPlayer.edict(); // Set owner to spawning player.
-                //pShockroachMinion.pev.solid = SOLID_NOT;
+        m_bLightningActive = true; // Enable recursion guard.
 
-                g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strShockrifleEquipSound, 1.0f, ATTN_NORM);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shockroach deployed!\n");
-            }
-        }
+        // Radius damage.
+        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, strikeDmg, m_flLightningStrikeRadius, CLASS_PLAYER, DMG_SHOCK | DMG_ALWAYSGIB);
+        
+        // Play explosion sound.
+        g_SoundSystem.EmitSound(pAttacker.edict(), CHAN_ITEM, strShockLightningSound, 1.0f, ATTN_NORM);
+
+        m_bLightningActive = false; // Disable recursion guard.
+    }
 }
 
 void ApplyMinionGlow(CBaseEntity@ pShockroachMinion)

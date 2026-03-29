@@ -226,8 +226,12 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strNecroMinionSoundCreate);
 
     // Shocktrooper Ability Precache.
+        // Models/Sprites.
+        g_Game.PrecacheModel(strShockLightningSprite);
+
         // Sounds.
         g_SoundSystem.PrecacheSound(strShockrifleEquipSound);
+        g_SoundSystem.PrecacheSound(strShockLightningSound);
 
     // Berserker Ability Precache.
         // Models/Sprites.
@@ -814,6 +818,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                                 info.flDamage *= damageMultiplier; // Scaling damage multiplier for shocktroopers.
 
                                 info.bitsDamageType |= DMG_ALWAYSGIB; // Add always gib for feelgood effect.
+
+                                // Discharge chain lightning from the primary hit.
+                                shockRifle.ApplyLightningStrike(pAttacker, victim, info.flDamage);
                             }
                         }
                     }
@@ -1447,17 +1454,6 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
             barrier.DeactivateBarrier(pPlayer);
         }
     }
-
-    // Reset Shock Rifle.
-    if (g_ShockRifleData.exists(steamID))
-    {
-        ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
-        if (shockRifle !is null)
-        {
-            shockRifle.RemoveShockRifle(pPlayer);
-        }
-    }
-
    
     // Reset Bloodlust.
     if (g_PlayerBloodlusts.exists(steamID))
