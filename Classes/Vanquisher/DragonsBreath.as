@@ -9,13 +9,13 @@ string strDragonsBreathFireSprite = "sprites/fire.spr"; // Fire effect.
 float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
     if (ammoName == "9mm")      return 1.0f;
-    if (ammoName == "357")      return 2.0f;
-    if (ammoName == "buckshot") return 0.33f;
+    if (ammoName == "357")      return 1.5f;
+    if (ammoName == "buckshot") return 0.6f;
     if (ammoName == "556")      return 1.0f;
-    if (ammoName == "bolts")    return 2.5f;
-    if (ammoName == "762")      return 2.5f;
-    if (ammoName == "uranium")  return 1.5f;
-    if (ammoName == "m40a1")    return 2.5f;
+    if (ammoName == "bolts")    return 2.0f;
+    if (ammoName == "762")      return 2.0f;
+    if (ammoName == "uranium")  return 1.25f;
+    if (ammoName == "m40a1")    return 2.0f;
     return 1.0f; // Default multiplier if ammo type not found.
 }
 
@@ -24,12 +24,12 @@ float GetDragonsBreathAmmoCostMultiplier(const string& in ammoName)
 {
     if (ammoName == "9mm")      return 1.0f;
     if (ammoName == "357")      return 2.0f;
-    if (ammoName == "buckshot") return 1.0f; // Already set to use per pellet.
+    if (ammoName == "buckshot") return 6.0f; // Matches average pellet count.
     if (ammoName == "556")      return 1.0f;
-    if (ammoName == "bolts")    return 2.0f;
-    if (ammoName == "762")      return 2.0f;
-    if (ammoName == "uranium")  return 2.0f;
-    if (ammoName == "m40a1")    return 5.0f;
+    if (ammoName == "bolts")    return 3.0f;
+    if (ammoName == "762")      return 3.0f;
+    if (ammoName == "uranium")  return 1.0f;
+    if (ammoName == "m40a1")    return 3.0f;
     return 1.0f; // Default cost multiplier if ammo type not found.
 }
 
@@ -38,9 +38,9 @@ class DragonsBreathData
     // Dragons breath shots will place a DoT effect at impact location PER shot, with no limit, that stack over each other.
 
     // Fire Damage over Time.
-    private float m_flDragonsBreathExplosionDamageBase = 5.0f; // Base damage for explosion on impact.
-    private float m_flDragonsBreathExplosionDamageScalingAtMaxLevel = 2.0f; // Damage increase modifier of explosion damage at max level.
-    private float m_flDragonsBreathFireDamage = 10.0f; // Fire tick damage as percentage of total explosion damage.
+    private float m_flDragonsBreathExplosionDamageBase = 2.0f; // Base damage for explosion on impact.
+    private float m_flDragonsBreathExplosionDamageScalingAtMaxLevel = 5.0f; // Damage increase modifier of explosion damage at max level.
+    private float m_flDragonsBreathFireDamage = 15.0f; // Fire tick damage as percentage of total explosion damage.
     private int m_iDragonsBreathFireTicks = 3; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
     private float m_flDragonsBreathRadius = 20.0f * 16; // Radius of fire damage DoT for Dragons Breath.
@@ -49,7 +49,7 @@ class DragonsBreathData
     // Ammo pool.
     private int m_iDragonsBreathPoolBase = 30.0f; // Base max ammo pool for Dragons Breath.
     private float m_flDragonsBreathPoolScalingAtMaxLevel = 3.0f; // Ammo Pool size increase at max level.
-    private float m_flRoundsFillPercentage = 50.0f; // Percentage of max ammo pool to fill per activation.
+    private float m_flRoundsFillPercentage = 15.0f; // Percentage of max ammo pool to fill per activation.
     private float m_flRoundsInPool = 0.0f; // Used to store rounds currently in pool.
 
     private float m_flLastToggleTime = 0.0f; // Used for last toggle time.
@@ -214,7 +214,7 @@ class DragonsBreathData
         float energyCost = GetEnergyCost();
         if(current < energyCost)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(energyCost) + " Dragon's Breath Ammo Pack!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + energyCost + " Charge!\n");
             return;
         }
 
@@ -343,9 +343,9 @@ class DragonsBreathData
                 msgTrail.End();
 
                 ApplyDragonsBreath(pPlayer, impactPoint); // Apply radius damage using default damage types.
-
-                ConsumeRound(); // Moved inside loop to consume 1 round per pellet for shotgun type.
             }
+
+            ConsumeRound(); // Consumes 1 round instance regardless of pellets now that there is an ammo cost modifier.
         }
         else if(weaponName == "weapon_m16" && ammoName == "556")
         {
