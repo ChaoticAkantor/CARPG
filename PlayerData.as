@@ -185,10 +185,10 @@ void InitializeClassDefinitions()
 
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
-                    def.baseResource = 100.0f; // Base shock rifle battery capacity.
-                        def.maxResource = 800.0f; // Max shock rifle battery capacity, at max level.
+                    def.baseResource = 1.0f; // Base charges.
+                        def.maxResource = 1.0f; // No increase.
 
-                    def.fullRegenTime = 90.0f;
+                    def.fullRegenTime = 60.0f;
 
                     break;
                 case PlayerClass::CLASS_CLOAKER:
@@ -199,10 +199,10 @@ void InitializeClassDefinitions()
 
                     break;
                 case PlayerClass::CLASS_VANQUISHER:
-                    def.baseResource = 1.0f; // Base charges.
-                        def.maxResource = 1.0f; // No increase.
+                    def.baseResource = 6.0f; // Base charges.
+                        def.maxResource = 6.0f; // No increase.
 
-                    def.fullRegenTime = 30.0f;
+                    def.fullRegenTime = 60.0f;
 
                     break;
                 case PlayerClass::CLASS_SWARMER:
