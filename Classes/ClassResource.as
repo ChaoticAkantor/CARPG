@@ -311,19 +311,19 @@ void UpdateClassResource() // Update the class resource hud display for all play
                         resourceName = "Necro Points";
                         break;
                     case PlayerClass::CLASS_ENGINEER:
-                        resourceName = "Sentry Battery";
+                        resourceName = "Sentry";
                         break;
                     case PlayerClass::CLASS_DEFENDER:
                         resourceName = "Ice Shield";
                         break;
                     case PlayerClass::CLASS_SHOCKTROOPER:
-                        resourceName = "Shockrifle Recharger";
+                        resourceName = "Super Shockrifle";
                         break;
                     case PlayerClass::CLASS_CLOAKER:
-                        resourceName = "Cloak Battery";
+                        resourceName = "Cloak";
                         break;
                     case PlayerClass::CLASS_VANQUISHER:
-                        resourceName = "Dragon's Breath Ammo";
+                        resourceName = "Dragon's Breath";
                         break;
                     case PlayerClass::CLASS_SWARMER:
                         resourceName = "Snark Swarm";
@@ -442,10 +442,10 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                 int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
                                 int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
                                 
-                                resourceInfo += "[" + (hasShockRifleEquipped ? "EQUIPPED" : "STORED") + "]\n"; // Shockrifle battery.
+                                resourceInfo += (hasShockRifleEquipped ? "[Equipped]" : "") + "\n";
 
                                 if (hasShockRifleEquipped)
-                                    resourceInfo += "[DMG Bonus: " + int(shockData.GetScaledDamage() * 100) + "%]\n"; // Show damage bonus whilst equipped.
+                                    resourceInfo += "[Shockrifle DMG: " + int(shockData.GetScaledDamage() * 100) + "%]\n"; // Show damage bonus whilst equipped.
 
                                 }
                             }
@@ -483,7 +483,7 @@ void UpdateClassResource() // Update the class resource hud display for all play
                                     DragonsBreath.UpdateAmmoFromWeapon(pPlayer); // Keep ammo type current so that damage display can update.
                                 }
 
-                                resourceInfo += "[Dragon's Breath Rounds: (" + rounds + "/" + maxRounds + ")] ";
+                                resourceInfo += "[Rounds: (" + rounds + "/" + maxRounds + ")] ";
                                 resourceInfo += "[Cost: " + DragonsBreath.GetPerShotCost() + "]\n";
 
                                 if(DragonsBreath.HasRounds())

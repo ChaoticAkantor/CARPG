@@ -144,7 +144,7 @@ namespace Menu
                     if(shockRifle !is null)
                     {
                         string ShocktrooperStatsText = "=== Shockroach Rifle: ===" + "\n"; 
-                            ShocktrooperStatsText += "Capacity: " + int(maxEnergy) + "\n";
+                            ShocktrooperStatsText += "Max Capacity: " + shockRifle.GetScaledMaxAmmo() + "\n";
                             ShocktrooperStatsText += "Damage Bonus: " + shockRifle.GetScaledDamage() * 100 + "%\n";
 
                         m_pMenu.AddItem(ShocktrooperStatsText, null);
