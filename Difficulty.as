@@ -20,32 +20,32 @@ final class ForceDifficulty
 {
 	private array<float> weapon_damage_values = 
 	{
-		25.0, //Medkit - Default 10.
-		18.0, //Crowbar - Default 15.
-		25.0, //Wrench - Default 22.
+		25.0, //Medkit - Default 10 - This is charge used and also health healed.
+		20.0, //Crowbar - Default 15.
+		30.0, //Wrench - Default 22.
 		45.0, //Grapple (Barnacle) - Default 40.
-		15.0, //Handgun (9mm Handgun) - Default 12.
-		70.0, //357 (Deagle is 2/3 of this) - Default 66.
-		13.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
+		14.0, //Handgun (9mm Handgun) - Default 12.
+		72.0, //357 (Deagle is 2/3 of this) - Default 66.
+		14.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
 		14.0, //MP5 (9mm AR) - Default 8.
 		12.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
 		70.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
 		18.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
 		150.0, //M203 (ARgrenades) - Default 100.
 		200.0, //RPG - Default 150.
-		22.0, //Gauss (No charge) - Default 19.
-		220.0, //Guass (Secondary, Max Charge) - Default 190.
+		24.0, //Gauss (No charge) - Default 19.
+		240.0, //Guass (Secondary, Max Charge) - Default 190.
 		14.0, //Gluon (Egon) Gun - Default 12.
 		16.0, //Hornet Gun - Default 12.
 		150.0, //Hand Grenade - Default 100.
-		180.0, //Satchel - Default 160.
+		200.0, //Satchel - Default 160.
 		200.0, //Tripmine - Default 150.
-		120.0, //762 (Sniper Rifle) - Default 110.
-		100.0, //Spore Launcher - Default 100.
-		300.0, //Displacer (Primary) - Default 250.
+		140.0, //762 (Sniper Rifle) - Default 110.
+		120.0, //Spore Launcher - Default 100.
+		320.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
-		18.0, //Shockrifle (Primary) - Default 15. Shocktrooper shockrifles scale with level.
-		3.0, //Shockrifle (Beam) - Default 2 per beam (x3). Shocktrooper shockrifles scale with level.
+		20.0, //Shockrifle (Primary) - Default 15.
+		4.0, //Shockrifle (Beam) - Default 2 per beam (x3 beams).
 		350.0, //Shockrifle Touch damage (on self on detonate?) - Default 350.
 		150.0 //Shockroach Splash damage (on self when detonate?) - Default 150.
 	};
