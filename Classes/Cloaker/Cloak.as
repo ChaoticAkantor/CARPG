@@ -12,22 +12,23 @@ class CloakData
 {
     // Cloak.
     private bool m_bActive = false;
+    private float m_flAbilityMax = 30.0f; // Max charge.
+    private float m_flAbilityRechargeTime = 20.0f; // Seconds to fully recharge from empty.
     private float m_flBaseCloakEnergyCostPerShot = 1.0f; // Base duration drained per damage instance, drain scales with amount of damage dealt.
     private float m_flCloakEnergyCostCap = 10.0f; // Max duration drained per damage instance. Will never drain more than this value.
     private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 1.0f; // Base drain rate.
-    private float m_flBaseDamageBonus = 1.0f; // Base % damage increase modifier (should really be left at 1.0).
-    private float m_flDamageBonusAtMaxLevel = 3.0f; // Bonus % damage increase modifier at max level (full cloak).
+
+    // Timers.
+    private float m_flAbilityCharge = 0.0f;
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastEnergyConsumed = 0.0f;
 
     //Nova.
     private bool m_bNovaActive = false;
-    private float m_flNovaRadius = 480.0f; // Radius of the nova.
-    private float m_flNovaDamageMultiplierAtMaxLevel = 4.0f; // Nova damage modifier at max level (base damage is scaled on max and remaining energy).
-    private float m_flLifestealPercentAtMaxLevel = 0.25f; // Damage dealt from Nova that is returned as HP. 
+    private float m_flNovaRadius = 50.0f * 16.0f; // Radius of the nova. Ft to units.
 
     private ClassStats@ m_pStats = null;
 
@@ -35,6 +36,8 @@ class CloakData
 
     bool IsActive() { return m_bActive; }
     bool IsNovaActive() { return m_bNovaActive;}
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return m_flAbilityMax; }
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
@@ -44,25 +47,13 @@ class CloakData
     float GetDamageMultiplierTotal() 
     { 
         if(m_pStats is null)
-            return m_flBaseDamageBonus; // Return default if no stats.
+            return 0.0f; // Return default if no stats.
 
-        int level = m_pStats.GetLevel();
-        float bonusPerLevel = (m_flDamageBonusAtMaxLevel - m_flBaseDamageBonus) / g_iMaxLevel;
-        float totalBonus = m_flBaseDamageBonus + (bonusPerLevel * level);
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
+        float skillPower = SKILL_CLOAKER_CLOAKDAMAGE;
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        return totalBonus;
-    }
-
-    float GetHPStealPercent() 
-    {
-        if(m_pStats is null)
-            return 0.0f; // Return 0 if no stats.
-
-        int level = m_pStats.GetLevel();
-        float stealPerLevel = m_flLifestealPercentAtMaxLevel / g_iMaxLevel;
-        float hpSteal = stealPerLevel * level;
-
-        return hpSteal; 
+        return modifier;
     }
 
     float GetNovaDamage(CBasePlayer@ pPlayer)
@@ -71,25 +62,15 @@ class CloakData
             return 0.0f; // Return 0 if no stats.
 
         // Scale nova damage.
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        float maxEnergy = 0.0f; // Initialise.
-        float remainingEnergy = 0.0f; // Initialise.
         float novadamage = 0.0f; // Initialise.
 
-        int level = m_pStats.GetLevel();
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE);
+        float skillPower = SKILL_CLOAKER_CLOAKNOVADAMAGE;
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        if(g_PlayerClassResources.exists(steamID)) // Grab player energy values, for scaling nova damage.
-        {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if(resources !is null)
-            {
-                maxEnergy = float(resources['max']); // Get max energy.
-                remainingEnergy = float(resources['current']); // Get current remaining energy.
-            }
-        }
-
-        // Scale nova damage based on max and remaining energy and increase bonus multiplier with level.
-        novadamage = (maxEnergy + remainingEnergy) * (m_flNovaDamageMultiplierAtMaxLevel * (float(level) / g_iMaxLevel));
+        // Scale nova damage based on max and remaining energy and modifier.
+        float remainingAbilityCharge = m_flAbilityCharge;
+        novadamage = remainingAbilityCharge * modifier;
 
         return novadamage;
     }
@@ -102,24 +83,14 @@ class CloakData
         if(m_pStats is null) // Normal damage if no stats.
             return 1.0f;
                 
-        // Get total potential damage bonus based on level.
-        int level = m_pStats.GetLevel();
-        float bonusPerLevel = (m_flDamageBonusAtMaxLevel - m_flBaseDamageBonus) / g_iMaxLevel; // Damage bonus increase per level.
-        float totalPossibleBonus = m_flBaseDamageBonus + (bonusPerLevel * level); // Total possible bonus at current level.
-        
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(g_PlayerClassResources.exists(steamID))
-        {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if(resources !is null)
-            {
-                float maxEnergy = float(resources['max']);
-                float energyScale = Math.min(1.0f, m_flLastEnergyConsumed / maxEnergy);
-                return totalPossibleBonus * energyScale;
-            }
-        }
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
+        float skillPower = SKILL_CLOAKER_CLOAKDAMAGE;
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        return totalPossibleBonus;
+        float totalPossibleBonus = modifier; // Total possible bonus.
+        
+        float powerScale = Math.min(1.0f, m_flLastEnergyConsumed / m_flAbilityMax);
+        return totalPossibleBonus * powerScale;
     }
 
     void ToggleCloak(CBasePlayer@ pPlayer)
@@ -131,30 +102,18 @@ class CloakData
         if(currentTime - m_flLastToggleTime < m_flCloakToggleCooldown)
             return;
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(g_PlayerClassResources.exists(steamID))
+        if(!m_bActive)
         {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if(resources !is null)
+            // Cloak needs to be fully charged to activate.
+            if(m_flAbilityCharge < m_flAbilityMax)
             {
-                if(!m_bActive)
-                {
-                    // Activate.
-                    float currentEnergy = float(resources['current']);
-                    float maxEnergy = float(resources['max']);
-                    
-                    // Check energy - require FULL energy to activate.
-                    if(currentEnergy < maxEnergy) // Cloak needs to be fully charged between uses.
-                    {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak recharging...\n");
-                        return;
-                    }
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak recharging...\n");
+                return;
+            }
 
-                    m_bActive = true;
-                    m_flLastDrainTime = currentTime;
-                    
-                    // Set initial energy value for damage calculation.
-                    m_flLastEnergyConsumed = currentEnergy;
+            m_bActive = true;
+            m_flLastDrainTime = currentTime;
+            m_flLastEnergyConsumed = m_flAbilityCharge;
                     
                     // Visual effects.
                     pPlayer.pev.rendermode = kRenderTransAlpha;
@@ -179,13 +138,11 @@ class CloakData
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Activated!\n");
-                }
-                else
-                {
-                    // Deactivate
-                    DeactivateCloak(pPlayer);
-                }
-            }
+        }
+        else
+        {
+            // Deactivate
+            DeactivateCloak(pPlayer);
         }
 
         m_flLastToggleTime = 0.0f;
@@ -198,16 +155,8 @@ class CloakData
 
         m_bActive = false;
 
-        // Set duration to 0 if we end early, so that nova can't be spammed.
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(g_PlayerClassResources.exists(steamID))
-        {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if(resources !is null)
-            {      
-                resources['current'] = 0.0f;
-            }
-        }
+        // Set charge to 0 when cloak ends so it must fully recharge before re-use.
+        m_flAbilityCharge = 0.0f;
         
         // Reset visual effects.
         pPlayer.pev.rendermode = kRenderNormal;
@@ -222,16 +171,46 @@ class CloakData
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.0f, ATTN_NORM, SND_STOP);
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak Deactivated!\n");
         
-        // Create damaging nova when cloak ends.
-        CreateNova(pPlayer);
+        // Create damaging nova when cloak ends, if the player has the skill.
+        if(m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE) > 0)
+            CreateNova(pPlayer);
         
         m_flLastEnergyConsumed = 0.0f;
     }
 
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    void RechargeAbility()
+    {
+        if (m_flAbilityCharge >= m_flAbilityMax)
+            return;
+
+        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > m_flAbilityMax)
+            m_flAbilityCharge = m_flAbilityMax;
+    }
+
     void Update(CBasePlayer@ pPlayer)
     {
-        if(!m_bActive || pPlayer is null)
+        if(pPlayer is null)
             return;
+
+        if(!m_bActive)
+        {
+            // Recharge only when fully inactive (cloak must fully recharge before re-use).
+            RechargeAbility();
+            return;
+        }
 
         // Deactivate if player is dead.
         if(!pPlayer.IsAlive())
@@ -243,27 +222,16 @@ class CloakData
         float currentTime = g_Engine.time;
         if(currentTime - m_flLastDrainTime >= m_flCloakEnergyDrainInterval) // Drain interval.
         {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerClassResources.exists(steamID))
+            m_flLastEnergyConsumed = m_flAbilityCharge;
+            m_flAbilityCharge -= m_flBaseDrainRate;
+            
+            if(m_flAbilityCharge <= 0.0f)
             {
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                if(resources !is null)
-                {      
-                    // Apply drain and update last energy consumed for damage scaling.
-                    float current = float(resources['current']);
-                    m_flLastEnergyConsumed = current;
-                    current -= m_flBaseDrainRate;
-                    
-                    if(current <= 0)
-                    {
-                        current = 0;
-                        DeactivateCloak(pPlayer);
-                    }
-                    
-                    resources['current'] = current;
-                }
-                m_flLastDrainTime = currentTime;
+                m_flAbilityCharge = 0.0f;
+                DeactivateCloak(pPlayer);
             }
+            
+            m_flLastDrainTime = currentTime;
         }
     }
 
@@ -272,41 +240,25 @@ class CloakData
         if(!m_bActive || pPlayer is null)
             return;
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(g_PlayerClassResources.exists(steamID))
+        m_flLastEnergyConsumed = m_flAbilityCharge;
+        
+        // Scale battery drain based on damage dealt.
+        float drainAmount = m_flBaseCloakEnergyCostPerShot;
+        
+        if(damage > 0.0f)
         {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if(resources !is null)
-            {
-                float current = float(resources['current']);
-                m_flLastEnergyConsumed = current;
-                
-                // Scale battery drain based on damage dealt.
-                float drainAmount = m_flBaseCloakEnergyCostPerShot;
-                
-                if(damage > 0.0f)
-                {
-                    // Simple linear scaling with damage dealt.
-                    // Add % of scaled damage to base cost.
-                    float damageScale = damage / 10.0f;
-                    drainAmount += (damageScale * 0.15f * m_flBaseCloakEnergyCostPerShot);
-                    
-                    // Cap the amount drained to prevent per damage instance.
-                    if(drainAmount > m_flCloakEnergyCostCap)
-                        drainAmount = m_flCloakEnergyCostCap;
-                }
-                
-                current -= drainAmount;
-                
-                // End cloak if energy runs out
-                if(current <= 0)
-                {
-                    current = 0;
-                    DeactivateCloak(pPlayer);
-                }
-                
-                resources['current'] = current;
-            }
+            float damageScale = damage / 10.0f;
+            drainAmount += (damageScale * 0.15f * m_flBaseCloakEnergyCostPerShot);
+            if(drainAmount > m_flCloakEnergyCostCap)
+                drainAmount = m_flCloakEnergyCostCap;
+        }
+        
+        m_flAbilityCharge -= drainAmount;
+        
+        if(m_flAbilityCharge <= 0.0f)
+        {
+            m_flAbilityCharge = 0.0f;
+            DeactivateCloak(pPlayer);
         }
     }
     

@@ -32,17 +32,17 @@ final class ForceDifficulty
 		70.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
 		18.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
 		150.0, //M203 (ARgrenades) - Default 100.
-		200.0, //RPG - Default 150.
+		180.0, //RPG - Default 150.
 		24.0, //Gauss (No charge) - Default 19.
 		240.0, //Guass (Secondary, Max Charge) - Default 190.
 		14.0, //Gluon (Egon) Gun - Default 12.
 		16.0, //Hornet Gun - Default 12.
 		150.0, //Hand Grenade - Default 100.
-		200.0, //Satchel - Default 160.
-		200.0, //Tripmine - Default 150.
+		180.0, //Satchel - Default 160.
+		180.0, //Tripmine - Default 150.
 		120.0, //762 (Sniper Rifle) - Default 110.
-		120.0, //Spore Launcher - Default 100.
-		320.0, //Displacer (Primary) - Default 250.
+		100.0, //Spore Launcher - Default 100.
+		300.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
 		20.0, //Shockrifle (Primary) - Default 15.
 		4.0, //Shockrifle (Beam) - Default 2 per beam (x3 beams).
@@ -87,17 +87,17 @@ final class ForceDifficulty
 	private array<float> monster_damage_values = 
 	{
 		150.0, // sk_agrunt_health
-		20.0, // sk_agrunt_dmg_punch - Default 15
+		15.0, // sk_agrunt_dmg_punch - Default 15
 		256.0, // sk_agrunt_melee_engage_distance
-		25.0, // sk_agrunt_berserker_dmg_punch - Default 20
+		20.0, // sk_agrunt_berserker_dmg_punch - Default 20
 		500.0, // sk_apache_health
 		50.0, // sk_barnacle_health
 		15.0, // sk_barnacle_bite - Default 15
 		65.0, // sk_barney_health
 		150.0, // sk_bullsquid_health - Default 110
-		20.0, // sk_bullsquid_dmg_bite - Default 10
-		45.0, // sk_bullsquid_dmg_whip - Default 25
-		20.0, // sk_bullsquid_dmg_spit - Default 10
+		10.0, // sk_bullsquid_dmg_bite - Default 10
+		25.0, // sk_bullsquid_dmg_whip - Default 25
+		10.0, // sk_bullsquid_dmg_spit - Default 10
 		1.0, // sk_bigmomma_health_factor
 		50.0, // sk_bigmomma_dmg_slash - Default 50
 		100.0, // sk_bigmomma_dmg_blast - Default 100
@@ -107,25 +107,25 @@ final class ForceDifficulty
 		8.0, // sk_gargantua_dmg_fire - Default 4
 		100.0, // sk_gargantua_dmg_stomp - Default 100
 		50.0, // sk_hassassin_health
-		50.0, // sk_headcrab_health - Default 20
+		20.0, // sk_headcrab_health - Default 20
 		30.0, // sk_headcrab_dmg_bite - Default 10
 		100.0, // sk_hgrunt_health
-		40.0, // sk_hgrunt_kick - Default 15?
+		15.0, // sk_hgrunt_kick - Default 15?
 		500.0, // sk_hgrunt_gspeed
 		100.0, // sk_houndeye_health - Default 50
-		15.0, // sk_houndeye_dmg_blast - Default 10
+		10.0, // sk_houndeye_dmg_blast - Default 10
 		80.0, // sk_islave_health
-		20.0, // sk_islave_dmg_claw - Default 10
-		20.0, // sk_islave_dmg_clawrake - Default 10
-		18.0, // sk_islave_dmg_zap - Default 10
+		10.0, // sk_islave_dmg_claw - Default 10
+		10.0, // sk_islave_dmg_clawrake - Default 10
+		10.0, // sk_islave_dmg_zap - Default 10
 		350.0, // sk_ichthyosaur_health
 		30.0, // sk_ichthyosaur_shake
 		3.0, // sk_leech_health
 		5.0, // sk_leech_dmg_bite
 		100.0, // sk_controller_health
-		10.0, // sk_controller_dmgzap - Default 5
+		5.0, // sk_controller_dmgzap - Default 5
 		900.0, // sk_controller_speedball
-		8.0, // sk_controller_dmgball - Default 5
+		5.0, // sk_controller_dmgball - Default 5
 		900.0, // sk_nihilanth_health
 		30.0, // sk_nihilanth_zap
 		50.0, // sk_scientist_health
@@ -140,8 +140,8 @@ final class ForceDifficulty
 		80.0, // sk_sentry_health
 		600.0, // sk_babygargantua_health
 		30.0, // sk_babygargantua_dmg_slash
-		4.0, // sk_babygargantua_dmg_fire
-		50.0, // sk_babygargantua_dmg_stomp
+		4.0, // sk_babygargantua_dmg_fire - Default 4?
+		50.0, // sk_babygargantua_dmg_stomp - Default 50?
 		200.0, // sk_hwgrunt_health
 		100.0, // sk_rgrunt_explode
 		50.0, // sk_massassin_sniper
@@ -153,13 +153,13 @@ final class ForceDifficulty
 		25.0, // sk_zombie_soldier_dmg_one_slash - Default 10
 		35.0, // sk_zombie_soldier_dmg_both_slash - Default 20
 		250.0, // sk_gonome_health - Default 200.0
-		15.0, // sk_gonome_dmg_one_slash - Default 5
-		20.0, // sk_gonome_dmg_guts - Default 5
-		15.0, // sk_gonome_dmg_one_bite - Default 5
+		10.0, // sk_gonome_dmg_one_slash - Default 5
+		10.0, // sk_gonome_dmg_guts - Default 5
+		10.0, // sk_gonome_dmg_one_bite - Default 5
 		100.0, // sk_pitdrone_health - Default 50
-		20.0, // sk_pitdrone_dmg_bite - Default 10
-		20.0, // sk_pitdrone_dmg_whip - Default 10
-		20.0, // sk_pitdrone_dmg_spit - Default 10
+		10.0, // sk_pitdrone_dmg_bite - Default 10
+		10.0, // sk_pitdrone_dmg_whip - Default 10
+		10.0, // sk_pitdrone_dmg_spit - Default 10
 		200.0, // sk_shocktrooper_health
 		40.0, // sk_shocktrooper_kick - Default 12
 		12.0, // sk_shocktrooper_maxcharge

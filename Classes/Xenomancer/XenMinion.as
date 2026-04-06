@@ -2,7 +2,6 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
 
 // Precache strings for monsters. (Yawn)
 
-/* -- Removed as they flinch, retreat and hesitate too much due to pack tactics.
 // Houndeye.
     // Models/Sprites.
     string strHoundeyeModel = "models/houndeye.mdl";
@@ -32,7 +31,6 @@ string strXenMinionSoundCreate = "debris/beamstart7.wav";
     string strHoundeyeSoundPain3 = "houndeye/he_pain3.wav";
     string strHoundeyeSoundPain4 = "houndeye/he_pain4.wav";
     string strHoundeyeSoundPain5 = "houndeye/he_pain5.wav";
-*/
 
 // Pitdrone.
     // Models/Sprites.
@@ -199,30 +197,34 @@ dictionary g_XenologistMinions;
 
 enum XenType
 {   
-    XEN_PITDRONE = 0,
-    XEN_BULLSQUID = 1,
-    XEN_SHOCKTROOPER = 2,
-    XEN_BABYGARG = 3
+    XEN_HOUNDEYE = 0,
+    XEN_PITDRONE = 1,
+    XEN_BULLSQUID = 2,
+    XEN_SHOCKTROOPER = 3,
+    XEN_BABYGARG = 4
 }
 
 const array<float> XEN_HP_MODIFIERS = 
 {
-    1.3,  // Pit Drone.
-    1.6,  // Bullsquid.
-    1.0,  // Shocktrooper.
-    2.0   // Baby Gargantua.
+    1.80,  // Houndeye.
+    1.60,  // Pit Drone.
+    2.00,  // Bullsquid.
+    1.50,  // Shocktrooper.
+    3.00   // Baby Gargantua.
 };
 
 const array<float> XEN_ANIMATION_SPEEDS = 
 {
-    1.50,  // Pit Drone.
+    1.60,  // Houndeye.
+    1.80,  // Pit Drone.
     1.80,  // Bullsquid.
-    1.50,  // Shocktrooper.
+    1.80,  // Shocktrooper.
     1.80   // Baby Gargantua.
 };
 
 const array<string> XEN_NAMES = 
 {
+    "Houndeye",
     "Pit Drone",
     "Bullsquid",
     "Shocktrooper",
@@ -233,6 +235,7 @@ const array<string> XEN_NAMES =
 
 const array<string> XEN_ENTITIES = 
 {
+    "monster_houndeye",
     "monster_pitdrone",
     "monster_bullchicken",
     "monster_shocktrooper",
@@ -243,19 +246,11 @@ const array<string> XEN_ENTITIES =
 
 const array<int> XEN_COSTS = // Pool cost per summon of each type.
 {
-    2, // Pit Drone.
-    3, // Bullsquid.
-    3, // Shocktrooper.
-    6  // Baby Garg.
-};
-
-// Level requirements for each Xen creature type.
-const array<int> XEN_LEVEL_REQUIREMENTS = 
-{   
-    1,    // Pitdrone.
-    5,    // Bullsquid.
-    15,   // Shocktrooper.
-    30    // Baby Garg.
+    1, // Houndeye.
+    1, // Pit Drone.
+    2, // Bullsquid.
+    2, // Shocktrooper.
+    3  // Baby Garg.
 };
 
 // Structure to track minion type
@@ -274,30 +269,69 @@ class XenMinionData
     private array<XenMinionInfo> m_hMinions;
     private bool m_bActive = false;
 
-    // Monster variables.
+    // Ability variables.
+    private int m_iMinionPointMax = 1; // Max pool for minions, can be increased with skill.
+    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
-    private float m_flHealthScaleAtMaxLevel = 4.0; // Health modifier at max level.
-    private float m_flHealthRegen = 0.2; // // Health recovery percentage per interval.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
-    private float m_flDamageScaleAtMaxLevel = 2.5; // Damage modifier at max level.
-    private float m_flLifestealPercentAtMaxLevel = 0.25; // Lifesteal at max level.
-    private int m_iMinionResourceCost = 1; // Cost to summon specific minion default.
 
     // Timers and trackers.
-    private float m_flReservePool = 0.0f;
+    private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
+    private int m_iMinionResourceCost = 0; // Cost to summon specific minion default.
+    private int m_iReservePool = 0;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
+    private bool m_bInitialized = false;
     private ClassStats@ m_pStats = null;
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     ClassStats@ GetStats() { return m_pStats; }
 
+    bool IsInitialized() { return m_bInitialized; }
+    void SetInitialized() { m_bInitialized = true; }
+
     int GetMinionCount() { return m_hMinions.length(); }
-    float GetReservePool() { return m_flReservePool; }
-    void SetReservePoolZero() { m_flReservePool = 0.0f; }
+    int GetReservePool() { return m_iReservePool; }
+    void SetReservePoolZero() { m_iReservePool = 0; }
     bool HasStats() { return m_pStats !is null; }
+
+    int GetAbilityMax() { return m_iMinionPointMax + int(GetMinionPointIncrease()); }
+
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    void RechargeAbility()
+    {
+        float chargeMax = float(GetAbilityMax() - m_iReservePool);
+        if (m_flAbilityCharge >= chargeMax)
+            return;
+
+        float rechargeRate = 1.0f / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > chargeMax)
+            m_flAbilityCharge = chargeMax;
+    }
+
+    float GetMinionPointIncrease()
+    {
+        if(m_pStats is null)
+            return 0.0f; // No increase if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONPOINT);
+        return float(int(SKILL_MINIONPOINT * skillLevel)); // Bonus minion points from skill.
+    }
 
     bool IsActive() 
     { 
@@ -330,10 +364,12 @@ class XenMinionData
 
         float minionScaledHealth = m_flBaseHealth; // Start with base health.
 
-        float level = m_pStats.GetLevel();
-        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
-        minionScaledHealth *= healthMultiplier;
-        minionScaledHealth *= XEN_HP_MODIFIERS[minionType]; // Apply minion type modifier.
+        float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONHP);
+        float skillPower = SKILL_MINIONHP;
+        
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
+
+        minionScaledHealth *= modifier * XEN_HP_MODIFIERS[minionType]; // Apply skill and type modifier.
 
         return minionScaledHealth;
     }
@@ -343,13 +379,11 @@ class XenMinionData
         if(m_pStats is null)
             return 1.0f; // Restore to default, but is always null when we have no minions.
 
-        float minionScaledDamage = 1.0f; // Default multiplier.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONDAMAGE);
+        float skillPower = SKILL_MINIONDAMAGE;
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        float level = m_pStats.GetLevel();
-        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
-        minionScaledDamage += damagePerLevel * level;
-
-        return minionScaledDamage;
+        return modifier;
     }
     
     float GetMinionRegen() // Get minion regen based on level.
@@ -357,14 +391,11 @@ class XenMinionData
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        float minionRegen = 0.0f; // Default to zero.
-
-        minionRegen = m_flHealthRegen;
-
-        //float level = m_pStats.GetLevel();
-        //minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
-
-        return minionRegen; 
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONREGEN);
+        float skillPower = SKILL_MINIONREGEN;
+        float modifier = skillLevel * skillPower; // Scale from skill.
+        
+        return modifier;
     }
 
     float GetLifestealPercent() // Get minion lifesteal based on level.
@@ -374,20 +405,11 @@ class XenMinionData
 
         float lifeSteal = 0.0f; // Default to zero.
 
-        float level = m_pStats.GetLevel();
-        lifeSteal = m_flLifestealPercentAtMaxLevel * (float(level) / g_iMaxLevel);
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_XENOMANCER_LIFESTEAL);
+        float skillPower = SKILL_XENOMANCER_LIFESTEAL;
+        float modifier = skillLevel * skillPower; // Scale from skill.
 
-
-        return lifeSteal;
-    }
-    
-    bool IsMinionTypeUnlocked(int minionType)
-    {
-        if(m_pStats is null)
-            return minionType == XEN_PITDRONE; // Only allow Pitdrones if no stats.
-            
-        int playerLevel = m_pStats.GetLevel();
-        return playerLevel >= XEN_LEVEL_REQUIREMENTS[minionType];
+        return modifier;
     }
     
     array<XenMinionInfo>@ GetMinions() { return m_hMinions; }
@@ -434,13 +456,10 @@ class XenMinionData
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
+        int maxPool = GetAbilityMax();
+        if(maxPool <= 0)
             return;
 
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        int current = int(resources['current']);
-        
         // First clean up invalid minions to make sure we have an accurate count.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
@@ -451,21 +470,20 @@ class XenMinionData
         }
 
         // Check resources for spawning new minion.
-        if(current < XEN_COSTS[minionType])
+        if(m_iReservePool + XEN_COSTS[minionType] > maxPool)
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + XEN_NAMES[minionType] + "!\n");
             return;
         }
-        
-        // Calculate max resources and ensure we're within limits.
-        float maxEnergy = float(resources['max']);
-        if(m_flReservePool + XEN_COSTS[minionType] > maxEnergy)
+
+        if(m_flAbilityCharge < float(XEN_COSTS[minionType]))
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Creature Capacity reached!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, XEN_NAMES[minionType] + " is recharging!\n");
             return;
         }
 
         // Initialize stats if needed.
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
         if(m_pStats is null)
         {
             if(g_PlayerRPGData.exists(steamID))
@@ -476,13 +494,6 @@ class XenMinionData
                     @m_pStats = data.GetCurrentClassStats();
                 }
             }
-        }
-        
-        // Check if the minion type is unlocked based on player level.
-        if(!IsMinionTypeUnlocked(minionType))
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + XEN_NAMES[minionType] + " requires Lv. " + XEN_LEVEL_REQUIREMENTS[minionType] + "!\n");
-            return;
         }
 
         Vector vecSrc = pPlayer.GetGunPosition();
@@ -504,9 +515,8 @@ class XenMinionData
         keys["scale"] = "1";
         keys["friendly"] = "1";
         keys["spawnflags"] = "16384"; // No dyn collision. No corpse fade 512.
-        //keys["mins"] = "0 0 0"; // Bounding box mins.
-        //keys["maxs"] = "0 0 0"; // Bounding box maxs.
         keys["is_player_ally"] = "1";
+        keys["is_not_revivable"] = "1";
 
         CBaseEntity@ pXenMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
         if(pXenMinion !is null)
@@ -514,11 +524,15 @@ class XenMinionData
             // Apply glow effect before dispatch.
             ApplyMinionGlow(pXenMinion);
 
-            g_EntityFuncs.DispatchSpawn(pXenMinion.edict()); // Dispatch the entity.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pXenMinion);
+            if(pMonster !is null)
+                pMonster.m_hGuardEnt = EHandle(pPlayer); // Guard the player, turn down follow requests.
 
-            // Stuff to set after dispatch.
-            //@pXenMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
-            pXenMinion.pev.solid = SOLID_NOT;
+            @pXenMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
+            //pXenMinion.SetClassification(pPlayer.Classify()); // Set the same classification as the player to share ally tables.
+            //pXenMinion.SetPlayerAllyDirect (true); // Set directly as ally of owner.
+
+            g_EntityFuncs.DispatchSpawn(pXenMinion.edict()); // Dispatch the entity.
 
             // Store both the minion handle and its type
             XenMinionInfo info;
@@ -526,9 +540,8 @@ class XenMinionData
             info.type = minionType;
             m_hMinions.insertLast(info);
             
-            m_flReservePool += XEN_COSTS[minionType]; // Add to reserve pool when minion is created.
-            current -= XEN_COSTS[minionType]; // Subtract from current resources.
-            resources['current'] = current;
+            m_iReservePool += XEN_COSTS[minionType]; // Add to reserve pool when minion is created.
+            m_flAbilityCharge -= float(XEN_COSTS[minionType]); // Deduct from ability charge.
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, XEN_NAMES[minionType] + " summoned!\n");
@@ -563,7 +576,7 @@ class XenMinionData
                 pMonster.pev.framerate = XEN_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
             }
 
-            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             
             // Enhanced death check - check multiple conditions.
             bool isDead = false;
@@ -654,7 +667,7 @@ class XenMinionData
         }
 
         // Reset individual reserve pool.
-        m_flReservePool = 0.0f;
+        m_iReservePool = 0;
         
         if(anyDestroyed)
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures killed!\n");
@@ -715,7 +728,8 @@ class XenMinionData
             
             // Clear the array and reset pool
             m_hMinions.resize(0);
-            m_flReservePool = 0.0f;
+            m_iReservePool = 0;
+            m_flAbilityCharge = float(GetAbilityMax());
         }
     }
 
@@ -742,16 +756,12 @@ class XenMinionData
                     // Ensure max_health is properly set.
                     if(pMinion.pev.max_health <= 0) 
                     {
-                        // Get the creature type from our stored information.
-                        int creatureType = m_hMinions[i].type;
-                        
-                        // Use our scaled health formula that accounts for player level.
                         pMinion.pev.max_health = GetScaledHealth();
                     }
 
                     // Get scaled regen based on player level.
                     float regenAmount = GetMinionRegen(); // This already scales with level.
-                    float flHealAmount = pMinion.pev.max_health / 100 * regenAmount; // Apply scaled regen.
+                    float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
 
                     if(pMinion.pev.health < pMinion.pev.max_health)
                     {
@@ -780,7 +790,7 @@ class XenMinionData
     void RecalculateReservePool()
     {
         // Recalculate the reserve pool based on current minions.
-        float newReservePool = 0.0f;
+        int newReservePool = 0;
         
         // Process from last to first to allow safe removal during iteration
         for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
@@ -803,7 +813,7 @@ class XenMinionData
         }
         
         // Update the reserve pool.
-        m_flReservePool = newReservePool;
+        m_iReservePool = newReservePool;
     }
 
     // Called when a minion deals damage to an enemy.
@@ -813,7 +823,7 @@ class XenMinionData
             return;
 
         // Calculate health to return to player based on level scaling.
-        float lifeStealPercent = GetLifestealPercent(); // Use scaled lifesteal instead of raw max value
+        float lifeStealPercent = GetLifestealPercent(); // Use scaled lifesteal from skill.
         float healthToGive = flDamageDealt * lifeStealPercent;
         
         // Apply the healing to the player.
@@ -937,17 +947,8 @@ class XenMinionMenu
         for(uint i = 0; i < XEN_NAMES.length(); i++) 
         {
             string menuText = "";
+            menuText += "Summon " + XEN_NAMES[i] + " (Cost: " + XEN_COSTS[i] + ")";
 
-            // Check if this minion type is unlocked.
-            if(!m_pOwner.IsMinionTypeUnlocked(i))
-            {
-                menuText += "Summon " + XEN_NAMES[i] + " (Lv. " + XEN_LEVEL_REQUIREMENTS[i] + ")";
-            }
-            else
-            {
-                menuText += "Summon " + XEN_NAMES[i] + " (Cost: " + XEN_COSTS[i] + ")";
-            }
-            
             m_pMenu.AddItem(menuText + "\n", any(i));
         }
         
@@ -979,14 +980,7 @@ class XenMinionMenu
                 m_pOwner.TeleportMinions(pPlayer);
             }
             else if(choice >= 0 && uint(choice) < XEN_NAMES.length())
-            {
-                // Check if this minion type is unlocked.
-                if(!m_pOwner.IsMinionTypeUnlocked(choice))
-                {
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + XEN_NAMES[choice] + " requires Lv. " + XEN_LEVEL_REQUIREMENTS[choice] + "!\n");
-                    return;
-                }
-                
+            {  
                 // Spawn new minion.
                 m_pOwner.SpawnSpecificMinion(pPlayer, choice);
             }
@@ -1020,11 +1014,12 @@ void CheckXenologistMinions()
         XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
         if(xenMinion !is null)
         {
-            // Reset all minions on first check after map load or plugin reload.
-            if(!xenMinion.IsActive())
+            // Reset stale minions once on map load or plugin reload.
+            if(!xenMinion.IsInitialized())
             {
                 //g_Game.AlertMessage(at_console, "CARPG: Resetting Xenomancer minions for player " + steamID + " on map load\n");
                 xenMinion.Reset();
+                xenMinion.SetInitialized();
             }
             
             // Check if player switched class.
@@ -1051,24 +1046,16 @@ void CheckXenologistMinions()
             }
             
                 // Make sure resource limits are enforced.
-                if(g_PlayerClassResources.exists(steamID))
+                xenMinion.RecalculateReservePool();
+                int xenMax = xenMinion.GetAbilityMax();
+                if(xenMax > 0 && xenMinion.GetReservePool() > xenMax)
                 {
-                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                    if(resources !is null)
-                    {
-                        // First recalculate the reserve pool to ensure it's accurate
-                        xenMinion.RecalculateReservePool();
-                        
-                        float maxEnergy = float(resources['max']);
-                        if(xenMinion.GetReservePool() > maxEnergy)
-                        {
-                            // Over the limit, destroy minions until we're within limits.
-                            xenMinion.DestroyAllMinions(pPlayer);
-                        }
-                    }
+                    // Over the limit, destroy minions until we're within limits.
+                    xenMinion.DestroyAllMinions(pPlayer);
                 }
 
             xenMinion.MinionRegen(); // Minion Regeneration.
+            xenMinion.RechargeAbility(); // Recharge minion points.
 
             // Always update scaling values for stats menu.
             xenMinion.GetScaledHealth();

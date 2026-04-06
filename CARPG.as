@@ -2,18 +2,11 @@
 My personal attempt at writing an RPG mod for Sven Co-op from the ground up, to replace the SCXPM style mods.
 This plugin uses a class based system with singular abilities
 .
-Attempts to strike a better balance than other RPG mods. Whilst featuring simple classes each with a single unique ability.
-
-All aspects of classes abilities and passives scale directly with class level.
-Classes XP/Level is saved independently, all classes must be leveled to the cap individually.
-
-Player damage dealt is reworked, some enemies are now more deadly.
-Players passively recover health and armor at a fixed rate after a delay, if damaged.
-Armor recovers much faster than health.
+Attempts to strike a better balance than other RPG mods.
 
 Credit to Johnboy, his RPG mod was an inspiration for learning.
 
-Credit to Namira, Zebigdt and LostHeart (and friends) for most testing, as well as balancing, class and ability ideas.
+Credit to Namira, Zebigdt and LostHeart (and their friends) for most testing, as well as balancing, class and ability ideas.
 
 This is our core file.
 */
@@ -29,6 +22,8 @@ array<string> g_AdminList =
 };
 
 Menu::DebugMenu g_DebugMenu;
+
+const float flSchedulerInterval = 0.1f;
 
 // Check Admin list.
 bool IsAdmin(const string& in steamID)
@@ -116,7 +111,6 @@ void ResetData()
     g_PlayerDragonsBreath.deleteAll();
     g_ShockRifleData.deleteAll();
     g_PlayerSnarkNests.deleteAll();
-    g_PlayerClassResources.deleteAll();
 }
 
 void RegisterHooks()
@@ -156,14 +150,13 @@ void SetupTimers()
     g_Scheduler.SetInterval("RegenTickHP", flRegenTickHP, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for HP regen.
     g_Scheduler.SetInterval("RegenTickAP", flRegenTickAP, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for AP regen.
     g_Scheduler.SetInterval("HurtDelayTick", flHurtDelayTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for hurt delay.
-    g_Scheduler.SetInterval("UpdateHUDHurtDelay", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for HUD display.
 
     // Resource System.
-    g_Scheduler.SetInterval("RegenClassResource", flClassResourceRegenDelay, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for class resource regen.
     g_Scheduler.SetInterval("UpdateClassResource", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for class resource display.
 
     // RPG/Class System.
     g_Scheduler.SetInterval("UpdatePlayerHUDs", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating RPG HUD.
+    g_Scheduler.SetInterval("UpdateAllAmmoRegenHUDs", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating ammo regen HUD.
     g_Scheduler.SetInterval("CheckAllPlayerScores", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
 
     // Medic.
@@ -189,6 +182,12 @@ void SetupTimers()
     // Cloaker.
     g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating cloak.
     
+    // Shocktrooper.
+    g_Scheduler.SetInterval("UpdateShockRifles", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating shock rifle charge.
+
+    // Vanquisher.
+    g_Scheduler.SetInterval("UpdateDragonsBreath", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating dragons breath charge.
+
     // Swarmer.
     g_Scheduler.SetInterval("CheckSnarks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking snarks.
 }
@@ -199,6 +198,9 @@ void PrecacheAll()
         // Sounds.
         g_SoundSystem.PrecacheSound(strLevelUpSound);
         g_SoundSystem.PrecacheSound(strClassChangeSound);
+
+        // Models/Sprites.
+        //g_Game.PrecacheModel(AMMO_SPRITE_SHEET);
 
     // Medic Ability Precache.
         // Models/Sprites.
@@ -215,7 +217,6 @@ void PrecacheAll()
 
     // Engineer Ability Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strSentrySlowEffectSprite);
 
     // Xenomancer Ability Precache.
         // Sounds.
@@ -245,6 +246,8 @@ void PrecacheAll()
 
     // Warden Ability Precache.
         // Models/Sprites.
+        g_Game.PrecacheModel(strBarrierReflectSprite);
+
         
         // Sounds.
         g_SoundSystem.PrecacheSound(strBarrierToggleSound);
@@ -379,7 +382,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strGonomeSoundRun);
         g_SoundSystem.PrecacheSound(strGonomeSoundEat);
 
-/* -- Removed as they flinch, retreat and hesitate too much due to pack tactics.
     // Houndeye.
         // Models/Sprites.
         g_Game.PrecacheModel(strHoundeyeModel);
@@ -411,7 +413,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strHoundeyeSoundPain3);
         g_SoundSystem.PrecacheSound(strHoundeyeSoundPain4);
         g_SoundSystem.PrecacheSound(strHoundeyeSoundPain5);
-*/
 
     // Pitdrone.
         // Models/Sprites.
@@ -677,9 +678,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Sentry damage scaling.
         float damageSentryMultiplier = sentry.GetScaledDamage();
         info.flDamage *= damageSentryMultiplier;
-
-        //Sentry cryo effect.
-        sentry.ApplyShotEffects(targetPos, attacker, victim);
     }
     else if(targetname.StartsWith("_minion_"))
     {
@@ -703,6 +701,13 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Apply the damage multiplier.
         float damageRoboMultiplier = minion.GetScaledDamage();
         info.flDamage *= damageRoboMultiplier;
+
+        // Alter the damage type.
+        info.bitsDamageType |= DMG_BLAST;
+        info.bitsDamageType |= DMG_ALWAYSGIB;
+
+        // Process extra damage effects.
+        minion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_xenminion_"))
     {
@@ -727,9 +732,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageXenMultiplier = xenMinion.GetScaledDamage();
         info.flDamage *= damageXenMultiplier;
 
-        info.bitsDamageType = DMG_ACID | DMG_ALWAYSGIB; // Alter the damage type.
+        // Alter the damage type.
+        info.bitsDamageType |= DMG_ACID;
+        info.bitsDamageType |= DMG_POISON;
+        info.bitsDamageType |= DMG_ALWAYSGIB;
 
-        // Process life steal - when xenminions deal damage, give health to owner and minions.
+        // Process extra damage effects.
         xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_necrominion_"))
@@ -755,9 +763,11 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageNecroMultiplier = necroMinion.GetScaledDamage();
         info.flDamage *= damageNecroMultiplier;
 
-        info.bitsDamageType = DMG_POISON | DMG_ALWAYSGIB; // Alter the damage type.
+        // Alter the damage type.
+        info.bitsDamageType |= DMG_POISON;
+        info.bitsDamageType |= DMG_ALWAYSGIB;
 
-        // Process lifesteal - when necrominions deal damage, give health to owner and minions.
+        // Process extra damage effects.
         necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_snark_"))
@@ -783,10 +793,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageSnarkMultiplier = snarkNest.GetScaledDamage();
         info.flDamage *= damageSnarkMultiplier;
 
-        info.bitsDamageType = DMG_POISON | DMG_ALWAYSGIB; // Alter the damage type.
+        // Alter the damage type.
+        info.bitsDamageType |= DMG_POISON;
+        info.bitsDamageType |= DMG_ALWAYSGIB;
 
-        // Process lifesteal - when snarks deal damage, give health to owner.
-        snarkNest.ProcessMinionDamage(pOwner, info.flDamage);
+        // Process extra damage effects.
+        snarkNest.ProcessMinionDamage(pOwner, info.flDamage, attacker);
     }
 
     if(info.pAttacker is null || !info.pAttacker.IsPlayer())
@@ -817,6 +829,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                                 float damageMultiplier = shockRifle.GetScaledDamage();
                                 info.flDamage *= damageMultiplier; // Scaling damage multiplier for shocktroopers.
 
+                                info.bitsDamageType |= DMG_BLAST; // Add blast damage type.
                                 info.bitsDamageType |= DMG_ALWAYSGIB; // Add always gib for feelgood effect.
 
                                 // Discharge chain lightning from the primary hit.
@@ -835,7 +848,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                         if(bloodlust !is null)
                         {
                             bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Process lifesteal on damage dealt.
-                            bloodlust.ProcessEnergySteal(pAttacker, info.flDamage); // Process energy steal on damage dealt.
+                            bloodlust.ProcessDamageAbilityCharge(pAttacker, info.flDamage); // Process energy steal on damage dealt.
                         }
                     }
                     break;
@@ -870,41 +883,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
             info.bitsDamageType = DMG_GENERIC | DMG_ENERGYBEAM | DMG_ALWAYSGIB; // Add damage bit type always gib for the feels.
             cloak.DrainEnergyFromShot(pAttacker, originalDamage); // Drain energy on dealing damage.
-        }
-    }
-
-    // Lifesteal from Nova damage.
-    if(g_PlayerCloaks.exists(steamID))
-    {
-        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
-        if(cloak !is null && cloak.IsNovaActive())
-        {
-            float healAmount = info.flDamage * cloak.GetHPStealPercent(); // Get health to restore based on damage dealt.
-
-            // Apply to HP, don't heal over maximum.
-            pAttacker.pev.health = Math.min(pAttacker.pev.health + healAmount, pAttacker.pev.max_health);
-
-            // Health Bubbles Effect.
-            Vector pos = pAttacker.pev.origin;
-            Vector mins = pos - Vector(16, 16, 0);
-            Vector maxs = pos + Vector(16, 16, 64);
-
-            NetworkMessage healbubblesmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
-                healbubblesmsg.WriteByte(TE_BUBBLES);
-                healbubblesmsg.WriteCoord(mins.x);
-                healbubblesmsg.WriteCoord(mins.y);
-                healbubblesmsg.WriteCoord(mins.z);
-                healbubblesmsg.WriteCoord(maxs.x);
-                healbubblesmsg.WriteCoord(maxs.y);
-                healbubblesmsg.WriteCoord(maxs.z);
-                healbubblesmsg.WriteCoord(80.0f); // Height of the bubble effect.
-                healbubblesmsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-                healbubblesmsg.WriteByte(18); // Count.
-                healbubblesmsg.WriteCoord(6.0f); // Speed.
-                healbubblesmsg.End();
-
-            // Play HP healing sound.
-            //g_SoundSystem.EmitSoundDyn(pAttacker.edict(), CHAN_ITEM, "items/smallmedkit1.wav", 0.5f, ATTN_NORM, 0, PITCH_NORM);
         }
     }
     
@@ -1128,6 +1106,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 }
             }
         }
+        /*
         else if(command == "stats")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -1137,6 +1116,24 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 if(data !is null && data.GetCurrentClass() != PlayerClass::CLASS_NONE)
                 {
                     ShowClassStats(pPlayer); // Show class stats menu.
+                    pParams.ShouldHide = true;
+                    return HOOK_HANDLED;
+                }
+            }
+        }
+        */
+        else if(command == "skills")
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null)
+                {
+                    if(data.GetCurrentClass() == PlayerClass::CLASS_NONE)
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Select a class first (type 'class').\n");
+                    else
+                        data.ShowSkillsMenu(pPlayer);
                     pParams.ShouldHide = true;
                     return HOOK_HANDLED;
                 }
@@ -1212,7 +1209,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         }
                         else
                         {
-                            // Re-initialize if switching from another class
+                            // Re-initialize if switching from another class.
                             BarrierData@ existingBarrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                             if(existingBarrier !is null)
                             {
@@ -1424,16 +1421,6 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         return;
         
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-
-    // Reset resources when changing class, so it can't be exploited.
-    if(g_PlayerClassResources.exists(steamID))
-    {
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        if(resources !is null)
-        {
-            resources['current'] = 0; // Reset current energy to 0.
-        }
-    }
 
     // Reset Heal Aura.
     if (g_HealingAuras.exists(steamID))

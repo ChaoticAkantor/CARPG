@@ -86,109 +86,103 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_MEDIC:
             return
                 "Ability: Heal Aura.\n\n"
-                "Heals allies (players and friendly NPCs) and poisons enemies in a radius, every tick.\n" 
-                "Damage and healing is dealt as a percentage of the target's health.\n"
-                "Can also revive allies, but has a cooldown once used. Multiple allies can be revived at once.\n";
+                "Heals allies (players and friendly NPCs) every tick.\n" 
+                "Healing is dealt as a percentage of the target's health.\n"
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         case PlayerClass::CLASS_BERSERKER:
             return
                 "Ability: Bloodlust.\n\n"
                 "All bonuses are passives.\n"
                 "Activating Bloodlust doubles all passive bonuses.\n"
-                "Gain life steal and ability recharge when dealing damage.\n"
-                "Lifesteal can overheal for a percentage of your max health, but overheal decays over time.\n"
-                "Also gain increasing damage reduction as your health decreases.\n";
+                "Gain life steal.\n"
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         case PlayerClass::CLASS_ENGINEER:
             return
                 "Ability: Deploy Sentry Turret.\n\n"
-                "Sentry turret will restore a percentage of health to nearby players (only players, not NPCs).\n"
-                "Sentry turret shots can slow enemies.\n"
-                "Can be recalled for a cost by activating again.\n";
+                "Can be recalled for a cost by activating again.\n"
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         case PlayerClass::CLASS_ROBOMANCER:
             return
                 "Ability: Robogrunt Menu.\n\n"
                 "Can summon friendly Robogrunts and choose their weapon type.\n"
                 "Robogrunts are armored and are resistant to all forms of damage except for explosives and electric.\n"
-                "Will regenerate health over time.\n"
                 "Minion movement and attack speed is increased.\n"
                 "Minion limit depends on minion type and points reserved.\n"
                 "Can be commanded with Sven NPC keybinds.\n"
                 "Minion menu can also be used to teleport or kill all minions.\n"
-                "Minion HP and damage scales with level.\n";
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         case PlayerClass::CLASS_XENOMANCER:
             return
                 "Ability: Xen Creature Menu.\n\n"
                 "Can summon different friendly Xen Creatures, HP and damage varies per type.\n"
-                "Xen Creatures are armored and are resistant to all forms of damage except for explosives and electric.\n"
-                "Will regenerate health over time.\n"
-                "Minions leech HP to themself and you for a percentage of the damage dealt.\n"
                 "Minion movement and attack speed is increased, varies by type.\n"
                 "Minion limit depends on minion type and points reserved.\n"
                 "Can be commanded with Sven NPC keybinds.\n"
-                "Minion menu can also be used to teleport or kill all minions.\n"
-                "Minion HP and damage scales with level.\n";
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         case PlayerClass::CLASS_NECROMANCER:
             return
                 "Ability: Undead Menu.\n\n"
                 "Can summon different friendly Undead Creatures, HP and damage varies per type.\n"
                 "Undead Creatures have higher health than other minion types.\n"
-                "Will regenerate health over time.\n"
-                "Minions leech HP to themself and you for a percentage of the damage dealt.\n"
                 "Minion movement and attack speed is increased, varies by type.\n"
                 "Minion limit depends on minion type and points reserved.\n"
                 "Can be commanded with Sven NPC keybinds.\n"
                 "Minion menu can also be used to teleport or kill all minions.\n"
-                "Minion HP and damage scales with level.\n";
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         case PlayerClass::CLASS_DEFENDER:
             return
                 "Ability: Ice Shield.\n\n"
-                "Ice Shield has it's own HP pool and will absorb all damage until it shatters.\n"
-                "Recovers over time whilst active at a significantly reduced rate.\n"
-                "Reflects a percentage of damage back to attackers.\n"
-                "Absorbs a percentage of damage to restore HP to self.\n"
-                "Can be deactivated for a cost.\n";
+                "Ice Shield will absorb all damage until it shatters, HP depends on skill.\n"
+                "Can be deactivated for a cost.\n"
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         case PlayerClass::CLASS_SHOCKTROOPER:
             return
                 "Ability: Super Shockrifle.\n\n"
-                "Equips an improved version of the Shockrifle with increased damage and capacity.\n"
-                "Gain ability recharge when dealing damage.\n"
-                "Activating the ability whilst holding a Shockrifle will instead consume Shockrifle ammo to throw a cluster spore grenade.\n"
+                "Equips an improved version of the Shockrifle.\n"
+                "Activating the ability whilst holding a Shockrifle will refund half of the ammo as Ability Charge.\n"
                 "Alt-fire will restore AP for allies hit by the beams.\n";
 
         case PlayerClass::CLASS_CLOAKER:
             return
                 "Ability: Cloak.\n"
-                "Activating Cloak will grant invisibility and a decaying damage boost as battery depletes.\n"
-                "Dealing damage during cloak will drain the battery (only hits that connect will drain battery).\n"
-                "When Cloak is deactivated or ends, emit a shockwave that deals damage and restores a percentage of the damage dealt as HP to self.\n"
-                "Shockwave damage is based on remaining energy.\n";
+                "Activating Cloak will grant invisibility.\n"
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
+
 
         case PlayerClass::CLASS_VANQUISHER:
             return
                 "Ability: Dragon's Breath Ammo.\n\n"
-                "Dragon's Breath rounds only work for non-projectile weapons, which grant explosive incendiary damage.\n"
+                "Dragon's Breath rounds only work for non-projectile weapons, which grant explosive damage.\n"
                 "Activating the ability will consume a percentage of ability charge and add more rounds to the ammo pool.\n"
                 "Shots consume rounds and multiply damage based on the ammo type used.\n"
-                "Each explosion will create a small radius of fire, dealing a percentage of the explosion damage for a short duration.\n";
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         case PlayerClass::CLASS_SWARMER:
             return
                 "Ability: Snark Swarm.\n\n"
                 "Release a swarm of enhanced friendly Snarks at high velocity to attack enemies.\n"
-                "Snarks leech HP from enemies to you for a percentage of the damage dealt.\n"
-                "Snarks HP, damage and number scales with level.\n"; 
+                "More skills can be unlocked to add extra effects to this ability.\n"
+                "Type skills to spend skillpoints.\n";
 
         default:
             return
-                "No class selected.\n\n"
-                "Type 'class' in chat to\n"
-                "open the class menu and\n"
-                "pick your role.";
+                "No class is selected.\n\n"
+                "Type 'class' in chat to select one.\n";
     }
 }

@@ -3,7 +3,7 @@ const string strLevelUpSound = "misc/secret.wav"; // Sound played on level up.
 dictionary g_PlayerRPGData;
 
 // Max level and XP multiplier.
-int g_iMaxLevel = 100; // Max player level. Increasing this will not make players stronger! Abilities scale against max level.
+int g_iMaxLevel = 50; // Max player level. Increasing this will not make players stronger! Abilities scale against max level.
 float g_fXPMultiplier = 1.0f; // Score to XP multiplier, 1.0 = 1 score is 1 XP.
 
 dictionary g_ClassNames = 
@@ -56,64 +56,13 @@ enum PlayerClass
 // --- Per-class stat definitions. ---
 class ClassDefinition 
 {
-    // Base stats for each class. Typically overridden on a per class basis.
-    // If a class has no overrides, these base values are used.
     string name;
-    float baseHP = 100.0f; // Base HP.
-    float maxHP = 200.0f; // Maximum HP (At max level).
-
-    // AP currently does not increase with level as it is very strong, even when regenerating to 100.
-    float baseAP = 100.0f; // Base AP.
-    float maxAP = 100.0f; // Maximum AP (At max level).
-
-    // These are mostly unused, just here for initialisation.
-    float baseResource = 100.0f; // Base max ability charge/duration.
-    float maxResource = 200.0f; // Max ability charge/duration at max level.
-
-    float fullRegenTime = 60.0f; // Default time in seconds to regenerate from empty to full if not specified.
+    float baseHP = 100.0f; // Base HP before skill bonuses.
+    float baseAP = 100.0f; // Base AP before skill bonuses.
 
     ClassDefinition(string _name) 
     {
         name = _name;
-    }
-
-    // HP/AP calculation methods.
-    //HP.
-    float GetPlayerHealth(int level)
-    {
-        float totalHP = 0.0f; // Reset total HP.
-
-        float healthPerLevel = (maxHP - baseHP) / g_iMaxLevel;
-        totalHP = baseHP + (level * healthPerLevel);
-        return totalHP;
-    }
-
-    //AP.
-    float GetPlayerArmor(int level)
-    {   
-        float totalAP = 0.0f; // Reset total AP.
-
-        float armorPerLevel = (maxAP - baseAP) / g_iMaxLevel;
-        totalAP = baseAP + (level * armorPerLevel);
-        return totalAP;
-    }
-
-    // Energy (ability charge/duration).
-    float GetPlayerEnergy(int level)
-    {
-        float totalResource = 0.0f; // Reset total resource.
-
-        float resourcePerLevel = (maxResource - baseResource) / g_iMaxLevel;
-        totalResource = baseResource + (level * resourcePerLevel);
-        return totalResource;
-    }
-
-    // Ability cooldown.
-    float GetPlayerEnergyRegen(int level, float maxEnergy)
-    {
-        // This ensures it always takes fullRegenTime seconds to fully regenerate.
-        // Ability recharge rate is fixed and does not decreease with level.
-        return maxEnergy / fullRegenTime;
     }
 }
 
@@ -131,88 +80,6 @@ void InitializeClassDefinitions()
         if(g_ClassNames.exists(pClass))
         {
             ClassDefinition@ def = ClassDefinition(string(g_ClassNames[pClass]));
-
-            // Set class-specific base stats and scaling.
-            switch(pClass)
-            {
-                case PlayerClass::CLASS_MEDIC:
-                    def.baseResource = 30.0f; // Ability Duration in seconds, or number of charges.
-                        def.maxResource = 30.0f; // No increase.
-
-                    def.fullRegenTime = 25.0f; // Time to fully regen ability.
-
-                    break;
-                case PlayerClass::CLASS_ENGINEER:
-                    def.baseResource = 60.0f; // Duration in seconds.
-                        def.maxResource = 60.0f; // No increase.
-
-                    def.fullRegenTime = 30.0f;
-
-                    break;
-                case PlayerClass::CLASS_ROBOMANCER:
-                    def.baseResource = 3.0f; // Minion Point Max.
-                        def.maxResource = 3.0f; // No increase.
-
-                    def.fullRegenTime = 90.0f;
-
-                    break;
-                case PlayerClass::CLASS_XENOMANCER:
-                    def.baseResource = 6.0f; // Minion Point Max.
-                        def.maxResource = 6.0f; // No increase.
-
-                    def.fullRegenTime = 90.0f;
-
-                    break;
-                case PlayerClass::CLASS_NECROMANCER:
-                    def.baseResource = 12.0f; // Minion Point Max.
-                        def.maxResource = 12.0f; // No increase.
-
-                    def.fullRegenTime = 90.0f;
-
-                    break;
-                case PlayerClass::CLASS_BERSERKER:
-                    def.baseResource = 30.0f; // Duration in seconds.
-                        def.maxResource = 30.0f; // No increase.
-
-                    def.fullRegenTime = 90.0f;
-
-                    break;
-                case PlayerClass::CLASS_DEFENDER:
-                    def.baseResource = 100.0f; // Shield Base HP.
-                        def.maxResource = 250.0f; // Shield health at max level.
-
-                    def.fullRegenTime = 15.0f; // Shield active regen time will scale from this!
-
-                    break;
-                case PlayerClass::CLASS_SHOCKTROOPER:
-                    def.baseResource = 1.0f; // Base charges.
-                        def.maxResource = 1.0f; // No increase.
-
-                    def.fullRegenTime = 60.0f;
-
-                    break;
-                case PlayerClass::CLASS_CLOAKER:
-                    def.baseResource = 30.0f; // Duration in seconds.
-                        def.maxResource = 30.0f; // No increase.
-
-                    def.fullRegenTime = 20.0f;
-
-                    break;
-                case PlayerClass::CLASS_VANQUISHER:
-                    def.baseResource = 6.0f; // Base charges.
-                        def.maxResource = 6.0f; // No increase.
-
-                    def.fullRegenTime = 60.0f;
-
-                    break;
-                case PlayerClass::CLASS_SWARMER:
-                    def.baseResource = 1.0f; // Base charges.
-                        def.maxResource = 1.0f; // Max snark nests at max level.
-
-                    def.fullRegenTime = 15.0f;
-
-                    break;
-            }
             @g_ClassDefinitions[pClass] = @def;
         }
     }
@@ -220,156 +87,152 @@ void InitializeClassDefinitions()
 
 class ClassStats
 {   
-    // XP System.
-    private int m_iLevel = 1; // Default/starting level.
-    private int m_iXP = 0; // Total XP.
-    private int m_iCurrentLevelXP = 0; // XP into current level.
-    private int m_iXPNeededBase = 5;          // Base needed XP.
-    private float m_fXPNeededMult = 1.5;     // Growth factor.
-    private int m_iMaxLevel = g_iMaxLevel;         // Max level.
-    private string m_szSteamID; // Store player's SteamID.
-    
-    int GetLevel() { return m_iLevel; }
-    int GetXP() { return m_iXP; }
-    int GetNextLevelXP() { return GetXPForLevel(m_iLevel); }
+    // Skillpoint Handling.
+    private int m_iSkillPointsPerLevel = 1; // Skill points gained per level.
+    private int m_iSkillPoints = 1; // Total skill points earned (also level 1 start amount).
+
+    // Skill levels: one entry per SkillID.
+    private array<int> m_SkillLevels(int(SkillID::SKILL_MAX_COUNT), 0);
+
+    // XP / Level tracking.
+    private int m_iLevel = 1;
+    private int m_iCurrentLevelXP = 0; // XP accumulated within the current level.
+    private int m_iXPNeededBase = 20;
+    private float m_fXPNeededMult = 1.5f;
+    private int m_iMaxLevel = g_iMaxLevel;
+    private string m_szSteamID;
+
+    int GetSkillPointsPerLevel() { return m_iSkillPointsPerLevel; }
+    int GetTotalSkillPoints()    { return m_iSkillPoints; }
+    int GetSkillPoints()         { return m_iSkillPoints - GetSpentSkillPoints(); }
+
+    int GetLevel()          { return m_iLevel; }
     int GetCurrentLevelXP() { return m_iCurrentLevelXP; }
-    int GetNeededXP() { return GetXPForLevel(m_iLevel); }
+    int GetNeededXP()       { return GetXPForLevel(m_iLevel); }
 
     bool IsMaxLevel() { return m_iLevel >= m_iMaxLevel; }
+
+    // --- Skill methods ---
+
+    int GetSkillLevel(SkillID id)
+    {
+        int idx = int(id);
+        if(idx < 0 || idx >= int(SkillID::SKILL_MAX_COUNT)) return 0;
+        return m_SkillLevels[idx];
+    }
+
+    int GetSpentSkillPoints()
+    {
+        int spent = 0;
+        for(int i = 0; i < int(SkillID::SKILL_MAX_COUNT); i++)
+            spent += m_SkillLevels[i];
+        return spent;
+    }
+
+    // Attempts to spend one skill point on the given skill.
+    // Returns true if successful.
+    bool TrySpendSkillPoint(SkillID id)
+    {
+        if(GetSkillPoints() < 1) return false;
+        int idx = int(id);
+        if(idx < 0 || idx >= int(SkillID::SKILL_MAX_COUNT)) return false;
+        if(g_SkillDefs.length() == 0) return false;
+        SkillDefinition@ def = g_SkillDefs[idx];
+        if(def is null) return false;
+        if(m_SkillLevels[idx] >= def.maxLevel) return false;
+        m_SkillLevels[idx]++;
+        return true;
+    }
+
+    // Refunds all spent skill points for this class.
+    void ResetSkills()
+    {
+        for(int i = 0; i < int(SkillID::SKILL_MAX_COUNT); i++)
+            m_SkillLevels[i] = 0;
+    }
+
+    // Serialises skill levels to a comma-separated string for saving.
+    string GetSkillLevelsString()
+    {
+        string result = "";
+        for(int i = 0; i < int(SkillID::SKILL_MAX_COUNT); i++)
+        {
+            if(i > 0) result += ",";
+            result += string(m_SkillLevels[i]);
+        }
+        return result;
+    }
+
+    // Parses a comma-separated string produced by GetSkillLevelsString.
+    void SetSkillLevelsFromString(const string& in data)
+    {
+        if(data.IsEmpty()) return;
+        array<string>@ parts = data.Split(",");
+        for(uint i = 0; i < parts.length() && i < uint(SkillID::SKILL_MAX_COUNT); i++)
+        {
+            int val = atoi(parts[i]);
+            if(val < 0) val = 0;
+            if(int(i) < int(g_SkillDefs.length()))
+            {
+                SkillDefinition@ def = g_SkillDefs[i];
+                if(def !is null && val > def.maxLevel) val = def.maxLevel;
+            }
+            m_SkillLevels[i] = val;
+        }
+    }
     
     private int GetXPForLevel(int level)
     {
         return int(m_iXPNeededBase * level * m_fXPNeededMult);
     }
-    
-    private int GetTotalXPForLevel(int level)
-    {
-        int total = 0;
-        for(int i = 1; i < level; i++)
-        {
-            total += GetXPForLevel(i);
-        }
-        return total;
-    }
 
-    void UpdateCurrentLevelXP()
+    // Sets level directly (debug / save loading).
+    // Resets current-level XP and recalculates skill points from scratch.
+    void SetLevel(int level)
     {
-        int prevLevelTotal = GetTotalXPForLevel(m_iLevel);
-        m_iCurrentLevelXP = m_iXP - prevLevelTotal;
-    }
-
-    void ValidateLevelFromXP()
-    {
-        // Recalculate level from total XP to ensure consistency.
-        // Handles cases where XP formula parameters (XP_BASE, XP_MULTIPLIER) change.
-        m_iLevel = 1;
-        
-        while(!IsMaxLevel())
-        {
-            int neededForNext = GetXPForLevel(m_iLevel);
-            int currentLevelXP = m_iXP - GetTotalXPForLevel(m_iLevel);
-            
-            if(currentLevelXP >= neededForNext)
-            {
-                m_iLevel++;
-            }
-            else
-                break;
-        }
-        
-        UpdateCurrentLevelXP();
-    }
-
-    void SetLevel(int level) 
-    { 
         if(level < 1) level = 1;
         if(level > m_iMaxLevel) level = m_iMaxLevel;
         m_iLevel = level;
+        m_iCurrentLevelXP = 0;
+        m_iSkillPoints = m_iLevel * m_iSkillPointsPerLevel;
     }
-    
-    void SetXP(int xp, CBasePlayer@ pPlayer = null, PlayerData@ playerData = null) 
-    { 
-        m_iXP = xp;
-        
-        // Handle max level case.
-        if(IsMaxLevel())
-        {
-            m_iXP = GetTotalXPForLevel(m_iMaxLevel);
-            m_iCurrentLevelXP = 0;
-        }
-        
-        // Calculate new level and show effects.
-        while(!IsMaxLevel())
-        {
-            int neededForNext = GetXPForLevel(m_iLevel);
-            int currentLevelXP = m_iXP - GetTotalXPForLevel(m_iLevel);
-            
-            if(currentLevelXP >= neededForNext)
-            {
-                m_iLevel++;
-                if(pPlayer !is null && playerData !is null)
-                {
-                    string className = playerData.GetClassName(playerData.GetCurrentClass());
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] (" + className + ") is now Level " + m_iLevel + "!\n");
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
-                    NetworkMessage message(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pPlayer.pev.origin);
-                    message.WriteByte(TE_PARTICLEBURST);
-                    message.WriteCoord(pPlayer.pev.origin.x);
-                    message.WriteCoord(pPlayer.pev.origin.y);
-                    message.WriteCoord(pPlayer.pev.origin.z);
-                    message.WriteShort(80);  // Radius.
-                    message.WriteByte(255);  // Particle color.
-                    message.WriteByte(5);    // Duration (in 0.1s).
-                    message.End();
-
-                    playerData.CalculateStats(pPlayer);
-                    playerData.SaveToFile();
-                }
-            }
-            else
-                break;
-        }
-        
-        UpdateCurrentLevelXP();
-    }
-    
-    void AddXP(int amount, CBasePlayer@ pPlayer, PlayerData@ playerData) 
+    // Sets XP position within the current level. Used when loading a save.
+    void SetCurrentLevelXP(int xp)
     {
-        if(amount <= 0) return;
-        
-        if(IsMaxLevel())
-        {
-            m_iXP = GetTotalXPForLevel(m_iMaxLevel);
-            m_iCurrentLevelXP = 0;
-            return;
-        }
-        
-        m_iXP += amount;
-        
+        m_iCurrentLevelXP = (xp < 0) ? 0 : xp;
+        if(IsMaxLevel()) m_iCurrentLevelXP = 0;
+    }
+
+    void AddXP(int amount, CBasePlayer@ pPlayer, PlayerData@ playerData)
+    {
+        if(amount <= 0 || IsMaxLevel()) return;
+
+        m_iCurrentLevelXP += amount;
+
         while(!IsMaxLevel())
         {
-            int neededForNext = GetXPForLevel(m_iLevel);
-            int currentLevelXP = m_iXP - GetTotalXPForLevel(m_iLevel);
-            
-            if(currentLevelXP >= neededForNext)
+            int needed = GetXPForLevel(m_iLevel);
+            if(m_iCurrentLevelXP >= needed)
             {
+                m_iCurrentLevelXP -= needed;
                 m_iLevel++;
-                if(pPlayer !is null)
+                m_iSkillPoints += m_iSkillPointsPerLevel;
+
+                if(pPlayer !is null && playerData !is null)
                 {
                     string className = playerData.GetClassName(playerData.GetCurrentClass());
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Your (" + className + ") is now Level " + m_iLevel + "!\n");
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
-                    // Level up effect.
                     NetworkMessage message(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pPlayer.pev.origin);
                     message.WriteByte(TE_PARTICLEBURST);
                     message.WriteCoord(pPlayer.pev.origin.x);
                     message.WriteCoord(pPlayer.pev.origin.y);
                     message.WriteCoord(pPlayer.pev.origin.z);
-                    message.WriteShort(80);  // Radius.
-                    message.WriteByte(255);  // Particle color - 255 is confetti-like.
-                    message.WriteByte(5);    // Duration (in 0.1s).
+                    message.WriteShort(80);
+                    message.WriteByte(255);
+                    message.WriteByte(5);
                     message.End();
 
                     playerData.CalculateStats(pPlayer);
@@ -379,11 +242,27 @@ class ClassStats
             else
                 break;
         }
-        
-        UpdateCurrentLevelXP();
+
+        if(IsMaxLevel()) m_iCurrentLevelXP = 0;
     }
 
     void SetSteamID(string steamID) { m_szSteamID = steamID; }
+
+    // Validates that total skillpoints match the expected amount for the current level.
+    void ValidateSkillPoints()
+    {
+        int expected = m_iLevel * m_iSkillPointsPerLevel;
+        if(m_iSkillPoints != expected)
+        {
+            g_Game.AlertMessage(at_console, "CARPG: Correcting skillpoint total from " + m_iSkillPoints + " to " + expected + " (level " + m_iLevel + ").\n");
+            m_iSkillPoints = expected;
+        }
+        if(GetSpentSkillPoints() > m_iSkillPoints)
+        {
+            g_Game.AlertMessage(at_console, "CARPG: Spent skillpoints (" + GetSpentSkillPoints() + ") exceed total (" + m_iSkillPoints + "). Resetting skills.\n");
+            ResetSkills();
+        }
+    }
 }
 
 // --- PlayerData and stat calculation ---
@@ -401,6 +280,7 @@ class PlayerData
     private int m_iLastScore = 0;
 
     private Menu::ClassMenu@ m_ClassMenu = null;
+    private Menu::SkillsMenu@ m_SkillsMenu = null;
 
     ClassStats@ GetClassStats(PlayerClass pClass)
     {
@@ -417,6 +297,77 @@ class PlayerData
             
         m_ClassMenu.Show(pPlayer);
     }
+
+    void ShowSkillsMenu(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null || m_CurrentClass == PlayerClass::CLASS_NONE) return;
+
+        if(m_SkillsMenu is null)
+            @m_SkillsMenu = Menu::SkillsMenu(this);
+
+        m_SkillsMenu.ShowMain(pPlayer);
+    }
+
+    // Returns unspent skill points for the current class.
+    int GetSkillPoints()
+    {
+        ClassStats@ stats = GetCurrentClassStats();
+        if(stats is null) return 0;
+        return stats.GetSkillPoints();
+    }
+
+    int GetSkillLevel(SkillID id)
+    {
+        ClassStats@ stats = GetCurrentClassStats();
+        if(stats is null) return 0;
+        return stats.GetSkillLevel(id);
+    }
+
+    // Spends one skill point on id for the current class.
+    // Recalculates stats and saves on success.
+    bool TrySpendSkillPoint(SkillID id, CBasePlayer@ pPlayer = null)
+    {
+        ClassStats@ stats = GetCurrentClassStats();
+        if(stats is null) return false;
+        bool spent = stats.TrySpendSkillPoint(id);
+        if(spent)
+        {
+            if(pPlayer is null)
+                @pPlayer = FindOwnPlayer();
+            if(pPlayer !is null)
+                CalculateStats(pPlayer);
+            SaveToFile();
+        }
+        return spent;
+    }
+
+    // Refunds all skill points for the current class.
+    void ResetCurrentSkills(CBasePlayer@ pPlayer)
+    {
+        ClassStats@ stats = GetCurrentClassStats();
+        if(stats is null) return;
+
+        stats.ResetSkills();
+
+        if(pPlayer !is null)
+        {
+            CalculateStats(pPlayer);
+            RefillHealthArmor(pPlayer);
+        }
+
+        SaveToFile();
+    }
+
+    private CBasePlayer@ FindOwnPlayer()
+    {
+        for(int i = 1; i <= g_Engine.maxClients; ++i)
+        {
+            CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+            if(pPlayer !is null && g_EngineFuncs.GetPlayerAuthId(pPlayer.edict()) == m_szSteamID)
+                return pPlayer;
+        }
+        return null;
+    }
     
     // Constructor.
     PlayerData(string steamID)
@@ -424,6 +375,7 @@ class PlayerData
         m_szSteamID = steamID;
         InitializeClasses();
         InitializeClassDefinitions();
+        InitializeSkillDefinitions();
         
         // Initialize last score properly by checking current score before loading from file.
         const int iMaxPlayers = g_Engine.maxClients;
@@ -606,31 +558,8 @@ class PlayerData
             if(pPlayer !is null && g_EngineFuncs.GetPlayerAuthId(pPlayer.edict()) == m_szSteamID)
             {
                 string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-                
-                // Initialize base resources once.
-                if(!g_PlayerClassResources.exists(steamID))
-                {
-                    dictionary resources = 
-                    {
-                        {'current', 0.0f}, // Start at 0 or set to max after CalculateStats.
-                        {'max', 0.0f},
-                        {'regen', 0.0f}
-                    };
-                    @g_PlayerClassResources[steamID] = resources;
-                }
-                
-                CalculateStats(pPlayer);
-                
-                // Update resource caps after stats calculation, if they go over.
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                if(resources !is null)
-                {   
-                    float currentEnergy = float(resources['current']);
-                    float maxEnergy = float(resources['max']);
 
-                    if(currentEnergy > maxEnergy)
-                        resources['current'] = maxEnergy;
-                }
+                CalculateStats(pPlayer);
 
                 break;
             }
@@ -762,37 +691,24 @@ class PlayerData
 
         ClassStats@ stats = GetCurrentClassStats();
         if(stats is null) return;
-                
-        int level = stats.GetLevel();
         
         if(g_ClassDefinitions.exists(m_CurrentClass))
         {
             ClassDefinition@ def = cast<ClassDefinition@>(g_ClassDefinitions[m_CurrentClass]);
 
-            float maxHealth = def.GetPlayerHealth(level);
-            float maxArmor = def.GetPlayerArmor(level);
-            float maxResource = def.GetPlayerEnergy(level);
-            float resourceRegen = def.GetPlayerEnergyRegen(level, maxResource);
+            // Base HP/AP + SKILL_MAXHP / SKILL_MAXAP bonuses.
+            float maxHealth = def.baseHP * (1.0f + SKILL_MAXHP * stats.GetSkillLevel(SkillID::SKILL_MAXHP));
+            float maxArmor  = def.baseAP * (1.0f + SKILL_MAXAP * stats.GetSkillLevel(SkillID::SKILL_MAXAP));
 
             // Set Max HP/AP.
             pPlayer.pev.max_health = maxHealth;
             pPlayer.pev.armortype = maxArmor;
 
-            if(!g_PlayerClassResources.exists(steamID))
-            {
-                dictionary resources;
-                @g_PlayerClassResources[steamID] = resources;
-            }
-            
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            resources['max'] = maxResource;
-            resources['regen'] = resourceRegen;
-            
-            // If we heal over max, set it back.
+            // Clamp current HP/AP down if they exceed the new max.
+            // Never boost current values here — free refill is only granted on RefillHealthArmor.
             if(pPlayer.pev.health > maxHealth)
                 pPlayer.pev.health = maxHealth;
-                
-            // Same for armor.
+
             if(pPlayer.pev.armorvalue > maxArmor)
                 pPlayer.pev.armorvalue = maxArmor;
             
@@ -885,23 +801,26 @@ class PlayerData
         File@ file = g_FileSystem.OpenFile(filePath, OpenFile::WRITE);
         if(file !is null && file.IsOpen())
         {
-            // Save last selected class.
+            file.Write("v5\n");
             file.Write(string(int(m_CurrentClass)) + "\n");
-            
-            // Save each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_SWARMER; i++) // Last class in list needs to go here!
+
+            // One line per class, keyed by class ID so order and additions don't matter.
+            // <classID> <level> <currentLevelXP> <totalSkillPoints> <skillLevelsCSV>.
+            for(uint i = 0; i < g_ClassList.length(); i++)
             {
-                ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
+                PlayerClass pClass = g_ClassList[i];
+                ClassStats@ stats = cast<ClassStats@>(m_ClassData[pClass]);
                 if(stats !is null)
                 {
-                    file.Write(string(stats.GetLevel()) + "\n");
-                    file.Write(string(stats.GetXP()) + "\n");
+                    file.Write(string(int(pClass)) + " "
+                        + string(stats.GetLevel()) + " "
+                        + string(stats.GetCurrentLevelXP()) + " "
+                        + string(stats.GetTotalSkillPoints()) + " "
+                        + stats.GetSkillLevelsString() + "\n");
                 }
             }
-            
-            file.Close();
 
-            //g_Game.AlertMessage(at_console, "RPG: Successfully saved to " + filePath + "\n"); // Debug.
+            file.Close();
         }
         else
         {
@@ -916,66 +835,70 @@ class PlayerData
         if(file !is null && file.IsOpen())
         {
             string line;
-            
-            // Load last selected class.
+            file.ReadLine(line);
+
+            if(line != "v5")
+            {
+                file.Close();
+                g_Game.AlertMessage(at_console, "CARPG: Incompatible save version '" + line + "', starting fresh.\n");
+                return;
+            }
+
+            // Load current class.
+            line = "";
             file.ReadLine(line);
             m_CurrentClass = PlayerClass(atoi(line));
             g_Game.AlertMessage(at_console, "CARPG: Loaded class: " + GetClassName(m_CurrentClass) + "\n");
-            
-            // Load each class's stats separately.
-            for(uint i = 1; i <= PlayerClass::CLASS_SWARMER; i++)
+
+            // Load each class line, keyed by class ID.
+            // Format: <classID> <level> <currentLevelXP> <totalSkillPoints> <skillLevelsCSV>
+            // Classes absent from the file just keep their default stats.
+            bool bNeedsResave = false;
+            while(!file.EOFReached())
             {
-                ClassStats@ stats = cast<ClassStats@>(m_ClassData[i]);
-                if(stats !is null)
+                line = "";
+                file.ReadLine(line);
+                if(line.IsEmpty()) continue;
+
+                array<string>@ parts = line.Split(" ");
+                if(parts.length() < 5) continue;
+
+                PlayerClass pClass = PlayerClass(atoi(parts[0]));
+                ClassStats@ stats = cast<ClassStats@>(m_ClassData[pClass]);
+                if(stats is null) continue;
+
+                int savedLevel       = atoi(parts[1]);
+                int savedCurrentXP   = atoi(parts[2]);
+                int savedTotalSP     = atoi(parts[3]);
+                string savedSkills   = parts[4];
+
+                stats.SetLevel(savedLevel);
+                stats.SetCurrentLevelXP(savedCurrentXP);
+                stats.SetSkillLevelsFromString(savedSkills);
+
+                stats.ValidateSkillPoints();
+
+                // If the saved total doesn't match the recomputed total, m_iSkillPointsPerLevel
+                // changed between sessions — reset invested skills so the player can reallocate.
+                if(savedTotalSP != stats.GetTotalSkillPoints())
                 {
-                    line = "";
-                    file.ReadLine(line);
-                    stats.SetLevel(atoi(line));
-                    
-                    line = "";
-                    file.ReadLine(line);
-                    stats.SetXP(atoi(line));
-                    
-                    // Validate level from XP to ensure consistency if formula parameters changed.
-                    stats.ValidateLevelFromXP();
+                    g_Game.AlertMessage(at_console, "CARPG: Skillpoints-per-level changed for class "
+                        + parts[0] + " (saved " + savedTotalSP + ", now "
+                        + stats.GetTotalSkillPoints() + "). Resetting skills.\n");
+                    stats.ResetSkills();
+                    bNeedsResave = true;
                 }
             }
-            
+
             file.Close();
             g_Game.AlertMessage(at_console, "CARPG: Loaded data from " + filePath + "\n");
+
+            if(bNeedsResave)
+                SaveToFile();
         }
         else
         {
             g_Game.AlertMessage(at_console, "CARPG: Could not load data from " + filePath + "\n");
-        }
-    }
-
-    private void InitializeClassResource(CBasePlayer@ pPlayer)
-    {
-        if(pPlayer is null)
-            return;
-            
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(g_PlayerClassResources.exists(steamID))
-        {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            
-            // Get resource values from class definition.
-            if(g_ClassDefinitions.exists(m_CurrentClass))
-            {
-                ClassDefinition@ def = cast<ClassDefinition@>(g_ClassDefinitions[m_CurrentClass]);
-                ClassStats@ stats = GetCurrentClassStats();
-                
-                if(stats !is null)
-                {
-                    int level = stats.GetLevel();
-                    float resourceMax = def.GetPlayerEnergy(level);
-                    float resourceRegen = def.GetPlayerEnergyRegen(level, resourceMax);
-                    
-                    resources['max'] = resourceMax;
-                    resources['regen'] = resourceRegen;
-                }
-            }
         }
     }
 
@@ -987,6 +910,7 @@ class PlayerData
         if(stats is null) return;
         
         HUDTextParams RPGHudParams;
+        RPGHudParams.channel = 7;
         RPGHudParams.x = 1;
         RPGHudParams.y = 0.1;
         RPGHudParams.effect = 0;
@@ -996,12 +920,12 @@ class PlayerData
         RPGHudParams.a1 = 255;
         RPGHudParams.fadeinTime = 0;
         RPGHudParams.fadeoutTime = 0;
-        RPGHudParams.holdTime = 0.5;
-        RPGHudParams.channel = 7;
+        RPGHudParams.holdTime = 0.2;
         
         string RPGHudText = "Lvl: " + stats.GetLevel() + " | " + GetClassName(m_CurrentClass) + "\n";
-        RPGHudText += "XP: " + (stats.IsMaxLevel() ? "(--/--)" : "(" + stats.GetCurrentLevelXP() + "/" + stats.GetNeededXP() + ")") + "\n\n";
-        RPGHudText += GetAmmoRegenHudLine(pPlayer);
+        RPGHudText += "XP: " + (stats.IsMaxLevel() ? "(--/--)" : "(" + stats.GetCurrentLevelXP() + "/" + stats.GetNeededXP() + ")") + "\n";
+        if(stats.GetSkillPoints() > 0) 
+            RPGHudText += "Skillpoints: " + stats.GetSkillPoints() + "\n";
         
         g_PlayerFuncs.HudMessage(pPlayer, RPGHudParams, RPGHudText);
     }

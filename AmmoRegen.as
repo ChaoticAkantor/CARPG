@@ -47,8 +47,61 @@ class AmmoType
 
 array<AmmoType@> g_AmmoTypes; // Store all ammo types in an array.
 
+// Sprite sheet used for all ammo icons.
+const string AMMO_SPRITE_SHEET = "640hud7.spr";
+
+// Sub-region descriptor for a single ammo icon on the sprite sheet.
+class AmmoSpriteEntry
+{
+    string name;
+    int left;
+    int top;
+    int width;
+    int height;
+
+    AmmoSpriteEntry(string n, int l, int t, int w = 24, int h = 24)
+    {
+        name = n; left = l; top = t; width = w; height = h;
+    }
+}
+
+array<AmmoSpriteEntry@> g_AmmoSpriteEntries;
+
+void InitAmmoSpriteMap()
+{
+    g_AmmoSpriteEntries.resize(0);
+    // Coords derived from svencoop/sprites/weapon_*.txt and hud.txt.
+    // All entries are on 640hud7.spr. Default size 24x24 unless noted.
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("health",          74,  24, 34, 35)); // cross icon.
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("9mm",              0,  60));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("357",             24,  60));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("ARgrenades",      48,  60));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("buckshot",        72,  60));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("bolts",           96,  60));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("rockets",        120,  60));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("556",            144,  60));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("m40a1",          168,  60));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("Hornets",         24,  84));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("Hand Grenade",    48,  84));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("Satchel Charge",  72,  84));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("Snarks",          96,  84));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("Trip Mine",      120,  84));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("shock charges",  144,  84));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("sporeclip",      168,  84));
+    g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("uranium",          0,  84));
+}
+
+AmmoSpriteEntry@ GetAmmoSpriteEntry(const string& in name)
+{
+    for(uint i = 0; i < g_AmmoSpriteEntries.length(); i++)
+        if(g_AmmoSpriteEntries[i].name == name)
+            return g_AmmoSpriteEntries[i];
+    return null;
+}
+
 void InitializeAmmoRegen() 
 {
+    InitAmmoSpriteMap();
     // Clear existing ammo types first.
     g_AmmoTypes.resize(0);
 
@@ -78,25 +131,25 @@ void InitializeAmmoRegen()
         }
     }
     
-    // Amount given, max ammo, use threshold? threshold, willgiveweapon(doesnt seem to work), timer.
-    g_AmmoTypes.insertLast(AmmoType("health", 1, 100, true, 100, false, 0.5f));
-    g_AmmoTypes.insertLast(AmmoType("9mm", 1, 300, false, 0, false, 0.5f));
-    g_AmmoTypes.insertLast(AmmoType("buckshot", 1, 125, false, 0, false, 6.0f));
-    g_AmmoTypes.insertLast(AmmoType("357", 1, 36, false, 0, false, 8.0f));
-    g_AmmoTypes.insertLast(AmmoType("556", 1, 600, false, 0, false, 0.8f));
-    g_AmmoTypes.insertLast(AmmoType("m40a1", 1, 25, false, 0, false, 10.0f));
-    g_AmmoTypes.insertLast(AmmoType("bolts", 1, 30, false, 0, false, 10.0f));
+    // Amount given, max ammo, use threshold?, threshold, willgiveweapon(doesnt seem to work), timer.
+    g_AmmoTypes.insertLast(AmmoType("health", 1, 100, true, 100, false, 1.0f));
+    g_AmmoTypes.insertLast(AmmoType("9mm", 1, 300, false, 0, false, 0.8f));
+    g_AmmoTypes.insertLast(AmmoType("buckshot", 1, 125, false, 0, false, 8.0f));
+    g_AmmoTypes.insertLast(AmmoType("357", 1, 36, false, 0, false, 12.0f));
+    g_AmmoTypes.insertLast(AmmoType("556", 1, 600, false, 0, false, 1.0f));
+    g_AmmoTypes.insertLast(AmmoType("m40a1", 1, 25, false, 0, false, 15.0f));
+    g_AmmoTypes.insertLast(AmmoType("bolts", 1, 30, false, 0, false, 12.0f));
     g_AmmoTypes.insertLast(AmmoType("sporeclip", 1, 20, false, 0, false, 20.0f));
-    g_AmmoTypes.insertLast(AmmoType("Hornets", 1, 100, false, 0, false, 0.5f));
-    g_AmmoTypes.insertLast(AmmoType("shock charges", 1, 100, false, 0, false, 0.5f));
-    g_AmmoTypes.insertLast(AmmoType("uranium", 1, 100, false, 0, false, 5.0f));
+    g_AmmoTypes.insertLast(AmmoType("Hornets", 1, 100, false, 0, false, 1.0f));
+    g_AmmoTypes.insertLast(AmmoType("shock charges", 1, 100, false, 0, false, 1.0f));
+    g_AmmoTypes.insertLast(AmmoType("uranium", 1, 100, false, 0, false, 8.0f));
     
-    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true, 45.0f));
+    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true, 60.0f));
     g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true, 60.0f));
     g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 1, 10, true, 1, true, 120.0f));
     g_AmmoTypes.insertLast(AmmoType("Trip Mine", 1, 10, true, 1, true, 90.0f));
     g_AmmoTypes.insertLast(AmmoType("rockets", 1, 10, true, 2, true, 60.0f));
-    g_AmmoTypes.insertLast(AmmoType("Snarks", 1, 15, false, 0, false, 45.0f));
+    g_AmmoTypes.insertLast(AmmoType("Snarks", 1, 15, false, 0, false, 15.0f));
     
     float m = g_CurrentAmmoMapMultiplier;
     if(m < 0.001f)
@@ -141,6 +194,18 @@ void AmmoTimerTick()
             if(pPlayer is null || !pPlayer.IsAlive() || !pPlayer.IsConnected())
                 continue;
             
+            int skillBonus = 0;
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(!steamID.IsEmpty() && g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ rpgData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(rpgData !is null)
+                    skillBonus = rpgData.GetSkillLevel(SkillID::SKILL_AMMOREGEN);
+            }
+            
+            if(skillBonus < 1)
+                continue;
+            
             int gameAmmoIndex = g_PlayerFuncs.GetAmmoIndex(ammoType.name);
             if(gameAmmoIndex >= 0)
             {
@@ -153,7 +218,7 @@ void AmmoTimerTick()
                         canRegenerate = false;
                     
                     if(canRegenerate)
-                        GiveAmmoToPlayer(pPlayer, ammoType);
+                        GiveAmmoToPlayer(pPlayer, ammoType, skillBonus);
                 }
             }
         }
@@ -162,16 +227,6 @@ void AmmoTimerTick()
         while(ammoType.regenTimer <= 0)
             ammoType.regenTimer += ammoType.regenIntervalMax;
     }
-}
-
-// One decimal place for HUD (matches typical tick granularity).
-string FormatAmmoRegenSecondsForHud(float t)
-{
-    t = Math.max(0.0f, t);
-    int tenthsTotal = int(t * 10.0f + 0.5f);
-    int whole = tenthsTotal / 10;
-    int frac = tenthsTotal % 10;
-    return "" + whole + "." + frac + "s";
 }
 
 // Map engine ammo index to CARPG ammo type name (must match g_AmmoTypes entries).
@@ -203,30 +258,59 @@ string GetAmmoTypeNameForActiveWeapon(CBasePlayer@ pPlayer)
     return GetAmmoTypeNameForGameAmmoIndex(pWeapon.PrimaryAmmoIndex());
 }
 
-// HUD line for the resupply timer matching the active weapon's primary ammo type.
-string GetAmmoRegenHudLine(CBasePlayer@ pPlayer)
+// Displays the ammo regen countdown for the player's active weapon.
+void UpdateAmmoRegenHUD(CBasePlayer@ pPlayer)
 {
-    string name = GetAmmoTypeNameForActiveWeapon(pPlayer);
-    if(name.Length() == 0)
-        return "";
-    
-    AmmoType@ at = GetAmmoTypeByName(name);
-    if(at is null)
-        return "";
-    
-    if(at.isExplosive && g_CurrentAmmoMapMultiplier != 1.0f)
-        return "Throwables resupply: DISABLED\n";
-    
-    return "Ammo Regen: " + "(" + at.name + ") " + FormatAmmoRegenSecondsForHud(at.regenTimer) + "\n";
+    if(pPlayer is null || !pPlayer.IsAlive()) return;
+
+    // Only show for players with the ammo regen skill invested.
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(steamID.IsEmpty() || !g_PlayerRPGData.exists(steamID)) return;
+    PlayerData@ rpgData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+    if(rpgData is null || rpgData.GetSkillLevel(SkillID::SKILL_AMMOREGEN) < 1) return;
+
+    string ammoName = GetAmmoTypeNameForActiveWeapon(pPlayer);
+    if(ammoName.IsEmpty()) return;
+
+    AmmoType@ at = GetAmmoTypeByName(ammoName);
+    if(at is null) return;
+
+    // Don't show for throwables on restricted maps.
+    if(at.isExplosive && g_CurrentAmmoMapMultiplier != 1.0f) return;
+
+    AmmoSpriteEntry@ spr = GetAmmoSpriteEntry(ammoName);
+    if(spr is null) return;
+
+    HUDNumDisplayParams params;
+    params.channel     = 6;
+    params.flags       = HUD_NUM_RIGHT_ALIGN | HUD_TIME_SECONDS | HUD_TIME_MILLISECONDS;
+    params.spritename  = AMMO_SPRITE_SHEET;
+    params.left        = spr.left;
+    params.top         = spr.top;
+    params.width       = spr.width;
+    params.height      = spr.height;
+    params.x           = 1.0;
+    params.y           = 0.92;
+    params.fadeinTime  = 0.0;
+    params.fadeoutTime = 0.0;
+    params.holdTime    = 0.2;
+    params.fxTime     = 0.0;
+    params.defdigits  = 1;
+    params.maxdigits  = 3;
+    params.value      = at.regenTimer;
+    params.color1     = RGBA(0, 255, 255, 255);
+    params.color2     = RGBA(255, 255, 255, 255);
+    g_PlayerFuncs.HudTimeDisplay(pPlayer, params);
 }
 
 // Give ammo to player using selected method (silent or with pickup notification).
-void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType)
+void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType, int skillBonus = 0)
 {
     if(pPlayer is null || ammoType is null)
         return;
     
-    int modifiedAmount = Math.max(1, ammoType.amount);
+    int bonus = ammoType.isExplosive ? (skillBonus / 2) : skillBonus;
+    int modifiedAmount = Math.max(1, ammoType.amount + bonus);
     
     if(g_bAmmoGive)
     {
@@ -317,4 +401,16 @@ AmmoType@ GetAmmoTypeByName(string name)
             return g_AmmoTypes[i];
     }
     return null;
+}
+
+// Called on a scheduler interval; updates the ammo regen HUD for all connected players.
+void UpdateAllAmmoRegenHUDs()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+            UpdateAmmoRegenHUD(pPlayer);
+    }
 }

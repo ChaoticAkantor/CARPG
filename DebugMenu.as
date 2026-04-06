@@ -47,33 +47,21 @@ namespace Menu
                     }
                     else if(choice == 1 && stats !is null)
                     {
-                        stats.SetXP(99999999, pPlayer, data); // Add enough XP to reach max level.
-                        stats.SetLevel(g_iMaxLevel); // Set level to max.
-                        stats.UpdateCurrentLevelXP(); // Recalculate Needed XP.
-                        data.CalculateStats(pPlayer); // Recalculate stats.
-                        data.SaveToFile(); // Save the changes.
+                        stats.SetLevel(g_iMaxLevel);
+                        data.CalculateStats(pPlayer);
+                        data.SaveToFile();
                         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Set current class to maximum level.\n");
                     }
                     else if(choice == 2 && stats !is null)
                     {
-                        stats.SetLevel(1); // Set level to 1.
-                        stats.SetXP(0, pPlayer, data); // Set XP to 0.
-                        stats.UpdateCurrentLevelXP(); // Recalculate Needed XP.
-                        data.CalculateStats(pPlayer); // Recalculate stats.
-                        data.SaveToFile(); // Save the changes.
+                        stats.SetLevel(1);
+                        data.CalculateStats(pPlayer);
+                        data.SaveToFile();
                         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Reset current class to level 1.\n");
                     }
                     else if(choice == 3)
                     {
-                        if(g_PlayerClassResources.exists(steamID))
-                        {
-                            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                            if(resources !is null)
-                            {
-                                resources['current'] = int(resources['max']);
-                                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Resources set to max.\n");
-                            }
-                        }
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Resource max not available (per-ability system).\n");
                     }
                     else if(choice == 4)
                     {

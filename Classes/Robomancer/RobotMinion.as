@@ -38,23 +38,44 @@ dictionary g_PlayerMinions;
 
 enum MinionType // Minion gun type. Not all are supported.
 {
-    MINION_MP5 = 3, // MP5 + HG.
-    MINION_SHOTGUN = 10, // Shotgun + HG.
-    MINION_M16 = 5 // M16 + GL.
+    MINION_SHOTGUN = 10, // Shotgun + Frags. Keyvalue weapons(10).
+    MINION_MP5 = 3, // MP5 + Frags. Keyvalue weapons(3).
+    MINION_M16 = 5 // M16 + M203. Keyvalue weapons(5).
 }
+
+const array<float> ROBO_HP_MODIFIERS =
+{
+    0.75,  // Shotgun.
+    1.00,  // MP5.
+    1.25   // M16.
+};
+
+const array<float> ROBO_DMG_MODIFIERS = 
+{
+    1.50,  // Shotgun. Pump, not semi-auto so the DPS is terrible without a modifier.
+    1.00,  // MP5.
+    1.00   // M16.
+};
+
+const array<Vector> ROBO_GLOW_COLORS =
+{
+    Vector(125, 75 , 255),   // Shotgun Orchid.
+    Vector(125, 50, 255),   // MP5 Violet.
+    Vector(125, 0, 255)    // M16 Purple.
+};
 
 const array<string> MINION_NAMES = 
 {
-    "MP5 Robogrunt",      // Keyvalue weapons(0).
-    "Shotgun Robogrunt",  // Keyvalue weapons(8).
-    "M16 Robogrunt"       // Keyvalue weapons(4).
+    "Robogrunt: SPAS-12 + Frags",
+    "Robogrunt: MP5 + Frags",
+    "Robogrunt: M16A1/M203"
 };
 
 const array<int> MINION_COSTS = 
 {
-    1,  // MP5.
     1,  // Shotgun.
-    3   // M16.
+    2,  // MP5.
+    4   // M16.
 };
 
 // Structure to track minion type.
@@ -74,29 +95,69 @@ class MinionData
     private bool m_bActive = false;
 
     // Monster variables.
-    private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
-    private float m_flHealthScaleAtMaxLevel = 4.0; // Health modifier at max level.
-    private float m_flHealthRegen = 0.2; // Health recovery percentage per interval.
+    private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
+    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
+    private float m_flBaseHealth = 150.0; // Base health of Robogrunts.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
-    private float m_flDamageScaleAtMaxLevel = 3.0; // Damage modifier at max level.
     private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
-    private int m_iMinionResourceCost = 1; // Initialisation cost to summon 1 minion default.
 
     // Timers and trackers.
-    private float m_flReservePool = 0.0f;
+    private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
+    private int m_iMinionResourceCost = 0; // Initialisation cost to summon 1 minion default.
+    private int m_iReservePool = 0; // Tracks the current reserve pool used for minions.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
+    private bool m_bInitialized = false;
     private ClassStats@ m_pStats = null;
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     ClassStats@ GetStats() { return m_pStats; }
 
+    bool IsInitialized() { return m_bInitialized; }
+    void SetInitialized() { m_bInitialized = true; }
+
     int GetMinionCount() { return m_hMinions.length(); }
-    float GetReservePool() { return m_flReservePool; }
-    void SetReservePoolZero() { m_flReservePool = 0.0f; }
+    int GetReservePool() { return m_iReservePool; }
+    void SetReservePoolZero() { m_iReservePool = 0; }
     bool HasStats() { return m_pStats !is null; }
+
+    int GetMinionPointIncrease()
+    {
+        if(m_pStats is null)
+            return 0; // No increase if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONPOINT);
+        return int(SKILL_MINIONPOINT * skillLevel); // Bonus minion points from skill.
+    }
+
+    int GetAbilityMax() { return m_iMinionPointMax + GetMinionPointIncrease(); }
+
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    void RechargeAbility()
+    {
+        float chargeMax = float(GetAbilityMax() - m_iReservePool);
+        if (m_flAbilityCharge >= chargeMax)
+            return;
+
+        float rechargeRate = 1.0f / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > chargeMax)
+            m_flAbilityCharge = chargeMax;
+    }
 
     bool IsActive() 
     { 
@@ -122,47 +183,45 @@ class MinionData
         return m_hMinions.length() > 0;
     }
 
-    float GetScaledHealth()
+    float GetScaledHealth(int minionType = 0)
     {
         if(m_pStats is null)
-            return m_flBaseHealth; // Return base health without scaling if no stats.
+            return m_flBaseHealth * ROBO_HP_MODIFIERS[minionType]; // Return base health with type modifier if no stats.
 
         float minionScaledHealth = m_flBaseHealth; // Start with base health.
 
-        float level = m_pStats.GetLevel();
-        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
-        minionScaledHealth *= healthMultiplier;
+        float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONHP);
+        float skillPower = SKILL_MINIONHP;
+
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
+
+        minionScaledHealth *= modifier * ROBO_HP_MODIFIERS[minionType]; // Apply skill and type modifier.
 
         return minionScaledHealth;
     }
 
-    float GetScaledDamage() // Damage scaling is applied through MonsterTakeDamage.
+    float GetScaledDamage(int minionType = 0) // Damage scaling is applied through MonsterTakeDamage.
     {
         if(m_pStats is null)
-            return 1.0f; // Restore to default, but is always null when we have no minions.
+            return ROBO_DMG_MODIFIERS[minionType]; // Return type modifier only if no stats.
 
-        float minionScaledDamage = 1.0f; // Default multiplier.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONDAMAGE);
+        float skillPower = SKILL_MINIONDAMAGE;
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        float level = m_pStats.GetLevel();
-        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
-        minionScaledDamage += damagePerLevel * level;
-
-        return minionScaledDamage;
+        return modifier * ROBO_DMG_MODIFIERS[minionType];
     }
-    
-    float GetMinionRegen() // Get minion regen based on level.
+
+    float GetMinionRegen() // Get minion regen based on skill level.
     { 
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        float minionRegen = 0.0f; // Default to zero.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONREGEN);
+        float skillPower = SKILL_MINIONREGEN;
+        float modifier = skillLevel * skillPower; // Regen is zero with no skill points spent.
 
-        minionRegen = m_flHealthRegen;
-
-        //float level = m_pStats.GetLevel();
-        //minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
-
-        return minionRegen; 
+        return modifier;
     }
     
     array<MinionInfo>@ GetMinions() { return m_hMinions; }
@@ -209,13 +268,10 @@ class MinionData
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
+        int maxPool = GetAbilityMax();
+        if(maxPool <= 0)
             return;
 
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        int current = int(resources['current']);
-        
         // First clean up invalid minions to make sure we have an accurate count.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
@@ -226,21 +282,20 @@ class MinionData
         }
 
         // Check resources for spawning new minion.
-        if(current < MINION_COSTS[minionType])
+        if(m_iReservePool + MINION_COSTS[minionType] > maxPool)
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + MINION_NAMES[minionType] + "!\n");
             return;
         }
-        
-        // Calculate max resources and ensure we're within limits.
-        float maxEnergy = float(resources['max']);
-        if(m_flReservePool + MINION_COSTS[minionType] > maxEnergy)
+
+        if(m_flAbilityCharge < float(MINION_COSTS[minionType]))
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Robot Capacity reached!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, MINION_NAMES[minionType] + " is recharging!\n");
             return;
         }
 
         // Initialize stats if needed.
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
         if(m_pStats is null)
         {
             if(g_PlayerRPGData.exists(steamID))
@@ -260,23 +315,21 @@ class MinionData
         vecSrc = vecSrc + (spawnForward * 64);
         vecSrc.z -= 32;
 
-        float scaledHealth = GetScaledHealth();
-        float scaledDamage = GetScaledDamage();
+        float scaledHealth = GetScaledHealth(minionType);
+        float scaledDamage = GetScaledDamage(minionType);
         
         dictionary keys;
         keys["origin"] = vecSrc.ToString();
         keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
         keys["targetname"] = "_minion_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s " + MINION_NAMES[minionType];
-        keys["weapons"] = "" + (minionType == 0 ? MINION_MP5 : 
-                               minionType == 1 ? MINION_SHOTGUN : 
+        keys["weapons"] = "" + (minionType == 0 ? MINION_SHOTGUN : 
+                               minionType == 1 ? MINION_MP5 : 
                                MINION_M16);
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1";
         keys["friendly"] = "1";
         keys["spawnflags"] = "16384";
-        //keys["mins"] = "0 0 0"; // Bounding box mins.
-        //keys["maxs"] = "0 0 0"; // Bounding box maxs.
         keys["is_player_ally"] = "1";
         keys["skin"] = "2";
 
@@ -284,13 +337,17 @@ class MinionData
         if(pRoboMinion !is null)
         {   
             // Apply glow effect before dispatch.
-            ApplyMinionGlow(pRoboMinion);
+            ApplyMinionGlow(pRoboMinion, minionType);
+
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pRoboMinion);
+            if(pMonster !is null)
+                pMonster.m_hGuardEnt = EHandle(pPlayer); // Guard the player, turn down follow requests.
+
+            @pRoboMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
+            //pRoboMinion.SetClassification(pPlayer.Classify()); // Set the same classification as the player to share ally tables.
+            //pRoboMinion.SetPlayerAllyDirect (true); // Set directly as ally of owner.
 
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
-
-            // Stuff to set after dispatch.
-            //@pRoboMinion.pev.owner = @pPlayer.edict(); // Set owner to spawning player.
-            pRoboMinion.pev.solid = SOLID_NOT;
 
             // Store both the minion handle and its type
             MinionInfo info;
@@ -298,9 +355,8 @@ class MinionData
             info.type = minionType;
             m_hMinions.insertLast(info);
             
-            m_flReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
-            current -= MINION_COSTS[minionType]; // Subtract from current resources.
-            resources['current'] = current;
+            m_iReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
+            m_flAbilityCharge -= float(MINION_COSTS[minionType]); // Deduct from ability charge.
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, MINION_NAMES[minionType] + " deployed!\n");
@@ -342,7 +398,7 @@ class MinionData
             {
                 // Set some values after casting incase they override.
                 pMonster.pev.framerate = m_flAnimationSpeed; // Animation speed modifier, make them far more useful.
-                pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+                //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             }
 
             // Check if minion has gained a frag, transfer to owner.
@@ -353,11 +409,13 @@ class MinionData
                 pExistingMinion.pev.frags = 0;
             }
             
-            // Ensure max_health is properly set during updates.
-            //pExistingMinion.pev.max_health = GetScaledHealth();
+            // Ensure max_health is properly set and updated dynamically (e.g. when skills change).
+            pExistingMinion.pev.max_health = GetScaledHealth(m_hMinions[i].type);
+            if(pExistingMinion.pev.health > pExistingMinion.pev.max_health)
+                pExistingMinion.pev.health = pExistingMinion.pev.max_health;
             
             // Ensure glow effect is maintained.
-            ApplyMinionGlow(pExistingMinion);
+            ApplyMinionGlow(pExistingMinion, m_hMinions[i].type);
         }
 
         // Always recalculate the reserve pool to ensure it's accurate.
@@ -407,7 +465,7 @@ class MinionData
         }
 
         // Reset reserve pool after destroying all minions.
-        m_flReservePool = 0.0f;
+        m_iReservePool = 0;
         
         if(anyDestroyed)
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Robots destroyed!\n");
@@ -457,7 +515,8 @@ class MinionData
             
             // Clear the array and reset pool.
             m_hMinions.resize(0);
-            m_flReservePool = 0.0f;
+            m_iReservePool = 0;
+            m_flAbilityCharge = float(GetAbilityMax());
         }
     }
 
@@ -473,30 +532,34 @@ class MinionData
         for(uint i = 0; i < m_hMinions.length(); i++)
         {
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
-            if(pMinion !is null && pMinion.pev.health > 0) // Only regenerate if not "dead".
+            if(pMinion !is null)
             {
-                // Ensure max_health is properly set and updated.
-                if(pMinion.pev.max_health >= 0)
-                {
-                    pMinion.pev.max_health = GetScaledHealth();
-                }
+                // Cast to CBaseMonster to check monster-specific properties.
+                CBaseMonster@ pMonster = cast<CBaseMonster@>(pMinion);
                 
-                // Get scaled regen based on player level.
-                float regenAmount = GetMinionRegen(); // This already scales with level.
-                float flHealAmount = pMinion.pev.max_health / 100 * regenAmount; // Apply scaled regen.
-
-                if(pMinion.pev.health < pMinion.pev.max_health)
+                // Only regenerate if the monster is alive (not in a dying state).
+                if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO && pMinion.pev.health > 0)
                 {
-                    pMinion.pev.health = Math.min(pMinion.pev.health + flHealAmount, pMinion.pev.max_health); // Add health.
+                    // Ensure max_health is properly set.
+                    pMinion.pev.max_health = GetScaledHealth(m_hMinions[i].type);
 
-                    if(pMinion.pev.health > pMinion.pev.max_health) 
-                        pMinion.pev.health = pMinion.pev.max_health; // Clamp to max health.
+                    // Get scaled regen based on skill level.
+                    float regenAmount = GetMinionRegen(); // This already scales with level.
+                    float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
+
+                    if(pMinion.pev.health < pMinion.pev.max_health)
+                    {
+                        pMinion.pev.health = Math.min(pMinion.pev.health + flHealAmount, pMinion.pev.max_health); // Add health.
+
+                        if(pMinion.pev.health > pMinion.pev.max_health) 
+                            pMinion.pev.health = pMinion.pev.max_health; // Clamp to max health.
+                    }
                 }
             }
         }
     }
     
-    void ApplyMinionGlow(CBaseEntity@ pMinion)
+    void ApplyMinionGlow(CBaseEntity@ pMinion, int minionType = 0)
     {
         if(pMinion is null)
             return;
@@ -505,13 +568,13 @@ class MinionData
         pMinion.pev.renderfx = kRenderFxGlowShell; // Effect.
         pMinion.pev.rendermode = kRenderNormal; // Render mode.
         pMinion.pev.renderamt = 1; // Shell thickness.
-        pMinion.pev.rendercolor = Vector(65, 225, 210); // Turquoise.
+        pMinion.pev.rendercolor = ROBO_GLOW_COLORS[minionType];
     }
     
     void RecalculateReservePool()
     {
         // Recalculate the reserve pool based on current minions.
-        float newReservePool = 0.0f;
+        int newReservePool = 0;
         
         // Process from last to first to allow safe removal during iteration
         for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
@@ -534,7 +597,14 @@ class MinionData
         }
         
         // Update the reserve pool.
-        m_flReservePool = newReservePool;
+        m_iReservePool = newReservePool;
+    }
+
+    // Called when a minion deals damage to an enemy.
+    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+            return;
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)
@@ -651,11 +721,11 @@ void CheckEngineerMinions()
             MinionData@ Minion = cast<MinionData@>(g_PlayerMinions[steamID]);
             if(Minion !is null)
             {
-                // Reset all minions on first check after map load or plugin reload.
-                if(!Minion.IsActive())
+                // Reset stale minions once on map load or plugin reload.
+                if(!Minion.IsInitialized())
                 {
-                    //g_Game.AlertMessage(at_console, "CARPG: Resetting Robomancer minions for player " + steamID + " on map load\n");
                     Minion.Reset();
+                    Minion.SetInitialized();
                 }
                 
                 // Check if player switched away from Engineer.
@@ -683,24 +753,16 @@ void CheckEngineerMinions()
                 }
                 
                 // Make sure resource limits are enforced.
-                if(g_PlayerClassResources.exists(steamID))
+                Minion.RecalculateReservePool();
+                int roboMax = Minion.GetAbilityMax();
+                if(roboMax > 0 && Minion.GetReservePool() > roboMax)
                 {
-                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                    if(resources !is null)
-                    {
-                        // First recalculate the reserve pool to ensure it's accurate.
-                        Minion.RecalculateReservePool();
-                        
-                        float maxEnergy = float(resources['max']);
-                        if(Minion.GetReservePool() > maxEnergy)
-                        {
-                            // Over the limit, destroy minions until we're within limits.
-                            Minion.DestroyAllMinions(pPlayer);
-                        }
-                    }
+                    // Over the limit, destroy minions until we're within limits.
+                    Minion.DestroyAllMinions(pPlayer);
                 }
 
                 Minion.MinionRegen(); // Minion Regeneration.
+                Minion.RechargeAbility(); // Recharge minion points.
 
                 // Always update scaling values for stats menu.
                 Minion.GetScaledHealth();

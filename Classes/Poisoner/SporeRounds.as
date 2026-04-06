@@ -39,11 +39,16 @@ class ExplosiveRoundsData
     private float m_flExplosiveRoundsRadius = 160.0f; // Radius of explosion.
     private int m_iExplosiveRoundsPoolBase = 15;
     private float m_flEnergyCostPerActivation = 1.0f;
+    private float m_flAbilityMax = 3.0f;          // Max activation charges.
+    private float m_flAbilityRechargeTime = 30.0f; // Seconds to fully recharge from empty.
     private float m_flRoundsFillPercentage = 1.0f; // Give % of max pool per activation.
     private float m_flRoundsInPool = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.10f;
     private ClassStats@ m_pStats = null;
+
+    // Timers.
+    private float m_flAbilityCharge = 0.0f;
 
     bool HasStats() { return m_pStats !is null; }
     bool HasRounds() { return m_flRoundsInPool > 0; }
@@ -51,6 +56,35 @@ class ExplosiveRoundsData
     float GetEnergyCost() { return m_flEnergyCostPerActivation; }
     void ResetRounds() { m_flRoundsInPool = 0; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return m_flAbilityMax; }
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    void RechargeAbility()
+    {
+        if (m_flAbilityCharge >= m_flAbilityMax)
+            return;
+
+        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > m_flAbilityMax)
+            m_flAbilityCharge = m_flAbilityMax;
+    }
+
+    void Update()
+    {
+        RechargeAbility();
+    }
 
     float GetScaledDamage()
     {
@@ -118,13 +152,8 @@ class ExplosiveRoundsData
         }
 
         string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamId))
-            return;
 
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamId]);
-        float current = float(resources['current']);
-
-        if(current < m_flEnergyCostPerActivation)
+        if(m_flAbilityCharge < m_flEnergyCostPerActivation)
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flEnergyCostPerActivation) + " Explosive Ammo Pack!\n");
             return;
@@ -136,7 +165,7 @@ class ExplosiveRoundsData
         m_flRoundsInPool = Math.min(m_flRoundsInPool + roundsToAdd, float(GetMaxRounds()));
         int actualAdded = int(m_flRoundsInPool) - oldRoundsInPool;
 
-        resources['current'] = Math.max(0, current - m_flEnergyCostPerActivation); // Deduct fixed energy cost.
+        m_flAbilityCharge = Math.max(0.0f, m_flAbilityCharge - m_flEnergyCostPerActivation); // Deduct fixed energy cost.
 
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strExplosiveRoundsActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + actualAdded + " Explosive Rounds\n");

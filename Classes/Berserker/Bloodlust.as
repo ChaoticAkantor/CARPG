@@ -12,20 +12,18 @@ class BloodlustData
 {
     // Remember to account for bloodlust double bonus when balancing!
     private bool m_bActive = false; // Used for active state of ability.
-
-    // Bloodlust Energy cost and drain interval.
-    private float m_flBloodlustEnergyDrainInterval = 1.0f; // Interval to remove energy.
-    private float m_flBloodlustEnergyCost = 1.0f; // Energy drain per interval.
+    private float m_flAbilityMax = 20.0f; // Max charge (seconds of use).
+    private float m_flAbilityRechargeTime = 90.0f; // Seconds to fully recharge from empty.
+    private float m_flBloodlustAbilityDrainInterval = 1.0f; // Interval to remove ability charge.
+    private float m_flBloodlustAbilityCost = 1.0f; // Ability drain per interval.
+    private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
 
     // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
-    private float m_flDamageReductionAtMaxLevel = 0.495f; // Damage reduction multiplier at maximum level. Doubles during bloodlust!
-    private float m_flLifestealAtMaxLevel = 0.30f; // Lifesteal %, as a multiplier at max level. Doubles during bloodlust!
-    private float m_flOverhealPercent = 0.60f; // Percent of max health that can be overhealed to.
-    private float m_flEnergystealAtMaxLevel = 0.08f; // Energy steal %, as a multiplier at max level. Doubles during bloodlust!
-    private float m_flEnergystealFixedAmount = 0.08f; // Fixed energy steal % if scaling is disabled. Doubles during bloodlust!
-    private bool m_bEnergyStealIsFixed = false; // Whether energy steal is a fixed or scales with level.
+    private float m_flBaseLifesteal = 0.04f; // Lifesteal % base. Doubles during bloodlust!
 
-    // Cooldown and activation timers.
+
+    // Timers.
+    private float m_flAbilityCharge = 0.0f; // Current charge.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f; // Stores last drain time.
     private float m_flLastToggleTime = 0.0f; // Stores last toggle time.
@@ -34,103 +32,97 @@ class BloodlustData
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return m_flAbilityMax; }
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
-    float GetEnergyCost() { return m_flBloodlustEnergyCost; } // Grab energy cost.
-    float GetEnergySteal() { return (m_flEnergystealAtMaxLevel * 100); } // Grab Energy steal percentage.
+    float GetAbilityCost() { return m_flBloodlustAbilityCost; } // Grab ability cost.
 
-    float GetLifestealAmount()
+    float GetDeactivateCost() { return m_flBloodlustAbilityDeactivateCost * m_flAbilityMax;} // Ability cost to deactivate.
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    float GetScaledLifesteal()
     {
         if(m_pStats is null)
             return 0.0f; // No lifesteal if no stats.
 
-        float lifestealAmount = 1.0f; // Initialise.
+        float baseLifesteal = m_flBaseLifesteal; // Base lifesteal percentage.
 
-        int level = m_pStats.GetLevel();
-        float stealPerLevel = m_flLifestealAtMaxLevel / g_iMaxLevel;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_LIFESTEAL);
+        float skillPower = SKILL_BERSERKER_LIFESTEAL;
+        float modifier = baseLifesteal + (skillPower * skillLevel); // Scaled from lifesteal skill.
 
         // If bloodlust is active, double the lifesteal.
         if(!m_bActive)
-            lifestealAmount *= (stealPerLevel * level);
+            return modifier;
         else
-            lifestealAmount *= (stealPerLevel * level) * 2.0f;
-            
-        return lifestealAmount;
+            return modifier * 2.0f;
     }
 
-    float GetEnergystealAmount()
+    float GetScaledDamageAbilityCharge()
     {
         if(m_pStats is null)
-            return 0.0f; // No energy steal if no stats.
+            return 0.0f; // No damage ability charge if no stats.
 
-        float energystealAmount = 1.0f; // Base multiplier.
+        float damageAbilityCharge = 0.0f; // Base.
 
-        int level = m_pStats.GetLevel();
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE);
+        float skillPower = SKILL_BERSERKER_DAMAGEABILITYCHARGE;
+        float modifier = skillPower * skillLevel; // Scaled from damage to ability charge skill.
 
-        if(!m_bEnergyStealIsFixed)
+        // Check if bloodlust is active, double the charge.
+        if(!m_bActive)
         {
-            float stealPerLevel = m_flEnergystealAtMaxLevel / g_iMaxLevel;
-            // Check if bloodlust is active, double the energy steal.
-            if(!m_bActive)
-                energystealAmount *= (stealPerLevel * level);
-            else
-                energystealAmount *= (stealPerLevel * level) * 2.0f;
+            damageAbilityCharge += modifier;
         }
         else
         {   
-            if(!m_bActive)
-                energystealAmount *= m_flEnergystealFixedAmount;
-            else
-                energystealAmount *= m_flEnergystealFixedAmount * 2.0f;
+            damageAbilityCharge += modifier * 2.0f;
         }
 
-        return energystealAmount;
+        return damageAbilityCharge;
     }
 
-    // Damage reduction based on current health.
+    // Damage reduction, as a modifier.
     float GetDamageReduction(CBasePlayer@ pPlayer)
-    {
-        if(pPlayer is null)
-            return 0.0f;
-
-        float damageReduction = 0.0f; // The actual damage REDUCTION.
-
-        if(m_pStats !is null)
-        {
-            int level = m_pStats.GetLevel();
-            float reductionPerLevel = m_flDamageReductionAtMaxLevel / g_iMaxLevel;
-            damageReduction = (reductionPerLevel * level);
-        }
-
-        // Calculate missing health percentage
-        float maxHealth = pPlayer.pev.max_health;
-        float currentHealth = Math.max(1.0f, pPlayer.pev.health); // Ensure at least 1 health.
-        float missingHealth = maxHealth - currentHealth;
-        float missingHealthPercent = Math.max(0.0f, Math.min(100.0f, (missingHealth / maxHealth) * 200.0f)); // Full bonus at 50% HP lost, clamped to 0% at full health.
-
-        // Apply missing health scaling
-        if(!m_bActive)
-            damageReduction *= (missingHealthPercent / 100.0f); // Passive.
-        else
-            damageReduction *= (missingHealthPercent / 100.0f) * 2.0f; // Active is double.
-
-        // Convert to percentage for display.
-        damageReduction = Math.min(damageReduction * 100.0f, 100.0f);
-        return damageReduction;
-    }
-
-    // Maximum possible damage reduction for stat menu display.
-    float GetDamageReductionMax()
     {
         if(m_pStats is null)
             return 0.0f;
 
-        int level = m_pStats.GetLevel();
-        float reductionPerLevel = m_flDamageReductionAtMaxLevel / g_iMaxLevel;
-        float maxReduction = (reductionPerLevel * level) * 100.0f;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION);
+        float skillPower = SKILL_BERSERKER_DAMAGEREDUCTION;
+        float damageReduction = skillPower * skillLevel;
 
-        return Math.min(maxReduction, 100.0f);
+        if(m_bActive)
+            damageReduction *= 2.0f; // Double whilst bloodlust is active.
+
+        return damageReduction;
+    }
+
+    float GetScaledOverhealPercent() 
+    { 
+        if(m_pStats is null)
+            return 1.0f; // No overheal if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_OVERHEAL);
+        float skillPower = SKILL_BERSERKER_OVERHEAL;
+        float overhealBonus = skillPower * skillLevel; // Overheal percent scaled from skill.
+            
+        if(m_bActive)
+            return (1.0f + overhealBonus) * 2.0f; // Double if active.
+        else
+            return 1.0f + overhealBonus; // Passive overheal.
     }
     
     void ToggleBloodlust(CBasePlayer@ pPlayer)
@@ -152,21 +144,11 @@ class BloodlustData
 
         if(!m_bActive)
         {
-            // Check energy - require FULL energy to activate.
-            if(g_PlayerClassResources.exists(steamID))
+            // Require minimum charge to activate.
+            if(m_flAbilityCharge < GetDeactivateCost())
             {
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                if(resources !is null)
-                {
-                    float currentEnergy = float(resources['current']);
-                    float maxEnergy = float(resources['max']);
-                    
-                    if(currentEnergy < maxEnergy)
-                    {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Recharging...\n");
-                        return;
-                    }
-                }
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flBloodlustAbilityDeactivateCost * 100.0f) + "%% Charge!");
+                return;
             }
             
             m_bActive = true;
@@ -178,6 +160,11 @@ class BloodlustData
         }
         else
         {
+            // Apply ability cost for manual deactivation.
+            m_flAbilityCharge -= GetDeactivateCost();
+            if(m_flAbilityCharge < 0.0f)
+                m_flAbilityCharge = 0.0f;
+
             DeactivateBloodlust(pPlayer);
         }
         
@@ -192,9 +179,19 @@ class BloodlustData
             return;
         }
 
-        float reductionPercent = GetDamageReduction(pPlayer); // Get damage reduction as percentage (0-100).
-        float reductionMultiplier = 1.0f - (reductionPercent / 100.0f); // Convert it to a multiplier (0-1).
-        bloodlustReducedDamage = bloodlustDamageTaken * reductionMultiplier; // Apply it as a multiplier.
+        float reductionModifier = GetDamageReduction(pPlayer); // 0.0 - 1.0 flat modifier.
+        bloodlustReducedDamage = bloodlustDamageTaken * (1.0f - reductionModifier); // Apply directly.
+    }
+
+    void RechargeAbility()
+    {
+        if (m_flAbilityCharge >= m_flAbilityMax)
+            return;
+
+        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > m_flAbilityMax)
+            m_flAbilityCharge = m_flAbilityMax;
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -219,51 +216,23 @@ class BloodlustData
         }
 
         if(!m_bActive)
+        {
+            // Recharge when inactive.
+            RechargeAbility();
             return;
+        }
 
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastDrainTime >= m_flBloodlustEnergyDrainInterval) // Interval for energy drain.
+        if(currentTime - m_flLastDrainTime >= m_flBloodlustAbilityDrainInterval) // Interval for ability drain.
         {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerClassResources.exists(steamID))
+            m_flAbilityCharge -= m_flBloodlustAbilityCost;
+            if(m_flAbilityCharge <= 0.0f)
             {
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                if(resources !is null)
-                {
-                    float current = float(resources['current']);
-                    current -= m_flBloodlustEnergyCost; // Energy Drain.
-                    
-                    if(current <= 0)
-                    {
-                        current = 0;
-                        DeactivateBloodlust(pPlayer); // Deactivate if we run out of energy.
-                    }
-                    
-                    resources['current'] = current;
-                }
+                m_flAbilityCharge = 0.0f;
+                DeactivateBloodlust(pPlayer);
             }
-
             m_flLastDrainTime = currentTime;
         }
-    }
-
-    float GetOverhealPercent() 
-    { 
-        if(m_pStats is null)
-            return 1.0f; // No overheal if no stats.
-            
-        if(m_bActive)
-            return (1.0f + m_flOverhealPercent) * 2.0f; // Double if active.
-        else
-            return 1.0f + m_flOverhealPercent; // Passive overheal.
-    }
-
-    float GetOverhealPercentFlat() 
-    { 
-        if(m_pStats is null)
-            return 1.0f; // No overheal if no stats.
-            
-        return 1.0f + m_flOverhealPercent; // Passive overheal.
     }
 
     float ProcessLifesteal(CBasePlayer@ pPlayer, float damageDealt)
@@ -280,9 +249,9 @@ class BloodlustData
             return 0.0f;
         }
 
-        float lifestealMult = GetLifestealAmount();
+        float lifestealMult = GetScaledLifesteal();
         float healAmount = damageDealt * lifestealMult; // Heal amount from lifesteal.
-        float overhealPercent = pPlayer.pev.max_health * GetOverhealPercent(); // Max health including overheal.
+        float overhealPercent = pPlayer.pev.max_health * GetScaledOverhealPercent(); // Max health including overheal.
 
         if(pPlayer.pev.health < overhealPercent) // Heal HP if below max.
         {
@@ -296,12 +265,12 @@ class BloodlustData
         return healAmount;
     }
 
-    float ProcessEnergySteal(CBasePlayer@ pPlayer, float damageDealt)
+    float ProcessDamageAbilityCharge(CBasePlayer@ pPlayer, float damageDealt)
     {
         if(pPlayer is null)
             return 0.0f;
 
-        if(m_pStats is null) // If no stats, no energy steal.
+        if(m_pStats is null) // If no stats, no damage ability charge.
             return 0.0f;
 
         if(!pPlayer.IsAlive()) // Deactivate if player dies.
@@ -310,23 +279,11 @@ class BloodlustData
             return 0.0f;
         }
 
-        float energyStealMult = GetEnergystealAmount();
-        float gainAmount = damageDealt * energyStealMult;
+        float damageAbilityChargeMult = GetScaledDamageAbilityCharge();
+        float gainAmount = damageDealt * damageAbilityChargeMult;
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerClassResources.exists(steamID))
-            {
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                if(resources !is null)
-                {
-                    float currentEnergy = float(resources['current']);
-                    float maxEnergy = float(resources['max']);
-
-                    currentEnergy = Math.min(currentEnergy + gainAmount, maxEnergy); // Add energy to variable, but don't exceed max.
-
-                    resources['current'] = currentEnergy; // Add back to energy.
-                }
-            }
+        // Add to current charge, capped at max.
+        m_flAbilityCharge = Math.min(m_flAbilityCharge + gainAmount, m_flAbilityMax);
 
         return gainAmount;
     }

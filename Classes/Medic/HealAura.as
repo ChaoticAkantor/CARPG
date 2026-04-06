@@ -21,9 +21,6 @@ array<string> g_SkipRevivalClassNames =
 
 };
 
-// Matches CARPG CheckHealAura scheduler interval (ReviveTimerTick decrements per step).
-const float flHealAuraSchedulerInterval = 0.1f;
-
 string FormatHealAuraSecondsForHud(float t)
 {
     t = Math.max(0.0f, t);
@@ -63,31 +60,29 @@ class HealingAura
 {
     // Healing Aura.
     private bool m_bIsActive = false;
+    private float m_flAbilityDuration = 20.0f; // Total time the ability can be active.
+    private float m_flAbilityRechargeTime = 15.0f; // Time it takes for the ability to fully recharge.
     private float m_flHealingRadius = 60.0f * 16; // // Radius of the healing aura (ft converted to units).
-    private float m_flBaseHealAmount = 10.0f; // Base health restored, as a percentage of max health.
-    private float m_flHealScalingAtMaxLevel = 2.0f; // Healing modifier at max level.
+    private float m_flBaseHealAmount = 5.0f; // Base health restored, as a percentage of max health.
     private float m_flHealAuraReviveHealthPercent = 1.00f; // Health percent to revive at.
-    private float m_flHealAuraReviveCooldown = 10.0f; // Minimum cooldown for revive at max level.
-    private float m_flPoisonDamagePercent = 0.5f; // Modifier for poison damage dealt to enemies, scales from healing amount.
+    private float m_flHealAuraReviveCooldown = 30.0f; // Default cooldown for revive.
     private float m_flHealAuraInterval = 1.0f; // Time between heals/damage tick.
-
-    // Energy costs.
     private int m_iDrainAmount = 1.0f; // Energy drained per interval tick.
 
     // Score bonuses.
     private int m_iHealFragBonus = 2; // Frags awarded for healing once.
-    private int m_iReviveFragBonusPlayer = 6; // Frags awarded for reviving a player once.
-    private int m_iReviveFragBonusMonster = 3; // Frags awarded for reviving an allied monster once.
+    private int m_iReviveFragBonusPlayer = 5; // Frags awarded for reviving a single player (this also gets shared).
+    private int m_iReviveFragBonusMonster = 5; // Frags awarded for reviving a single NPC (this also gets shared).
     
-
     // Timers.
+    private float m_flAbilityCharge = 0.0f; // Current ability charge.
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
     private float m_flLastHealTime = 0.0f;
     private float m_flLastPoisonTime = 0.0f;
     private float m_flHealInterval = 1.0f;
     private float m_flCurrentReviveCooldown = 0.0f;
-    private float m_flReviveGracePeriod = 1.0f;
+    private float m_flReviveGracePeriod = 1.0f; // Amount of time to allow revives before going into cooldown.
     private float m_flReviveGraceEndTime = 0.0f;
 
     // Visual and vectors.
@@ -104,8 +99,22 @@ class HealingAura
 
     bool IsActive() { return m_bIsActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return m_flAbilityDuration; }
+    void ConsumeCharge(float amount) { m_flAbilityCharge = Math.max(0.0f, m_flAbilityCharge - amount); }
     float GetHealingRadius() { return m_flHealingRadius; }
     float GetEnergyCost() { return m_iDrainAmount; }
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
 
     float GetReviveCooldown()
     { 
@@ -114,11 +123,10 @@ class HealingAura
 
         float cooldown = m_flHealAuraReviveCooldown; // Start at minimum.
 
-        int level = m_pStats.GetLevel();
-        float cooldownPerLevel = m_flHealAuraReviveCooldown / g_iMaxLevel;
-        cooldown += cooldownPerLevel * (g_iMaxLevel * 1.5 - level);
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_REVIVE);
+        float skillPower = SKILL_MEDIC_REVIVE;
 
-        return cooldown; 
+        return cooldown -= skillPower * skillLevel; // Reduce cooldown based on skill level and power.
     }
 
     float GetReviveCooldownRemaining() { return m_flCurrentReviveCooldown; }
@@ -133,7 +141,30 @@ class HealingAura
 
     float GetPoisonDamageAmount()
     {
-        return GetScaledHealAmount() * m_flPoisonDamagePercent;
+        if (m_pStats is null)
+            return 0; // Return 0 if no stats, meaning no poison damage without the skill.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON); // Get player skill level for this skill.
+
+        float skillPower = SKILL_MEDIC_POISON; // Hardcoded value.
+        float modifier = skillPower * skillLevel; // Poison damage scales from heal amount, dependent on skill level.
+
+        return modifier;
+    }
+
+    float GetHealAPPercent()
+    {
+        if (m_pStats is null)
+            return 0.0f; // Return 0 if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALAP);
+
+        float skillPower = SKILL_MEDIC_HEALAP;
+        float healAmount = GetScaledHealAmount();
+
+        float modifier = skillPower * skillLevel; // AP heal scales from heal amount, dependent on skill level.
+
+        return modifier;
     }
 
     float GetScaledHealAmount()
@@ -143,13 +174,25 @@ class HealingAura
 
         float healAmount = m_flBaseHealAmount; // Set base heal amount.
             
-        int level = m_pStats.GetLevel();
-        float bonusPerLevel = (m_flHealScalingAtMaxLevel * m_flBaseHealAmount) / g_iMaxLevel;
-        healAmount += bonusPerLevel * level;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALPERCENT);
+        float skillPower = SKILL_MEDIC_HEALPERCENT;
+        float modifier = healAmount + (skillPower * skillLevel); // Heal amount scales from skill level.
 
-        return healAmount;
+        return modifier;
     }
-    
+
+    void RechargeAbility()
+    {
+        if (m_flAbilityCharge >= m_flAbilityDuration)
+            return;
+
+        // Must match tick rate.
+        float rechargeRate = m_flAbilityDuration / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > m_flAbilityDuration)
+            m_flAbilityCharge = m_flAbilityDuration;
+    }
+
     void ToggleAura(CBasePlayer@ pPlayer)
     {
         if (pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
@@ -158,27 +201,6 @@ class HealingAura
         float currentTime = g_Engine.time;
         if (currentTime - m_flLastToggleTime < m_flToggleCooldown)
             return;
-
-        if (!m_bIsActive)
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if (!g_PlayerClassResources.exists(steamID))
-                return;
-                
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if (resources is null)
-                return;
-
-            float current = float(resources['current']);
-            float maximum = float(resources['max']);
-            
-            // Check energy - require FULL energy to activate.
-            //if (current < maximum)
-            //{
-                //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Recharging...\n");
-                //return;
-            //}
-        }
 
         m_bIsActive = !m_bIsActive;
         string message = m_bIsActive ? "Healing Aura On!\n" : "Healing Aura Off!\n";
@@ -220,6 +242,7 @@ class HealingAura
             UpdateVisualEffect(pPlayer);
         }
 
+        m_flAbilityCharge = 0.0f;
         m_flLastToggleTime = 0.0f;
         m_flLastHealTime = 0.0f;
         m_flNextVisualUpdate = 0.0f;
@@ -256,16 +279,24 @@ class HealingAura
 
         if (m_bIsActive) 
         {
-            ProcessHealing(pPlayer);
-            ProcessPoisonDamage(pPlayer);
-            UpdateVisualEffect(pPlayer);
+            if (ProcessAbility(pPlayer))
+            {
+                ProcessHeal(pPlayer); // Apply healing/AP heal.
+                ProcessRevive(pPlayer); // Apply revives.
+                ProcessPoisonDamage(pPlayer); // Apply poison damage.
+                UpdateVisualEffect(pPlayer); // Update visuals.
+            }
+        }
+        else
+        {
+            RechargeAbility();
         }
     }
 
     private void ProcessPoisonDamage(CBasePlayer@ pPlayer)
     {
-        // Only apply poison damage if healing aura is active.
-        if (!m_bIsActive)
+        // Only apply poison damage if healing aura is active and we have the skill.
+        if (!m_bIsActive || m_pStats is null || m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON) <= 0)
             return;
 
         float currentTime = g_Engine.time;
@@ -395,7 +426,7 @@ class HealingAura
 
         if(m_flCurrentReviveCooldown <= 0.0f)
             return;
-        m_flCurrentReviveCooldown -= flHealAuraSchedulerInterval;
+        m_flCurrentReviveCooldown -= flSchedulerInterval;
         if(m_flCurrentReviveCooldown < 0.0f)
             m_flCurrentReviveCooldown = 0.0f;
     }
@@ -406,33 +437,95 @@ class HealingAura
             m_flReviveGraceEndTime = currentTime + m_flReviveGracePeriod;
     }
 
-    private void ProcessHealing(CBasePlayer@ pPlayer) 
+    private bool ProcessAbility(CBasePlayer@ pPlayer)
     {
         float currentTime = g_Engine.time;
         if (currentTime - m_flLastHealTime < m_flHealInterval)
-            return;
+            return false;
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
-            
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        int current = int(resources['current']);
-        
-        if(current < m_iDrainAmount)
+        float current = GetAbilityCharge();
+
+        if (current < m_iDrainAmount)
         {
             m_bIsActive = false;
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Off!\n");
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             RemoveAuraGlow(pPlayer);
-            return;
+            return false;
         }
 
-        current -= m_iDrainAmount;
-        resources['current'] = current;
-
+        m_flAbilityCharge = current - m_iDrainAmount;
         m_flLastHealTime = currentTime;
-        
+        return true;
+    }
+
+    private void ProcessHeal(CBasePlayer@ pPlayer)
+    {
+        Vector playerOrigin = pPlayer.pev.origin;
+        CBaseEntity@ pEntity = null;
+        while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flHealingRadius, "*", "classname")) !is null)
+        {
+            if (!pEntity.IsAlive())
+                continue;
+
+            bool shouldHeal = false;
+
+            if (pEntity.IsPlayer())
+            {
+                shouldHeal = true;
+            }
+            else
+            {
+                CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
+                if (pMonster !is null)
+                {
+                    int relationship = pMonster.IRelationship(pPlayer);
+                    if (relationship == R_AL)
+                        shouldHeal = true;
+                }
+            }
+
+            if (!shouldHeal)
+                continue;
+
+            if (pEntity.pev.health < pEntity.pev.max_health) // Only process heal if health is not full.
+            {
+                float healAmount = GetScaledHealAmount() * pEntity.pev.max_health / 100; // Heal based on max HP.
+
+                if (!pEntity.IsPlayer())
+                    healAmount *= 2.0f; // If target is an NPC, modify healing amount.
+
+                pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
+                pPlayer.pev.frags += m_iHealFragBonus;
+
+                ApplyHealEffect(pEntity);
+                g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+            }
+
+            // Apply AP heal if player has the skill.
+            if (m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALAP) > 0)
+            {
+                if (pEntity.IsPlayer()) // Only do this for players.
+                {
+                    if (pEntity.pev.armorvalue < pEntity.pev.armortype) // Don't heal if at max.
+                    {
+                        float healAPAmount = GetHealAPPercent(); // Get AP heal value.
+                        pEntity.pev.armorvalue = Math.min(pEntity.pev.armorvalue + healAPAmount, pEntity.pev.armortype); // Heal AP for a percent of heal value.
+
+                        ApplyHealEffect(pEntity);
+                        g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                    }
+                }
+            }
+        }
+    }
+
+    private void ProcessRevive(CBasePlayer@ pPlayer)
+    {
+        if (m_flCurrentReviveCooldown > 0.0f)
+            return;
+
+        float currentTime = g_Engine.time;
         Vector playerOrigin = pPlayer.pev.origin;
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flHealingRadius, "*", "classname")) !is null)
@@ -440,113 +533,52 @@ class HealingAura
             // Skip classnames in the skip list.
             string classname = pEntity.GetClassname();
             bool shouldSkip = false;
-            for(uint i = 0; i < g_SkipRevivalClassNames.length(); i++)
+            for (uint i = 0; i < g_SkipRevivalClassNames.length(); i++)
             {
-                if(classname == g_SkipRevivalClassNames[i])
+                if (classname == g_SkipRevivalClassNames[i])
                 {
                     shouldSkip = true;
                     break;
                 }
             }
-            if(shouldSkip)
+            if (shouldSkip)
                 continue;
 
-            // Check for dead entities.
-            if(!pEntity.IsAlive())
-            {
-                if(m_flCurrentReviveCooldown > 0.0f)
-                    continue;
-
-                if(pEntity.IsPlayer())
-                {
-                    CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
-                    if(pTarget !is null)
-                    {
-                        pTarget.Revive(); // Do Player specific revival.
-                        pTarget.pev.health = pTarget.pev.max_health * m_flHealAuraReviveHealthPercent; // Revive at % of max health.
-                        pPlayer.pev.frags += m_iReviveFragBonusPlayer; // Award frags for reviving a player.
-                        ApplyReviveEffect(pEntity);
-                        g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strReviveSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pEntity.pev.netname + "!\n");
-                        ReviveGrace(currentTime); // Grace period to allow multiple revives for one activation.
-                    }
-                }
-                else
-                {
-                    CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                    if(pMonster !is null)
-                    {
-                        int relationship = pMonster.IRelationship(pPlayer);
-                        if(relationship == R_AL) // R_AL = Ally relationship.
-                        {
-                            pMonster.Revive();
-                            pMonster.pev.health = pMonster.pev.max_health * m_flHealAuraReviveHealthPercent;
-                            pPlayer.pev.frags += m_iReviveFragBonusMonster; // Award frags for reviving a monster.
-                            ApplyReviveEffect(pEntity);
-                            g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strReviveSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
-                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
-                            ReviveGrace(currentTime); // Grace period to allow multiple revives for one activation.
-                        }
-                    }
-                }
+            if (pEntity.IsAlive())
                 continue;
-            }
 
-            bool shouldHeal = false;
-
-            // Always heal players.
-            if(pEntity.IsPlayer())
+            if (pEntity.IsPlayer())
             {
-                shouldHeal = true;
+                CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
+                if (pTarget !is null)
+                {
+                    pTarget.Revive();
+                    pTarget.pev.health = pTarget.pev.max_health * m_flHealAuraReviveHealthPercent;
+                    pPlayer.pev.frags += m_iReviveFragBonusPlayer;
+                    ApplyReviveEffect(pEntity);
+                    g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strReviveSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pEntity.pev.netname + "!\n");
+                    ReviveGrace(currentTime);
+                }
             }
             else
             {
                 CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                if(pMonster !is null)
+                if (pMonster !is null)
                 {
-                    // Check relationship instead of IsPlayerAlly.
                     int relationship = pMonster.IRelationship(pPlayer);
-                    if(relationship == R_AL) // R_AL = Ally relationship.
+                    if (relationship == R_AL)
                     {
-                        shouldHeal = true;
+                        pMonster.Revive();
+                        pMonster.pev.health = pMonster.pev.max_health * m_flHealAuraReviveHealthPercent;
+                        pPlayer.pev.frags += m_iReviveFragBonusMonster;
+                        ApplyReviveEffect(pEntity);
+                        g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strReviveSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Revived " + pMonster.GetClassname() + "!\n");
+                        ReviveGrace(currentTime);
                     }
                 }
             }
-            
-            // Skip if not determined as friendly.
-            if(!shouldHeal)
-            {
-                // Only apply poison to actual enemies.
-                if(!pEntity.IsPlayer())
-                {
-                    CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
-                    if(pMonster !is null)
-                    {
-                        int relationship = pMonster.IRelationship(pPlayer);
-                        if(relationship != R_AL) // Only poison if NOT an ally
-                        {
-                            ApplyPoisonEffect(pEntity);
-                        }
-                    }
-                }
-                continue;
-            }
-                
-            // Skip if at full health.
-            if(pEntity.pev.health >= pEntity.pev.max_health)
-                continue;
-
-            float healAmount = GetScaledHealAmount() * pEntity.pev.max_health / 100; // Heal amount scaled with max health.
-            
-            if(!pEntity.IsPlayer())
-                healAmount *= 2.0f; // NPC healing modifier.
-
-            // Process healing, effects and sounds.
-            pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
-            pPlayer.pev.frags += m_iHealFragBonus; // Award frags for healing.
-            
-            ApplyHealEffect(pEntity);
-            g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
         }
     }
 

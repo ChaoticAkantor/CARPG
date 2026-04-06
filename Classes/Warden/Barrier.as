@@ -2,6 +2,7 @@ string strBarrierToggleSound = "debris/glass2.wav";
 string strBarrierHitSound = "debris/glass1.wav";
 string strBarrierBreakSound = "debris/bustglass2.wav";
 string strBarrierActiveSound = "ambience/alien_powernode.wav";
+string strBarrierReflectSprite = "sprites/blueflare2.spr";
 
 const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B.
 const float BARRIER_PROTECTION_RANGE = 2400.0f; // Range in units for the barrier protection to work.
@@ -11,15 +12,16 @@ dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
 class BarrierData
 {
     private bool m_bActive = false;
+    private float m_flAbilityMax = 100.0f; // Base Max HP of Ice Shield.
+    private float m_flAbilityRechargeTime = 20.0f; // Time it takes for the ability to fully recharge.
     private float m_flBarrierDamageReduction = 1.00f; // Player damage reduction multiplier whilst shield is active. 1.0 = 100% damage reduction (no damage to HP/AP).
     private float m_flBarrierDurabilityMultiplier = 1.0f; // Shield damage reduction multiplier, used to make shield tougher or weaker overall.
-    private float m_flBarrierReflectDamageScalingAtMaxLevel = 1.0f; // Shield damage reflection modifier at max level.
-    private float m_flBarrierActiveRechargePenalty = 0.25f; // Ability recharge modifier whilst shield is active.
-    private float m_flBarrierHealthAbsorbAtMaxLevel = 0.30f; // Percentage of damage taken that is absorbed as health.
     private float m_flBarrierDeactivateEnergyCost = 0.25f; // Energy cost percentage when manually deactivating barrier.
     private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
+    
 
     // Timers.
+    private float m_flAbilityCharge = 0.0f;
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
@@ -28,38 +30,86 @@ class BarrierData
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetShieldMaxHP() { return GetScaledShieldMaxHP(); }
+    float GetShieldDeactivateCost() { return m_flBarrierDeactivateEnergyCost * GetScaledShieldMaxHP(); }
 
     ClassStats@ GetStats() {return m_pStats;}
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     
-    float GetBaseDamageReduction() { return m_flBarrierDamageReduction; }
     float GetBarrierDurabilityMultiplier() { return m_flBarrierDurabilityMultiplier; }
-    float GetBarrierHealthAbsorb() { return m_flBarrierHealthAbsorbAtMaxLevel; }
-    float GetBarrierDeactivateEnergyCost() { return m_flBarrierDeactivateEnergyCost; }
+    float GetBarrierHealthAbsorb() { return GetScaledHealthAbsorb(); }
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    float GetScaledShieldMaxHP() // Shield max HP.
+    {
+        if (m_pStats is null)
+            return m_flAbilityMax; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_WARDEN_SHIELDHP);
+        float skillPower = SKILL_WARDEN_SHIELDHP;
+
+        return m_flAbilityMax * (1.0f + skillPower * skillLevel); // Scale max HP based on skill level.
+    }
     
-    float GetScaledDamageReflection()
+    float GetScaledDamageReflection() // Shield Damage reflection.
     {
         if(m_pStats is null)
             return 0.0f; // Return base if no stats.
         
-        // Scale damage reflected based on level.
-        int level = m_pStats.GetLevel();
-        float scalingPerLevel = m_flBarrierReflectDamageScalingAtMaxLevel / g_iMaxLevel;
-        return scalingPerLevel * level;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_WARDEN_DAMAGEREFLECT);
+        float skillPower = SKILL_WARDEN_DAMAGEREFLECT;
+
+        return skillLevel * skillPower; // Scale damage reflection based on skill level.
     }
 
-    float GetScaledHealthAbsorb()
+    float GetScaledHealthAbsorb() // Shield health absorb.
     {
         if(m_pStats is null)
             return 0.0f; // Return base if no stats.
         
-        // Scale health absorb based on level.
-        int level = m_pStats.GetLevel();
-        float scalingPerLevel = m_flBarrierHealthAbsorbAtMaxLevel / g_iMaxLevel;
-        return scalingPerLevel * level;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_WARDEN_HPABSORB);
+        float skillPower = SKILL_WARDEN_HPABSORB;
+
+        return skillLevel * skillPower; // Scale health absorb based on skill level.
     }
 
-    float GetActiveRechargePenalty() { return m_flBarrierActiveRechargePenalty; } // Ability recharge penalty when active.
+    float GetScaledActiveRecharge()
+    {
+        if(m_pStats is null)
+            return 0.0f; // Return base if no stats.
+        
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_WARDEN_ACTIVERECHARGE);
+        float skillPower = SKILL_WARDEN_ACTIVERECHARGE;
+
+        return skillLevel * skillPower; // Scale recharge penalty based on skill level.
+    }
+
+    float GetAbilityRechargeRate() { return GetScaledShieldMaxHP() / m_flAbilityRechargeTime * GetScaledAbilityRecharge(); } // Shield HP recharged per second.
+    float GetActiveRechargeRate() { return GetScaledActiveRecharge(); } // Get active recharge rate.
+
+    void RechargeAbility()
+    {
+        float scaledMax = GetScaledShieldMaxHP();
+        if (m_flAbilityCharge >= scaledMax)
+            return;
+
+        // Each tick is 0.1s, so add rate * interval per tick.
+        float rechargeRate = scaledMax / m_flAbilityRechargeTime;
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > scaledMax)
+            m_flAbilityCharge = scaledMax;
+    }
 
     void HandleBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker, float incomingDamage, float& out modifiedDamage)
     {
@@ -146,54 +196,35 @@ class BarrierData
             return;
         }
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(g_PlayerClassResources.exists(steamID))
+        if(!m_bActive)
         {
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            if(resources !is null)
+            if(m_flAbilityCharge < GetShieldDeactivateCost())
             {
-
-                if(!m_bActive)
-                {
-                    // Check energy - require FULL energy to activate,
-                    float currentEnergy = float(resources['current']);
-                    float maxEnergy = float(resources['max']);
-                    
-                    if(currentEnergy <= 0) // No longer requires full energy to activate.
-                    {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield is broken!\n");
-                        return;
-                    }
-
-                    // Activate.
-                    m_bActive = true;
-                    m_flLastDrainTime = currentTime;
-                    ToggleGlow(pPlayer);
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP, 100);
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Activated!\n");
-                }
-                else // MANUAL DEACTIVATION.
-                {
-                    // Deactivate Manually.
-                    m_bActive = false;
-                    ToggleGlow(pPlayer);
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
-                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP, 100);
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // MANUALLY SHATTERED.
-                    EffectBarrierShatter(pPlayer.pev.origin); // Do barrier shatter.
-
-                    // Apply energy cost for manual deactivation.
-                    float currentEnergy = float(resources['current']);
-                    float maxEnergy = float(resources['max']);
-                    currentEnergy -= maxEnergy * m_flBarrierDeactivateEnergyCost; // Apply energy cost for manual deactivation.
-
-                    // If energy goes below 0, set it back to 0.
-                    if(currentEnergy < 0)
-                        currentEnergy = 0;
-                    resources['current'] = currentEnergy;
-                }
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield is broken!\n");
+                return;
             }
+
+            // Activate.
+            m_bActive = true;
+            m_flLastDrainTime = currentTime;
+            ToggleGlow(pPlayer);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierToggleSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP, 100);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Activated!\n");
+        }
+        else // MANUAL DEACTIVATION.
+        {
+            m_bActive = false;
+            ToggleGlow(pPlayer);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBarrierBreakSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBarrierActiveSound, 0.0f, ATTN_NORM, SND_STOP, 100);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield Shattered!\n"); // MANUALLY SHATTERED.
+            EffectBarrierShatter(pPlayer.pev.origin);
+
+            // Apply energy cost for manual deactivation.
+            m_flAbilityCharge -= GetShieldDeactivateCost();
+            if(m_flAbilityCharge < 0.0f)
+                m_flAbilityCharge = 0.0f;
         }
 
         m_flLastToggleTime = 0.0f;
@@ -209,6 +240,17 @@ class BarrierData
 
     void Update(CBasePlayer@ pPlayer)
     {
+        // Recharge logic: active recharges at penalty rate; inactive recharges at full rate.
+        float scaledMax = GetScaledShieldMaxHP();
+        if(m_flAbilityCharge < scaledMax)
+        {
+            float fullRechargeRate = GetAbilityRechargeRate() * flSchedulerInterval; // Per tick (0.1s interval).
+            float rate = m_bActive ? (fullRechargeRate * GetScaledActiveRecharge()) : fullRechargeRate;
+            m_flAbilityCharge += rate;
+            if(m_flAbilityCharge > scaledMax)
+                m_flAbilityCharge = scaledMax;
+        }
+
         if(!m_bActive || pPlayer is null)
             return;
 
@@ -224,24 +266,15 @@ class BarrierData
     
     void DrainEnergy(CBasePlayer@ pPlayer, float blockedDamage)
     {
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
-
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        float current = float(resources['current']);
+        // Drain charge proportional to damage blocked.
+        float energyCost = blockedDamage * m_flBarrierDurabilityMultiplier;
+        m_flAbilityCharge -= energyCost;
         
-        // Drain energy proportional to damage blocked.
-        float energyCost = (blockedDamage * m_flBarrierDurabilityMultiplier); // Damage taken to energy drain scale factor.
-        current -= energyCost;
-        
-        if(current <= 0)
+        if(m_flAbilityCharge <= 0.0f)
         {
-            current = 0;
+            m_flAbilityCharge = 0.0f;
             DeactivateBarrier(pPlayer);
         }
-        
-        resources['current'] = current;
     }
 
     void DeactivateBarrier(CBasePlayer@ pPlayer) // Called when DESTROYED, NOT MANUALLY DEACTIVATED.
@@ -370,7 +403,7 @@ class BarrierData
             snowmsg.WriteCoord(centerPos.x);
             snowmsg.WriteCoord(centerPos.y);
             snowmsg.WriteCoord(centerPos.z);
-            snowmsg.WriteShort(g_EngineFuncs.ModelIndex(strSentrySlowEffectSprite));
+            snowmsg.WriteShort(g_EngineFuncs.ModelIndex(strBarrierReflectSprite));
             snowmsg.WriteByte(5);   // Count.
             snowmsg.WriteByte(1);   // Life in 0.1's.
             snowmsg.WriteByte(2);   // Scale in 0.1's.

@@ -29,25 +29,11 @@ namespace Menu
             string title = m_pOwner.GetClassName(m_pOwner.GetCurrentClass()) + "\n";
             title += "Lvl: " + level + " | " + "XP: (" + m_pStats.GetCurrentLevelXP() + "/" + m_pStats.GetNeededXP() + ")\n\n";
             m_pMenu.SetTitle(title);
-    
-            // Get energy stats from resource dictionary, fallback to class definition if missing.
-            dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-            float maxEnergy = def !is null ? def.GetPlayerEnergy(level) : 100.0f;
-            float energyRegen = def !is null ? def.GetPlayerEnergyRegen(level, maxEnergy) : 0.0f;
-            if(resources !is null)
-            {
-                if(resources.exists('max'))
-                    maxEnergy = float(resources['max']);
-                if(resources.exists('regen'))
-                    energyRegen = float(resources['regen']);
-            }
 
             // Display basic stats.
             string BaseStatsText = "=== Basic Stats: ===\n";
                 BaseStatsText += "Max Health: " + int(pPlayer.pev.max_health) + " HP\n";
                 BaseStatsText += "Max Armor: " + int(pPlayer.pev.armortype) + " AP\n";
-                BaseStatsText += "Ability Duration/Charges: " + int(maxEnergy) + "\n";
-                BaseStatsText += "Ability Recharge Rate: " + energyRegen + "/s\n\n";
 
             m_pMenu.AddItem(BaseStatsText, null);
 
@@ -157,10 +143,10 @@ namespace Menu
                     if(barrier !is null)
                     {
                         string DefenderStatsText = "=== Ice Shield: ===" + "\n";
-                            DefenderStatsText += "Max Durability: " + int(maxEnergy) + " HP\n";
+                            DefenderStatsText += "Max Durability: " + int(barrier.GetScaledShieldMaxHP()) + " HP\n";
                             DefenderStatsText += "Damage Reflect: " + barrier.GetScaledDamageReflection() * 100 + "%\n";
-                            DefenderStatsText += "Health Absorb: " + barrier.GetBarrierHealthAbsorb() * 100 + "%\n";
-                            DefenderStatsText += "Recharge Speed whilst active: " + (energyRegen * barrier.GetActiveRechargePenalty()) + "/s\n";
+                            DefenderStatsText += "Health Absorb: " + barrier.GetScaledHealthAbsorb() * 100 + "%\n";
+                            //DefenderStatsText += "Active Recharge Speed: " + (barrier.GetScaledRechargeSpeed()) + "/s\n";
                             DefenderStatsText += "Deactivation Cost: " + int(barrier.GetBarrierDeactivateEnergyCost() * 100) + "%\n";
 
                         m_pMenu.AddItem(DefenderStatsText, null);
@@ -210,7 +196,6 @@ namespace Menu
                             EngineerStatsText += "Healing: " + sentry.GetScaledHealAmount() + "% HP\n";
                             EngineerStatsText += "Heal Radius: " + sentry.GetHealRadius() / 16 + "ft\n";
                             EngineerStatsText += "Sentry Damage: " + sentry.GetScaledDamage() * 100 + "%\n";
-                            EngineerStatsText += "Slow Strength: " + sentry.GetCryoShotsSlowInverse() + "%\n\n";
 
                         m_pMenu.AddItem(EngineerStatsText, null);
                     }
@@ -231,53 +216,7 @@ namespace Menu
                     }
                 }
             }
-            
-            /* - Commented out for now whilst I decide how to deal with this info later.
-            // Universal ammo regeneration stats.
-            m_pMenu.AddItem("=== Ammo Regeneration ===", null);
-            
-            // Use the new data-oriented structure to display ammo stats.
-            for (uint i = 0; i < g_AmmoTypes.length(); i++) 
-            {
-                AmmoType@ ammoType = g_AmmoTypes[i];
-                
-                // Skip special ammo types that belong in the explosives category.
-                if (ammoType.hasThreshold && ammoType.name != "health") 
-                    continue;
-                    
-                // Format: "9mm: 1 per 1s (max: 300)".
-                string ammoInfo = ammoType.name + ": " + ammoType.amount + " per " + 
-                                 (ammoType.delay * flAmmoTick) + "s" + 
-                                 " (max: " + ammoType.maxAmount + ")";
-                m_pMenu.AddItem(ammoInfo, null);
-            }
-            
-            m_pMenu.AddItem("\n=== Explosives Regeneration ===", null);
-            
-            // Display threshold-based ammo types.
-            for (uint i = 0; i < g_AmmoTypes.length(); i++) 
-            {
-                AmmoType@ ammoType = g_AmmoTypes[i];
-                
-                // Only show items with threshold.
-                if (!ammoType.hasThreshold)
-                    continue;
 
-                // Skip health since it's not explosives.
-                if (ammoType.name == "health")
-                    continue;
-                    
-                string thresholdInfo = "";
-                if (ammoType.threshold > 0) 
-                {
-                    thresholdInfo = " (max " + ammoType.threshold + ")";
-                }
-                
-                string explosiveInfo = ammoType.name + ": " + ammoType.amount + " per " + 
-                                      (ammoType.delay * flAmmoTick) + "s" + thresholdInfo;
-                m_pMenu.AddItem(explosiveInfo, null);
-            }
-            */
             
             m_pMenu.Register();
             m_pMenu.Open(0, 0, pPlayer);

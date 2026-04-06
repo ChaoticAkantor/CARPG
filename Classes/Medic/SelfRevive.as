@@ -46,16 +46,16 @@ void CheckCanRevive()
                 
                 if ((pPlayer.pev.button & IN_RELOAD) != 0)
                 {
-                    if(!g_PlayerClassResources.exists(steamID))
+                    if(!g_HealingAuras.exists(steamID))
                         continue;
-                        
-                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                    int current = int(resources['current']);
-                    
-                    if (current >= REVIVE_COST)
+
+                    HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
+                    if(aura is null)
+                        continue;
+
+                    if (aura.GetAbilityCharge() >= float(REVIVE_COST))
                     {
-                        current -= REVIVE_COST;
-                        resources['current'] = current;
+                        aura.ConsumeCharge(float(REVIVE_COST));
                         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strReviveSound, 1.0, ATTN_NORM, 0, PITCH_NORM);
                         pPlayer.Revive();
                     }

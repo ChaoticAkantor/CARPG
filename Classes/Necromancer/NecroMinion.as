@@ -93,14 +93,14 @@ const array<int> ZOMBIE_BODYGROUPS =
 
 const array<float> NECRO_HP_MODIFIERS = 
 {
-    1.5,  // Zombie.
-    1.0,  // Skeleton.
-    2.0   // Abomination (Gonome).
+    2.00,  // Zombie.
+    1.50,  // Skeleton.
+    2.40   // Abomination (Gonome).
 };
 
 const array<float> NECRO_ANIMATION_SPEEDS = 
 {
-    3.00,  // Zombie.
+    2.80,  // Zombie.
     1.40,  // Skeleton.
     1.60   // Abomination (Gonome).
 };
@@ -131,17 +131,9 @@ const array<string> NECRO_MODELS =
 
 const array<int> NECRO_COSTS = // Pool cost per summon of each type.
 {
-    3, // Zombie.
-    3, // Skeleton (Vortigaunt).
-    6 // Abomination (Gonome).
-};
-
-// Level requirements for each Zombie type.
-const array<int> NECRO_LEVEL_REQUIREMENTS = 
-{   
-    1,   // Zombie.
-    5,  // Skeleton (Vortigaunt).
-    15    // Abomination (Gonome).
+    1, // Zombie.
+    1, // Skeleton (Vortigaunt).
+    2 // Abomination (Gonome).
 };
 
 // Structure to track minion type.
@@ -161,29 +153,68 @@ class NecroMinionData
     private bool m_bActive = false;
 
     // Monster variables.
+    private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
+    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
-    private float m_flHealthScaleAtMaxLevel = 4.0; // Health modifier at max level.
-    private float m_flHealthRegen = 0.2; // // Health recovery percentage per interval.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
-    private float m_flDamageScaleAtMaxLevel = 2.5; // Damage modifier at max level.
-    private float m_flLifestealPercentAtMaxLevel = 0.25; // Lifesteal at max level.
-    private int m_iMinionResourceCost = 1; // Cost to summon specific minion default.
 
     // Timers and trackers.
-    private float m_flReservePool = 0.0f;
+    private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
+    private int m_iMinionResourceCost = 0; // Cost to summon specific minion default.
+    private int m_iReservePool = 0;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
+    private bool m_bInitialized = false;
     private ClassStats@ m_pStats = null;
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     ClassStats@ GetStats() { return m_pStats; }
 
+    bool IsInitialized() { return m_bInitialized; }
+    void SetInitialized() { m_bInitialized = true; }
+
     int GetMinionCount() { return m_hMinions.length(); }
-    float GetReservePool() { return m_flReservePool; }
-    void SetReservePoolZero() { m_flReservePool = 0.0f; }
+    int GetReservePool() { return m_iReservePool; }
+    void SetReservePoolZero() { m_iReservePool = 0; }
     bool HasStats() { return m_pStats !is null; }
+
+    int GetMinionPointIncrease()
+    {
+        if(m_pStats is null)
+            return 0; // No increase if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONPOINT);
+        return int(SKILL_MINIONPOINT * skillLevel); // Bonus minion points from skill.
+    }
+
+    int GetAbilityMax() { return m_iMinionPointMax + GetMinionPointIncrease(); }
+
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    void RechargeAbility()
+    {
+        float chargeMax = float(GetAbilityMax() - m_iReservePool);
+        if (m_flAbilityCharge >= chargeMax)
+            return;
+
+        float rechargeRate = 1.0f / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > chargeMax)
+            m_flAbilityCharge = chargeMax;
+    }
 
     bool IsActive() 
     { 
@@ -216,10 +247,12 @@ class NecroMinionData
 
         float minionScaledHealth = m_flBaseHealth; // Start with base health.
 
-        float level = m_pStats.GetLevel();
-        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
-        minionScaledHealth *= healthMultiplier;
-        minionScaledHealth *= NECRO_HP_MODIFIERS[minionType]; // Apply minion type modifier.
+        float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONHP);
+        float skillPower = SKILL_MINIONHP;
+
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
+
+        minionScaledHealth *= modifier * NECRO_HP_MODIFIERS[minionType]; // Apply skill and type modifier.
 
         return minionScaledHealth;
     }
@@ -229,55 +262,23 @@ class NecroMinionData
         if(m_pStats is null)
             return 1.0f; // Restore to default, but is always null when we have no minions.
 
-        float minionScaledDamage = 1.0f; // Default multiplier.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONDAMAGE);
+        float skillPower = SKILL_MINIONDAMAGE;
+        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        float level = m_pStats.GetLevel();
-        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
-        minionScaledDamage += damagePerLevel * level;
-
-        return minionScaledDamage;
+        return modifier;
     }
     
-    float GetMinionRegen() // Get minion regen based on level.
+    float GetMinionRegen() // Get minion regen based on skill level.
     { 
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        float minionRegen = 0.0f; // Default to zero.
-        
-        minionRegen = m_flHealthRegen;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONREGEN);
+        float skillPower = SKILL_MINIONREGEN;
+        float modifier = skillLevel * skillPower; // Regen is zero with no skill points spent.
 
-        //float level = m_pStats.GetLevel();
-        //minionRegen = m_flHealthRegenAtMaxLevel * (float(level) / g_iMaxLevel);
-
-        return minionRegen; 
-    }
-
-    float GetLifestealPercent() // Get minion lifesteal based on level.
-    { 
-        if(m_pStats is null)
-            return 0.0f; // Default if no stats.
-
-        float lifeSteal = 0.0f; // Default to zero.
-
-        float level = m_pStats.GetLevel();
-        lifeSteal = m_flLifestealPercentAtMaxLevel * (float(level) / g_iMaxLevel);
-
-        return lifeSteal;
-    }
-    
-    bool IsMinionTypeUnlocked(int minionType)
-    {
-        if(m_pStats is null)
-            return minionType == NECRO_ZOMBIE; // Only allow normal Zombies if no stats.
-
-        int playerLevel = m_pStats.GetLevel();
-    
-        // Check level requirement for each minion type.
-        if(minionType >= 0 && uint(minionType) < NECRO_LEVEL_REQUIREMENTS.length())
-            return playerLevel >= NECRO_LEVEL_REQUIREMENTS[minionType];
-        
-        return false;
+        return modifier;
     }
     
     array<NecroMinionInfo>@ GetMinions() { return m_hMinions; }
@@ -324,13 +325,10 @@ class NecroMinionData
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
+        int maxPool = GetAbilityMax();
+        if(maxPool <= 0)
             return;
 
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        int current = int(resources['current']);
-        
         // First clean up invalid minions to make sure we have an accurate count.
         for(int i = m_hMinions.length() - 1; i >= 0; i--)
         {
@@ -341,21 +339,20 @@ class NecroMinionData
         }
 
         // Check resources for spawning new minion.
-        if(current < NECRO_COSTS[minionType])
+        if(m_iReservePool + NECRO_COSTS[minionType] > maxPool)
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + NECRO_NAMES[minionType] + "!\n");
             return;
         }
-        
-        // Calculate max resources and ensure we're within limits.
-        float maxEnergy = float(resources['max']);
-        if(m_flReservePool + NECRO_COSTS[minionType] > maxEnergy)
+
+        if(m_flAbilityCharge < float(NECRO_COSTS[minionType]))
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Maximum Undead Capacity reached!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, NECRO_NAMES[minionType] + " is recharging!\n");
             return;
         }
 
         // Initialize stats if needed.
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
         if(m_pStats is null)
         {
             if(g_PlayerRPGData.exists(steamID))
@@ -366,13 +363,6 @@ class NecroMinionData
                     @m_pStats = data.GetCurrentClassStats();
                 }
             }
-        }
-        
-        // Check if the minion type is unlocked based on player level.
-        if(!IsMinionTypeUnlocked(minionType))
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + NECRO_NAMES[minionType] + " requires Lv. " + NECRO_LEVEL_REQUIREMENTS[minionType] + "!\n");
-            return;
         }
 
         Vector vecSrc = pPlayer.GetGunPosition();
@@ -395,8 +385,6 @@ class NecroMinionData
         keys["scale"] = "1";
         keys["friendly"] = "1";
         keys["spawnflags"] = "16384";
-        //keys["mins"] = "0 0 0"; // Bounding box mins.
-        //keys["maxs"] = "0 0 0"; // Bounding box maxs.
         keys["is_player_ally"] = "1";
         keys["body"] = string(Math.RandomLong(1, 11)); // Random bodygroup for zombies.
         //keys["skin"] = string(randomBody); // Random skin for zombies.
@@ -407,11 +395,15 @@ class NecroMinionData
             // Apply glow effect before dispatch.
             ApplyMinionGlow(pNecroMinion);
 
-            g_EntityFuncs.DispatchSpawn(pNecroMinion.edict()); // Dispatch the entity.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pNecroMinion);
+            if(pMonster !is null)
+                pMonster.m_hGuardEnt = EHandle(pPlayer); // Guard the player, turn down follow requests.
 
-            // Stuff to set after dispatch.
-            //@pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
-            pNecroMinion.pev.solid = SOLID_NOT;
+            @pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
+            //pNecroMinion.SetClassification(pPlayer.Classify()); // Set the same classification as the player to share ally tables.
+            //pNecroMinion.SetPlayerAllyDirect (true); // Set directly as ally of owner.
+
+            g_EntityFuncs.DispatchSpawn(pNecroMinion.edict()); // Dispatch the entity.
 
             // Store both the minion handle and its type.
             NecroMinionInfo info;
@@ -419,9 +411,8 @@ class NecroMinionData
             info.type = minionType;
             m_hMinions.insertLast(info);
             
-            m_flReservePool += NECRO_COSTS[minionType]; // Add to reserve pool when minion is created.
-            current -= NECRO_COSTS[minionType]; // Subtract from current resources.
-            resources['current'] = current;
+            m_iReservePool += NECRO_COSTS[minionType]; // Add to reserve pool when minion is created.
+            m_flAbilityCharge -= float(NECRO_COSTS[minionType]); // Deduct from ability charge.
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strNecroMinionSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, NECRO_NAMES[minionType] + " summoned!\n");
@@ -456,7 +447,7 @@ class NecroMinionData
                 pMonster.pev.framerate = NECRO_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
             }
 
-            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
             
             // Enhanced death check - check multiple conditions.
             bool isDead = false;
@@ -485,8 +476,10 @@ class NecroMinionData
                 pExistingMinion.pev.frags = 0;
             }
             
-            // Ensure max_health is refreshed when leveling up.  
-            pExistingMinion.pev.max_health = GetScaledHealth(); // Use our scaled health formula that accounts for player level.
+            // Ensure max_health is properly set and updated dynamically (e.g. when skills change).
+            pExistingMinion.pev.max_health = GetScaledHealth();
+            if(pExistingMinion.pev.health > pExistingMinion.pev.max_health)
+                pExistingMinion.pev.health = pExistingMinion.pev.max_health;
 
             // Ensure glow effect is not overridden.
             ApplyMinionGlow(pExistingMinion);
@@ -539,7 +532,7 @@ class NecroMinionData
         }
 
         // Reset individual reserve pool.
-        m_flReservePool = 0.0f;
+        m_iReservePool = 0;
         
         if(anyDestroyed)
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Undead killed!\n");
@@ -601,7 +594,8 @@ class NecroMinionData
             
             // Clear the array and reset pool.
             m_hMinions.resize(0);
-            m_flReservePool = 0.0f;
+            m_iReservePool = 0;
+            m_flAbilityCharge = float(GetAbilityMax());
         }
     }
 
@@ -626,18 +620,11 @@ class NecroMinionData
                 if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO && pMinion.pev.health > 0)
                 {
                     // Ensure max_health is properly set.
-                    if(pMinion.pev.max_health <= 0) 
-                    {
-                        // Get the creature type from our stored information.
-                        int creatureType = m_hMinions[i].type;
-                        
-                        // Use our scaled health formula that accounts for player level.
-                        pMinion.pev.max_health = GetScaledHealth();
-                    }
+                    pMinion.pev.max_health = GetScaledHealth();
 
                     // Get scaled regen based on player level.
                     float regenAmount = GetMinionRegen(); // This already scales with level.
-                    float flHealAmount = pMinion.pev.max_health / 100 * regenAmount; // Apply scaled regen.
+                    float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
 
                     if(pMinion.pev.health < pMinion.pev.max_health)
                     {
@@ -666,7 +653,7 @@ class NecroMinionData
     void RecalculateReservePool()
     {
         // Recalculate the reserve pool based on current minions.
-        float newReservePool = 0.0f;
+        int newReservePool = 0;
         
         // Process from last to first to allow safe removal during iteration.
         for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
@@ -689,7 +676,7 @@ class NecroMinionData
         }
         
         // Update the reserve pool.
-        m_flReservePool = newReservePool;
+        m_iReservePool = newReservePool;
     }
 
     // Called when a minion deals damage to an enemy.
@@ -697,76 +684,6 @@ class NecroMinionData
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
-
-        // Calculate health to return to player based on level scaling.
-        float lifeStealPercent = GetLifestealPercent(); // Use scaled lifesteal instead of raw max value
-        float healthToGive = flDamageDealt * lifeStealPercent;
-        
-        // Apply the healing to the player.
-        if(pPlayer.pev.health < pPlayer.pev.max_health)
-        {
-            pPlayer.pev.health = Math.min(pPlayer.pev.health + healthToGive, pPlayer.pev.max_health);
-            
-            // Visual feedback for the lifesteal effect - Heal sprites - Player.
-            Vector pos = pPlayer.pev.origin;
-            Vector mins = pos - Vector(16, 16, 0);
-            Vector maxs = pos + Vector(16, 16, 64);
-
-            NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
-            healeffect.WriteByte(TE_BUBBLES);
-            healeffect.WriteCoord(mins.x);
-            healeffect.WriteCoord(mins.y);
-            healeffect.WriteCoord(mins.z);
-            healeffect.WriteCoord(maxs.x);
-            healeffect.WriteCoord(maxs.y);
-            healeffect.WriteCoord(maxs.z);
-            healeffect.WriteCoord(80.0f); // Height of the bubble effect
-            healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-            healeffect.WriteByte(18); // Count
-            healeffect.WriteCoord(6.0f); // Speed
-            healeffect.End();
-        }
-        
-        // Find the active minion that dealt the damage (most likely the last one that dealt damage).
-        // Needs better tracking, currently heals all minions.
-        for(uint i = 0; i < m_hMinions.length(); i++)
-        {
-            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
-            if(pMinion !is null)
-            {
-                // Cast to CBaseMonster to check monster-specific properties.
-                CBaseMonster@ pMonster = cast<CBaseMonster@>(pMinion);
-                
-                // Only heal if the monster is alive.
-                if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO && pMinion.pev.health > 0)
-                {
-                    // Apply healing to the minion if it's not at max health.
-                    if(pMinion.pev.health < pMinion.pev.max_health)
-                    {
-                        pMinion.pev.health = Math.min(pMinion.pev.health + healthToGive, pMinion.pev.max_health);
-
-                        // Visual feedback for the lifesteal effect - Heal sprites - Minion.
-                        Vector pos = pMinion.pev.origin;
-                        Vector mins = pos - Vector(16, 16, 0);
-                        Vector maxs = pos + Vector(16, 16, 64);
-
-                        NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
-                        healeffect.WriteByte(TE_BUBBLES);
-                        healeffect.WriteCoord(mins.x);
-                        healeffect.WriteCoord(mins.y);
-                        healeffect.WriteCoord(mins.z);
-                        healeffect.WriteCoord(maxs.x);
-                        healeffect.WriteCoord(maxs.y);
-                        healeffect.WriteCoord(maxs.z);
-                        healeffect.WriteCoord(80.0f); // Height of the bubble effect.
-                        healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-                        healeffect.WriteByte(18); // Count.
-                        healeffect.WriteCoord(6.0f); // Speed.
-                        healeffect.End();
-                    }
-                }
-            }
-        }
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)
@@ -823,16 +740,7 @@ class NecroMinionMenu
         for(uint i = 0; i < NECRO_NAMES.length(); i++) 
         {
             string menuText = "";
-
-            // Check if this minion type is unlocked.
-            if(!m_pOwner.IsMinionTypeUnlocked(i))
-            {
-                menuText += "Summon " + NECRO_NAMES[i] + " (Lv. " + NECRO_LEVEL_REQUIREMENTS[i] + ")";
-            }
-            else
-            {
-                menuText += "Summon " + NECRO_NAMES[i] + " (Cost: " + NECRO_COSTS[i] + ")";
-            }
+            menuText += "Summon " + NECRO_NAMES[i] + " (Cost: " + NECRO_COSTS[i] + ")";
             
             m_pMenu.AddItem(menuText + "\n", any(i));
         }
@@ -866,13 +774,6 @@ class NecroMinionMenu
             }
             else if(choice >= 0 && uint(choice) < NECRO_NAMES.length())
             {
-                // Check if this minion type is unlocked.
-                if(!m_pOwner.IsMinionTypeUnlocked(choice))
-                {
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "" + NECRO_NAMES[choice] + " requires Lv. " + NECRO_LEVEL_REQUIREMENTS[choice] + "!\n");
-                    return;
-                }
-                
                 // Spawn new minion.
                 m_pOwner.SpawnSpecificMinion(pPlayer, choice);
             }
@@ -906,11 +807,12 @@ void CheckNecromancerMinions()
         NecroMinionData@ NecroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
         if(NecroMinion !is null)
         {
-            // Reset all minions on first check after map load or plugin reload.
-            if(!NecroMinion.IsActive())
+            // Reset stale minions once on map load or plugin reload.
+            if(!NecroMinion.IsInitialized())
             {
                 //g_Game.AlertMessage(at_console, "CARPG: Resetting Necromancer minions for player " + steamID + " on map load\n");
                 NecroMinion.Reset();
+                NecroMinion.SetInitialized();
             }
             
             // Check if player switched class.
@@ -937,22 +839,14 @@ void CheckNecromancerMinions()
             }
             
                 // Make sure resource limits are enforced
-                if(g_PlayerClassResources.exists(steamID))
+                NecroMinion.RecalculateReservePool();
+                int necroMax = NecroMinion.GetAbilityMax();
+                if(necroMax > 0 && NecroMinion.GetReservePool() > necroMax)
                 {
-                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                    if(resources !is null)
-                    {
-                        // First recalculate the reserve pool to ensure it's accurate
-                        NecroMinion.RecalculateReservePool();
-                        
-                        float maxEnergy = float(resources['max']);
-                        if(NecroMinion.GetReservePool() > maxEnergy)
-                        {
-                            // Over the limit, destroy minions until we're within limits.
-                            NecroMinion.DestroyAllMinions(pPlayer);
-                        }
-                    }
+                    // Over the limit, destroy minions until we're within limits.
+                    NecroMinion.DestroyAllMinions(pPlayer);
                 }            NecroMinion.MinionRegen(); // Minion Regeneration.
+            NecroMinion.RechargeAbility(); // Recharge minion points.
 
             // Always update scaling values for stats menu.
             NecroMinion.GetScaledHealth();

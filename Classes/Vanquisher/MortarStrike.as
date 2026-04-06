@@ -14,6 +14,8 @@ class MortarStrikeData
 {   
     private float m_flMortarStrikeDelay = 3.0f;
     private float m_flMortarStrikeEnergyCost = 100.0f;
+    private float m_flAbilityMax = 100.0f; // Max charge.
+    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge from empty.
     private float m_flMortarStrikeRange = 1024.0f;
     private float m_flMortarStrikeBaseDamage = 25.0f; // Base damage of each explosion.
     private float m_flMortarStrikeDamageScale = 0.1f; // % Damage increase per level.
@@ -21,10 +23,15 @@ class MortarStrikeData
     int m_iMortarStrikeBaseExplosions = 3; // Base number of clusters.
     int m_iMortarStrikeExplosionsScaling = 2; // Extra clusters per 2 levels.
     private float m_flCooldown = 2.0f;
+
+    // Timers.
+    private float m_flAbilityCharge = 0.0f;
     private float m_flLastUseTime = 0.0f;
     private ClassStats@ m_pStats = null;
 
     bool HasStats() { return m_pStats !is null; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return m_flAbilityMax; }
     
     void SetStats(ClassStats@ stats) 
     { 
@@ -34,6 +41,33 @@ class MortarStrikeData
     void Initialize(ClassStats@ stats)
     {
         @m_pStats = stats;
+    }
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    void RechargeAbility()
+    {
+        if (m_flAbilityCharge >= m_flAbilityMax)
+            return;
+
+        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > m_flAbilityMax)
+            m_flAbilityCharge = m_flAbilityMax;
+    }
+
+    void Update(CBasePlayer@ pPlayer)
+    {
+        RechargeAbility();
     }
 
     bool IsOnCooldown(CBasePlayer@ pPlayer)
@@ -57,14 +91,8 @@ class MortarStrikeData
         
         if(IsOnCooldown(pPlayer))
             return;
-            
-        if(!g_PlayerClassResources.exists(steamId))
-            return;
-            
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamId]);
-        float current = float(resources['current']);
-        
-        if(current < m_flMortarStrikeEnergyCost)
+
+        if(m_flAbilityCharge < m_flMortarStrikeEnergyCost)
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Mortar Strike recharging...\n");
             return;
@@ -81,9 +109,8 @@ class MortarStrikeData
         // Only allow targeting on the floor
         if(tr.pHit !is null && tr.flFraction < 1.0 && tr.vecPlaneNormal.z >= 0.7)
         {
-            // Take energy using resource system
-            current -= m_flMortarStrikeEnergyCost;
-            resources['current'] = current;
+            // Take energy using charge.
+            m_flAbilityCharge -= m_flMortarStrikeEnergyCost;
             
             // Start cooldown
             m_flLastUseTime = g_Engine.time;
@@ -235,5 +262,31 @@ class MortarStrikeData
             smokeMsg.WriteByte(100);
             smokeMsg.WriteByte(10);
         smokeMsg.End();
+    }
+}
+
+void UpdateMortarStrikes()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer is null || !pPlayer.IsConnected())
+            continue;
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(!g_PlayerRPGData.exists(steamID))
+            continue;
+
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data is null || data.GetCurrentClass() != PlayerClass::CLASS_VANQUISHER)
+            continue;
+
+        if(!g_PlayerMortarStrikes.exists(steamID))
+            continue;
+
+        MortarStrikeData@ mortar = cast<MortarStrikeData@>(g_PlayerMortarStrikes[steamID]);
+        if(mortar !is null)
+            mortar.Update(pPlayer);
     }
 }

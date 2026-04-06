@@ -5,11 +5,7 @@
 
 // Timer intervals.
 const float flRegenTickHP = 1.0f; // Time between HP regen ticks (in seconds).
-const float flRegenTickAP = 4.0f; // Time between AP regen ticks (in seconds).
-
-// Regen percentages.
-const float flPercentHPRegen = 1.0f; // Percentage of HP to regen per tick.
-const float flPercentAPRegen = 1.0f; // Percentage of AP to regen per tick.
+const float flRegenTickAP = 1.0f; // Time between AP regen ticks (in seconds).
 
 // Hurt delay.
 const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks (in seconds).
@@ -102,8 +98,17 @@ void RegenTickHP() // Regen HP.
             RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
             if(data !is null && data.isRegenerating && bAllowHPRegen)
             {
-                float flCalcPercHP = (pPlayer.pev.max_health * flPercentHPRegen / 100) * g_CurrentRecoveryMapMultiplier;
-                float flRegenHP = Math.max(int(flCalcPercHP), 1);
+                float skillBonusHP = 0.0f;
+                PlayerData@ rpgData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if (rpgData !is null)
+                {
+                    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_REGENHP);
+                    if (skillLevel > 0)
+                        skillBonusHP = SKILL_REGENHP * flRegenTickHP * float(skillLevel);
+                }
+
+                float flCalcPercHP = (pPlayer.pev.max_health * skillBonusHP) * g_CurrentRecoveryMapMultiplier;
+                float flRegenHP = flCalcPercHP;
 
                 if (pPlayer.pev.health < pPlayer.pev.max_health)
                 {
@@ -132,12 +137,22 @@ void RegenTickAP() // Regen AP.
             RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
             if(data !is null && data.isRegenerating && bAllowAPRegen)
             {
-                float flCalcPercAP = (pPlayer.pev.armortype * flPercentAPRegen / 100) * g_CurrentRecoveryMapMultiplier;
-                float iRegenAP = Math.max(int(flCalcPercAP), 1);
+                float skillBonusAP = 0.0f;
+                PlayerData@ rpgData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if (rpgData !is null)
+                {
+                    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_REGENAP);
+                    if (skillLevel > 0)
+                        skillBonusAP = SKILL_REGENAP * flRegenTickAP * float(skillLevel);
+                }
+
+                float flCalcPercAP = (pPlayer.pev.armortype * skillBonusAP) * g_CurrentRecoveryMapMultiplier;
+                float flRegenAP = flCalcPercAP;
+                //Math.max(flCalcPercAP, 1.0f);
 
                 if (pPlayer.pev.armorvalue < pPlayer.pev.armortype)
                 {
-                    pPlayer.pev.armorvalue = Math.min(pPlayer.pev.armorvalue + iRegenAP, pPlayer.pev.armortype);
+                    pPlayer.pev.armorvalue = Math.min(pPlayer.pev.armorvalue + flRegenAP, pPlayer.pev.armortype);
                 }
             }
         }
@@ -165,46 +180,6 @@ void HurtDelayTick() // Think.
                     data.hurtDelayCounter = flHurtDelay * g_CurrentRecoveryMapMultiplier;
                     data.isRegenerating = true;
                 }
-            }
-        }
-    }
-}
-
-void UpdateHUDHurtDelay() // Update HUD for hurt delay sprite.
-{
-    const int iMaxPlayers = g_Engine.maxClients;
-    for (int i = 1; i <= iMaxPlayers; ++i)
-    {
-        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if (pPlayer !is null && pPlayer.IsConnected())
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(!g_PlayerRecoveryData.exists(steamID))
-                continue;
-
-            RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
-            if(data !is null && !data.isRegenerating)
-            {
-                HUDNumDisplayParams numParams;
-                numParams.channel = 6;
-                numParams.x = 0;
-                numParams.y = -0.1;
-                numParams.fadeinTime = 0;
-                numParams.fadeoutTime = 0;
-                numParams.holdTime = 0.5;
-                numParams.fxTime = 0;
-                numParams.spritename = strHurtDelaySprite;
-                numParams.left = 176;
-                numParams.top = 120;
-                numParams.width = 38;
-                numParams.height = 38;
-                numParams.defdigits = 1;
-                numParams.maxdigits = 1;
-                numParams.value = data.hurtDelayCounter;
-                numParams.color1 = RGBA(255, 0, 0, 255);
-                numParams.color2 = RGBA(255, 0, 0, 255);
-
-                g_PlayerFuncs.HudNumDisplay(pPlayer, numParams);
             }
         }
     }

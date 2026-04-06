@@ -13,6 +13,12 @@ class ShockRifleData
     private float m_flLightningStrikeRadius = 100.0f * 16.0f; // Radius of the area strike in units.
     private bool  m_bLightningActive = false; // Re-entrancy guard: prevents RadiusDamage from triggering another strike on nearby enemies.
 
+    // Ability charge (self-managed, replaces g_PlayerClassResources).
+    // Equipping costs the full charge; recharges only when rifle is not equipped.
+    private float m_flAbilityCharge = 0.0f;
+    private float m_flAbilityMax = 1.0f;
+    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge from empty.
+
     // Timers.
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
     private float m_flLastUseTime = 0.0f; // Stores last use time.
@@ -21,6 +27,43 @@ class ShockRifleData
 
     bool HasStats() { return m_pStats !is null; }    
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return m_flAbilityMax; }
+
+    float GetScaledAbilityRecharge()
+    {
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+
+        return rechargeBonus + 1.0f;
+    }
+
+    void RechargeAbility()
+    {
+        if (m_flAbilityCharge >= m_flAbilityMax)
+            return;
+
+        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > m_flAbilityMax)
+            m_flAbilityCharge = m_flAbilityMax;
+    }
+
+    void Update(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected())
+            return;
+
+        // Only recharge when shock rifle is NOT equipped.
+        CBasePlayerItem@ pItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
+        if(pItem is null)
+        {
+            RechargeAbility();
+        }
+    }
     
     float GetScaledDamage()
     {
@@ -56,14 +99,6 @@ class ShockRifleData
         if(pPlayer is null || !HasStats()) 
             return;
 
-        string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamId))
-            return;
-            
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamId]);
-        if(resources is null)
-            return;
-
         float flCurrentTime = g_Engine.time;
         float timeSinceLastUse = flCurrentTime - m_flLastUseTime;
         
@@ -79,15 +114,12 @@ class ShockRifleData
         if(pWeapon !is null && pPlayer.m_hActiveItem.GetEntity() is pWeapon)
         {
             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
-            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex); // Get current shock charge ammo.
-            float flcurrentAmmo = float(currentAmmo) / 100.0f; // Convert to float for energy calculation (1 ammo = 0.01 energy).
-            float flMaxAmmo = GetScaledMaxAmmo() / 100.0f; // Max ammo scaled by level (also converted to energy scale).
+            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
+            float flcurrentAmmo = float(currentAmmo) / 100.0f;
+            float flMaxAmmo = GetScaledMaxAmmo() / 100.0f;
 
-            // Refund half of remaining battery into energy.
-            float currentEnergy = float(resources['current']);
-            float maxEnergy = float(resources['max']);
-            currentEnergy = Math.min(currentEnergy + (flcurrentAmmo / 2), maxEnergy); // Refund half remaining ammo as ability charge.
-            resources['current'] = currentEnergy;
+            // Refund half of remaining battery into charge.
+            m_flAbilityCharge = Math.min(m_flAbilityCharge + (flcurrentAmmo / 2), m_flAbilityMax);
             
             // Force remove the weapon.
             g_EntityFuncs.Remove(pWeapon);
@@ -103,16 +135,14 @@ class ShockRifleData
             return;
         }
 
-        // Create new shock rifle - first check energy.
-        float currentEnergy = float(resources['current']);
-        float maxEnergy = float(resources['max']);
-        if(currentEnergy < maxEnergy)
+        // Create new shock rifle - first check charge.
+        if(m_flAbilityCharge < m_flAbilityMax)
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle recharging...\n");
             return;
         }
         
-        // Now check cooldown since we have enough energy.
+        // Now check cooldown since we have enough charge.
         if(timeSinceLastUse < m_flCooldown)
         {
             float remainingCooldown = m_flCooldown - timeSinceLastUse;
@@ -120,8 +150,8 @@ class ShockRifleData
             return;
         }
 
-        // Set energy to zero.
-        resources['current'] = 0;
+        // Use the charge.
+        m_flAbilityCharge = 0.0f;
 
         // Get max ammo based on level.
         int ammotoGive = int(GetScaledMaxAmmo());
@@ -238,5 +268,31 @@ void CheckWeaponsShockRifle()
                 }
             }
         }
+    }
+}
+
+void UpdateShockRifles()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer is null || !pPlayer.IsConnected())
+            continue;
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(!g_PlayerRPGData.exists(steamID))
+            continue;
+
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data is null || data.GetCurrentClass() != PlayerClass::CLASS_SHOCKTROOPER)
+            continue;
+
+        if(!g_ShockRifleData.exists(steamID))
+            continue;
+
+        ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
+        if(shockRifle !is null)
+            shockRifle.Update(pPlayer);
     }
 }

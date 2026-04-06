@@ -6,15 +6,14 @@ dictionary g_PlayerSnarkNests;
 class SnarkNestData
 {   
     // Snark Swarm ability parameters.
-    private float m_flEnergyCost = 1.0f; // Base cost per use (charges).
-    private float m_flBaseHealth = 50.0f; // Base HP of each snark.
-    private float m_flHealthScaleAtMaxLevel = 5.0f; // Health modifier at max level.
-    private float m_flSnarkDamageScaleAtMaxLevel = 15.0f; // Damage modifier at max level. Snark base damage is derived from sk setting.
-    private int m_iBaseSnarkCount = 6; // Base number of snarks to spawn.
-    private float m_flSnarkCountScaleAtMaxLevel = 6.00f; // Number of snarks modifier at max level.
-    private float m_flLifestealPercentAtMaxLevel = 0.05f; // Percentage of damage dealt returned to player as health.
+    private float m_flAbilityCost = 1.0f; // Base cost per use (charges).
+    private float m_flAbilityMax = 1.0f; // Max charges.
+    private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
+    private float m_flBaseHealth = 100.0f; // Base HP of each snark.
+    private int m_iBaseSnarkCount = 10; // Base number of snarks to spawn.
 
     // Timers.
+    private float m_flAbilityCharge = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 4.0f; // Cooldown between spawns.
     private float m_flLaunchForce = 1000.0f; // Velocity that snarks are thrown outward.
@@ -24,6 +23,8 @@ class SnarkNestData
     private ClassStats@ m_pStats = null;
     bool HasStats() { return m_pStats !is null; }
     ClassStats@ GetStats() { return m_pStats; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return m_flAbilityMax; }
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     
@@ -56,7 +57,7 @@ class SnarkNestData
         {
             // Clean up any snarks spawned by this player.
             CBaseEntity@ snarkEntity = null;
-            while((@snarkEntity = g_EntityFuncs.FindEntityByTargetname(snarkEntity, "_snark_" + playerIndex + "_*")) !is null)
+            while((@snarkEntity = g_EntityFuncs.FindEntityByTargetname(snarkEntity, "_snark_" + playerIndex)) !is null)
             {
                 g_EntityFuncs.Remove(snarkEntity);
             }
@@ -68,13 +69,13 @@ class SnarkNestData
         if(m_pStats is null)
             return m_iBaseSnarkCount; // Default if no stats.
 
-        float scaledCount = m_iBaseSnarkCount; // Default number of snarks.
+        float baseCount = m_iBaseSnarkCount; // Default number of snarks.
 
-        float level = float(m_pStats.GetLevel());
-        float countPerLevel = (m_flSnarkCountScaleAtMaxLevel * m_iBaseSnarkCount) / g_iMaxLevel;
-        scaledCount += countPerLevel * level;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKCOUNT);
+        float skillPower = SKILL_SWARMER_SNARKCOUNT;
+        float modifier = 1.0f + (skillPower * skillLevel); // Scale with skill level.
 
-        return int(scaledCount);
+        return int(baseCount * modifier); // return as int, can't have part of a snark lol.
     }
 
     float GetScaledDamage() // Damage scaling applied through MonsterTakeDamage hook.
@@ -82,41 +83,38 @@ class SnarkNestData
         if(m_pStats is null)
             return 1.0f; // Default if no stats.
 
-        float ScaledDamage = 1.0f; // Default multiplier.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKDAMAGE);
+        float skillPower = SKILL_SWARMER_SNARKDAMAGE;
+        float modifier = 1.0f + (skillPower * skillLevel);
 
-        float level = m_pStats.GetLevel();
-        float damagePerLevel = m_flSnarkDamageScaleAtMaxLevel / g_iMaxLevel;
-        ScaledDamage += damagePerLevel * level;
-
-        return ScaledDamage;
+        return modifier;
     }
-    
-    float GetScaledHealth()
+
+    float GetScaledAbilityRecharge()
     {
-        if(m_pStats is null)
-            return m_flBaseHealth; // Return base health without scaling if no stats.
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
 
-        float minionScaledHealth = m_flBaseHealth; // Start with base health.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
-        float level = m_pStats.GetLevel();
-        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
-        minionScaledHealth *= healthMultiplier;
-
-        return minionScaledHealth;
+        return rechargeBonus + 1.0f;
     }
 
-    float GetLifestealPercent() // Get minion lifesteal based on level.
-    { 
-        if(m_pStats is null)
-            return 0.0f; // Default if no stats.
+    void RechargeAbility()
+    {
+        if (m_flAbilityCharge >= m_flAbilityMax)
+            return;
 
-        float lifeSteal = 0.0f; // Default to zero.
+        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > m_flAbilityMax)
+            m_flAbilityCharge = m_flAbilityMax;
+    }
 
-        float level = m_pStats.GetLevel();
-        lifeSteal = m_flLifestealPercentAtMaxLevel * (float(level) / g_iMaxLevel);
-
-
-        return lifeSteal;
+    void Update(CBasePlayer@ pPlayer)
+    {
+        RechargeAbility();
     }
 
     void SummonSnarks(CBasePlayer@ pPlayer)
@@ -135,24 +133,13 @@ class SnarkNestData
         m_flLastToggleTime = 0.0f;
 
         // Check energy requirements for deployment.
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
-
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        float current = float(resources['current']);
-        float energyCost = m_flEnergyCost;
-
-        // Check if we have enough energy.
-        if(current < energyCost)
+        if(m_flAbilityCharge < m_flAbilityCost)
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Snark Swarms!\n");
             return;
         }
 
-        // Deduct energy cost.
-        current -= energyCost;
-        resources['current'] = current;
+        m_flAbilityCharge -= m_flAbilityCost;
 
         // Get player's gun position for effects.
         Vector gunPos = pPlayer.GetGunPosition();
@@ -248,9 +235,9 @@ class SnarkNestData
         dictionary keys;
         keys["origin"] = spawnPos.ToString();
         keys["angles"] = pPlayer.pev.v_angle.ToString(); // Use player's view angle
-        keys["targetname"] = "_snark_" + playerIndex + "_" + Math.RandomLong(1000, 9999);
+        keys["targetname"] = "_snark_" + playerIndex;
         keys["displayname"] = string(pPlayer.pev.netname) + "'s Snark";
-        keys["health"] = string(GetScaledHealth());
+        keys["health"] = string(m_flBaseHealth); // Base health.
         keys["spawnflags"] = "32";
         keys["is_player_ally"] = "1";
         
@@ -261,9 +248,9 @@ class SnarkNestData
 
             @pSnark.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
 
-            float scaledHealth = GetScaledHealth();
-            pSnark.pev.max_health = scaledHealth; // Set max health based on player level
-            pSnark.pev.health = scaledHealth;
+            float baseHealth = m_flBaseHealth;
+            pSnark.pev.max_health = baseHealth; // Set max health based on player level
+            pSnark.pev.health = baseHealth;
 
             // Apply velocity to launch the snark outward.
             pSnark.pev.velocity = velocity;
@@ -292,37 +279,42 @@ class SnarkNestData
         g_Scheduler.SetTimeout("ContinueSnarkSpawning", 0.05f, spawnParams);
     }
 
-    // Called when a minion deals damage to an enemy. This version only heals owner.
-    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
+    // Called when a minion deals damage to an enemy.
+    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt, CBaseEntity@ pSnark)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
-        // Calculate health to return to player based on level scaling.
-        float lifeStealPercent = GetLifestealPercent(); // Use scaled lifesteal instead of raw max value
-        float healthToGive = flDamageDealt * lifeStealPercent;
-        
-        // Apply the healing.
-        pPlayer.pev.health = Math.min(pPlayer.pev.health + healthToGive, pPlayer.pev.max_health);
-        
-        // Visual feedback for the lifesteal effect - Heal sprites - Player.
-        Vector pos = pPlayer.pev.origin;
-        Vector mins = pos - Vector(16, 16, 0);
-        Vector maxs = pos + Vector(16, 16, 64);
+        if(pSnark is null)
+            return;
 
-        NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
-        healeffect.WriteByte(TE_BUBBLES);
-        healeffect.WriteCoord(mins.x);
-        healeffect.WriteCoord(mins.y);
-        healeffect.WriteCoord(mins.z);
-        healeffect.WriteCoord(maxs.x);
-        healeffect.WriteCoord(maxs.y);
-        healeffect.WriteCoord(maxs.z);
-        healeffect.WriteCoord(80.0f); // Height of the bubble effect
-        healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-        healeffect.WriteByte(18); // Count
-        healeffect.WriteCoord(6.0f); // Speed
-        healeffect.End();
+        Vector snarkOrigin = pSnark.pev.origin;
+        float explRadius = 25.0f * 16.0f;
+
+        // Snarks detonate on first instance of damage.
+        g_WeaponFuncs.RadiusDamage
+        (
+            snarkOrigin, // Explosion center.
+            pPlayer.pev, // Inflictor.
+            pPlayer.pev, // Attacker.
+            15.0f, // Scaled Damage.
+            explRadius, // Radius.
+            CLASS_PLAYER, // Will not damage player or allies.
+            DMG_ACID | DMG_ALWAYSGIB // Damage type and always gib.
+        );
+
+        NetworkMessage lightMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, snarkOrigin);
+            lightMsg.WriteByte(TE_DLIGHT);
+            lightMsg.WriteCoord(snarkOrigin.x);
+            lightMsg.WriteCoord(snarkOrigin.y);
+            lightMsg.WriteCoord(snarkOrigin.z);
+            lightMsg.WriteByte(uint8(explRadius)); // Radius.
+            lightMsg.WriteByte(0);   // Red.
+            lightMsg.WriteByte(255); // Green.
+            lightMsg.WriteByte(30);   // Blue.
+            lightMsg.WriteByte(10);  // Life in 0.1s (1s).
+            lightMsg.WriteByte(10);  // Decay rate (instant).
+        lightMsg.End();
     }
 }
 
@@ -377,10 +369,12 @@ void CheckSnarks()
                         snarkNest.Initialize(data.GetCurrentClassStats());
                     }
                 }
+
+                snarkNest.Update(pPlayer);
                 
                 // Check for any snarks belonging to this player and check their frags.
                 CBaseEntity@ snarkEntity = null;
-                string searchPattern = "_snark_" + i + "_*";
+                string searchPattern = "_snark_" + i;
                 while((@snarkEntity = g_EntityFuncs.FindEntityByTargetname(snarkEntity, searchPattern)) !is null)
                 {
                     

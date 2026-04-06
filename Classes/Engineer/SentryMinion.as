@@ -4,7 +4,6 @@ string strSentryRecall = "turret/tu_die.wav";
 // Sentry Models.
 string strSentryModel = "models/sentry.mdl";
 string strSentryGibs = "models/computergibs.mdl";
-string strSentrySlowEffectSprite = "sprites/glow_bg.spr";
 
 // Sentry Sounds.
 string strSentryFire = "weapons/hks_hl3.wav";
@@ -26,23 +25,19 @@ class SentryData
     // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flBaseHealth = 1000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
-    private float m_flHealthScaleAtMaxLevel = 4.0; // Health multiplier at max level.
+    private float m_flAbilityMax = 60.0f; // Max duration.
+    private float m_flAbilityRechargeTime = 30.0f; // Seconds to fully recharge from empty.
+    private float m_flBaseHealth = 2000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
     private float m_flDamageScaleAtMaxLevel = 3.0; // Damage multiplier at max level.
-    private float m_flBaseHealAmount = 1.0; // Base health restored as a percentage of max health, per second.
-    private float m_flHealScaleAtMaxLevel = 3.0f; // Healing modifier at max level.
-    private float m_flSelfHealModifier = 3.0f; // Sentry self-healing multiplier.
+    private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
     private float m_flHealRadius = 50.0f * 16.0f; // Radius in which the sentry can heal players (ft converted to units).
 
-    // Cryo.
-    private int m_iCryoShotsRadius = 64; // Radius of bonus damage on shots.
-    private float m_flCryoShotsSlowAtMaxLevel = 0.95f; // Slow effect at max level.
-    private float m_flCryoShotsSlowDuration = 5.0f; // Duration of slow effect in seconds.
     private float m_flEnergyDrain = 1.0; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
     private float m_flRecallEnergyCost = 0.15f; // Energy percentage cost to recall.
 
     // Timers.
+    private float m_flAbilityCharge = 0.0f;
     private float m_flNextDrain = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
@@ -57,6 +52,8 @@ class SentryData
     ClassStats@ GetStats() { return m_pStats; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     bool HasStats() { return m_pStats !is null; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return m_flAbilityMax; }
 
     bool IsActive() 
     { 
@@ -86,18 +83,15 @@ class SentryData
         return true;
     }
 
-    float GetScaledHealth()
+    float GetScaledAbilityRecharge()
     {
-        if(m_pStats is null)
-            return m_flBaseHealth; // Return base health without scaling if no stats.
+        if (m_pStats is null)
+            return SKILL_ABILITYRECHARGE; // Return base if no stats.
 
-        float minionScaledHealth = m_flBaseHealth; // Start with base health.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
-        float level = m_pStats.GetLevel();
-        float healthMultiplier = 1.0f + ((m_flHealthScaleAtMaxLevel / g_iMaxLevel) * level);
-        minionScaledHealth *= healthMultiplier;
-
-        return minionScaledHealth;
+        return rechargeBonus + 1.0f;
     }
 
     float GetScaledDamage() // Damage scaling is applied through MonsterTakeDamage.
@@ -105,11 +99,11 @@ class SentryData
         if(m_pStats is null)
             return 1.0f; // Restore to default, but is always null when we have no minions.
 
-        float sentryScaledDamage = 1.0f; // Default multiplier.
+        float sentryScaledDamage = 1.0f; // Default multiplier, must be 1.0f to not alter base damage.
 
-        float level = m_pStats.GetLevel();
-        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
-        sentryScaledDamage += damagePerLevel * level;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_SENTRYDAMAGE);
+        float skillPower = SKILL_ENGINEER_SENTRYDAMAGE;
+        sentryScaledDamage += skillPower * skillLevel; // This is just adding to the default modifier of 1.0.
 
         return sentryScaledDamage;
     }
@@ -117,49 +111,18 @@ class SentryData
     float GetScaledHealAmount()
     {
         if(!HasStats() || m_pStats is null)
-            return m_flBaseHealAmount; // Return default if no stats.
+            return 0.0f; // Return default if no stats.
 
-        float healAmount = m_flBaseHealAmount; // Default heal amount.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA);
+        float skillPower = SKILL_ENGINEER_MINIHEALAURA;
+        float modifier = skillPower * skillLevel;
 
-        float level = float(m_pStats.GetLevel());
-        float healPerLevel = m_flHealScaleAtMaxLevel / g_iMaxLevel;
-        healAmount += healPerLevel * level;
-
-        return healAmount;
+        return modifier;
     }
 
     CBaseEntity@ GetSentryEntity()
     {
         return m_hSentry.GetEntity();
-    }
-
-    int GetCryoShotsRadius() { return m_iCryoShotsRadius; }
-
-    float GetCryoShotsSlow() // Reduce animation speed for slowing effect.
-    { 
-        if(m_pStats is null)
-            return m_flCryoShotsSlowAtMaxLevel;
-
-        float SlowStrength = 1.0f; // Default modifier.
-
-        float level = float(m_pStats.GetLevel());
-        float slowPerLevel = m_flCryoShotsSlowAtMaxLevel / g_iMaxLevel;
-        SlowStrength *= slowPerLevel * level;
-
-        return 1.0f - SlowStrength; // Replace framerate with this returned number.
-    }
-
-    float GetCryoShotsSlowInverse() // For stat display, to show inverse value.
-    { 
-        if(m_pStats is null)
-            return m_flCryoShotsSlowAtMaxLevel; // Default if no stats.
-
-        float SlowStrength = 1.0f; // Default modifier.
-
-        float level = float(m_pStats.GetLevel());
-        SlowStrength *= m_flCryoShotsSlowAtMaxLevel * (float(level) / g_iMaxLevel);
-
-        return SlowStrength * 100.0f; // Return as percentage.
     }
 
     void ToggleSentry(CBasePlayer@ pPlayer)
@@ -177,17 +140,8 @@ class SentryData
             return;
         }
 
-        // Check energy requirements for deployment.
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(!g_PlayerClassResources.exists(steamID))
-            return;
-
-        dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-        float current = float(resources['current']);
-        float maximum = float(resources['max']);
-
-        // Check energy - require FULL energy to activate.
-        if(current <= 0) // Changed to allow activation any time.
+        // Check ability charge requirements for deployment.
+        if(m_flAbilityCharge <= 0.0f)
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry out of battery!\n");
             return;
@@ -217,15 +171,13 @@ class SentryData
         
         vecSrc = vecSrc + (spawnForward * 64);
         vecSrc.z -= 32;
-
-        float scaledHealth = GetScaledHealth();
         
         dictionary keys;
         keys["origin"] = vecSrc.ToString();
         keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
         keys["targetname"] = "_sentry_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s Sentry";
-        keys["health"] = string(scaledHealth);
+        keys["health"] = string(m_flBaseHealth); // Base health.
         keys["scale"] = "1"; // Size of the sentry.
         keys["friendly"] = "1"; // Force friendly.
         keys["spawnflags"] = "16384"; // 16384 No Dyn Collision, 32 (ACTIVE).
@@ -238,10 +190,9 @@ class SentryData
 
             g_EntityFuncs.DispatchSpawn(pSentry.edict()); // Dispatch the spawn.
 
-            //@pSentry.pev.owner = @pPlayer.edict(); // Set player as owner to stop collision.
-            pSentry.pev.solid = SOLID_NOT;
+            @pSentry.pev.owner = @pPlayer.edict(); // Set player as owner.
 
-            // Sentry won't wake unless touched or damaged, regardless of spawnflags. Gently encourage it.
+            // Sentry won't wake unless touched or damaged, regardless of spawnflags. Gently encourage it :P.
             pSentry.TakeDamage(pPlayer.pev, pPlayer.pev, 0.0f, DMG_GENERIC);
 
             m_hSentry = EHandle(pSentry);
@@ -289,25 +240,15 @@ class SentryData
             if(pSentry.pev.health <= 0)
             {
                 // Remove all energy if killed by damage.
-                if(g_PlayerClassResources.exists(steamID))
-                {
-                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                    resources['current'] = 0.0f;
-                }
+                m_flAbilityCharge = 0.0f;
                 g_EntityFuncs.Remove(pSentry);
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Destroyed!\n");
             }
             else
             {
                 // Manual destruction - apply recall cost.
-                if(g_PlayerClassResources.exists(steamID))
-                {
-                    dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                    float current = float(resources['current']);
-                    float recallCost = current * m_flRecallEnergyCost; // Get recall cost as percentage of current total.
-                    resources['current'] = current - recallCost;
-                }
-                
+                m_flAbilityCharge *= (1.0f - m_flRecallEnergyCost);
+
                 g_EntityFuncs.Remove(pSentry); // Remove the sentry entity.
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Recalled!\n");
                 g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSentryRecall, 1.0f, ATTN_NORM);
@@ -379,10 +320,28 @@ class SentryData
         }
     }
 
+    void RechargeAbility()
+    {
+        if (m_flAbilityCharge >= m_flAbilityMax)
+            return;
+
+        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        m_flAbilityCharge += rechargeRate * flSchedulerInterval;
+        if (m_flAbilityCharge > m_flAbilityMax)
+            m_flAbilityCharge = m_flAbilityMax;
+    }
+
     void Update(CBasePlayer@ pPlayer)
     {
-        if(!m_bActive || pPlayer is null)
+        if(pPlayer is null)
             return;
+
+        if(!m_bActive)
+        {
+            // Recharge whilst sentry is not deployed.
+            RechargeAbility();
+            return;
+        }
 
         CBaseEntity@ pSentry = m_hSentry.GetEntity();
         if(pSentry is null || !pSentry.IsAlive())
@@ -392,117 +351,43 @@ class SentryData
             return;
         }
 
-        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-        if(g_PlayerClassResources.exists(steamID))
+        float currentTime = g_Engine.time;
+
+        SentryHeal(pSentry);
+        UpdateVisualEffect(pPlayer);
+
+        // Handle energy drain.
+        if(currentTime >= m_flNextDrain)
         {
-            float currentTime = g_Engine.time;
-            
-            SentryHeal(pSentry);
-            UpdateVisualEffect(pPlayer);
-            
-            // Handle energy drain.
-            if(currentTime >= m_flNextDrain)
+            m_flNextDrain = currentTime + m_flDrainInterval;
+
+            float drainAmount = GetEnergyDrain();
+            if(m_flAbilityCharge > 0.0f)
             {
-                m_flNextDrain = currentTime + m_flDrainInterval;
-                
-                dictionary@ resources = cast<dictionary@>(g_PlayerClassResources[steamID]);
-                float current = float(resources['current']);
-                float drainAmount = GetEnergyDrain();
-                
-                if(current > 0)
-                {
-                    if(current - drainAmount < 0)
-                        drainAmount = current;
-                    
-                    current -= drainAmount;
-                    resources['current'] = current;
+                m_flAbilityCharge -= Math.min(drainAmount, m_flAbilityCharge);
 
-                    if(current <= 0)
-                    {
-                        DestroySentry(pPlayer);
-                        return;
-                    }
-                }
-
-                // Handle frag transfer.
-                if(pSentry.pev.frags > 0)
+                if(m_flAbilityCharge <= 0.0f)
                 {
-                    // Transfer frags to player.
-                    pPlayer.pev.frags += pSentry.pev.frags;
-                    pSentry.pev.frags = 0;
+                    DestroySentry(pPlayer);
+                    return;
                 }
             }
-        }
-    }
 
-    // Apply Shot Effects.
-    void ApplyShotEffects(Vector targetPos, CBaseEntity@ attacker, CBaseEntity@ victim)
-    {
-        if(attacker is null || attacker.pev.owner is null || victim is null)
-            return;
-
-        // Get the sentry owner (player).
-        CBasePlayer@ pOwner = cast<CBasePlayer@>(g_EntityFuncs.Instance(attacker.pev.owner));
-        if(pOwner is null)
-            return;
-
-        string steamId = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
-        if(!g_PlayerSentries.exists(steamId))
-            return;
-
-        SentryData@ sentryData = cast<SentryData@>(g_PlayerSentries[steamId]);
-        if(sentryData is null)
-            return;
-
-        Vector centerPos = victim.pev.origin + (victim.pev.mins + victim.pev.maxs) * 0.5f;
-
-        // Create sprite trail effect for snow/ice particles.
-        NetworkMessage radiusSlowmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, centerPos);
-            radiusSlowmsg.WriteByte(TE_SPRITETRAIL);
-            radiusSlowmsg.WriteCoord(centerPos.x);
-            radiusSlowmsg.WriteCoord(centerPos.y);
-            radiusSlowmsg.WriteCoord(centerPos.z);
-            radiusSlowmsg.WriteCoord(centerPos.x);
-            radiusSlowmsg.WriteCoord(centerPos.y);
-            radiusSlowmsg.WriteCoord(centerPos.z);
-            radiusSlowmsg.WriteShort(g_EngineFuncs.ModelIndex(strSentrySlowEffectSprite));
-            radiusSlowmsg.WriteByte(2);   // Count.
-            radiusSlowmsg.WriteByte(1);   // Life in 0.1's.
-            radiusSlowmsg.WriteByte(1);   // Scale in 0.1's.
-            radiusSlowmsg.WriteByte(25);  // Velocity along vector in 10's.
-            radiusSlowmsg.WriteByte(15);  // Random velocity in 10's.
-            radiusSlowmsg.End();
-
-            // Add glow shell effect to entity taking damage.
-            victim.pev.renderfx = kRenderFxGlowShell;
-            victim.pev.rendermode = kRenderNormal;
-            victim.pev.rendercolor = ELEMENT_COLOR; // Light Blue.
-            victim.pev.renderamt = 10; // Thickness.
-
-            ApplySlowEffect(victim); // Turret applies slow effect to targets.
-    }
-
-    void ApplySlowEffect(CBaseEntity@ victim)
-    {
-        if(victim is null)
-            return;
-
-        CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
-        if(slowTargetSentry !is null)
-        {
-            if (slowTargetSentry.pev.framerate == GetCryoShotsSlow()) // Skip if target's framerate is already reduced.
-                return;
-                
-                // Set the target's animation speed and apply visual effect.
-                slowTargetSentry.pev.framerate = GetCryoShotsSlow();
-
-                // Schedule a think function to remove the slow effect on this target after the specified duration.
-                g_Scheduler.SetTimeout("RemoveSlowEffect", m_flCryoShotsSlowDuration, victim.entindex());
+            // Handle frag transfer.
+            if(pSentry.pev.frags > 0)
+            {
+                // Transfer frags to player.
+                pPlayer.pev.frags += pSentry.pev.frags;
+                pSentry.pev.frags = 0;
+            }
         }
     }
 
     private void SentryHeal(CBaseEntity@ pSentry)
     {
+        if(m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA) <= 0)
+            return;
+
         float currentTime = g_Engine.time;
         if(currentTime < m_flNextHeal)
             return;
@@ -518,7 +403,7 @@ class SentryData
             pSentry.pev.health = Math.min(pSentry.pev.health + (healAmount * m_flSelfHealModifier), pSentry.pev.max_health);
         }
 
-        ApplyRegenEffect(pSentry); // Do regen effect on sentry.
+        ApplyHealEffect(pSentry); // Do regen effect on sentry.
 
         for(int i = 1; i <= g_Engine.maxClients; i++)
         {
@@ -534,13 +419,13 @@ class SentryData
                         pTarget.pev.health = Math.min(pTarget.pev.health + healAmount, pTarget.pev.max_health);
                     }
 
-                    ApplyRegenEffect(pTarget); // Do regen effect on players.
+                    ApplyHealEffect(pTarget); // Do regen effect on players.
                 }
             }
         }
     }
 
-    private void ApplyRegenEffect(CBaseEntity@ target)
+    private void ApplyHealEffect(CBaseEntity@ target)
     {
         if(target is null)
             return;
@@ -702,22 +587,4 @@ void CheckSentries()
             }
         }
     }
-}
-
-void RemoveSlowEffect(int victimIndex)
-{
-    CBaseEntity@ victim = g_EntityFuncs.Instance(victimIndex);
-    if(victim is null)
-        return;
-
-    CBaseMonster@ slowTargetSentry = cast<CBaseMonster@>(victim);
-    if(slowTargetSentry !is null)
-    {
-        slowTargetSentry.pev.framerate = 1.0f; // Reset animation speed to normal.
-            
-        // Remove the glow shell effect.
-        victim.pev.renderfx = kRenderFxNone;
-        victim.pev.rendermode = kRenderNormal;
-        victim.pev.renderamt = 0;
-    }   
 }

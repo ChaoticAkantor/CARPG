@@ -3,11 +3,15 @@
 // Data Handling.
 #include "PlayerData"
 
+// Skills.
+#include "Classes/Skills"
+
 // Menus.
 #include "Classes/ClassMenu"
-#include "Classes/ClassResource"
-#include "classes/ClassStatsMenu"
+#include "Classes/ClassHUD"
+//#include "classes/ClassStatsMenu"
 #include "Classes/ClassInfo"
+#include "Classes/SkillsMenu"
 
 // Classes.
 #include "Classes/Engineer/SentryMinion"

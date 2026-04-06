@@ -1,5 +1,13 @@
 /*
 This file handles class selection.
+
+Adding skills to classes example:
+
+HealAura:
+ClassStats@ stats = cast<ClassStats@>(g_PlayerRPGData[steamID]).GetCurrentClassStats();
+float radiusBonus = 1.0f + (0.20f * stats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON));
+float radius = m_flHealingRadius * radiusBonus;
+
 */
 const string strClassChangeSound = "tfc/misc/r_tele1.wav";
 
