@@ -1,5 +1,7 @@
 const string strLevelUpSound = "misc/secret.wav"; // Sound played on level up.
 
+string strSaveFileLocation = "scripts/plugins/store/"; // Default is scripts/plugins/store/  Make sure it ends with a slash.
+
 dictionary g_PlayerRPGData;
 
 // Max level and XP multiplier.
@@ -352,7 +354,7 @@ class PlayerData
         if(pPlayer !is null)
         {
             CalculateStats(pPlayer);
-            RefillHealthArmor(pPlayer);
+            //RefillHealthArmor(pPlayer);
         }
 
         SaveToFile();
@@ -792,7 +794,7 @@ class PlayerData
         private string GetSafeFileName()
         {
             string safeSteamID = m_szSteamID.Replace(":", "_");
-            return "scripts/plugins/store/" + safeSteamID + ".txt";
+            return strSaveFileLocation + safeSteamID + ".txt";
         }
 
     void SaveToFile()
