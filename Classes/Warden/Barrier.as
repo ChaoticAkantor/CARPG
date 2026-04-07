@@ -31,6 +31,7 @@ class BarrierData
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
+    void FillAbilityCharge() { m_flAbilityCharge = GetShieldMaxHP(); }
     float GetShieldMaxHP() { return GetScaledShieldMaxHP(); }
     float GetShieldDeactivateCost() { return m_flBarrierDeactivateEnergyCost * GetScaledShieldMaxHP(); }
 
