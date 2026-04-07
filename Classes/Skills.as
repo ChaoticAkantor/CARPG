@@ -47,10 +47,10 @@ const float SKILL_MINIONDAMAGE = 0.40f; // Damage percent increase for minions p
 
 
 // Medic.
-const float SKILL_MEDIC_HEALPERCENT     = 0.02f;  // Increase max healing percent per level. (absolute)
+const float SKILL_MEDIC_HEALPERCENT     = 2.0f;  // Increase max healing percent per level. (absolute)
     const int SKILL_MEDIC_HEALPERCENT_LVL = 5;
 
-const float SKILL_MEDIC_POISON          = 0.02f; // Poison damage (% max health) per level.
+const float SKILL_MEDIC_POISON          = 2.0f; // Poison damage (% max health) per level.
     const int SKILL_MEDIC_POISON_LVL      = 5;
 
 const float SKILL_MEDIC_REVIVE          = 2.5f;   // Reduce revive cooldown per level.
@@ -75,13 +75,13 @@ const float SKILL_BERSERKER_OVERHEAL     = 0.12f; // Percent of max HP to overhe
 
 
 // Engineer.
-const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.50f; // Sentry damage per level.
+const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.60f; // Sentry damage per level.
     const int SKILL_ENGINEER_SENTRYDAMAGE_LVL = 5;
 
-const float SKILL_ENGINEER_MINIHEALAURA  = 0.005f; // Mini-heal Aura % max HP heal per level.
+const float SKILL_ENGINEER_MINIHEALAURA  = 1.0f; // Mini-heal Aura % max HP heal per level.
     const int SKILL_ENGINEER_MINIHEALAURA_LVL = 5;
 
-const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.10f;  // % of damage as area explosive damage per level.
+const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.05f;  // % of damage as area explosive damage per level.
     const int SKILL_ENGINEER_EXPLOSIVEAMMO_LVL = 5;
 
 
@@ -105,21 +105,21 @@ const float SKILL_WARDEN_HPABSORB        = 0.12f; // HP absorb from damage refle
 
 
 // Cloaker.
-const float SKILL_CLOAKER_CLOAKDAMAGE    = 0.50f; // Cloak damage bonus increase per level.
+const float SKILL_CLOAKER_CLOAKDAMAGE    = 0.30f; // Cloak damage bonus increase per level.
     const int SKILL_CLOAKER_CLOAKDAMAGE_LVL = 5;
 
-const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.20f; // Cloak nova damage increase per level.
+const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.60f; // Cloak nova damage increase per level.
     const int SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL = 5;
 
 
 // Shocktrooper.
-const float SKILL_SHOCK_CAPACITY         = 0.25f; // Shockrifle capacity per level.
+const float SKILL_SHOCK_CAPACITY         = 0.20f; // Shockrifle capacity per level.
     const int SKILL_SHOCK_CAPACITY_LVL      = 5;
 
-const float SKILL_SHOCK_DAMAGE           = 0.25f; // Shockrifle damage per level.
+const float SKILL_SHOCK_DAMAGE           = 0.20f; // Shockrifle damage per level.
     const int SKILL_SHOCK_DAMAGE_LVL        = 5;
 
-const float SKILL_SHOCK_LIGHTNING        = 0.25f; // Shockrifle area lightning damage per level.
+const float SKILL_SHOCK_LIGHTNING        = 0.20f; // Shockrifle area lightning damage per level.
     const int SKILL_SHOCK_LIGHTNING_LVL     = 5;
 
 
@@ -255,9 +255,9 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_MINIONDAMAGE)] = SkillDefinition("Minions: Damage", "+" + int(SKILL_MINIONDAMAGE * 100) + "% minion damage per level.", SKILL_MINIONDAMAGE_LVL, int(SKILL_MINIONDAMAGE * 100.0f), "%");
 
     // Medic.
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal Aura: Healing", "+" + (SKILL_MEDIC_HEALPERCENT * 100.0f) + "% max heal per level.", SKILL_MEDIC_HEALPERCENT_LVL, SKILL_MEDIC_HEALPERCENT * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal Aura: Poison", "+" + (SKILL_MEDIC_POISON * 100.0f) + "% poison damage per level.", SKILL_MEDIC_POISON_LVL, SKILL_MEDIC_POISON * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal Aura: Revive", "-" + (SKILL_MEDIC_REVIVE) + "s revive cooldown per level.", SKILL_MEDIC_REVIVE_LVL, SKILL_MEDIC_REVIVE, "s");
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal Aura: Healing", "+" + SKILL_MEDIC_HEALPERCENT + "% max heal per level.", SKILL_MEDIC_HEALPERCENT_LVL, SKILL_MEDIC_HEALPERCENT, "%");
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal Aura: Poison", "+" + SKILL_MEDIC_POISON + "% poison damage per level.", SKILL_MEDIC_POISON_LVL, SKILL_MEDIC_POISON, "%");
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal Aura: Revive", "-" + SKILL_MEDIC_REVIVE + "s revive cooldown per level.", SKILL_MEDIC_REVIVE_LVL, SKILL_MEDIC_REVIVE, "s");
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal Aura: AP Heal", "+" + (SKILL_MEDIC_HEALAP * 100.0f) + "% of heal to AP per level.", SKILL_MEDIC_HEALAP_LVL, SKILL_MEDIC_HEALAP * 100.0f, "%");
 
     // Berserker.
@@ -267,9 +267,9 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_BERSERKER_OVERHEAL)]        = SkillDefinition("Bloodlust: Overheal",  "+" + (SKILL_BERSERKER_OVERHEAL * 100.0f) + "% Overheal per level.",            SKILL_BERSERKER_OVERHEAL_LVL,        SKILL_BERSERKER_OVERHEAL * 100.0f, "%");
 
     // Engineer.
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+" + (SKILL_ENGINEER_SENTRYDAMAGE * 100.0f) + "% sentry damage per level.", SKILL_ENGINEER_SENTRYDAMAGE_LVL, SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)]  = SkillDefinition("Sentry: Mini-Heal Aura",  "+" + (SKILL_ENGINEER_MINIHEALAURA * 100.0f) + "% max HP heal/s per level.", SKILL_ENGINEER_MINIHEALAURA_LVL,  SKILL_ENGINEER_MINIHEALAURA * 100.0f,  "%");
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Sentry: Explosive Ammo",  "+" + (SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f) + "% sentry HP per level.",      SKILL_ENGINEER_EXPLOSIVEAMMO_LVL, SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+" + int(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f) + "% damage per level.", SKILL_ENGINEER_SENTRYDAMAGE_LVL, int(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f), "%");
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)]  = SkillDefinition("Sentry: Mini-Heal Aura",  "+" + int(SKILL_ENGINEER_MINIHEALAURA * 100.0f) + "% max HP heal/s per level.", SKILL_ENGINEER_MINIHEALAURA_LVL, int(SKILL_ENGINEER_MINIHEALAURA * 100.0f),  "%");
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Sentry: Explosive Ammo",  "+" + int(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f) + "% explosive damage per level.", SKILL_ENGINEER_EXPLOSIVEAMMO_LVL, int(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f), "%");
 
     // Robomancer.
 
