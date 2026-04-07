@@ -38,6 +38,7 @@ class CloakData
     bool IsNovaActive() { return m_bNovaActive;}
     float GetAbilityCharge() { return m_flAbilityCharge; }
     float GetAbilityMax() { return m_flAbilityMax; }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
@@ -320,7 +321,7 @@ class CloakData
             explosionDamage, // Scaled Damage.
             m_flNovaRadius, // Radius.
             CLASS_PLAYER, // Will not damage player or allies.
-            DMG_ENERGYBEAM | DMG_ALWAYSGIB // Damage type and always gib.
+            DMG_BLAST | DMG_ALWAYSGIB // Damage type and always gib.
         );
 
         // Play explosion sound.
