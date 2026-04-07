@@ -7,8 +7,6 @@ Difficulty settings in Sven Co-op do nothing and most maps have their own map cf
 Forcing them here helps keep things consistent and makes it easier to balance plugins.
 */
 
-bool bDisableAmmoRespawns = false; // Set to true to flag all ammo entities to not respawn on a map start. WARNING: Potential to make some maps unplayable if you respawn!
-
 ForceDifficulty g_ForceDifficulty;
 
 void ApplyDifficultySettings()
