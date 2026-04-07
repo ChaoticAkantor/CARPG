@@ -80,7 +80,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         current = healingAura.GetAbilityCharge();
                         maximum = healingAura.GetAbilityMax();
                         
-                        resourceInfo += "[Healing: " + int(healingAura.GetScaledHealAmount()) + "% HP] ";
+                        resourceInfo += "[Healing: " + healingAura.GetScaledHealAmount() + "% HP] ";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON) > 0)
                             resourceInfo += "[Poison: " + int(healingAura.GetPoisonDamageAmount()) + "% HP]\n";
@@ -235,10 +235,13 @@ void UpdateClassResource() // Update the class resource HUD display for all play
 
                                 resourceInfo += "[Sentry HP: " + int(healthPercent) + "%] ";
 
-                                resourceInfo += " [DMG: " + int(sentryData.GetScaledDamage() * 100) + "%]\n";
+                                resourceInfo += "[DMG: " + int(sentryData.GetScaledDamage() * 100) + "%] ";
+
+                                if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO) > 0)
+                                    resourceInfo += "[Explosive DMG: " + int(sentryData.GetScaledExplosiveDamage() * 100) + "%]\n";
 
                                 if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA) > 0)
-                                    resourceInfo += " [Healing: " + sentryData.GetScaledHealAmount() * 100 + "% HP/s]\n";
+                                    resourceInfo += "[Healing: " + sentryData.GetScaledHealAmount() + "% HP/s]\n";
                             }
                         }
                     }
@@ -323,7 +326,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         current = dragonsBreath.GetAbilityCharge();
                         maximum = dragonsBreath.GetAbilityMax();
                         dragonsBreath.UpdateAmmoFromWeapon(pPlayer);
-                        resourceInfo += "[Rounds: (" + int(dragonsBreath.GetRounds()) + "/" + dragonsBreath.GetMaxRounds() + ")] ";
+                        resourceInfo += "[Rounds: " + int(dragonsBreath.GetRounds()) + "/" + dragonsBreath.GetMaxRounds() + "] ";
                         resourceInfo += "[Cost: " + dragonsBreath.GetPerShotCost() + "]\n";
                         if(dragonsBreath.HasRounds())
                         {
