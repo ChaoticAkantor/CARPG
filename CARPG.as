@@ -116,8 +116,6 @@ void ResetData()
 void RegisterHooks()
 {
     g_Hooks.RegisterHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
-    g_Hooks.RegisterHook(Hooks::Weapon::WeaponPrimaryAttack, @WeaponPrimaryAttack);
-    g_Hooks.RegisterHook(Hooks::Weapon::WeaponSecondaryAttack, @WeaponSecondaryAttack);
     g_Hooks.RegisterHook(Hooks::Player::ClientPutInServer, @ClientPutInServer);
     g_Hooks.RegisterHook(Hooks::Player::ClientDisconnect, @ClientDisconnect);
     g_Hooks.RegisterHook(Hooks::Player::ClientSay, @ClientSay);
@@ -129,8 +127,6 @@ void RegisterHooks()
 void RemoveHooks()
 {
     g_Hooks.RemoveHook(Hooks::Player::PlayerTakeDamage, @PlayerTakeDamage);
-    g_Hooks.RemoveHook(Hooks::Weapon::WeaponPrimaryAttack, @WeaponPrimaryAttack);
-    g_Hooks.RemoveHook(Hooks::Weapon::WeaponSecondaryAttack, @WeaponSecondaryAttack);
     g_Hooks.RemoveHook(Hooks::Player::ClientPutInServer, @ClientPutInServer);
     g_Hooks.RemoveHook(Hooks::Player::ClientDisconnect, @ClientDisconnect);
     g_Hooks.RemoveHook(Hooks::Player::ClientSay, @ClientSay);
@@ -292,6 +288,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strSentrySpinDown);
         g_SoundSystem.PrecacheSound(strSentrySearch);
         g_SoundSystem.PrecacheSound(strSentryAlert);
+        g_SoundSystem.PrecacheSound(strSentryExplosive);
 
     // Robogrunt.
         // Models/Sprites.
@@ -604,47 +601,6 @@ void PrecacheAll()
     //return HOOK_CONTINUE;
 //}
 
-// Hook handler for Primary Attack. This is used for Dragons Breath on each shot.
-HookReturnCode WeaponPrimaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) 
-{
-    if(pWeapon is null || pPlayer is null || pWeapon.m_iClip <= 0 || pWeapon.m_fInReload == true) // Make sure clip is not empty.
-        return HOOK_CONTINUE;
-    
-    string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    if(g_PlayerDragonsBreath.exists(steamId))
-    {
-        DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamId]);
-        if(DragonsBreath !is null && DragonsBreath.HasRounds())
-        {
-            DragonsBreath.FireDragonsBreathRound(pPlayer, pWeapon); // Consume rounds and fire Dragons Breath shots if active.
-        }
-    }
-    
-    return HOOK_CONTINUE;
-}
-
-HookReturnCode WeaponSecondaryAttack(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon) // Hook handler for Secondary Attack.
-{
-    if(pWeapon is null || pPlayer is null || pWeapon.m_iClip == 0 && pWeapon.m_iClip2 != -1 ) // Check if clip is not empty and clip2 isn't infinite.
-        return HOOK_CONTINUE;
-
-    string steamId = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    string SecondaryWeaponName = pWeapon.pev.classname;
-    if(SecondaryWeaponName == "weapon_shotgun" || SecondaryWeaponName == "weapon_9mmhandgun" || SecondaryWeaponName == "weapon_sawedoff")
-    {
-        if(g_PlayerDragonsBreath.exists(steamId))
-        {
-            DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamId]);
-            if(DragonsBreath !is null && DragonsBreath.HasRounds())
-            {
-                DragonsBreath.FireDragonsBreathRound(pPlayer, pWeapon); // Consume rounds and fire Dragons Breath shots if active.
-            }
-        }
-    }
-    
-    return HOOK_CONTINUE;
-}
-
 HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion damage scaling is done here.
 {
     if(info is null || info.pVictim is null || info.pAttacker is null)
@@ -678,6 +634,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Sentry damage scaling.
         float damageSentryMultiplier = sentry.GetScaledDamage();
         info.flDamage *= damageSentryMultiplier;
+
+        // Deal explosive damage from explosive skill.
+        sentry.ApplyExplosiveDamage(attacker, victim, info.flDamage);
     }
     else if(targetname.StartsWith("_minion_"))
     {
@@ -855,7 +814,14 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                 }
                 case PlayerClass::CLASS_VANQUISHER:
                 {
-
+                    if(g_PlayerDragonsBreath.exists(steamID))
+                    {
+                        DragonsBreathData@ db = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
+                        if(db !is null && db.HasPendingProcs())
+                        {
+                            db.ProcPendingAtTarget(pAttacker, victim.pev.origin);
+                        }
+                    }
                     break;
                 }
                 case PlayerClass::CLASS_XENOMANCER:
@@ -1330,13 +1296,9 @@ HookReturnCode ClientSay(SayParameters@ pParams)
         }
         else if(command == "help")
         {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(IsAdmin(steamID))
-            {
-                ShowHints();
-                pParams.ShouldHide = true;
-                return HOOK_HANDLED;
-            }
+            ShowHints();
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
         }
     }
     
@@ -1666,8 +1628,10 @@ void AdjustAmmoForClass(CBasePlayer@ pPlayer)
 
 void ShowHints()
 {
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "This server uses CARPG! Type 'class' to select your class. Bind say UseAbility to a button to use your Class Ability.\n");
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Stats' to see your class and ability info. Or 'Help' to display this message again.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Commands: Type 'class' to select your class. Bind mouse3 \"say UseAbility\" to a button to use your Class Ability.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Skills' to spend your skillpoints.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Info' to see a summary of your class.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Help' to display this again.\n");
 }
 
 void RefillHealthArmor(CBasePlayer@ pPlayer)
