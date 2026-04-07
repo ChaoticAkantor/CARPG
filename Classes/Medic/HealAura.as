@@ -101,6 +101,7 @@ class HealingAura
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
     float GetAbilityMax() { return m_flAbilityDuration; }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
     void ConsumeCharge(float amount) { m_flAbilityCharge = Math.max(0.0f, m_flAbilityCharge - amount); }
     float GetHealingRadius() { return m_flHealingRadius; }
     float GetEnergyCost() { return m_iDrainAmount; }
@@ -145,9 +146,8 @@ class HealingAura
             return 0; // Return 0 if no stats, meaning no poison damage without the skill.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON); // Get player skill level for this skill.
-
-        float skillPower = SKILL_MEDIC_POISON; // Hardcoded value.
-        float modifier = skillPower * skillLevel; // Poison damage scales from heal amount, dependent on skill level.
+        float skillPower = SKILL_MEDIC_POISON;
+        float modifier = skillPower * skillLevel; // Poison damage dependent on skill level.
 
         return modifier;
     }
@@ -158,7 +158,6 @@ class HealingAura
             return 0.0f; // Return 0 if no stats.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALAP);
-
         float skillPower = SKILL_MEDIC_HEALAP;
         float healAmount = GetScaledHealAmount();
 
@@ -176,9 +175,9 @@ class HealingAura
             
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALPERCENT);
         float skillPower = SKILL_MEDIC_HEALPERCENT;
-        float modifier = healAmount + (skillPower * skillLevel); // Heal amount scales from skill level.
+        float modifier = skillPower * skillLevel; // Heal amount scales from skill level.
 
-        return modifier;
+        return modifier + healAmount;
     }
 
     void RechargeAbility()
@@ -552,6 +551,8 @@ class HealingAura
                 CBasePlayer@ pTarget = cast<CBasePlayer@>(pEntity);
                 if (pTarget !is null)
                 {
+                    pTarget.pev.deadflag = DEAD_NO;
+                    pTarget.pev.flags &= ~FL_NOTARGET;
                     pTarget.Revive();
                     pTarget.pev.health = pTarget.pev.max_health * m_flHealAuraReviveHealthPercent;
                     pPlayer.pev.frags += m_iReviveFragBonusPlayer;
@@ -569,6 +570,8 @@ class HealingAura
                     int relationship = pMonster.IRelationship(pPlayer);
                     if (relationship == R_AL)
                     {
+                        pMonster.pev.deadflag = DEAD_NO;
+                        pMonster.pev.flags &= ~FL_NOTARGET;
                         pMonster.Revive();
                         pMonster.pev.health = pMonster.pev.max_health * m_flHealAuraReviveHealthPercent;
                         pPlayer.pev.frags += m_iReviveFragBonusMonster;
