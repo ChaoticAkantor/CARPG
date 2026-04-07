@@ -34,6 +34,7 @@ class BloodlustData
     bool HasStats() { return m_pStats !is null; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
     float GetAbilityMax() { return m_flAbilityMax; }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
