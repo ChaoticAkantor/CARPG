@@ -61,7 +61,109 @@ namespace Menu
                     }
                     else if(choice == 3)
                     {
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Resource max not available (per-ability system).\n");
+                        switch(data.GetCurrentClass())
+                        {
+                            case PlayerClass::CLASS_MEDIC:
+                            {
+                                if(g_HealingAuras.exists(steamID))
+                                {
+                                    HealingAura@ a = cast<HealingAura@>(g_HealingAuras[steamID]);
+                                    if(a !is null) a.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_BERSERKER:
+                            {
+                                if(g_PlayerBloodlusts.exists(steamID))
+                                {
+                                    BloodlustData@ b = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                                    if(b !is null) b.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_ROBOMANCER:
+                            {
+                                if(g_PlayerMinions.exists(steamID))
+                                {
+                                    MinionData@ m = cast<MinionData@>(g_PlayerMinions[steamID]);
+                                    if(m !is null) m.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_XENOMANCER:
+                            {
+                                if(g_XenologistMinions.exists(steamID))
+                                {
+                                    XenMinionData@ m = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                                    if(m !is null) m.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_NECROMANCER:
+                            {
+                                if(g_NecromancerMinions.exists(steamID))
+                                {
+                                    NecroMinionData@ m = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+                                    if(m !is null) m.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_ENGINEER:
+                            {
+                                if(g_PlayerSentries.exists(steamID))
+                                {
+                                    SentryData@ s = cast<SentryData@>(g_PlayerSentries[steamID]);
+                                    if(s !is null) s.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_DEFENDER:
+                            {
+                                if(g_PlayerBarriers.exists(steamID))
+                                {
+                                    BarrierData@ b = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                                    if(b !is null) b.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_SHOCKTROOPER:
+                            {
+                                if(g_ShockRifleData.exists(steamID))
+                                {
+                                    ShockRifleData@ s = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
+                                    if(s !is null) s.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_CLOAKER:
+                            {
+                                if(g_PlayerCloaks.exists(steamID))
+                                {
+                                    CloakData@ c = cast<CloakData@>(g_PlayerCloaks[steamID]);
+                                    if(c !is null) c.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_VANQUISHER:
+                            {
+                                if(g_PlayerDragonsBreath.exists(steamID))
+                                {
+                                    DragonsBreathData@ d = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
+                                    if(d !is null) d.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                            case PlayerClass::CLASS_SWARMER:
+                            {
+                                if(g_PlayerSnarkNests.exists(steamID))
+                                {
+                                    SnarkNestData@ s = cast<SnarkNestData@>(g_PlayerSnarkNests[steamID]);
+                                    if(s !is null) s.FillAbilityCharge();
+                                }
+                                break;
+                            }
+                        }
+                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Class resource filled.\n");
                     }
                     else if(choice == 4)
                     {
