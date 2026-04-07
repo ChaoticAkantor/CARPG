@@ -7,17 +7,11 @@ dictionary g_ShockRifleData;
 class ShockRifleData 
 {
     // Shocktrooper ability scaling values.
-    private float m_flDamageScaleAtMaxLevel = 3.00f; // Damage modifier for shockrifle at max level.
-    private float m_flShockroachMaxCapacityAtMaxLevel = 150.0f; // Extra max ammo capacity for shock rifle at max level.
-    private float m_flLightningStrikePercent = 0.50f; // Percent of dealt damage applied as radius damage.
-    private float m_flLightningStrikeRadius = 100.0f * 16.0f; // Radius of the area strike in units.
-    private bool  m_bLightningActive = false; // Re-entrancy guard: prevents RadiusDamage from triggering another strike on nearby enemies.
-
-    // Ability charge (self-managed, replaces g_PlayerClassResources).
-    // Equipping costs the full charge; recharges only when rifle is not equipped.
     private float m_flAbilityCharge = 0.0f;
     private float m_flAbilityMax = 1.0f;
     private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge from empty.
+    private float m_flLightningStrikeRadius = 100.0f * 16.0f; // Radius of the area strike in units.
+    private bool  m_bLightningActive = false; // Re-entrancy guard: prevents RadiusDamage from triggering another strike on nearby enemies.
 
     // Timers.
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
@@ -29,6 +23,7 @@ class ShockRifleData
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
     float GetAbilityMax() { return m_flAbilityMax; }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     float GetScaledAbilityRecharge()
     {
@@ -72,11 +67,11 @@ class ShockRifleData
 
         float shockrifleDamage = 1.0f; // Default damage multiplier.
             
-        int level = m_pStats.GetLevel();
-        float damagePerLevel = m_flDamageScaleAtMaxLevel / g_iMaxLevel;
-        shockrifleDamage += damagePerLevel * level;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_DAMAGE);
+        float skillPower = SKILL_SHOCK_DAMAGE; // Bonus damage based on skill level.
+        float modifier = 1.0f + (skillPower * skillLevel);
 
-        return shockrifleDamage;
+        return modifier;
     }
 
     float GetScaledMaxAmmo()
@@ -86,11 +81,25 @@ class ShockRifleData
 
         float maxAmmo = 100.0f; // Default max ammo.
             
-        int level = m_pStats.GetLevel();
-        float ammoPerLevel = m_flShockroachMaxCapacityAtMaxLevel  / g_iMaxLevel;
-        maxAmmo += ammoPerLevel * level;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_CAPACITY);
+        float skillPower = SKILL_SHOCK_CAPACITY; // Bonus capacity based on skill level.
+        float modifier = 100.0f + (skillPower * skillLevel);
 
-        return maxAmmo;
+        return modifier;
+    }
+
+    float GetScaledLightningDamage()
+    {
+        if(m_pStats is null)
+            return 1.0f; // Normal damage if no stats.
+
+        float lightningDamage = 1.0f; // Default damage multiplier.
+            
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_LIGHTNING);
+        float skillPower = SKILL_SHOCK_LIGHTNING; // Bonus damage based on skill level.
+        float modifier = skillPower * skillLevel;
+
+        return modifier;
     }
 
 
@@ -190,7 +199,7 @@ class ShockRifleData
             return;
 
         Vector hitPos    = pVictim.pev.origin;
-        float  strikeDmg = flDealtDamage * m_flLightningStrikePercent;
+        float  strikeDmg = flDealtDamage * GetScaledLightningDamage(); // Scale lightning damage based on skill level.
         int    sprIdx    = g_EngineFuncs.ModelIndex(strShockLightningSprite);
         Vector skyPos    = Vector(hitPos.x, hitPos.y, hitPos.z + 2048);
 
