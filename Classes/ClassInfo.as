@@ -89,7 +89,8 @@ string GetClassDescription(PlayerClass pClass)
                 "Heals allies (players and friendly NPCs) every tick.\n" 
                 "Healing is dealt as a percentage of the target's health.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_BERSERKER:
             return
@@ -98,14 +99,16 @@ string GetClassDescription(PlayerClass pClass)
                 "Activating Bloodlust doubles all passive bonuses.\n"
                 "Gain life steal.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_ENGINEER:
             return
                 "Ability: Deploy Sentry Turret.\n\n"
                 "Can be recalled for a cost by activating again.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_ROBOMANCER:
             return
@@ -117,7 +120,8 @@ string GetClassDescription(PlayerClass pClass)
                 "Can be commanded with Sven NPC keybinds.\n"
                 "Minion menu can also be used to teleport or kill all minions.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_XENOMANCER:
             return
@@ -127,7 +131,8 @@ string GetClassDescription(PlayerClass pClass)
                 "Minion limit depends on minion type and points reserved.\n"
                 "Can be commanded with Sven NPC keybinds.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_NECROMANCER:
             return
@@ -139,7 +144,8 @@ string GetClassDescription(PlayerClass pClass)
                 "Can be commanded with Sven NPC keybinds.\n"
                 "Minion menu can also be used to teleport or kill all minions.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_DEFENDER:
             return
@@ -147,21 +153,24 @@ string GetClassDescription(PlayerClass pClass)
                 "Ice Shield will absorb all damage until it shatters, HP depends on skill.\n"
                 "Can be deactivated for a cost.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_SHOCKTROOPER:
             return
                 "Ability: Super Shockrifle.\n\n"
                 "Equips an improved version of the Shockrifle.\n"
                 "Activating the ability whilst holding a Shockrifle will refund half of the ammo as Ability Charge.\n"
-                "Alt-fire will restore AP for allies hit by the beams.\n";
+                "Alt-fire will restore AP for allies hit by the beams.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_CLOAKER:
             return
                 "Ability: Cloak.\n"
                 "Activating Cloak will grant invisibility.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
 
         case PlayerClass::CLASS_VANQUISHER:
@@ -171,18 +180,21 @@ string GetClassDescription(PlayerClass pClass)
                 "Activating the ability will consume a percentage of ability charge and add more rounds to the ammo pool.\n"
                 "Shots consume rounds and multiply damage based on the ammo type used.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         case PlayerClass::CLASS_SWARMER:
             return
                 "Ability: Snark Swarm.\n\n"
                 "Release a swarm of enhanced friendly Snarks at high velocity to attack enemies.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
-                "Type skills to spend skillpoints.\n";
+                "Type skills to spend skillpoints.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
         default:
             return
                 "No class is selected.\n\n"
-                "Type 'class' in chat to select one.\n";
+                "Type 'class' in chat to select one.\n"
+                "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
     }
 }
