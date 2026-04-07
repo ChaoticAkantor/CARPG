@@ -1,5 +1,6 @@
 string strSentryCreate = "weapons/mine_deploy.wav";
 string strSentryRecall = "turret/tu_die.wav";
+string strSentryExplosive = "weapons/explode3.wav";
 
 // Sentry Models.
 string strSentryModel = "models/sentry.mdl";
@@ -25,14 +26,15 @@ class SentryData
     // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flAbilityMax = 60.0f; // Max duration.
-    private float m_flAbilityRechargeTime = 30.0f; // Seconds to fully recharge from empty.
+    private float m_flAbilityMax = 30.0f; // Max duration.
+    private float m_flAbilityRechargeTime = 25.0f; // Seconds to fully recharge from empty.
     private float m_flBaseHealth = 2000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
     private float m_flDamageScaleAtMaxLevel = 3.0; // Damage multiplier at max level.
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
     private float m_flHealRadius = 50.0f * 16.0f; // Radius in which the sentry can heal players (ft converted to units).
+    private float m_flExplosiveRadius = 20.0f * 60.0f; // Radius of the explosive damage when the sentry hits with its bullets.
 
-    private float m_flEnergyDrain = 1.0; // Energy drain per interval.
+    private float m_flEnergyDrain = 1.0f; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
     private float m_flRecallEnergyCost = 0.15f; // Energy percentage cost to recall.
 
@@ -45,6 +47,7 @@ class SentryData
     private float m_flHealInterval = 1.0f;
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = 1.0f; // Time between visual updates. Same as heal rate.
+    private bool m_bExplosiveActive = false; // Recursion guard for explosive damage.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
 
     private ClassStats@ m_pStats = null;
@@ -54,6 +57,7 @@ class SentryData
     bool HasStats() { return m_pStats !is null; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
     float GetAbilityMax() { return m_flAbilityMax; }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     bool IsActive() 
     { 
@@ -103,18 +107,30 @@ class SentryData
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_SENTRYDAMAGE);
         float skillPower = SKILL_ENGINEER_SENTRYDAMAGE;
-        sentryScaledDamage += skillPower * skillLevel; // This is just adding to the default modifier of 1.0.
+        float modifier = 1.0f + (skillPower * skillLevel); // This is just adding to the default modifier of 1.0.
 
-        return sentryScaledDamage;
+        return modifier;
     }
 
     float GetScaledHealAmount()
     {
-        if(!HasStats() || m_pStats is null)
+        if(m_pStats is null)
             return 0.0f; // Return default if no stats.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA);
         float skillPower = SKILL_ENGINEER_MINIHEALAURA;
+        float modifier = skillPower * skillLevel;
+
+        return modifier;
+    }
+
+    float GetScaledExplosiveDamage()
+    {
+        if(m_pStats is null)
+            return 1.0f; // Normal damage if no stats.
+            
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO);
+        float skillPower = SKILL_ENGINEER_EXPLOSIVEAMMO; // Bonus damage based on skill level.
         float modifier = skillPower * skillLevel;
 
         return modifier;
@@ -331,6 +347,45 @@ class SentryData
             m_flAbilityCharge = m_flAbilityMax;
     }
 
+    void ApplyExplosiveDamage(CBaseEntity@ pAttacker, CBaseEntity@ pVictim, float flDealtDamage)
+    {
+        if(pAttacker is null || pVictim is null || flDealtDamage <= 0.0f)
+            return;
+
+        if(m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO) <= 0)
+            return;
+
+        if(m_bExplosiveActive)
+            return;
+
+        Vector hitPos    = pVictim.pev.origin;
+        float  strikeDmg = flDealtDamage * GetScaledExplosiveDamage(); // Scale explosive damage based on skill level.
+
+        // Apply dynamic light for flash effect.
+        NetworkMessage explAreaMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, hitPos);
+            explAreaMsg.WriteByte(TE_DLIGHT);
+            explAreaMsg.WriteCoord(hitPos.x);
+            explAreaMsg.WriteCoord(hitPos.y);
+            explAreaMsg.WriteCoord(hitPos.z);
+            explAreaMsg.WriteByte(uint8(m_flExplosiveRadius * 0.1)); // Radius units * 10.
+            explAreaMsg.WriteByte(255); // Red.
+            explAreaMsg.WriteByte(255); // Green.
+            explAreaMsg.WriteByte(50); // Blue.
+            explAreaMsg.WriteByte(uint8(5)); // Life * 0.1s.
+            explAreaMsg.WriteByte(uint8(5)); // Fade speed * 1s.
+            explAreaMsg.End();
+
+        m_bExplosiveActive = true; // Enable recursion guard.
+
+        // Radius damage.
+        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, strikeDmg, m_flExplosiveRadius, CLASS_PLAYER, DMG_BLAST | DMG_ALWAYSGIB);
+        
+        // Play explosion sound.
+        g_SoundSystem.EmitSound(pVictim.edict(), CHAN_ITEM, strSentryExplosive, 0.6f, ATTN_NORM);
+
+        m_bExplosiveActive = false; // Disable recursion guard.
+    }
+
     void Update(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null)
@@ -415,7 +470,7 @@ class SentryData
                 {
                     if(pTarget.pev.health < pTarget.pev.max_health)
                     {
-                        healAmount = GetScaledHealAmount() * pTarget.pev.max_health / 100; // Calculate heal amount based on target's max health.
+                        healAmount = GetScaledHealAmount() * pTarget.pev.max_health / 100; // Calculate heal amount based on target's max health and scaling.
                         pTarget.pev.health = Math.min(pTarget.pev.health + healAmount, pTarget.pev.max_health);
                     }
 
