@@ -5,6 +5,19 @@ string strDragonsBreathExplosionSprite = "sprites/zerogxplode.spr"; // Explosion
 string strDragonsBreathExplosionCoreSprite = "sprites/explode1.spr"; // Core explosion sprite.
 string strDragonsBreathFireSprite = "sprites/fire.spr"; // Fire effect.
 
+// Ammo types that are projectile-based (proc on target hit rather than on fire).
+bool IsDragonsBreathProjectileAmmo(const string& in ammoName)
+{
+    if (ammoName == "uranium")       return true;
+    if (ammoName == "rockets")       return true;
+    if (ammoName == "bolts")         return true;
+    if (ammoName == "sporeclip")     return true;
+    if (ammoName == "ARgrenades")    return true;
+    if (ammoName == "shock charges") return true;
+    if (ammoName == "Hornets")       return true;
+    return false;
+}
+
 // Damage multipliers per ammo type for Dragons Breath.
 float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
@@ -12,24 +25,34 @@ float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
     if (ammoName == "357")      return 2.00f;
     if (ammoName == "buckshot") return 1.00f;
     if (ammoName == "556")      return 1.40f;
-    //if (ammoName == "bolts")    return 2.50f;
-    if (ammoName == "762")      return 2.50f;
-    if (ammoName == "uranium")  return 1.80f;
+    if (ammoName == "bolts")    return 2.50f;
+    //if (ammoName == "762")      return 2.50f;
     if (ammoName == "m40a1")    return 2.50f;
+    if (ammoName == "uranium")  return 2.00f;
+    if (ammoName == "rockets")  return 3.00f;
+    if (ammoName == "sporeclip")  return 3.00f;
+    if (ammoName == "ARgrenades") return 3.00f;
+    if (ammoName == "shock charges") return 2.00f;
+    if (ammoName == "Hornets") return 1.50f;
     return 1.0f; // Default multiplier if ammo type not found.
 }
 
-// Energy cost multipliers per ammo type for Dragons Breath activation.
+// Cost multipliers per ammo type for Dragons Breath activation.
 float GetDragonsBreathAmmoCostMultiplier(const string& in ammoName)
 {
     if (ammoName == "9mm")      return 1.0f;
     if (ammoName == "357")      return 3.0f;
-    if (ammoName == "buckshot") return 6.0f; // Matches average pellet count.
+    if (ammoName == "buckshot") return 6.0f; // One per pellet.
     if (ammoName == "556")      return 1.0f;
-    //if (ammoName == "bolts")    return 3.0f;
-    if (ammoName == "762")      return 3.0f;
-    if (ammoName == "uranium")  return 2.0f;
+    if (ammoName == "bolts")    return 3.0f;
+    //if (ammoName == "762")      return 3.0f;
     if (ammoName == "m40a1")    return 3.0f;
+    if (ammoName == "uranium")  return 3.0f;
+    if (ammoName == "rockets")  return 5.0f;
+    if (ammoName == "sporeclip")   return 3.0f;
+    if (ammoName == "ARgrenades") return 5.0f;
+    if (ammoName == "shock charges") return 5.0f;
+    if (ammoName == "Hornets") return 5.0f;
     return 1.0f; // Default cost multiplier if ammo type not found.
 }
 
@@ -55,7 +78,10 @@ class DragonsBreathData
     private float m_flAbilityCharge = 0.0f;
     private float m_flLastToggleTime = 0.0f; // Used for last toggle time.
     private float m_flToggleCooldown = 0.10f; // Used to delay toggling to prevent spam.
-    private float m_flPreviousAmmo = 0.0f; // Used to track ammo changes.
+    private float m_flCurrentClip = 0.0f; // Used to track current clip.
+    private float m_flPreviousClip = 0.0f; // Used to track previous clip.
+    private int m_iLastWeaponIndex = -1; // Used to detect weapon switches.
+    private int m_iPendingProcs = 0; // Pending projectile procs waiting on a target hit.
     private string m_strCurrentAmmoName = ""; // Set per shot based on ammo type.
     private ClassStats@ m_pStats = null;
 
@@ -71,6 +97,7 @@ class DragonsBreathData
 
     bool HasStats() { return m_pStats !is null; }
     bool HasRounds() { return m_flRoundsInPool > 0; }
+    bool HasPendingProcs() { return m_iPendingProcs > 0; }
     float GetRounds() { return m_flRoundsInPool; }
     float GetEnergyCost() { return m_flEnergyCostPerActivation; }
     float GetPerShotCost() { return GetDragonsBreathAmmoCostMultiplier(m_strCurrentAmmoName); }
@@ -78,6 +105,7 @@ class DragonsBreathData
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
     float GetAbilityMax() { return m_flAbilityMax; }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     float GetScaledAbilityRecharge()
     {
@@ -104,6 +132,47 @@ class DragonsBreathData
     void Update(CBasePlayer@ pPlayer)
     {
         RechargeAbility();
+
+        CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pPlayer.m_hActiveItem.GetEntity());
+        if(pWeapon is null)
+        {
+            m_iLastWeaponIndex = -1;
+            return;
+        }
+
+        UpdateAmmoFromWeapon(pPlayer);
+
+        int currentClip = pWeapon.m_iClip;
+        int currentWeaponIdx = pWeapon.entindex();
+
+        // Reset tracking on weapon switch or first run.
+        if(currentWeaponIdx != m_iLastWeaponIndex)
+        {
+            m_iLastWeaponIndex = currentWeaponIdx;
+            m_flPreviousClip = float(currentClip);
+            m_iPendingProcs = 0; // Discard orphaned projectile procs on weapon switch.
+            return;
+        }
+
+        if(HasRounds() && currentClip < int(m_flPreviousClip))
+        {
+            int ammoConsumed = int(m_flPreviousClip) - currentClip;
+            for(int i = 0; i < ammoConsumed; i++)
+            {
+                if(!HasRounds()) break;
+                if(IsProjectileAmmo(m_strCurrentAmmoName))
+                {
+                    m_iPendingProcs++;
+                    ConsumeRound(); // Round is spent on fire; proc fires on impact.
+                }
+                else
+                {
+                    ProcExplosionForShot(pPlayer);
+                }
+            }
+        }
+
+        m_flPreviousClip = float(currentClip);
     }
 
     float GetScaledExplosionDamage() // Calculate scaled explosion damage.
@@ -271,306 +340,74 @@ class DragonsBreathData
         m_flLastToggleTime = 0.0f;
     }
 
-    void FireDragonsBreathRound(CBasePlayer@ pPlayer, CBasePlayerWeapon@ pWeapon)
+    void ProcPendingAtTarget(CBasePlayer@ pPlayer, Vector targetPos)
     {
-        if(pPlayer is null || pWeapon is null || !HasRounds())
-            return;
-            
-        int ammoType = -1; // Initialize with invalid index.
-        if(pWeapon !is null)
-        {
-            ammoType = pWeapon.PrimaryAmmoIndex();
-        }
-
-        if(ammoType == -1)
+        if(m_iPendingProcs <= 0)
             return;
 
-        string ammoName = GetAmmoName(ammoType);
-        string weaponName = pWeapon.GetClassname();
+        m_iPendingProcs--; // Decrement before firing to prevent recursion.
+        FireExplosionVisuals(pPlayer, targetPos, 10);
+        ApplyDragonsBreath(pPlayer, targetPos);
+    }
 
-        m_strCurrentAmmoName = ammoName; // Store ammo type for damage scaling.
+    private bool IsProjectileAmmo(const string&in ammoName)
+    {
+        return IsDragonsBreathProjectileAmmo(ammoName);
+    }
 
-        if(ammoName == "buckshot") // Special handling for specific ammo types.
+    private void ProcExplosionForShot(CBasePlayer@ pPlayer)
+    {
+        if(m_strCurrentAmmoName == "buckshot")
         {
             const int SHOTGUN_PELLETS = 6;
-            
-            for(int i = 0; i < SHOTGUN_PELLETS; i++)
+            for(int p = 0; p < SHOTGUN_PELLETS; p++)
             {
-                Vector angles = pPlayer.pev.v_angle;
-                Math.MakeVectors(angles);
-                Vector vecAiming = g_Engine.v_forward;
-                
-                // Shotgun spread pattern.
-                Vector spread = Vector(
-                    Math.RandomFloat(-0.05, 0.05),
-                    Math.RandomFloat(-0.05, 0.05),
-                    Math.RandomFloat(-0.05, 0.05)
-                );
-                vecAiming = vecAiming + spread;
-
-                Vector vecSrc = pPlayer.GetGunPosition();
-                Vector vecEnd = vecSrc + vecAiming * 8192; // Increased range for better accuracy.
-
-                TraceResult tr;
-                g_Utility.TraceLine(vecSrc, vecEnd, dont_ignore_monsters, pPlayer.edict(), tr);
-                
-                // If we hit something, use that as the impact point
-                Vector impactPoint = tr.vecEndPos;
-                
-                // If we hit an entity, make sure the explosion happens at the surface.
-                if (tr.pHit !is null) 
-                {
-                    CBaseEntity@ hitEntity = g_EntityFuncs.Instance(tr.pHit);
-                    if (hitEntity !is null) 
-                    {
-                        // Adjust the impact point to be slightly in front of the hit surface.
-                        impactPoint = tr.vecEndPos - (vecAiming * 2);
-                    }
-                }
-
-                // Always play the explosion sound for each shotgun pellet.
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_STATIC, strDragonsBreathImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
-                
-                // Create smaller explosion effects for shotgun pellets.
-                // 1. Main explosion sprite.
-                NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-                msgExp.WriteByte(TE_SPRITE);
-                msgExp.WriteCoord(impactPoint.x);
-                msgExp.WriteCoord(impactPoint.y);
-                msgExp.WriteCoord(impactPoint.z);
-                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionSprite));
-                msgExp.WriteByte(6); // Smaller scale for shotgun.
-                msgExp.WriteByte(180); // Brightness.
-                msgExp.End();
-                
-                // 2. Core explosion sprite
-                NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-                msgCore.WriteByte(TE_SPRITE);
-                msgCore.WriteCoord(impactPoint.x);
-                msgCore.WriteCoord(impactPoint.y);
-                msgCore.WriteCoord(impactPoint.z);
-                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionCoreSprite));
-                msgCore.WriteByte(4); // Smaller scale for shotgun.
-                msgCore.WriteByte(180); // Brightness.
-                msgCore.End();
-                
-                // 4. Sprite trail burst effect for shotgun.
-                // Create endpoints with impact point as the start point.
-                Vector startPoint = impactPoint;
-                Vector endPoint = impactPoint;
-                
-                // End point moves outward from impact in a random direction.
-                endPoint.x = startPoint.x + Math.RandomFloat(-25, 25);
-                endPoint.y = startPoint.y + Math.RandomFloat(-25, 25);
-                endPoint.z = startPoint.z + Math.RandomFloat(5, 20); // Bias upward.
-                
-                // Create sprite trail effect.
-                NetworkMessage msgTrail(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-                msgTrail.WriteByte(TE_SPRITETRAIL);
-                msgTrail.WriteCoord(startPoint.x);
-                msgTrail.WriteCoord(startPoint.y);
-                msgTrail.WriteCoord(startPoint.z);
-                msgTrail.WriteCoord(endPoint.x);
-                msgTrail.WriteCoord(endPoint.y);
-                msgTrail.WriteCoord(endPoint.z);
-                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
-                msgTrail.WriteByte(3);  // Count - fewer sprites for smaller effect.
-                msgTrail.WriteByte(2);  // Life in 0.1's.
-                msgTrail.WriteByte(1);  // Scale in 0.1's.
-                msgTrail.WriteByte(15); // Velocity along vector in 10's.
-                msgTrail.WriteByte(10); // Random velocity in 10's.
-                msgTrail.End();
-
-                ApplyDragonsBreath(pPlayer, impactPoint); // Apply radius damage using default damage types.
+                Vector impactPoint = GetAimImpact(pPlayer, true);
+                FireExplosionVisuals(pPlayer, impactPoint, 6);
+                ApplyDragonsBreath(pPlayer, impactPoint);
             }
-
-            ConsumeRound(); // Consumes 1 round instance regardless of pellets now that there is an ammo cost modifier.
-        }
-        else if(weaponName == "weapon_m16" && ammoName == "556")
-        {
-            const int BURST_SHOTS = 3;
-            const float BURST_DELAY = 0.085f;
-            const float currentTime = g_Engine.time;
-            
-            for(int i = 0; i < BURST_SHOTS; i++)
-            {
-                Vector vecSrc = pPlayer.GetGunPosition();
-                Vector angles = pPlayer.pev.v_angle;
-                Math.MakeVectors(angles);
-                Vector vecAiming = g_Engine.v_forward;
-                
-                // Add slight spread for burst fire.
-                Vector burstSpread = Vector(
-                    Math.RandomFloat(-0.05, 0.05),
-                    Math.RandomFloat(-0.05, 0.05),
-                    Math.RandomFloat(-0.05, 0.05)
-                );
-                vecAiming = vecAiming + burstSpread;
-                
-                Vector vecEnd = vecSrc + (vecAiming * 8192); // Increased range.
-
-                TraceResult tr;
-                g_Utility.TraceLine(vecSrc, vecEnd, dont_ignore_monsters, pPlayer.edict(), tr);
-                
-                // If we hit something, use that as the impact point.
-                Vector impactPoint = tr.vecEndPos;
-                
-                // If we hit an entity, make sure the explosion happens at the surface.
-                if (tr.pHit !is null) 
-                {
-                    CBaseEntity@ hitEntity = g_EntityFuncs.Instance(tr.pHit);
-                    if (hitEntity !is null) 
-                    {
-                        // Adjust the impact point to be slightly in front of the hit surface.
-                        impactPoint = tr.vecEndPos - (vecAiming * 2);
-                    }
-                }
-                
-                // IMPORTANT: Always play the explosion sound for each M16 burst round.
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_STATIC, strDragonsBreathImpactSound, 0.5f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-10, 10), 0, true, impactPoint);
-                
-                // Create very small explosion effects for burst fire.
-                // 1. Main explosion sprite.
-                NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-                msgExp.WriteByte(TE_SPRITE);
-                msgExp.WriteCoord(impactPoint.x);
-                msgExp.WriteCoord(impactPoint.y);
-                msgExp.WriteCoord(impactPoint.z);
-                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionSprite));
-                msgExp.WriteByte(4); // Smaller scale for burst fire.
-                msgExp.WriteByte(160); // Brightness.
-                msgExp.End();
-                
-                // 2. Core explosion sprite.
-                NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-                msgCore.WriteByte(TE_SPRITE);
-                msgCore.WriteCoord(impactPoint.x);
-                msgCore.WriteCoord(impactPoint.y);
-                msgCore.WriteCoord(impactPoint.z);
-                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionCoreSprite));
-                msgCore.WriteByte(3); // Smaller scale for burst fire.
-                msgCore.WriteByte(160); // Brightness.
-                msgCore.End();
-                
-                // 4. Just 1 sprite trail effect for M16 burst (very small).
-                // Create endpoints with impact point as the start point.
-                Vector startPoint = impactPoint;
-                Vector endPoint = impactPoint;
-                
-                // End point moves outward from impact in a random direction.
-                endPoint.x = startPoint.x + Math.RandomFloat(-15, 15);
-                endPoint.y = startPoint.y + Math.RandomFloat(-15, 15);
-                endPoint.z = startPoint.z + Math.RandomFloat(3, 15); // Bias upward.
-                
-                // Create sprite trail effect.
-                NetworkMessage msgTrail(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-                msgTrail.WriteByte(TE_SPRITETRAIL);
-                msgTrail.WriteCoord(startPoint.x);
-                msgTrail.WriteCoord(startPoint.y);
-                msgTrail.WriteCoord(startPoint.z);
-                msgTrail.WriteCoord(endPoint.x);
-                msgTrail.WriteCoord(endPoint.y);
-                msgTrail.WriteCoord(endPoint.z);
-                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
-                msgTrail.WriteByte(3);  // Count.
-                msgTrail.WriteByte(1);  // Life in 0.1's.
-                msgTrail.WriteByte(1);  // Scale in 0.1's.
-                msgTrail.WriteByte(10); // Velocity along vector in 10's.
-                msgTrail.WriteByte(5);  // Random velocity in 10's.
-                msgTrail.End();
-
-                ApplyDragonsBreath(pPlayer, impactPoint); // Apply radius damage using default damage types.
-
-                ConsumeRound();
-            }
+            ConsumeRound();
         }
         else
         {
-            Vector vecSrc = pPlayer.GetGunPosition(); // Get player's gun position.
+            Vector impactPoint = GetAimImpact(pPlayer, false);
+            FireExplosionVisuals(pPlayer, impactPoint, 10);
+            ApplyDragonsBreath(pPlayer, impactPoint);
+            ConsumeRound();
+        }
+    }
 
-            // Get player's view angles and convert to aim vector.
-            Vector angles = pPlayer.pev.v_angle;
-            Math.MakeVectors(angles);
-            Vector vecAiming = g_Engine.v_forward;
+    private Vector GetAimImpact(CBasePlayer@ pPlayer, bool bSpread)
+    {
+        Vector vecSrc = pPlayer.GetGunPosition();
+        Math.MakeVectors(pPlayer.pev.v_angle);
+        Vector vecAiming = g_Engine.v_forward;
 
-            Vector vecEnd = vecSrc + (vecAiming * 8192); // Increased range for better accuracy.
+        if(bSpread)
+            vecAiming = vecAiming + Vector(Math.RandomFloat(-0.05f, 0.05f), Math.RandomFloat(-0.05f, 0.05f), Math.RandomFloat(-0.05f, 0.05f));
 
-            TraceResult tr;
-            // Use a more precise tracing method
-            g_Utility.TraceLine(vecSrc, vecEnd, dont_ignore_monsters, pPlayer.edict(), tr);
-            
-            // If we hit something, use that as the impact point.
-            Vector impactPoint = tr.vecEndPos;
-            
-            // If we hit an entity, make sure the explosion happens at the surface.
-            if (tr.pHit !is null) 
-            {
-                CBaseEntity@ hitEntity = g_EntityFuncs.Instance(tr.pHit);
-                if (hitEntity !is null) 
-                {
-                    // Adjust the impact point to be slightly in front of the hit surface.
-                    impactPoint = tr.vecEndPos - (vecAiming * 2);   
-                }
-            }
+        TraceResult tr;
+        g_Utility.TraceLine(vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, pPlayer.edict(), tr);
 
-            // Play impact sound.
-            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_STATIC, strDragonsBreathImpactSound, 0.6f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-3, 3), 0, true, impactPoint);
-            
-            // Create explosion effects.
-            // 1. Main explosion sprite.
-            NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
+        if(tr.pHit !is null && g_EntityFuncs.Instance(tr.pHit) !is null)
+            return tr.vecEndPos - (vecAiming * 2);
+
+        return tr.vecEndPos;
+    }
+
+    private void FireExplosionVisuals(CBasePlayer@ pPlayer, Vector impactPoint, int scale)
+    {
+        g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_STATIC, strDragonsBreathImpactSound, 0.6f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5), 0, true, impactPoint);
+
+        NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
             msgExp.WriteByte(TE_SPRITE);
             msgExp.WriteCoord(impactPoint.x);
             msgExp.WriteCoord(impactPoint.y);
             msgExp.WriteCoord(impactPoint.z);
             msgExp.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionSprite));
-            msgExp.WriteByte(10); // Scale.
-            msgExp.WriteByte(200); // Brightness.
-            msgExp.End();
-            
-            // 2. Core explosion sprite.
-            NetworkMessage msgCore(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-            msgCore.WriteByte(TE_SPRITE);
-            msgCore.WriteCoord(impactPoint.x);
-            msgCore.WriteCoord(impactPoint.y);
-            msgCore.WriteCoord(impactPoint.z);
-            msgCore.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionCoreSprite));
-            msgCore.WriteByte(8); // Scale.
-            msgCore.WriteByte(200); // Brightness.
-            msgCore.End();
-            
-            // 4. Sprite trail burst effect for fire.
-            // Create endpoints with impact point as the start point.
-            Vector startPoint = impactPoint;
-            Vector endPoint = impactPoint;
-            
-            // End point moves outward from impact in a random direction.
-            endPoint.x = startPoint.x + Math.RandomFloat(-50, 50);
-            endPoint.y = startPoint.y + Math.RandomFloat(-50, 50);
-            endPoint.z = startPoint.z + Math.RandomFloat(20, 50); // Bias upward.
-            
-            // Create sprite trail effect.
-            NetworkMessage msgTrail(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
-            msgTrail.WriteByte(TE_SPRITETRAIL);
-            msgTrail.WriteCoord(startPoint.x);
-            msgTrail.WriteCoord(startPoint.y);
-            msgTrail.WriteCoord(startPoint.z);
-            msgTrail.WriteCoord(endPoint.x);
-            msgTrail.WriteCoord(endPoint.y);
-            msgTrail.WriteCoord(endPoint.z);
-            msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
-            msgTrail.WriteByte(3);  // Count - more sprites for a denser burst.
-            msgTrail.WriteByte(5);   // Life in 0.1's.
-            msgTrail.WriteByte(2);   // Scale in 0.1's.
-            msgTrail.WriteByte(25);  // Velocity along vector in 10's.
-            msgTrail.WriteByte(15);  // Random velocity in 10's - higher for more spread.
-            msgTrail.End();
-
-            // Apply dragons breath to area.
-            ApplyDragonsBreath(pPlayer, impactPoint); // Apply dragons breath.
-
-            ConsumeRound();
-        }
+            msgExp.WriteByte(scale);
+            msgExp.WriteByte(180);
+        msgExp.End();
     }
 }
 
@@ -716,7 +553,7 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
         dragonsBreath.GetScaledExplosionDamage(), // Damage per explosion (scaled by level and ammo type).
         dragonsBreath.GetRadius(), // Radius.
         CLASS_PLAYER, // Will not damage player or allies.
-        DMG_BLAST | DMG_BURN | DMG_ALWAYSGIB // Damage type.
+        DMG_BURN | DMG_SLOWBURN | DMG_ALWAYSGIB // Damage type.
     );
 
     Vector startPoint = impactPoint;
@@ -748,11 +585,17 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
 // Helper function to get ammo name from index.
 string GetAmmoName(int ammoType)
 {
-    if(ammoType == g_PlayerFuncs.GetAmmoIndex("9mm")) return "9mm";
-    if(ammoType == g_PlayerFuncs.GetAmmoIndex("357")) return "357";
-    if(ammoType == g_PlayerFuncs.GetAmmoIndex("buckshot")) return "buckshot";
-    if(ammoType == g_PlayerFuncs.GetAmmoIndex("556")) return "556";
-    if(ammoType == g_PlayerFuncs.GetAmmoIndex("uranium")) return "uranium";
-    if(ammoType == g_PlayerFuncs.GetAmmoIndex("m40a1")) return "m40a1";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("9mm"))           return "9mm";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("357"))           return "357";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("buckshot"))      return "buckshot";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("556"))           return "556";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("bolts"))         return "bolts";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("rockets"))       return "rockets";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("uranium"))       return "uranium";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("m40a1"))         return "m40a1";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("sporeclip"))     return "sporeclip";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("ARgrenades"))    return "ARgrenades";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("shock charges")) return "shock charges";
+    if(ammoType == g_PlayerFuncs.GetAmmoIndex("Hornets"))       return "Hornets";
     return "";
 }
