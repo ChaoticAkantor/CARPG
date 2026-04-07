@@ -25,6 +25,7 @@ class SnarkNestData
     ClassStats@ GetStats() { return m_pStats; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
     float GetAbilityMax() { return m_flAbilityMax; }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     
