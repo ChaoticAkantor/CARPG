@@ -192,6 +192,7 @@ class NecroMinionData
     int GetAbilityMax() { return m_iMinionPointMax + GetMinionPointIncrease(); }
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
+    void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
 
     float GetScaledAbilityRecharge()
     {
@@ -447,7 +448,14 @@ class NecroMinionData
                 pMonster.pev.framerate = NECRO_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
             }
 
-            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            pMonster.m_fCanFearCreatures = true; // Can cause fear to creatures?
+            //pMonster.m_iEffectInvisible = 1; // is invisible (render + no-target).
+            //pMonster.m_flEffectDamage = 2.0; // Damage (%)?
+            //pMonster.m_flEffectSpeed = 1.0; // Movement speed (%)?
+            //pMonster.m_flEffectRespiration = 120.0; // Breathing time underwater in seconds.
+            //pMonster.m_flDistLook = 2048; // Look distance (2048 default).
+            //pMonster.m_flHungryTime = 120.0; // Time based damage inflictor?
             
             // Enhanced death check - check multiple conditions.
             bool isDead = false;

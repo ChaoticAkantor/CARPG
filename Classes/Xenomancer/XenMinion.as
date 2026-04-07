@@ -300,6 +300,7 @@ class XenMinionData
     int GetAbilityMax() { return m_iMinionPointMax + int(GetMinionPointIncrease()); }
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
+    void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
 
     float GetScaledAbilityRecharge()
     {
@@ -576,7 +577,7 @@ class XenMinionData
                 pMonster.pev.framerate = XEN_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
             }
 
-            //pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
+            pMonster.m_flFieldOfView = -1.0; // Max their field of view.
             
             // Enhanced death check - check multiple conditions.
             bool isDead = false;
