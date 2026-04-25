@@ -263,7 +263,6 @@ void PrecacheAll()
     // Vanquisher Class Precache.
         // Models/Sprites.
         g_Game.PrecacheModel(strDragonsBreathExplosionSprite);
-        g_Game.PrecacheModel(strDragonsBreathExplosionCoreSprite);
         g_Game.PrecacheModel(strDragonsBreathFireSprite);
 
         // Sounds.
