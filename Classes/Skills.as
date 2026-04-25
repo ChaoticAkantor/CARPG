@@ -75,7 +75,7 @@ const float SKILL_BERSERKER_OVERHEAL     = 0.12f; // Percent of max HP to overhe
 
 
 // Engineer.
-const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.60f; // Sentry damage per level.
+const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.40f; // Sentry damage per level.
     const int SKILL_ENGINEER_SENTRYDAMAGE_LVL = 5;
 
 const float SKILL_ENGINEER_MINIHEALAURA  = 1.0f; // Mini-heal Aura % max HP heal per level.
@@ -268,7 +268,7 @@ void InitializeSkillDefinitions()
 
     // Engineer.
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+" + int(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f) + "% damage per level.", SKILL_ENGINEER_SENTRYDAMAGE_LVL, int(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f), "%");
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)]  = SkillDefinition("Sentry: Mini-Heal Aura",  "+" + int(SKILL_ENGINEER_MINIHEALAURA * 100.0f) + "% max HP heal/s per level.", SKILL_ENGINEER_MINIHEALAURA_LVL, int(SKILL_ENGINEER_MINIHEALAURA * 100.0f),  "%");
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)]  = SkillDefinition("Sentry: Mini-Heal Aura",  "+" + int(SKILL_ENGINEER_MINIHEALAURA) + "% max HP heal/s per level.", SKILL_ENGINEER_MINIHEALAURA_LVL, int(SKILL_ENGINEER_MINIHEALAURA),  "%");
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Sentry: Explosive Ammo",  "+" + int(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f) + "% explosive damage per level.", SKILL_ENGINEER_EXPLOSIVEAMMO_LVL, int(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f), "%");
 
     // Robomancer.
