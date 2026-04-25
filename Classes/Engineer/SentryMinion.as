@@ -26,17 +26,16 @@ class SentryData
     // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flAbilityMax = 30.0f; // Max duration.
+    private float m_flAbilityMax = 60.0f; // Max duration.
     private float m_flAbilityRechargeTime = 25.0f; // Seconds to fully recharge from empty.
     private float m_flBaseHealth = 2000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
-    private float m_flDamageScaleAtMaxLevel = 3.0; // Damage multiplier at max level.
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
     private float m_flHealRadius = 50.0f * 16.0f; // Radius in which the sentry can heal players (ft converted to units).
     private float m_flExplosiveRadius = 20.0f * 60.0f; // Radius of the explosive damage when the sentry hits with its bullets.
 
     private float m_flEnergyDrain = 1.0f; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
-    private float m_flRecallEnergyCost = 0.15f; // Energy percentage cost to recall.
+    private float m_flRecallEnergyCost = 0.20f; // Energy percentage cost to recall.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
@@ -131,7 +130,7 @@ class SentryData
             
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO);
         float skillPower = SKILL_ENGINEER_EXPLOSIVEAMMO; // Bonus damage based on skill level.
-        float modifier = skillPower * skillLevel;
+        float modifier = (1.0 + skillPower * skillLevel); // Total damage multiplier.
 
         return modifier;
     }
@@ -359,15 +358,16 @@ class SentryData
             return;
 
         Vector hitPos    = pVictim.pev.origin;
-        float  strikeDmg = flDealtDamage * GetScaledExplosiveDamage(); // Scale explosive damage based on skill level.
+        float  attackDmg = flDealtDamage * GetScaledExplosiveDamage(); // Scale explosive damage based on skill level.
+        Vector center = hitPos + (pVictim.pev.mins + pVictim.pev.maxs) * 0.5f;
 
         // Apply dynamic light for flash effect.
-        NetworkMessage explAreaMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, hitPos);
+        NetworkMessage explAreaMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, center);
             explAreaMsg.WriteByte(TE_DLIGHT);
-            explAreaMsg.WriteCoord(hitPos.x);
-            explAreaMsg.WriteCoord(hitPos.y);
-            explAreaMsg.WriteCoord(hitPos.z);
-            explAreaMsg.WriteByte(uint8(m_flExplosiveRadius * 0.1)); // Radius units * 10.
+            explAreaMsg.WriteCoord(center.x);
+            explAreaMsg.WriteCoord(center.y);
+            explAreaMsg.WriteCoord(center.z);
+            explAreaMsg.WriteByte(25); // Radius units * 10.
             explAreaMsg.WriteByte(255); // Red.
             explAreaMsg.WriteByte(255); // Green.
             explAreaMsg.WriteByte(50); // Blue.
@@ -375,13 +375,23 @@ class SentryData
             explAreaMsg.WriteByte(uint8(5)); // Fade speed * 1s.
             explAreaMsg.End();
 
+        NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, center);
+            msgExp.WriteByte(TE_SPRITE);
+            msgExp.WriteCoord(center.x);
+            msgExp.WriteCoord(center.y);
+            msgExp.WriteCoord(center.z);
+            msgExp.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionSprite));
+            msgExp.WriteByte(10);
+            msgExp.WriteByte(180);
+        msgExp.End();
+
         m_bExplosiveActive = true; // Enable recursion guard.
 
         // Radius damage.
-        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, strikeDmg, m_flExplosiveRadius, CLASS_PLAYER, DMG_BLAST | DMG_ALWAYSGIB);
+        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, attackDmg, m_flExplosiveRadius, CLASS_PLAYER, DMG_BLAST | DMG_ALWAYSGIB);
         
         // Play explosion sound.
-        g_SoundSystem.EmitSound(pVictim.edict(), CHAN_ITEM, strSentryExplosive, 0.6f, ATTN_NORM);
+        g_SoundSystem.PlaySound(pVictim.edict(), CHAN_ITEM, strSentryExplosive, 0.6f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5));
 
         m_bExplosiveActive = false; // Disable recursion guard.
     }
