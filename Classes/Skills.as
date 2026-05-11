@@ -12,17 +12,17 @@ Add new skills here:
 */
 
 // Standard skills, available to all classes.
-const float SKILL_MAXHP         = 0.10f;  // Max HP per level.
-    const int SKILL_MAXHP_LVL       = 10;
+const float SKILL_MAXHP = 0.10f;  // Max HP per level.
+    const int SKILL_MAXHP_LVL = 10;
 
-const float SKILL_MAXAP         = 0.05f;  // Max AP per level.
-    const int SKILL_MAXAP_LVL       = 10;
+const float SKILL_MAXAP = 0.05f;  // Max AP per level.
+    const int SKILL_MAXAP_LVL = 10;
 
-const float SKILL_REGENHP       = 0.002f;  // HP regen scale (% of max HP) per level.
-    const int SKILL_REGENHP_LVL     = 10;
+const float SKILL_REGENHP = 0.002f;  // HP regen scale (% of max HP) per level.
+    const int SKILL_REGENHP_LVL = 10;
 
-const float SKILL_REGENAP       = 0.0005f;  // AP regen scale (% of max AP) per level.
-    const int SKILL_REGENAP_LVL     = 10;
+const float SKILL_REGENAP = 0.0005f;  // AP regen scale (% of max AP) per level.
+    const int SKILL_REGENAP_LVL = 10;
 
 const float SKILL_ABILITYRECHARGE = 0.05f; // Percent increase to ability recharge speed per level.
     const int SKILL_ABILITYRECHARGE_LVL = 10;
@@ -47,21 +47,21 @@ const float SKILL_MINIONDAMAGE = 0.40f; // Damage percent increase for minions p
 
 
 // Medic.
-const float SKILL_MEDIC_HEALPERCENT     = 2.0f;  // Increase max healing percent per level. (absolute)
+const float SKILL_MEDIC_HEALPERCENT = 2.0f;  // Increase max healing percent per level. (absolute)
     const int SKILL_MEDIC_HEALPERCENT_LVL = 5;
 
-const float SKILL_MEDIC_POISON          = 2.0f; // Poison damage (% max health) per level.
-    const int SKILL_MEDIC_POISON_LVL      = 5;
+const float SKILL_MEDIC_POISON = 2.0f; // Poison damage (% max health) per level.
+    const int SKILL_MEDIC_POISON_LVL = 5;
 
-const float SKILL_MEDIC_REVIVE          = 2.5f;   // Reduce revive cooldown per level.
-    const int SKILL_MEDIC_REVIVE_LVL      = 5;
+const float SKILL_MEDIC_REVIVE = 2.5f;   // Reduce revive cooldown per level.
+    const int SKILL_MEDIC_REVIVE_LVL = 5;
 
-const float SKILL_MEDIC_HEALAP          = 0.02f;  // Percent of heal applied as AP per level.
-    const int SKILL_MEDIC_HEALAP_LVL      = 5;
+const float SKILL_MEDIC_HEALAP = 0.02f;  // Percent of heal applied as AP per level.
+    const int SKILL_MEDIC_HEALAP_LVL = 5;
 
 
 // Berserker.
-const float SKILL_BERSERKER_LIFESTEAL   = 0.04f; // Increase lifesteal per level.
+const float SKILL_BERSERKER_LIFESTEAL = 0.02f; // Flat increase to lifesteal per level.
     const int SKILL_BERSERKER_LIFESTEAL_LVL = 5;
 
 const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.02f; // Percent of damage dealt converted to ability charge per level.
@@ -70,8 +70,11 @@ const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.02f; // Percent of damage de
 const float SKILL_BERSERKER_DAMAGEREDUCTION = 0.06f; // Damage reduction per level.
     const int SKILL_BERSERKER_DAMAGEREDUCTION_LVL = 5;
 
-const float SKILL_BERSERKER_OVERHEAL     = 0.12f; // Percent of max HP to overheal from lifesteal per level.
+const float SKILL_BERSERKER_OVERHEAL = 0.12f; // Percent of max HP to overheal from lifesteal per level.
     const int SKILL_BERSERKER_OVERHEAL_LVL = 5;
+
+const float SKILL_BERSERKER_APCONVERSION = 0.10f; // Percent of Max AP converted into Max HP.
+    const int SKILL_BERSERKER_APCONVERSION_LVL = 5;
 
 
 // Engineer.
@@ -174,6 +177,7 @@ enum SkillID
     SKILL_BERSERKER_DAMAGEABILITYCHARGE,
     SKILL_BERSERKER_DAMAGEREDUCTION,
     SKILL_BERSERKER_OVERHEAL,
+    SKILL_BERSERKER_APCONVERSION,
 
     // Engineer.
     SKILL_ENGINEER_SENTRYDAMAGE,
@@ -246,7 +250,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_REGENHP)] = SkillDefinition("Health Regen", "+" + SKILL_REGENHP * 100.0f + "% HP/s per level.", SKILL_REGENHP_LVL, SKILL_REGENHP * 100.0f, "% HP/s");
     @g_SkillDefs[int(SkillID::SKILL_REGENAP)] = SkillDefinition("Armor Regen", "+" + SKILL_REGENAP * 100.0f + "% AP/s per level.", SKILL_REGENAP_LVL, SKILL_REGENAP * 100.0f, "% AP/s");
     @g_SkillDefs[int(SkillID::SKILL_ABILITYRECHARGE)] = SkillDefinition("Ability Recharge", "+" + SKILL_ABILITYRECHARGE * 100 + "% ability recharge speed per level.", SKILL_ABILITYRECHARGE_LVL, SKILL_ABILITYRECHARGE * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_AMMOREGEN)] = SkillDefinition("Ammo Regen", "+" + SKILL_AMMOREGEN + " ammo per interval, per level.", SKILL_AMMOREGEN_LVL, SKILL_AMMOREGEN, " Ammo");
+    @g_SkillDefs[int(SkillID::SKILL_AMMOREGEN)] = SkillDefinition("Ammo Regen", "+" + SKILL_AMMOREGEN + " ammo gain per level.", SKILL_AMMOREGEN_LVL, SKILL_AMMOREGEN, " Ammo");
 
     // Minion Class exclusive.
     @g_SkillDefs[int(SkillID::SKILL_MINIONPOINT)] = SkillDefinition("Minions: Minion Point", "+" + SKILL_MINIONPOINT + " minion point per level.", SKILL_MINIONPOINT_LVL, SKILL_MINIONPOINT, " Point");
@@ -262,13 +266,14 @@ void InitializeSkillDefinitions()
 
     // Berserker.
     @g_SkillDefs[int(SkillID::SKILL_BERSERKER_LIFESTEAL)] = SkillDefinition("Bloodlust: Lifesteal", "+" + (SKILL_BERSERKER_LIFESTEAL * 100.0f) + "% lifesteal per level.", SKILL_BERSERKER_LIFESTEAL_LVL, SKILL_BERSERKER_LIFESTEAL * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE)] = SkillDefinition("Bloodlust: Damage to Ability Charge", "+" + (SKILL_BERSERKER_DAMAGEABILITYCHARGE * 100.0f) + "% of damage dealt converted to ability charge per level.", SKILL_BERSERKER_DAMAGEABILITYCHARGE_LVL, SKILL_BERSERKER_DAMAGEABILITYCHARGE * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE)] = SkillDefinition("Bloodlust: Damage Charge", "+" + (SKILL_BERSERKER_DAMAGEABILITYCHARGE * 100.0f) + "% of damage charge per level.", SKILL_BERSERKER_DAMAGEABILITYCHARGE_LVL, SKILL_BERSERKER_DAMAGEABILITYCHARGE * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION)] = SkillDefinition("Bloodlust: Damage Reduction", "+" + (SKILL_BERSERKER_DAMAGEREDUCTION * 100.0f) + "% damage reduction per level.", SKILL_BERSERKER_DAMAGEREDUCTION_LVL, SKILL_BERSERKER_DAMAGEREDUCTION * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_BERSERKER_OVERHEAL)]        = SkillDefinition("Bloodlust: Overheal",  "+" + (SKILL_BERSERKER_OVERHEAL * 100.0f) + "% Overheal per level.",            SKILL_BERSERKER_OVERHEAL_LVL,        SKILL_BERSERKER_OVERHEAL * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_BERSERKER_OVERHEAL)] = SkillDefinition("Bloodlust: Overheal", "+" + (SKILL_BERSERKER_OVERHEAL * 100.0f) + "% Overheal per level.", SKILL_BERSERKER_OVERHEAL_LVL, SKILL_BERSERKER_OVERHEAL * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_BERSERKER_APCONVERSION)] = SkillDefinition("Bloodlust: AP Conversion", "+" + (SKILL_BERSERKER_APCONVERSION * 100.0f) + "% Converted Max AP to HP per level.", SKILL_BERSERKER_APCONVERSION_LVL, SKILL_BERSERKER_APCONVERSION * 100.0f, "%");
 
     // Engineer.
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+" + int(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f) + "% damage per level.", SKILL_ENGINEER_SENTRYDAMAGE_LVL, int(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f), "%");
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)]  = SkillDefinition("Sentry: Mini-Heal Aura",  "+" + int(SKILL_ENGINEER_MINIHEALAURA) + "% max HP heal/s per level.", SKILL_ENGINEER_MINIHEALAURA_LVL, int(SKILL_ENGINEER_MINIHEALAURA),  "%");
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Sentry: Mini-Heal Aura",  "+" + int(SKILL_ENGINEER_MINIHEALAURA) + "% max HP heal/s per level.", SKILL_ENGINEER_MINIHEALAURA_LVL, int(SKILL_ENGINEER_MINIHEALAURA),  "%");
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Sentry: Explosive Ammo",  "+" + int(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f) + "% explosive damage per level.", SKILL_ENGINEER_EXPLOSIVEAMMO_LVL, int(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f), "%");
 
     // Robomancer.
@@ -334,6 +339,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE);
             result.insertLast(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION);
             result.insertLast(SkillID::SKILL_BERSERKER_OVERHEAL);
+            result.insertLast(SkillID::SKILL_BERSERKER_APCONVERSION);
             break;
         case PlayerClass::CLASS_ENGINEER:
             result.insertLast(SkillID::SKILL_ENGINEER_SENTRYDAMAGE);
