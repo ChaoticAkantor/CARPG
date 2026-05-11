@@ -19,8 +19,7 @@ class BloodlustData
     private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
 
     // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
-    private float m_flBaseLifesteal = 0.04f; // Lifesteal % base. Doubles during bloodlust!
-
+    private float m_flBaseLifesteal = 0.20f; // Lifesteal % base. Doubles during bloodlust!
 
     // Timers.
     private float m_flAbilityCharge = 0.0f; // Current charge.
@@ -105,10 +104,10 @@ class BloodlustData
         float skillPower = SKILL_BERSERKER_DAMAGEREDUCTION;
         float damageReduction = skillPower * skillLevel;
 
-        if(m_bActive)
-            damageReduction *= 2.0f; // Double whilst bloodlust is active.
-
-        return damageReduction;
+        //if(m_bActive)
+            //return damageReduction *= 2.0f; // Double whilst bloodlust is active.
+        //else
+            return damageReduction;
     }
 
     float GetScaledOverhealPercent() 
@@ -124,6 +123,28 @@ class BloodlustData
             return (1.0f + overhealBonus) * 2.0f; // Double if active.
         else
             return 1.0f + overhealBonus; // Passive overheal.
+    }
+
+    void ConvertAPToHP(CBasePlayer@ pPlayer) 
+    { 
+        if(m_pStats is null)
+            return;
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_APCONVERSION);
+        float skillPower = SKILL_BERSERKER_APCONVERSION;
+        float apConversionBonus = skillPower * skillLevel; // AP conversion percent scaled from skill.
+
+        float maxHealth = pPlayer.pev.max_health;
+        float maxArmor = pPlayer.pev.armortype;
+
+        float apToConvert = maxArmor * apConversionBonus; // HP amount that would be converted to AP.
+        float newMaxAP = maxArmor - apToConvert; // New AP after conversion.
+
+        pPlayer.pev.max_health = maxHealth + apToConvert; // Increase max health by converted AP.
+        pPlayer.pev.armortype = newMaxAP; // Set new max AP.
+
+        if (pPlayer.pev.armorvalue > newMaxAP)
+            pPlayer.pev.armorvalue = newMaxAP; // Reduce current AP if it exceeds new max to remove any overcharge.
     }
     
     void ToggleBloodlust(CBasePlayer@ pPlayer)
@@ -148,7 +169,7 @@ class BloodlustData
             // Require minimum charge to activate.
             if(m_flAbilityCharge < GetDeactivateCost())
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flBloodlustAbilityDeactivateCost * 100.0f) + "%% Charge!");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flBloodlustAbilityDeactivateCost * 100) + "%% Charge!");
                 return;
             }
             
