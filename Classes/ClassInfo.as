@@ -95,9 +95,9 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_BERSERKER:
             return
                 "Ability: Bloodlust.\n\n"
-                "All bonuses are passives.\n"
-                "Activating Bloodlust doubles all passive bonuses.\n"
-                "Gain life steal.\n"
+                "Starts with passive life steal.\n"
+                "All bonuses are counted as passives.\n"
+                "Activating Bloodlust doubles all HP and healing related bonuses (except for AP conversion).\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
