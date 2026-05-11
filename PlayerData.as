@@ -5,8 +5,8 @@ string strSaveFileLocation = "scripts/plugins/store/"; // Default is scripts/plu
 dictionary g_PlayerRPGData;
 
 // Max level and XP multiplier.
-int g_iMaxLevel = 50; // Max player level. Increasing this will not make players stronger! Abilities scale against max level.
-float g_fXPMultiplier = 1.0f; // Score to XP multiplier, 1.0 = 1 score is 1 XP.
+int g_iMaxLevel = 50; // Max player level, skill points are given per level, increasing this will increase skill points available.
+int g_iScoreToXP = 1; // Amount of XP each score point is worth, 1 = 1 score is 1 XP.
 
 dictionary g_ClassNames = 
 {
@@ -97,11 +97,11 @@ class ClassStats
     private array<int> m_SkillLevels(int(SkillID::SKILL_MAX_COUNT), 0);
 
     // XP / Level tracking.
-    private int m_iLevel = 1;
+    private int m_iLevel = 1; // Current level.
     private int m_iCurrentLevelXP = 0; // XP accumulated within the current level.
-    private int m_iXPNeededBase = 20;
-    private float m_fXPNeededMult = 1.5f;
-    private int m_iMaxLevel = g_iMaxLevel;
+    private int m_iXPNeededBase = 20; // Base XP needed for first level up.
+    private float m_fXPNeededMult = 1.0f; // Multiply XP needed by this factor for each level.
+    private int m_iMaxLevel = g_iMaxLevel; // Set max level from global setting.
     private string m_szSteamID;
 
     int GetSkillPointsPerLevel() { return m_iSkillPointsPerLevel; }
@@ -702,9 +702,23 @@ class PlayerData
             float maxHealth = def.baseHP * (1.0f + SKILL_MAXHP * stats.GetSkillLevel(SkillID::SKILL_MAXHP));
             float maxArmor  = def.baseAP * (1.0f + SKILL_MAXAP * stats.GetSkillLevel(SkillID::SKILL_MAXAP));
 
-            // Set Max HP/AP.
-            pPlayer.pev.max_health = maxHealth;
-            pPlayer.pev.armortype = maxArmor;
+            // Set Max HP/AP based on class bonuses.
+                pPlayer.pev.max_health = maxHealth;
+                pPlayer.pev.armortype = maxArmor;
+
+            // Special case for Berserker conversion bonuses.
+            if (PlayerClass::CLASS_BERSERKER == m_CurrentClass)
+            {
+                // Berserker's Bloodlust grants bonus HP based on missing health, so we need to trigger a recalculation here.
+                if(g_PlayerBloodlusts.exists(steamID))
+                {
+                    BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                    if(bloodlust !is null)
+                    {
+                        bloodlust.ConvertAPToHP(pPlayer);
+                    }
+                }
+            }
 
             // Clamp current HP/AP down if they exceed the new max.
             // Never boost current values here — free refill is only granted on RefillHealthArmor.
@@ -752,7 +766,7 @@ class PlayerData
             int scoreDiff = currentScore - m_iLastScore;
             if(scoreDiff > 0)
             {
-                m_iScore += int(scoreDiff * g_fXPMultiplier);
+                m_iScore += int(scoreDiff * g_iScoreToXP);
                 
                 // Share XP with all players.
                 const int iMaxPlayers = g_Engine.maxClients;
