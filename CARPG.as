@@ -194,6 +194,7 @@ void PrecacheAll()
         // Sounds.
         g_SoundSystem.PrecacheSound(strLevelUpSound);
         g_SoundSystem.PrecacheSound(strClassChangeSound);
+        g_SoundSystem.PrecacheSound(strSkillSpendSound);
 
         // Models/Sprites.
         //g_Game.PrecacheModel(AMMO_SPRITE_SHEET);

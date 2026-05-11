@@ -9,6 +9,8 @@ Ability scripts read invested levels via:
     stats.GetSkillLevel(SkillID::SKILL_SKILL_ID_HERE);
 */
 
+const string strSkillSpendSound = "common/wpn_hudon.wav";
+
 namespace Menu
 {
     const int SKILL_MENU_RESET = -1;
@@ -84,6 +86,7 @@ namespace Menu
                 if(m_pOwner.TrySpendSkillPoint(id, pPlayer))
                 {
                     SkillDefinition@ def = g_SkillDefs[choice];
+                    g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strSkillSpendSound, VOL_NORM, ATTN_NORM); // Play skill spend sound.
                     //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK,
                         //"[CARPG] Invested in " + ((def !is null) ? def.name : "Unknown") + " (Lv " + m_pOwner.GetSkillLevel(id) + ").\n");
                 }
