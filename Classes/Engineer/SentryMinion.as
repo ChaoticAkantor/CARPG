@@ -28,10 +28,10 @@ class SentryData
     private bool m_bActive = false;
     private float m_flAbilityMax = 60.0f; // Max duration.
     private float m_flAbilityRechargeTime = 25.0f; // Seconds to fully recharge from empty.
-    private float m_flBaseHealth = 2000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
+    private float m_flBaseHealth = 5000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
     private float m_flHealRadius = 50.0f * 16.0f; // Radius in which the sentry can heal players (ft converted to units).
-    private float m_flExplosiveRadius = 20.0f * 60.0f; // Radius of the explosive damage when the sentry hits with its bullets.
+    private float m_flExplosiveRadius = 30.0f * 16.0f; // Radius of the explosive damage when the sentry hits with its bullets.
 
     private float m_flEnergyDrain = 1.0f; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
