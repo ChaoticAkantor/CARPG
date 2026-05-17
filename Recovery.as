@@ -205,3 +205,85 @@ void StopPlayerRegen(CBasePlayer@ pPlayer) // Stop Player Regen when hurt, calle
         data.lastHurtTime = g_Engine.time;
     }
 }
+
+void ApplyLifestealEffectBasic(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null)
+            return;
+
+        Vector pos = pPlayer.pev.origin;
+        Vector mins = pos - Vector(16, 16, 0);
+        Vector maxs = pos + Vector(16, 16, 64);
+
+        NetworkMessage bubbleMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
+            bubbleMsg.WriteByte(TE_BUBBLES);
+            bubbleMsg.WriteCoord(mins.x);
+            bubbleMsg.WriteCoord(mins.y);
+            bubbleMsg.WriteCoord(mins.z);
+            bubbleMsg.WriteCoord(maxs.x);
+            bubbleMsg.WriteCoord(maxs.y);
+            bubbleMsg.WriteCoord(maxs.z);
+            bubbleMsg.WriteCoord(112.0f);
+            bubbleMsg.WriteShort(g_EngineFuncs.ModelIndex(strBloodlustSprite));
+            bubbleMsg.WriteByte(10);
+            bubbleMsg.WriteCoord(2.0f);
+        bubbleMsg.End();
+
+        // Add dynamic light
+        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pPlayer.pev.origin);
+            msg.WriteByte(TE_DLIGHT);
+            msg.WriteCoord(pPlayer.pev.origin.x);
+            msg.WriteCoord(pPlayer.pev.origin.y);
+            msg.WriteCoord(pPlayer.pev.origin.z);
+            msg.WriteByte(5); // Radius
+            msg.WriteByte(int(BLOODLUST_COLOR.x));
+            msg.WriteByte(int(BLOODLUST_COLOR.y));
+            msg.WriteByte(int(BLOODLUST_COLOR.z));
+            msg.WriteByte(2); // Life in 0.1s
+            msg.WriteByte(1); // Decay rate
+        msg.End();
+    }
+
+float GetScaledBasicLifesteal(PlayerData@ data)
+{
+    if(data is null)
+        return 0.0f; // No lifesteal if no stats.
+
+    int skillLevel = data.GetSkillLevel(SkillID::SKILL_LIFESTEAL);
+    float skillPower = SKILL_LIFESTEAL;
+    float modifier = skillPower * float(skillLevel); // Scaled from lifesteal skill.
+
+    return modifier;
+}
+
+float ProcessBasicLifesteal(CBasePlayer@ pPlayer, float damageDealt)
+{
+    if(pPlayer is null)
+        return 0.0f;
+
+    if(!pPlayer.IsAlive()) // No lifesteal if player is dead.
+        return 0.0f;
+
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(steamID.IsEmpty() || !g_PlayerRPGData.exists(steamID))
+        return 0.0f;
+
+    PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+    if(data is null)
+        return 0.0f;
+
+    float lifestealMult = GetScaledBasicLifesteal(data);
+    float healAmount = damageDealt * lifestealMult; // Heal amount from lifesteal.
+    float maxHealth = pPlayer.pev.max_health; // Max health including overheal.
+
+    if(pPlayer.pev.health < maxHealth) // Heal HP if below max.
+    {
+        pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, maxHealth);
+        return healAmount;
+    }
+        
+    ApplyLifestealEffectBasic(pPlayer); // Visual effect for healing from lifesteal.
+    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
+
+    return healAmount;
+}
