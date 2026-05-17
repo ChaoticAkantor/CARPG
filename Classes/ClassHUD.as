@@ -109,7 +109,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                             resourceInfo += "[DMG Reduction: " +  int(bloodlust.GetDamageReduction(pPlayer) * 100) + "%]\n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE) > 0)
-                            resourceInfo += "[Bloodlust DMG Gain: " +  int(bloodlust.GetScaledDamageAbilityCharge() * 100) + "%]\n";
+                            resourceInfo += "[Ability Charge: " +  bloodlust.GetScaledDamageAbilityCharge() * 100 + "%]\n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_OVERHEAL) > 0)
                             resourceInfo += "[Overheal Limit: " + int(pPlayer.pev.max_health * bloodlust.GetScaledOverhealPercent()) + " HP]";
