@@ -662,8 +662,8 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         info.flDamage *= damageRoboMultiplier;
 
         // Alter the damage type.
-        info.bitsDamageType |= DMG_BLAST;
-        info.bitsDamageType |= DMG_ALWAYSGIB;
+        //info.bitsDamageType |= DMG_BLAST;
+        //info.bitsDamageType |= DMG_ALWAYSGIB;
 
         // Process extra damage effects.
         minion.ProcessMinionDamage(pOwner, info.flDamage);
@@ -694,7 +694,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Alter the damage type.
         info.bitsDamageType |= DMG_ACID;
         info.bitsDamageType |= DMG_POISON;
-        info.bitsDamageType |= DMG_ALWAYSGIB;
+        //info.bitsDamageType |= DMG_ALWAYSGIB;
 
         // Process extra damage effects.
         xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
@@ -724,7 +724,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
         // Alter the damage type.
         info.bitsDamageType |= DMG_POISON;
-        info.bitsDamageType |= DMG_ALWAYSGIB;
+        //info.bitsDamageType |= DMG_ALWAYSGIB;
 
         // Process extra damage effects.
         necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
@@ -754,7 +754,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
         // Alter the damage type.
         info.bitsDamageType |= DMG_POISON;
-        info.bitsDamageType |= DMG_ALWAYSGIB;
+        //info.bitsDamageType |= DMG_ALWAYSGIB;
 
         // Process extra damage effects.
         snarkNest.ProcessMinionDamage(pOwner, info.flDamage, attacker);
@@ -845,7 +845,10 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                             float damageMultiplier = cloak.GetDamageMultiplier(pAttacker); // Get multiplier.
                             float originalDamage = info.flDamage; // Store original damage so we can use to to scale drain.
                             info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
-                            info.bitsDamageType = DMG_GENERIC | DMG_ENERGYBEAM | DMG_ALWAYSGIB; // Add damage bit type always gib for the feels.
+                            
+                            //info.bitsDamageType |= DMG_BLAST; // Add blast damage type.
+                            info.bitsDamageType |= DMG_ALWAYSGIB; // Make always gib.
+
                             cloak.DrainEnergyFromShot(pAttacker, originalDamage); // Drain energy on dealing damage.
                         }
                     }
