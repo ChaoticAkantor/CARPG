@@ -834,24 +834,37 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
                     break;
                 }
+                case PlayerClass::CLASS_CLOAKER:
+                {
+                    // Handle Cloak damage multiplier.
+                    if(g_PlayerCloaks.exists(steamID))
+                    {
+                        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+                        if(cloak !is null && cloak.IsActive())
+                        {
+                            float damageMultiplier = cloak.GetDamageMultiplier(pAttacker); // Get multiplier.
+                            float originalDamage = info.flDamage; // Store original damage so we can use to to scale drain.
+                            info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
+                            info.bitsDamageType = DMG_GENERIC | DMG_ENERGYBEAM | DMG_ALWAYSGIB; // Add damage bit type always gib for the feels.
+                            cloak.DrainEnergyFromShot(pAttacker, originalDamage); // Drain energy on dealing damage.
+                        }
+                    }
+                    break;
+                }
             }
         }
     }
 
-    // Handle Cloak damage multiplier.
-    if(g_PlayerCloaks.exists(steamID))
+    // Handle basic skill lifesteal.
+    if(g_PlayerRPGData.exists(steamID))
     {
-        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
-        if(cloak !is null && cloak.IsActive())
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data !is null)
         {
-            float damageMultiplier = cloak.GetDamageMultiplier(pAttacker); // Get multiplier.
-            float originalDamage = info.flDamage; // Store original damage so we can use to to scale drain.
-            info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
-            info.bitsDamageType = DMG_GENERIC | DMG_ENERGYBEAM | DMG_ALWAYSGIB; // Add damage bit type always gib for the feels.
-            cloak.DrainEnergyFromShot(pAttacker, originalDamage); // Drain energy on dealing damage.
+            ProcessBasicLifesteal(pAttacker, info.flDamage);
         }
     }
-    
+
     return HOOK_CONTINUE;
 }
 
