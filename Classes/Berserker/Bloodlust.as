@@ -63,11 +63,17 @@ class BloodlustData
         float skillPower = SKILL_BERSERKER_LIFESTEAL;
         float modifier = baseLifesteal + (skillPower * skillLevel); // Scaled from lifesteal skill.
 
+        float baseLifestealBasic = 0.0f; // Base lifesteal from the basic lifesteal skill.
+
+        int skillLevelBasic = m_pStats.GetSkillLevel(SkillID::SKILL_LIFESTEAL);
+        float skillPowerBasic = SKILL_LIFESTEAL;
+        float modifierBasic = baseLifestealBasic + (skillPowerBasic * skillLevelBasic); // Add any lifesteal from the basic lifesteal skill.
+
         // If bloodlust is active, double the lifesteal.
         if(!m_bActive)
-            return modifier;
+            return modifier + modifierBasic;
         else
-            return modifier * 2.0f;
+            return modifier + modifierBasic * 2.0f;
     }
 
     float GetScaledDamageAbilityCharge()
@@ -79,19 +85,9 @@ class BloodlustData
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE);
         float skillPower = SKILL_BERSERKER_DAMAGEABILITYCHARGE;
-        float modifier = skillPower * skillLevel; // Scaled from damage to ability charge skill.
+        float modifier = damageAbilityCharge + (skillPower * skillLevel); // Scaled from damage to ability charge skill.
 
-        // Check if bloodlust is active, double the charge.
-        if(!m_bActive)
-        {
-            damageAbilityCharge += modifier;
-        }
-        else
-        {   
-            damageAbilityCharge += modifier * 2.0f;
-        }
-
-        return damageAbilityCharge;
+        return modifier;
     }
 
     // Damage reduction, as a modifier.

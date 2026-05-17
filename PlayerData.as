@@ -700,11 +700,25 @@ class PlayerData
 
             // Base HP/AP + SKILL_MAXHP / SKILL_MAXAP bonuses.
             float maxHealth = def.baseHP * (1.0f + SKILL_MAXHP * stats.GetSkillLevel(SkillID::SKILL_MAXHP));
-            float maxArmor  = def.baseAP * (1.0f + SKILL_MAXAP * stats.GetSkillLevel(SkillID::SKILL_MAXAP));
+            float maxArmor = def.baseAP * (1.0f + SKILL_MAXAP * stats.GetSkillLevel(SkillID::SKILL_MAXAP));
 
             // Set Max HP/AP based on class bonuses.
-                pPlayer.pev.max_health = maxHealth;
-                pPlayer.pev.armortype = maxArmor;
+            pPlayer.pev.max_health = maxHealth;
+            pPlayer.pev.armortype = maxArmor;
+
+            // HP Conversion Skill.
+            int conversionSkillLevel = stats.GetSkillLevel(SkillID::SKILL_HPCONVERSION);
+            float skillPower = SKILL_HPCONVERSION;
+            float hpConversionBonus = skillPower * conversionSkillLevel; // HP conversion percent scaled from skill.
+
+            float hpToConvert = maxHealth * hpConversionBonus; // HP amount that would be converted to AP.
+            float newMaxHP = maxHealth - hpToConvert; // New HP after conversion.
+
+            pPlayer.pev.armortype = maxArmor + hpToConvert; // Increase AP by converted HP.
+            pPlayer.pev.max_health = newMaxHP; // Set new max HP after conversion.
+
+            if (pPlayer.pev.max_health > newMaxHP)
+                pPlayer.pev.max_health = newMaxHP; // Reduce current HP if it exceeds new max to remove any overheal.
 
             // Special case for Berserker conversion bonuses.
             if (PlayerClass::CLASS_BERSERKER == m_CurrentClass)
