@@ -65,7 +65,7 @@ class HealingAura
     private float m_flHealingRadius = 60.0f * 16; // // Radius of the healing aura (ft converted to units).
     private float m_flBaseHealAmount = 5.0f; // Base health restored, as a percentage of max health.
     private float m_flHealAuraReviveHealthPercent = 1.00f; // Health percent to revive at.
-    private float m_flHealAuraReviveCooldown = 30.0f; // Default cooldown for revive.
+    private float m_flHealAuraReviveCooldown = 60.0f; // Default cooldown for revive.
     private float m_flHealAuraInterval = 1.0f; // Time between heals/damage tick.
     private int m_iDrainAmount = 1.0f; // Energy drained per interval tick.
 
