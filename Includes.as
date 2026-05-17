@@ -3,15 +3,15 @@
 // Data Handling.
 #include "PlayerData"
 
-// Skills.
-#include "Classes/Skills"
+// Skill Definitions and balancing.
+#include "Classes/SkillDefs"
 
 // Menus.
-#include "Classes/ClassMenu"
-#include "Classes/ClassHUD"
-//#include "classes/ClassStatsMenu"
-#include "Classes/ClassInfo"
-#include "Classes/SkillsMenu"
+#include "Classes/ClassMenu" // Class selection and handling.
+#include "Classes/ClassHUD" // Class hud display.
+//#include "classes/ClassStatsMenu" // Class stats info - Depriciated.
+#include "Classes/ClassInfo" // Class information menu.
+#include "Classes/SkillsMenu" // Skill selection and handling.
 
 // Classes.
 #include "Classes/Engineer/SentryMinion"
@@ -29,7 +29,7 @@
 // Weapon Giver.
 #include "Classes/GiveWeapons"
 
-// Gameplay modules.
+// Gameplay modules/Skills.
 #include "Difficulty"
 #include "AmmoRegen"
 #include "Recovery"
