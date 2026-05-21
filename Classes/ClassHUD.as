@@ -235,7 +235,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
 
                                 resourceInfo += "[Sentry HP: " + int(healthPercent) + "%] ";
 
-                                resourceInfo += "[DMG: " + int(sentryData.GetScaledDamage() * 100) + "%] ";
+                                resourceInfo += "[DMG: " + int(sentryData.GetScaledDamage() * 100) + "%]\n";
 
                                 if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO) > 0)
                                     resourceInfo += "[Explosive DMG: " + int(sentryData.GetScaledExplosiveDamage() * 100) + "%]\n";
