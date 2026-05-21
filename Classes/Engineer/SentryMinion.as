@@ -26,12 +26,12 @@ class SentryData
     // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flAbilityMax = 60.0f; // Max duration.
-    private float m_flAbilityRechargeTime = 25.0f; // Seconds to fully recharge from empty.
-    private float m_flBaseHealth = 5000.0; // Base health of the sentry. Sentry seems to take considerably more damage, so health must scale very high!
+    private float m_flAbilityMax = 30.0f; // Base max duration.
+    private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
+    private float m_flBaseHealth = 5000.0; // Base health of the sentry. Must be very high for it to be able to survive most encounters.
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
-    private float m_flHealRadius = 50.0f * 16.0f; // Radius in which the sentry can heal players (ft converted to units).
-    private float m_flExplosiveRadius = 30.0f * 16.0f; // Radius of the explosive damage when the sentry hits with its bullets.
+    private float m_flHealRadius = 50.0f * 16.0f; // Sentry heal radius (ft converted to units).
+    private float m_flExplosiveRadius = 30.0f * 16.0f; // Radius of the extra explosive damage.
 
     private float m_flEnergyDrain = 1.0f; // Energy drain per interval.
     private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
@@ -55,7 +55,7 @@ class SentryData
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     bool HasStats() { return m_pStats !is null; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
-    float GetAbilityMax() { return m_flAbilityMax; }
+    float GetAbilityMax() { return GetScaledSentryDuration(); }
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     bool IsActive() 
@@ -95,6 +95,18 @@ class SentryData
         float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
+    }
+
+    float GetScaledSentryDuration() // Calculate scaled sentry duration.
+    {
+        if(m_pStats is null)
+            return m_flAbilityMax; // Return base duration if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_SENTRYDURATION);
+        float skillPower = SKILL_ENGINEER_SENTRYDURATION;
+        float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
+
+        return modifier * m_flAbilityMax; // Total duration is modified base duration.
     }
 
     float GetScaledDamage() // Damage scaling is applied through MonsterTakeDamage.
@@ -337,13 +349,14 @@ class SentryData
 
     void RechargeAbility()
     {
-        if (m_flAbilityCharge >= m_flAbilityMax)
+        if (m_flAbilityCharge >= GetScaledSentryDuration())
             return;
 
-        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = GetScaledSentryDuration() / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
-        if (m_flAbilityCharge > m_flAbilityMax)
-            m_flAbilityCharge = m_flAbilityMax;
+        
+        if (m_flAbilityCharge > GetScaledSentryDuration()) // If it goes over the max, readjust it.
+            m_flAbilityCharge = GetScaledSentryDuration();
     }
 
     void ApplyExplosiveDamage(CBaseEntity@ pAttacker, CBaseEntity@ pVictim, float flDealtDamage)
@@ -537,6 +550,9 @@ class SentryData
         Vector mins = pos - Vector(16, 16, 0);
         Vector maxs = pos + Vector(16, 16, 64);
 
+        if(m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA) <= 0)
+            return;
+            
         // Aura Beam Cylinder Effect.
         NetworkMessage auramsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
             auramsg.WriteByte(TE_BEAMCYLINDER);
