@@ -57,6 +57,9 @@ const float SKILL_MEDIC_REVIVE = 6.0f;   // Reduce revive cooldown per level.
 const float SKILL_MEDIC_HEALAP = 0.02f;  // Percent of heal applied as AP per level.
     const int SKILL_MEDIC_HEALAP_LVL = 5;
 
+const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura duration per level.
+    const int SKILL_MEDIC_DURATION_LVL = 5;
+
 
 // Berserker.
 const float SKILL_BERSERKER_LIFESTEAL = 0.02f; // Flat increase to lifesteal per level.
@@ -74,6 +77,12 @@ const float SKILL_BERSERKER_OVERHEAL = 0.10f; // Percent of max HP to overheal f
 const float SKILL_BERSERKER_APCONVERSION = 0.20f; // Percent of Max AP converted into Max HP.
     const int SKILL_BERSERKER_APCONVERSION_LVL = 5;
 
+const float SKILL_BERSERKER_DURATION = 0.20f; // Percent increase to Bloodlust duration per level.
+    const int SKILL_BERSERKER_BLOODLUSTDURATION_LVL = 5;
+
+const float SKILL_BERSERKER_BLOODLUSTDAMAGE = 0.10f; // Percent increase to Bloodlust damage per level.
+    const int SKILL_BERSERKER_BLOODLUSTDAMAGE_LVL = 5;
+
 
 // Engineer.
 const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.40f; // Sentry damage per level.
@@ -84,6 +93,9 @@ const float SKILL_ENGINEER_MINIHEALAURA  = 1.0f; // Mini-heal Aura % max HP heal
 
 const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.10f;  // % of damage as area explosive damage per level.
     const int SKILL_ENGINEER_EXPLOSIVEAMMO_LVL = 5;
+
+const float SKILL_ENGINEER_SENTRYDURATION = 0.20f; // Sentry duration increase per level.
+    const int SKILL_ENGINEER_SENTRYDURATION_LVL = 5;
 
 
 // Xenomancer.
@@ -111,6 +123,9 @@ const float SKILL_CLOAKER_CLOAKDAMAGE    = 0.30f; // Cloak damage bonus increase
 
 const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.60f; // Cloak nova damage increase per level.
     const int SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL = 5;
+
+const float SKILL_CLOAKER_CLOAKDURATION = 0.20f; // Cloak duration increase per level.
+    const int SKILL_CLOAKER_CLOAKDURATION_LVL = 5;
 
 
 // Shocktrooper.
@@ -171,6 +186,7 @@ enum SkillID
     SKILL_MEDIC_POISON,          
     SKILL_MEDIC_REVIVE,
     SKILL_MEDIC_HEALAP,
+    SKILL_MEDIC_DURATION,
 
     // Berserker.
     SKILL_BERSERKER_LIFESTEAL,
@@ -178,11 +194,13 @@ enum SkillID
     SKILL_BERSERKER_DAMAGEREDUCTION,
     SKILL_BERSERKER_OVERHEAL,
     SKILL_BERSERKER_APCONVERSION,
+    SKILL_BERSERKER_DURATION,
 
     // Engineer.
     SKILL_ENGINEER_SENTRYDAMAGE,
     SKILL_ENGINEER_MINIHEALAURA,
     SKILL_ENGINEER_EXPLOSIVEAMMO,
+    SKILL_ENGINEER_SENTRYDURATION,
 
     // Robomancer.
 
@@ -206,6 +224,7 @@ enum SkillID
     // Cloaker.
     SKILL_CLOAKER_CLOAKDAMAGE,
     SKILL_CLOAKER_CLOAKNOVADAMAGE,
+    SKILL_CLOAKER_CLOAKDURATION,
 
     // Vanquisher.
     SKILL_VANQUISHER_AMMOPOOL,
@@ -217,6 +236,7 @@ enum SkillID
     SKILL_SWARMER_SNARKDAMAGE,
     SKILL_SWARMER_SNARKCOUNT,
 
+    // Total.
     SKILL_MAX_COUNT
 }
 
@@ -265,6 +285,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal Aura: Poison", "+" + SKILL_MEDIC_POISON + "% poison damage.", SKILL_MEDIC_POISON_LVL, SKILL_MEDIC_POISON, "%");
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal Aura: Revive", "-" + SKILL_MEDIC_REVIVE + "s revive cooldown.", SKILL_MEDIC_REVIVE_LVL, SKILL_MEDIC_REVIVE, "s");
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal Aura: AP Heal", "+" + (SKILL_MEDIC_HEALAP * 100.0f) + "% of heal to AP.", SKILL_MEDIC_HEALAP_LVL, SKILL_MEDIC_HEALAP * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_DURATION)] = SkillDefinition("Heal Aura: Duration", "+" + (SKILL_MEDIC_DURATION * 100.0f) + "% heal aura duration.", SKILL_MEDIC_DURATION_LVL, SKILL_MEDIC_DURATION * 100.0f, "%");
 
     // Berserker.
     @g_SkillDefs[int(SkillID::SKILL_BERSERKER_LIFESTEAL)] = SkillDefinition("Bloodlust: Lifesteal", "+" + (SKILL_BERSERKER_LIFESTEAL * 100.0f) + "% lifesteal.", SKILL_BERSERKER_LIFESTEAL_LVL, SKILL_BERSERKER_LIFESTEAL * 100.0f, "%");
@@ -272,11 +293,13 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION)] = SkillDefinition("Bloodlust: Damage Reduction", "+" + (SKILL_BERSERKER_DAMAGEREDUCTION * 100.0f) + "% damage reduction.", SKILL_BERSERKER_DAMAGEREDUCTION_LVL, SKILL_BERSERKER_DAMAGEREDUCTION * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_BERSERKER_OVERHEAL)] = SkillDefinition("Bloodlust: Overheal", "+" + (SKILL_BERSERKER_OVERHEAL * 100.0f) + "% Overheal per level.", SKILL_BERSERKER_OVERHEAL_LVL, SKILL_BERSERKER_OVERHEAL * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_BERSERKER_APCONVERSION)] = SkillDefinition("Bloodlust: Convert AP -> HP", "+" + (SKILL_BERSERKER_APCONVERSION * 100.0f) + "% of Max AP -> HP.", SKILL_BERSERKER_APCONVERSION_LVL, SKILL_BERSERKER_APCONVERSION * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_BERSERKER_DURATION)] = SkillDefinition("Bloodlust: Duration", "+" + (SKILL_BERSERKER_DURATION * 100.0f) + "% Bloodlust duration.", SKILL_BERSERKER_BLOODLUSTDURATION_LVL, SKILL_BERSERKER_DURATION * 100.0f, "%");
 
     // Engineer.
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+" + int(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f) + "% damage.", SKILL_ENGINEER_SENTRYDAMAGE_LVL, int(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f), "%");
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Sentry: Mini-Heal Aura",  "+" + int(SKILL_ENGINEER_MINIHEALAURA) + "% max HP heal/s.", SKILL_ENGINEER_MINIHEALAURA_LVL, int(SKILL_ENGINEER_MINIHEALAURA),  "%");
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Sentry: Explosive Ammo",  "+" + int(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f) + "% explosive damage.", SKILL_ENGINEER_EXPLOSIVEAMMO_LVL, int(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f), "%");
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDURATION)] = SkillDefinition("Sentry: Duration", "+" + int(SKILL_ENGINEER_SENTRYDURATION * 100.0f) + "% sentry duration.", SKILL_ENGINEER_SENTRYDURATION_LVL, int(SKILL_ENGINEER_SENTRYDURATION * 100.0f), "%");
 
     // Robomancer.
 
@@ -292,13 +315,14 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_WARDEN_HPABSORB)]       = SkillDefinition("Ice Shield: HP Absorb", "+" + (SKILL_WARDEN_HPABSORB * 100.0f) + "% shield HP absorb.", SKILL_WARDEN_HPABSORB_LVL, SKILL_WARDEN_HPABSORB * 100.0f, "%");
 
     // Shocktrooper.
-    @g_SkillDefs[int(SkillID::SKILL_SHOCK_CAPACITY)]  = SkillDefinition("Shockrifle: Shock Capacity",  "+" + (SKILL_SHOCK_CAPACITY * 100.0f) + "% shockrifle capacity.",  SKILL_SHOCK_CAPACITY_LVL,  SKILL_SHOCK_CAPACITY * 100.0f,  "%");
-    @g_SkillDefs[int(SkillID::SKILL_SHOCK_DAMAGE)]    = SkillDefinition("Shockrifle: Shock Damage",    "+" + (SKILL_SHOCK_DAMAGE * 100.0f) + "% shockrifle damage.",    SKILL_SHOCK_DAMAGE_LVL,    SKILL_SHOCK_DAMAGE * 100.0f,    "%");
-    @g_SkillDefs[int(SkillID::SKILL_SHOCK_LIGHTNING)] = SkillDefinition("Shockrifle: Shock Lightning", "+" + (SKILL_SHOCK_LIGHTNING * 100.0f) + "% shockrifle lightning DMG.", SKILL_SHOCK_LIGHTNING_LVL, SKILL_SHOCK_LIGHTNING * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_CAPACITY)]  = SkillDefinition("Shockrifle: Shock Capacity", "+" + (SKILL_SHOCK_CAPACITY * 100.0f) + "% shockrifle capacity.",  SKILL_SHOCK_CAPACITY_LVL,  SKILL_SHOCK_CAPACITY * 100.0f,  "%");
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_DAMAGE)]    = SkillDefinition("Shockrifle: Shock Damage", "+" + (SKILL_SHOCK_DAMAGE * 100.0f) + "% shockrifle damage.",    SKILL_SHOCK_DAMAGE_LVL,    SKILL_SHOCK_DAMAGE * 100.0f,    "%");
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_LIGHTNING)] = SkillDefinition("Shockrifle: Shock Lightning","+" + (SKILL_SHOCK_LIGHTNING * 100.0f) + "% shockrifle lightning DMG.", SKILL_SHOCK_LIGHTNING_LVL, SKILL_SHOCK_LIGHTNING * 100.0f, "%");
 
     // Cloaker.
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Cloak: Damage Bonus", "+" + (SKILL_CLOAKER_CLOAKDAMAGE * 100.0f) + "% damage bonus.", SKILL_CLOAKER_CLOAKDAMAGE_LVL, SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+" + (SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f) + "% nova damage.", SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL, SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+" + (SKILL_CLOAKER_CLOAKDURATION * 100.0f) + "% cloak duration.", SKILL_CLOAKER_CLOAKDURATION_LVL, SKILL_CLOAKER_CLOAKDURATION * 100.0f, "%");
 
     // Vanquisher.
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_AMMOPOOL)] = SkillDefinition("Dragon's Breath: Ammo Pool", "+" + int(SKILL_VANQUISHER_AMMOPOOL * 100.0f) + "% ammo pool.", SKILL_VANQUISHER_AMMOPOOL_LVL, int(SKILL_VANQUISHER_AMMOPOOL * 100.0f), "%");
@@ -337,64 +361,73 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MEDIC_POISON);
             result.insertLast(SkillID::SKILL_MEDIC_REVIVE);
             result.insertLast(SkillID::SKILL_MEDIC_HEALAP);
+            result.insertLast(SkillID::SKILL_MEDIC_DURATION);
             break;
+
         case PlayerClass::CLASS_BERSERKER:
             result.insertLast(SkillID::SKILL_BERSERKER_LIFESTEAL);
             result.insertLast(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE);
             result.insertLast(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION);
             result.insertLast(SkillID::SKILL_BERSERKER_OVERHEAL);
             result.insertLast(SkillID::SKILL_BERSERKER_APCONVERSION);
+            result.insertLast(SkillID::SKILL_BERSERKER_DURATION);
             break;
+
         case PlayerClass::CLASS_ENGINEER:
             result.insertLast(SkillID::SKILL_ENGINEER_SENTRYDAMAGE);
             result.insertLast(SkillID::SKILL_ENGINEER_MINIHEALAURA);
             result.insertLast(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO);
+            result.insertLast(SkillID::SKILL_ENGINEER_SENTRYDURATION);
             break;
+
         case PlayerClass::CLASS_ROBOMANCER:
             result.insertLast(SkillID::SKILL_MINIONPOINT);
             result.insertLast(SkillID::SKILL_MINIONHP);
             result.insertLast(SkillID::SKILL_MINIONREGEN);
             result.insertLast(SkillID::SKILL_MINIONDAMAGE);
-
             break;
+
         case PlayerClass::CLASS_XENOMANCER:
             result.insertLast(SkillID::SKILL_MINIONPOINT);
             result.insertLast(SkillID::SKILL_MINIONHP);
             result.insertLast(SkillID::SKILL_MINIONREGEN);
             result.insertLast(SkillID::SKILL_MINIONDAMAGE);
             result.insertLast(SkillID::SKILL_XENOMANCER_LIFESTEAL);
-
             break;
+
         case PlayerClass::CLASS_NECROMANCER:
             result.insertLast(SkillID::SKILL_MINIONPOINT);
             result.insertLast(SkillID::SKILL_MINIONHP);
             result.insertLast(SkillID::SKILL_MINIONREGEN);
             result.insertLast(SkillID::SKILL_MINIONDAMAGE);
-
             break;
+
         case PlayerClass::CLASS_DEFENDER:
             result.insertLast(SkillID::SKILL_WARDEN_SHIELDHP);
             result.insertLast(SkillID::SKILL_WARDEN_DAMAGEREFLECT);
             result.insertLast(SkillID::SKILL_WARDEN_ACTIVERECHARGE);
             result.insertLast(SkillID::SKILL_WARDEN_HPABSORB);
             break;
+
         case PlayerClass::CLASS_SHOCKTROOPER:
             result.insertLast(SkillID::SKILL_SHOCK_CAPACITY);
             result.insertLast(SkillID::SKILL_SHOCK_DAMAGE);
             result.insertLast(SkillID::SKILL_SHOCK_LIGHTNING);
             break;
+
         case PlayerClass::CLASS_CLOAKER:
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE);
-
+            result.insertLast(SkillID::SKILL_CLOAKER_CLOAKDURATION);
             break;
+
         case PlayerClass::CLASS_VANQUISHER:
             result.insertLast(SkillID::SKILL_VANQUISHER_AMMOPOOL);
             result.insertLast(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE);
             result.insertLast(SkillID::SKILL_VANQUISHER_FIREDAMAGE);
             result.insertLast(SkillID::SKILL_VANQUISHER_FIREDURATION);
-
             break;
+            
         case PlayerClass::CLASS_SWARMER:
             result.insertLast(SkillID::SKILL_SWARMER_SNARKDAMAGE);
             result.insertLast(SkillID::SKILL_SWARMER_SNARKCOUNT);
