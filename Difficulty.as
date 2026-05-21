@@ -18,32 +18,33 @@ final class ForceDifficulty
 {
 	private array<float> weapon_damage_values = 
 	{
-		25.0, //Medkit - Default 10 - This is charge used and also health healed.
+		// Currently 50% damage increase for all weapons.
+		25.0, //Medkit - Default 10 - Amount of charge used and amount healed per use.
 		18.0, //Crowbar - Default 15.
-		25.0, //Wrench - Default 22.
+		28.0, //Wrench - Default 22.
 		45.0, //Grapple (Barnacle) - Default 40.
-		14.0, //Handgun (9mm Handgun) - Default 12.
-		72.0, //357 (Deagle is 2/3 of this) - Default 66.
-		14.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
-		14.0, //MP5 (9mm AR) - Default 8.
-		12.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
-		70.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
+		15.0, //Handgun (9mm Handgun) - Default 12.
+		80.0, //357 (Deagle is 2/3 of this) - Default 66.
+		15.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
+		15.0, //MP5 (9mm AR) - Default 8.
+		13.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
+		80.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
 		18.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
 		150.0, //M203 (ARgrenades) - Default 100.
-		180.0, //RPG - Default 150.
-		24.0, //Gauss (No charge) - Default 19.
-		240.0, //Guass (Secondary, Max Charge) - Default 190.
-		14.0, //Gluon (Egon) Gun - Default 12.
-		16.0, //Hornet Gun - Default 12.
+		200.0, //RPG - Default 150.
+		25.0, //Gauss (No charge) - Default 19.
+		250.0, //Guass (Secondary, Max Charge) - Default 190.
+		15.0, //Gluon (Egon) Gun - Default 12.
+		18.0, //Hornet Gun - Default 12.
 		150.0, //Hand Grenade - Default 100.
-		180.0, //Satchel - Default 160.
-		180.0, //Tripmine - Default 150.
+		200.0, //Satchel - Default 160.
+		200.0, //Tripmine - Default 150.
 		120.0, //762 (Sniper Rifle) - Default 110.
 		100.0, //Spore Launcher - Default 100.
 		300.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
 		20.0, //Shockrifle (Primary) - Default 15.
-		4.0, //Shockrifle (Beam) - Default 2 per beam (x3 beams).
+		3.0, //Shockrifle (Beam) - Default 2 per beam (x3 beams).
 		350.0, //Shockrifle Touch damage (on self on detonate?) - Default 350.
 		150.0 //Shockroach Splash damage (on self when detonate?) - Default 150.
 	};
@@ -284,7 +285,8 @@ final class ForceDifficulty
 	};
 
 
-	private array<float> monster_damage_values_bullet = {
+	private array<float> monster_damage_values_bullet = 
+	{
 		8, // sk_12mm_bullet - Default 8
 		3, // sk_9mmAR_bullet - Default 3
 		3, // sk_9mm_bullet - Default 3
@@ -295,7 +297,8 @@ final class ForceDifficulty
 	};
 
 
-	private array<string> monster_damage_strings_bullet = {
+	private array<string> monster_damage_strings_bullet = 
+	{
 		"sk_12mm_bullet",
 		"sk_9mmAR_bullet",
 		"sk_9mm_bullet",
@@ -306,7 +309,8 @@ final class ForceDifficulty
 	};
 
 
-    private array<float> player_location_values = {
+    private array<float> player_location_values = 
+	{
 		1.0, //sk_player_head
 		1.0, //sk_player_chest
 		1.0, //sk_player_stomach
@@ -366,7 +370,7 @@ final class ForceDifficulty
 			g_EngineFuncs.ServerCommand( strStrings );
 		}
 
-		// Monster Damage Bullet
+		// Monster Damage Bullet.
 		iMax = monster_damage_values_bullet.size();
 		for( int i = 0; i < iMax; ++i )
 		{
