@@ -12,11 +12,11 @@ class CloakData
 {
     // Cloak.
     private bool m_bActive = false;
-    private float m_flAbilityMax = 30.0f; // Max charge.
-    private float m_flAbilityRechargeTime = 20.0f; // Seconds to fully recharge from empty.
-    private float m_flBaseCloakEnergyCostPerShot = 1.0f; // Base duration drained per damage instance, drain scales with amount of damage dealt.
-    private float m_flCloakEnergyCostCap = 10.0f; // Max duration drained per damage instance. Will never drain more than this value.
-    private float m_flCloakEnergyDrainInterval = 1.0f; // Energy drain interval.
+    private float m_flAbilityMax = 15.0f; // Base max duration.
+    private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
+    private float m_flBaseCloakCostPerShot = 1.0f; // Base duration drained per damage instance, drain scales with amount of damage dealt.
+    private float m_flCloakCostCap = 10.0f; // Max duration drained per damage instance. Will never drain more than this value.
+    private float m_flCloakDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flBaseDrainRate = 1.0f; // Base drain rate.
 
@@ -37,7 +37,7 @@ class CloakData
     bool IsActive() { return m_bActive; }
     bool IsNovaActive() { return m_bNovaActive;}
     float GetAbilityCharge() { return m_flAbilityCharge; }
-    float GetAbilityMax() { return m_flAbilityMax; }
+    float GetAbilityMax() { return GetScaledCloakDuration(); }
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -92,6 +92,18 @@ class CloakData
         
         float powerScale = Math.min(1.0f, m_flLastEnergyConsumed / m_flAbilityMax);
         return totalPossibleBonus * powerScale;
+    }
+
+    float GetScaledCloakDuration() // Calculate scaled cloak duration.
+    {
+        if(m_pStats is null)
+            return m_flAbilityMax; // Return base duration if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDURATION);
+        float skillPower = SKILL_CLOAKER_CLOAKDURATION;
+        float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
+
+        return modifier * m_flAbilityMax; // Total duration is modified base duration.
     }
 
     void ToggleCloak(CBasePlayer@ pPlayer)
@@ -192,13 +204,14 @@ class CloakData
 
     void RechargeAbility()
     {
-        if (m_flAbilityCharge >= m_flAbilityMax)
+        if (m_flAbilityCharge >= GetScaledCloakDuration()) // If it's max, stop.
             return;
 
-        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = GetScaledCloakDuration() / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
-        if (m_flAbilityCharge > m_flAbilityMax)
-            m_flAbilityCharge = m_flAbilityMax;
+
+        if (m_flAbilityCharge > GetScaledCloakDuration()) // If it goes over the max, readjust it.
+            m_flAbilityCharge = GetScaledCloakDuration();
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -221,7 +234,7 @@ class CloakData
         }
 
         float currentTime = g_Engine.time;
-        if(currentTime - m_flLastDrainTime >= m_flCloakEnergyDrainInterval) // Drain interval.
+        if(currentTime - m_flLastDrainTime >= m_flCloakDrainInterval) // Drain interval.
         {
             m_flLastEnergyConsumed = m_flAbilityCharge;
             m_flAbilityCharge -= m_flBaseDrainRate;
@@ -244,14 +257,14 @@ class CloakData
         m_flLastEnergyConsumed = m_flAbilityCharge;
         
         // Scale battery drain based on damage dealt.
-        float drainAmount = m_flBaseCloakEnergyCostPerShot;
+        float drainAmount = m_flBaseCloakCostPerShot;
         
         if(damage > 0.0f)
         {
             float damageScale = damage / 10.0f;
-            drainAmount += (damageScale * 0.15f * m_flBaseCloakEnergyCostPerShot);
-            if(drainAmount > m_flCloakEnergyCostCap)
-                drainAmount = m_flCloakEnergyCostCap;
+            drainAmount += (damageScale * 0.15f * m_flBaseCloakCostPerShot);
+            if(drainAmount > m_flCloakCostCap)
+                drainAmount = m_flCloakCostCap;
         }
         
         m_flAbilityCharge -= drainAmount;

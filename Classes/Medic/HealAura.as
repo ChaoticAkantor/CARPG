@@ -60,8 +60,8 @@ class HealingAura
 {
     // Healing Aura.
     private bool m_bIsActive = false;
-    private float m_flAbilityDuration = 20.0f; // Total time the ability can be active.
-    private float m_flAbilityRechargeTime = 15.0f; // Time it takes for the ability to fully recharge.
+    private float m_flAbilityMax = 10.0f; // Base max duration.
+    private float m_flAbilityRechargeTime = 10.0f; // Time it takes for the ability to fully recharge.
     private float m_flHealingRadius = 60.0f * 16; // // Radius of the healing aura (ft converted to units).
     private float m_flBaseHealAmount = 5.0f; // Base health restored, as a percentage of max health.
     private float m_flHealAuraReviveHealthPercent = 1.00f; // Health percent to revive at.
@@ -100,7 +100,7 @@ class HealingAura
     bool IsActive() { return m_bIsActive; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
-    float GetAbilityMax() { return m_flAbilityDuration; }
+    float GetAbilityMax() { return GetScaledHealAuraDuration(); }
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
     void ConsumeCharge(float amount) { m_flAbilityCharge = Math.max(0.0f, m_flAbilityCharge - amount); }
     float GetHealingRadius() { return m_flHealingRadius; }
@@ -115,6 +115,18 @@ class HealingAura
         float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
+    }
+
+    float GetScaledHealAuraDuration() // Calculate scaled heal aura duration.
+    {
+        if(m_pStats is null)
+            return m_flAbilityMax; // Return base duration if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_DURATION);
+        float skillPower = SKILL_MEDIC_DURATION;
+        float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
+
+        return modifier * m_flAbilityMax; // Total duration is modified base duration.
     }
 
     float GetReviveCooldown()
@@ -182,14 +194,15 @@ class HealingAura
 
     void RechargeAbility()
     {
-        if (m_flAbilityCharge >= m_flAbilityDuration)
+        if (m_flAbilityCharge >= GetScaledHealAuraDuration())
             return;
 
         // Must match tick rate.
-        float rechargeRate = m_flAbilityDuration / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = GetScaledHealAuraDuration() / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
-        if (m_flAbilityCharge > m_flAbilityDuration)
-            m_flAbilityCharge = m_flAbilityDuration;
+
+        if (m_flAbilityCharge > GetScaledHealAuraDuration())
+            m_flAbilityCharge = GetScaledHealAuraDuration();
     }
 
     void ToggleAura(CBasePlayer@ pPlayer)

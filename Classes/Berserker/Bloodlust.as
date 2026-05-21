@@ -12,8 +12,8 @@ class BloodlustData
 {
     // Remember to account for bloodlust double bonus when balancing!
     private bool m_bActive = false; // Used for active state of ability.
-    private float m_flAbilityMax = 30.0f; // Max charge (seconds of use).
-    private float m_flAbilityRechargeTime = 90.0f; // Seconds to fully recharge from empty.
+    private float m_flAbilityMax = 30.0f; // Base max duration.
+    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge from empty.
     private float m_flBloodlustAbilityDrainInterval = 1.0f; // Interval to remove ability charge.
     private float m_flBloodlustAbilityCost = 1.0f; // Ability drain per interval.
     private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
@@ -31,7 +31,7 @@ class BloodlustData
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
-    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityCharge() { return GetScaledBloodlustDuration(); }
     float GetAbilityMax() { return m_flAbilityMax; }
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
     
@@ -50,6 +50,18 @@ class BloodlustData
         float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
+    }
+
+    float GetScaledBloodlustDuration() // Calculate scaled bloodlust duration.
+    {
+        if(m_pStats is null)
+            return m_flAbilityMax; // Return base duration if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_DURATION);
+        float skillPower = SKILL_BERSERKER_DURATION;
+        float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
+
+        return modifier * m_flAbilityMax; // Total duration is modified base duration.
     }
 
     float GetScaledLifesteal()
@@ -203,13 +215,14 @@ class BloodlustData
 
     void RechargeAbility()
     {
-        if (m_flAbilityCharge >= m_flAbilityMax)
+        if (m_flAbilityCharge >= GetScaledBloodlustDuration())
             return;
 
-        float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = GetScaledBloodlustDuration() / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
-        if (m_flAbilityCharge > m_flAbilityMax)
-            m_flAbilityCharge = m_flAbilityMax;
+
+        if (m_flAbilityCharge > GetScaledBloodlustDuration())
+            m_flAbilityCharge = GetScaledBloodlustDuration();
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -301,7 +314,7 @@ class BloodlustData
         float gainAmount = damageDealt * damageAbilityChargeMult;
 
         // Add to current charge, capped at max.
-        m_flAbilityCharge = Math.min(m_flAbilityCharge + gainAmount, m_flAbilityMax);
+        m_flAbilityCharge = Math.min(m_flAbilityCharge + gainAmount, GetScaledBloodlustDuration());
 
         return gainAmount;
     }
