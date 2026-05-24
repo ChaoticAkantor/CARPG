@@ -211,6 +211,14 @@ void ApplyLifestealEffectBasic(CBasePlayer@ pPlayer)
         if(pPlayer is null)
             return;
 
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(steamID.IsEmpty() || !g_PlayerRPGData.exists(steamID))
+            return;
+ 
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        if(data is null || data.GetSkillLevel(SkillID::SKILL_LIFESTEAL) <= 0)
+            return;
+
         Vector pos = pPlayer.pev.origin;
         Vector mins = pos - Vector(16, 16, 0);
         Vector maxs = pos + Vector(16, 16, 64);
