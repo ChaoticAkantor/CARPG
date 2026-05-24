@@ -508,6 +508,9 @@ class SentryData
         if(target is null)
             return;
 
+        if(m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA) <= 0)
+            return;
+
         Vector pos = target.pev.origin;
         Vector mins = pos - Vector(16, 16, 0);
         Vector maxs = pos + Vector(16, 16, 64);
