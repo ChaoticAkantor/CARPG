@@ -22,7 +22,7 @@ const float SKILL_ABILITYRECHARGE = 0.10f; // Percent increase to ability rechar
 const int SKILL_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
     const int SKILL_AMMOREGEN_LVL = 5;
 
-const float SKILL_LIFESTEAL = 0.01f; // Percent of damage dealt as lifesteal per level.
+const float SKILL_LIFESTEAL = 0.02f; // Percent of damage dealt as lifesteal per level.
     const int SKILL_LIFESTEAL_LVL = 10;
 
 const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
@@ -32,7 +32,7 @@ const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP pe
 // Class/Ability specific skills.
 // Minion Class exclusive.
 const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
-    const int SKILL_MINIONPOINT_LVL = 3; // More than 3 is excessive.
+    const int SKILL_MINIONPOINT_LVL = 3; // More than 3 is excessive. Changing this is not recommended.
 
 const float SKILL_MINIONHP = 0.60f; // HP percent increase for minions per level.
     const int SKILL_MINIONHP_LVL = 5;
@@ -51,7 +51,7 @@ const float SKILL_MEDIC_HEALPERCENT = 2.0f;  // Increase healing (% max health) 
 const float SKILL_MEDIC_POISON = 1.0f; // Poison damage (% max health) per level.
     const int SKILL_MEDIC_POISON_LVL = 5;
 
-const float SKILL_MEDIC_REVIVE = 6.0f;   // Reduce revive cooldown per level.
+const float SKILL_MEDIC_REVIVE = 6.0f;   // Reduce revive cooldown in seconds per level.
     const int SKILL_MEDIC_REVIVE_LVL = 5;
 
 const float SKILL_MEDIC_HEALAP = 0.02f;  // Percent of heal applied as AP per level.
@@ -62,7 +62,7 @@ const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura durat
 
 
 // Berserker.
-const float SKILL_BERSERKER_LIFESTEAL = 0.02f; // Flat increase to lifesteal per level.
+const float SKILL_BERSERKER_LIFESTEAL = 0.04f; // Flat increase to lifesteal per level.
     const int SKILL_BERSERKER_LIFESTEAL_LVL = 5;
 
 const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.01f; // Percent of damage dealt converted to ability charge per level.
@@ -85,7 +85,7 @@ const float SKILL_BERSERKER_BLOODLUSTDAMAGE = 0.10f; // Percent increase to Bloo
 
 
 // Engineer.
-const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.40f; // Sentry damage per level.
+const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.60f; // Sentry damage per level.
     const int SKILL_ENGINEER_SENTRYDAMAGE_LVL = 5;
 
 const float SKILL_ENGINEER_MINIHEALAURA  = 1.0f; // Mini-heal Aura % max HP heal per level.
