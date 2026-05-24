@@ -36,6 +36,31 @@ bool IsAdmin(const string& in steamID)
     return false;
 }
 
+bool IsFriendlyDamage(CBaseEntity@ pAttacker, CBaseEntity@ pVictim)
+{
+    if(pAttacker is null || pVictim is null)
+        return false;
+
+    CBasePlayer@ victimPlayer = cast<CBasePlayer@>(pVictim);
+    if(victimPlayer is null)
+        return false;
+
+    if(pAttacker.IsPlayer())
+    {
+        CBasePlayer@ attackerPlayer = cast<CBasePlayer@>(pAttacker);
+        return attackerPlayer !is null && attackerPlayer is victimPlayer;
+    }
+
+    if(pAttacker.pev.owner !is null)
+    {
+        CBaseEntity@ ownerEntity = g_EntityFuncs.Instance(pAttacker.pev.owner);
+        CBasePlayer@ ownerPlayer = cast<CBasePlayer@>(ownerEntity);
+        return ownerPlayer !is null && ownerPlayer is victimPlayer;
+    }
+
+    return false;
+}
+
 // Timers, precaches, and hook handling go here.
 void PluginInit()
 {
@@ -609,6 +634,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     // Check if attacker is a minion.
     CBaseEntity@ attacker = info.pAttacker;
     CBaseEntity@ victim = info.pVictim;
+    bool isFriendlyDamage = IsFriendlyDamage(attacker, victim);
 
     string targetname = string(attacker.pev.targetname);
     Vector targetPos = info.pVictim.pev.origin;
@@ -806,8 +832,11 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                         if(bloodlust !is null)
                         {
-                            bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Process lifesteal on damage dealt.
-                            bloodlust.ProcessDamageAbilityCharge(pAttacker, info.flDamage); // Process energy steal on damage dealt.
+                            if(!isFriendlyDamage)
+                                bloodlust.ProcessLifesteal(pAttacker, info.flDamage); // Process lifesteal on damage dealt.
+                            
+                            if(!isFriendlyDamage)
+                                bloodlust.ProcessDamageAbilityCharge(pAttacker, info.flDamage); // Process ability charge on damage dealt.
                         }
                     }
                     break;
@@ -862,7 +891,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-        if(data !is null)
+        if(data !is null && !isFriendlyDamage)
         {
             ProcessBasicLifesteal(pAttacker, info.flDamage);
         }
