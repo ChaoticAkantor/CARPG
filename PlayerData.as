@@ -5,7 +5,7 @@ string strSaveFileLocation = "scripts/plugins/store/"; // Default is scripts/plu
 dictionary g_PlayerRPGData;
 
 // Max level and XP multiplier.
-int g_iMaxLevel = 50; // Max player level, skill points are given per level, increasing this will increase skill points available.
+int g_iMaxLevel = 60; // Max player level, skill points are given per level, increasing this will increase skill points available.
 int g_iScoreToXP = 1; // Amount of XP each score point is worth, 1 = 1 score is 1 XP.
 
 dictionary g_ClassNames = 
