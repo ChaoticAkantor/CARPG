@@ -22,7 +22,7 @@ const float SKILL_ABILITYRECHARGE = 0.10f; // Percent increase to ability rechar
 const int SKILL_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
     const int SKILL_AMMOREGEN_LVL = 5;
 
-const float SKILL_LIFESTEAL = 0.02f; // Percent of damage dealt as lifesteal per level.
+const float SKILL_LIFESTEAL = 0.03f; // Percent of damage dealt as lifesteal per level.
     const int SKILL_LIFESTEAL_LVL = 10;
 
 const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
@@ -62,7 +62,7 @@ const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura durat
 
 
 // Berserker.
-const float SKILL_BERSERKER_LIFESTEAL = 0.04f; // Flat increase to lifesteal per level.
+const float SKILL_BERSERKER_LIFESTEAL = 0.06f; // Flat increase to lifesteal per level.
     const int SKILL_BERSERKER_LIFESTEAL_LVL = 5;
 
 const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.01f; // Percent of damage dealt converted to ability charge per level.
@@ -154,10 +154,10 @@ const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Fire damage duration increa
 
 
 // Swarmer.
-const float SKILL_SWARMER_SNARKDAMAGE   = 0.40f; // Snark damage per level.
+const float SKILL_SWARMER_SNARKDAMAGE   = 1.00f; // Snark damage per level.
     const int SKILL_SWARMER_SNARKDAMAGE_LVL = 5;
 
-const float SKILL_SWARMER_SNARKCOUNT    = 0.80f; // Percent of extra snarks per level.
+const float SKILL_SWARMER_SNARKCOUNT    = 0.60f; // Percent of extra snarks per level.
     const int SKILL_SWARMER_SNARKCOUNT_LVL = 5;
 
 
