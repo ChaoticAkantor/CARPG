@@ -7,10 +7,10 @@ class SnarkNestData
 {   
     // Snark Swarm ability parameters.
     private float m_flAbilityCost = 1.0f; // Base cost per use (charges).
-    private float m_flAbilityMax = 1.0f; // Max charges.
+    private float m_flAbilityMax = 3.0f; // Max charges.
     private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
-    private float m_flBaseHealth = 100.0f; // Base HP of each snark.
-    private int m_iBaseSnarkCount = 10; // Base number of snarks to spawn.
+    private float m_flBaseHealth = 300.0f; // Base HP of each snark.
+    private int m_iBaseSnarkCount = 6; // Base number of snarks to spawn.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
