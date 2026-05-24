@@ -9,51 +9,32 @@
  Most classes bring something to the fight and push them into a specific role based on the holy trinity. Tank, DPS, Support.
 
 # Leveling
- Default Max Level is 100, this can be changed, but the abilities will always scale UP to the max level.
+ Default Max Level is 60.
 
- Max HP scales with your class level.
+ Default 1 skillpoint per level.
 
- Max AP DOES NOT increase in any way, but you can always regenerate up to the default maximum slowly, the reasoning for this is that armor in Sven is VERY strong compared to Half-Life.
-
- Each class has it's own max level and stats saved individually.
+ Each class has it's own max level and skills saved individually.
 
  Type "class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
 
  Type "stats" without quotes in chat to bring up the stats menu to see your current stat and ability bonuses.
 
-# Ammo Regen (and Explosives)
- The mod also features an ammo regen system.
+# Skills
+  Type "skills" to see skills menu and spend skillpoints.
 
- Each ammo type has it's own individual regen timer, which will work even when not holding the weapon, current ammo type used is displayed on the hud.
+  Basic skills are available to all classes. These are displayed first in the list.
 
- Explosives regen is extremely limited, using a threshold system that only allows you a maximum usually of 1 at a time, unless you find more in a level.
-
- It also does not give you the weapons pertaining to any of the ammo types to retain map balance.
-
- Please see "Difficulty" for notes on further map balancing for horror map series.
-
-# Recovery
- Regeneration will halt a small delay after taking damage, displaying an icon in the hud.
- By default, HP and AP restore 1% per tic.
-
- HP restores every 1s.
- AP restores every 4s.
-
- Recovery DOES NOT scale with level in any way.
-
- Please see "Difficulty" for notes on further map balancing for horror map series.
+  Ability skills are available only to that class and vary based on ability. These are usually in the second or third skill page, these add extra varying effects or increase aspects of a skill to make it stronger.
 
 # Difficulty
  Player weapon damage is slightly increased, and will be forced, regardless of map.
-
- Sven's Auto-player balancing for the moment is forcibly disabled (for now).
 
  Certain things do increased damage to the player:
  Zombies
  Headcrabs
  Grunts with 556 (as it's also tied to player damage grrr).
 
-# How do I use Skills?
+# How do I use Abilities?
  Typing useability in chat, or binding a button to it and pressing it will activate your class ability.
  Type bind mouse3 say "useability" in console and replace mouse3 with the key you want to use.
 
@@ -74,29 +55,16 @@
 # Current Classes
 # Medic
  Healing Aura that restores a percentage of HP for allies (including NPC's).
- Also deals a percentage of HP as poison damage to enemies.
-
- Can revive both players and NPC's, but has a cooldown.
 
 
 # Berserker
-  Bloodlust is a passive ability, that can be activated to double all bonuses, draining charge.
+  Bloodlust is a passive ability, that can be activated to double all healing bonuses, draining charge.
 
-  Can leech health by dealing damage.
-
-  Can overheal a percentage of Max HP as extra temporary HP.
-
-  Gains damage reduction as health decreases.
-
-  Gain ability recharge by dealing damage (even whilst ability is active!)
+  Can steal health by dealing damage.
 
 
 # Engineer
  Summons a single friendly Sentry.
-
- Sentry shots slow down enemies.
- 
- Has it's own healing aura.
 
  Activating whilst active will recall the turret for a cost.
 
@@ -110,8 +78,6 @@
 
  They move faster than normal.
 
- Will repair over time.
-
 
 # Xenomancer
  Can summon friendly robogrunts, amount depends on points used.
@@ -119,8 +85,6 @@
  Uses a summon menu to choose monster type, teleport or kill them.
 
  They move faster than normal.
-
- Will heal over time.
 
 
 # Necromancer
@@ -134,21 +98,11 @@
 
  They move faster than normal.
 
- Will heal over time.
-
- Damage leeches life to themself and owner.
-
 
 # Warden
  Ice Shield that absorbs all damage and has it's own HP.
 
  Restores Shield HP when not active.
-
- Reflects a percentage of damage at attacking enemies (including grenades and projectiles).
- 
- Absorbs a percentage of absorbed damage and restores HP.
-
- Can restore Shield HP whilst active, but at a severely reduced rate.
  
  Activating whilst active will break the shield for a cost.
 
@@ -156,11 +110,7 @@
 # Shocktrooper
  Equips an improved Shockrifle.
 
- Has significantly increased capacity and increased damage.
-
  Can activate whilst holding a Shockrifle to stow it and restore a portion of ammo to battery.
-
- More features will come for this class later.
 
 
 # Cloaker
@@ -168,17 +118,11 @@
 
  Gains a massive damage bonus to shots whilst active. Shooting drains battery, damage bonus depends on remaining battery.
 
- Activating while active will create a damaging Nova. Also happens if Cloak runs out.
-
- Nova Damage depends on remaining battery.
-
- Nova damage leeches HP.
-
 
 # Vanquisher
  Can load Dragon's Breath rounds into a seperate ammo pool.
 
- If you have Dragon's Breath ammo, all shots will cause a fire damage area of effect where you shoot.
+ If you have Dragon's Breath ammo, all shots will cause an explosion of fire damage where you shoot.
 
  Fire damage is low but will stack for each area of effect.
 
@@ -190,8 +134,6 @@
  Snarks have considerably increased HP and damage.
 
  Snarks are thrown out at random infront of you, at signifcant velocity. Allowing you to throw them over or bounce them around obsticles.
-
- Damage leeches HP to self and owner.
 
 
 # Installation instructions:
