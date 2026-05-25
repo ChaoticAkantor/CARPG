@@ -31,15 +31,15 @@ class BloodlustData
 
     bool IsActive() { return m_bActive; }
     bool HasStats() { return m_pStats !is null; }
-    float GetAbilityCharge() { return GetScaledBloodlustDuration(); }
-    float GetAbilityMax() { return m_flAbilityMax; }
+    float GetAbilityCharge() { return m_flAbilityCharge; }
+    float GetAbilityMax() { return GetScaledBloodlustDuration(); }
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
 
     float GetAbilityCost() { return m_flBloodlustAbilityCost; } // Grab ability cost.
 
-    float GetDeactivateCost() { return m_flBloodlustAbilityDeactivateCost * m_flAbilityMax;} // Ability cost to deactivate.
+    float GetDeactivateCost() { return m_flBloodlustAbilityDeactivateCost * GetScaledBloodlustDuration();} // Ability cost to deactivate.
 
     float GetScaledAbilityRecharge()
     {
@@ -183,10 +183,11 @@ class BloodlustData
             
             m_bActive = true;
             m_flLastDrainTime = currentTime;
-            ApplyGlow(pPlayer);
+                ApplyGlow(pPlayer);
+
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustStartSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, 0, PITCH_NORM);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Activated!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Activated!\n");
         }
         else
         {
@@ -262,6 +263,7 @@ class BloodlustData
                 m_flAbilityCharge = 0.0f;
                 DeactivateBloodlust(pPlayer);
             }
+
             m_flLastDrainTime = currentTime;
         }
     }
