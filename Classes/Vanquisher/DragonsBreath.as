@@ -20,10 +20,10 @@ bool IsDragonsBreathProjectileAmmo(const string& in ammoName)
 // Damage multipliers per ammo type for Dragons Breath.
 float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
-    if (ammoName == "9mm")      return 1.20f;
+    if (ammoName == "9mm")      return 1.00f;
     if (ammoName == "357")      return 2.00f;
-    if (ammoName == "buckshot") return 1.00f;
-    if (ammoName == "556")      return 1.40f;
+    if (ammoName == "buckshot") return 0.50f;
+    if (ammoName == "556")      return 1.50f;
     if (ammoName == "bolts")    return 2.50f;
     //if (ammoName == "762")      return 2.50f;
     if (ammoName == "m40a1")    return 2.50f;
@@ -477,7 +477,7 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
         dragonsBreath.GetScaledFireDamage(), // Damage per tick.
         dragonsBreath.GetRadius(), // Radius.
         CLASS_PLAYER, // Will not damage player or allies.
-        DMG_BURN | DMG_SLOWBURN | DMG_ALWAYSGIB // Damage type (Fire for DoT and stacking).
+        DMG_BURN | DMG_SLOWBURN // Damage type (Fire for DoT and stacking).
     );
 
     Vector startPoint = impactPoint;
@@ -573,7 +573,7 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
     msgFireArea.WriteCoord(impactPoint.y);
     msgFireArea.WriteCoord(impactPoint.z);
     msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
-    msgFireArea.WriteByte(5);  // Count - more sprites for a denser burst.
+    msgFireArea.WriteByte(3);  // Count - more sprites for a denser burst.
     msgFireArea.WriteByte(2);   // Life in 0.1's.
     msgFireArea.WriteByte(3);   // Scale in 0.1's.
     msgFireArea.WriteByte(25);  // Velocity along vector in 10's.
