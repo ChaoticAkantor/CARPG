@@ -7,15 +7,15 @@ class SnarkNestData
 {   
     // Snark Swarm ability parameters.
     private float m_flAbilityCost = 1.0f; // Base cost per use (charges).
-    private float m_flAbilityMax = 3.0f; // Max charges.
+    private float m_flAbilityMax = 1.0f; // Max charges.
     private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
     private float m_flBaseHealth = 300.0f; // Base HP of each snark.
-    private int m_iBaseSnarkCount = 6; // Base number of snarks to spawn.
+    private int m_iBaseSnarkCount = 5; // Base number of snarks to spawn.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
     private float m_flLastToggleTime = 0.0f;
-    private float m_flToggleCooldown = 4.0f; // Cooldown between spawns.
+    private float m_flToggleCooldown = 3.0f; // Cooldown between spawns.
     private float m_flLaunchForce = 1000.0f; // Velocity that snarks are thrown outward.
 
     // As far as I know, snark lifespan is hardcoded, would be nice to be able to change it.
@@ -225,7 +225,7 @@ class SnarkNestData
             msg.WriteCoord(endPoint.y);
             msg.WriteCoord(endPoint.z);
             msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
-            msg.WriteByte(2);   // Count.
+            msg.WriteByte(1);   // Count.
             msg.WriteByte(1);   // Life in 0.1's.
             msg.WriteByte(5);   // Scale in 0.1's.
             msg.WriteByte(25);  // Velocity along vector in 10's.
@@ -239,6 +239,7 @@ class SnarkNestData
         keys["targetname"] = "_snark_" + playerIndex;
         keys["displayname"] = string(pPlayer.pev.netname) + "'s Snark";
         keys["health"] = string(m_flBaseHealth); // Base health.
+        keys["scale"] = "4";
         keys["spawnflags"] = "32";
         keys["is_player_ally"] = "1";
         
