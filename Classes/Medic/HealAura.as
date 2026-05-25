@@ -439,6 +439,7 @@ class HealingAura
         if(m_flCurrentReviveCooldown <= 0.0f)
             return;
         m_flCurrentReviveCooldown -= flSchedulerInterval;
+        
         if(m_flCurrentReviveCooldown < 0.0f)
             m_flCurrentReviveCooldown = 0.0f;
     }
