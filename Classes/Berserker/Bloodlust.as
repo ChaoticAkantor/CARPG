@@ -1,6 +1,6 @@
 string strBloodlustStartSound = "garg/gar_pain1.wav";
 string strBloodlustEndSound = "player/breathe2.wav";
-string strBloodlustHitSound = "debris/bustflesh1.wav";
+string strBloodlustHitSound = "player/pl_organic4.wav";
 string strBloodlustActiveSound = "player/heartbeat1.wav";
 string strBloodlustSprite = "sprites/saveme.spr";
 
@@ -287,13 +287,16 @@ class BloodlustData
         if(pPlayer.pev.health < overhealPercent) // Heal HP if below max.
         {
             pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, overhealPercent);
-                return healAmount;
-        }
-        
-        ApplyLifestealEffect(pPlayer); // Visual effect for healing from lifesteal.
-        g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
-        return healAmount;
+            ApplyLifestealEffect(pPlayer); // Visual effect for healing from lifesteal.
+        
+            int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
+
+            return healAmount;
+        }
+
+        return 0.0f;
     }
 
     float ProcessDamageAbilityCharge(CBasePlayer@ pPlayer, float damageDealt)
@@ -338,8 +341,8 @@ class BloodlustData
             bubbleMsg.WriteCoord(maxs.z);
             bubbleMsg.WriteCoord(112.0f);
             bubbleMsg.WriteShort(g_EngineFuncs.ModelIndex(strBloodlustSprite));
-            bubbleMsg.WriteByte(10);
-            bubbleMsg.WriteCoord(2.0f);
+            bubbleMsg.WriteByte(2); // Count.
+            bubbleMsg.WriteCoord(2.0f); // Lifetime.
         bubbleMsg.End();
 
         // Add dynamic light
