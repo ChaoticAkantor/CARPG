@@ -233,7 +233,7 @@ void ApplyLifestealEffectBasic(CBasePlayer@ pPlayer)
             bubbleMsg.WriteCoord(maxs.z);
             bubbleMsg.WriteCoord(112.0f);
             bubbleMsg.WriteShort(g_EngineFuncs.ModelIndex(strBloodlustSprite));
-            bubbleMsg.WriteByte(10);
+            bubbleMsg.WriteByte(1); // Count.
             bubbleMsg.WriteCoord(2.0f);
         bubbleMsg.End();
 
@@ -259,7 +259,7 @@ float GetScaledBasicLifesteal(PlayerData@ data)
 
     int skillLevel = data.GetSkillLevel(SkillID::SKILL_LIFESTEAL);
     float skillPower = SKILL_LIFESTEAL;
-    float modifier = skillPower * float(skillLevel); // Scaled from lifesteal skill.
+    float modifier = skillPower * skillLevel; // Scaled from lifesteal skill.
 
     return modifier;
 }
@@ -287,11 +287,14 @@ float ProcessBasicLifesteal(CBasePlayer@ pPlayer, float damageDealt)
     if(pPlayer.pev.health < maxHealth) // Heal HP if below max.
     {
         pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, maxHealth);
+
+        ApplyLifestealEffectBasic(pPlayer); // Visual effect for healing from lifesteal.
+
+        int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
+
         return healAmount;
     }
-        
-    ApplyLifestealEffectBasic(pPlayer); // Visual effect for healing from lifesteal.
-    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
 
-    return healAmount;
+    return 0.0f;
 }
