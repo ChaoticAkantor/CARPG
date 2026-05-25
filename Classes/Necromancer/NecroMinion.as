@@ -72,6 +72,15 @@ string strNecroMinionSoundCreate = "debris/beamstart7.wav";
     string strGonomeSoundRun = "gonome/gonome_run.wav";
     string strGonomeSoundEat = "gonome/gonome_eat.wav";
 
+string FormatRatSecondsForHud(float t)
+{
+    t = Math.max(0.0f, t);
+    int tenthsTotal = int(t * 10.0f + 0.5f);
+    int whole = tenthsTotal / 10;
+    int frac = tenthsTotal % 10;
+    return "" + whole + "." + frac + "s";
+}
+
 dictionary g_NecromancerMinions;
 
 enum ZombieType
@@ -163,6 +172,9 @@ class NecroMinionData
     private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
+    private int m_iRatSpawnCount = 2; // Number of rats to spawn with the rat ability.
+    private float m_flRatSpawnCooldown = 40.0f; // Base cooldown for spawning rats.
+    private float m_flRatLaunchForce = 500.0f; // Velocity that rats are thrown outward.
 
     // Timers and trackers.
     private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
@@ -171,6 +183,7 @@ class NecroMinionData
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
+    private float m_flCurrentRatCooldown = 0.0f; // Tracks cooldown for rat spawning.
     private float m_flToggleCooldown = 1.0f;
     private bool m_bInitialized = false;
     private ClassStats@ m_pStats = null;
@@ -199,6 +212,16 @@ class NecroMinionData
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
     void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
+
+    float GetRatCooldownRemaining() { return m_flCurrentRatCooldown; }
+
+    string GetRatCooldownDisplay()
+    {
+        float maxCd = GetRatCooldownRemaining();
+        if(m_flCurrentRatCooldown > 0.0f)
+            return "[Rats: " + FormatRatSecondsForHud(m_flCurrentRatCooldown) + "]";
+        return "[Rats: Ready]";
+    }
 
     float GetScaledAbilityRecharge()
     {
@@ -286,6 +309,31 @@ class NecroMinionData
         float modifier = skillLevel * skillPower; // Regen is zero with no skill points spent.
 
         return modifier;
+    }
+
+    float GetScaledRatCooldown()
+    {
+        if(m_pStats is null)
+            return 0.0f; // Default if no stats.
+
+        float defaultCooldown = m_flRatSpawnCooldown;
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS);
+        float skillPower = SKILL_NECROMANCER_RATS;
+        float modifier = skillLevel * skillPower; // Regen is zero with no skill points spent.
+
+        return defaultCooldown - modifier;
+    }
+
+    void RatTimerTick()
+    {
+        if(m_flCurrentRatCooldown <= 0.0f)
+            return;
+
+        m_flCurrentRatCooldown -= flSchedulerInterval;
+
+        if(m_flCurrentRatCooldown < 0.0f)
+            m_flCurrentRatCooldown = 0.0f;
     }
     
     array<NecroMinionInfo>@ GetMinions() { return m_hMinions; }
@@ -407,8 +455,6 @@ class NecroMinionData
                 pMonster.m_hGuardEnt = EHandle(pPlayer); // Guard the player, turn down follow requests.
 
             @pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
-            //pNecroMinion.SetClassification(pPlayer.Classify()); // Set the same classification as the player to share ally tables.
-            //pNecroMinion.SetPlayerAllyDirect (true); // Set directly as ally of owner.
 
             g_EntityFuncs.DispatchSpawn(pNecroMinion.edict()); // Dispatch the entity.
 
@@ -423,6 +469,86 @@ class NecroMinionData
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strNecroMinionSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, NECRO_NAMES[minionType] + " summoned!\n");
+        }
+    }
+
+    void SpawnRat(CBasePlayer@ pPlayer, CBaseEntity@ pMinion)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected() || pMinion is null || !pMinion.IsAlive())
+            return;
+
+        // Get minion's position.
+        Vector minionOrigin = pMinion.pev.origin;
+        
+        // Calculate velocity direction: outward from minion (random horizontal spread).
+        float horizontalAngle = Math.RandomFloat(0, 360);
+        float radians = horizontalAngle * (3.14159 / 180.0);
+        
+        Vector outwardDir = Vector(cos(radians), sin(radians), 0); // Horizontal only for direction
+        outwardDir = outwardDir.Normalize();
+        
+        // Spawn far enough away to avoid collision with minion (80 units out, 32 up).
+        Vector spawnPos = minionOrigin + (outwardDir * 80.0f) + Vector(0, 0, 32);
+        
+        // Calculate velocity: outward direction at launch force, with upward component.
+        Vector velocity = outwardDir * m_flRatLaunchForce;
+        velocity.z += Math.RandomFloat(20.0f, 50.0f); // Add upward arc to the throw.
+        
+        // Calculate end point for sprite trail (from minion along the velocity direction).
+        Vector trailEndPoint = minionOrigin + (outwardDir * 100.0f);
+        
+        // Create sprite trail effect from minion outward.
+        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, minionOrigin);
+            msg.WriteByte(TE_SPRITETRAIL);
+            msg.WriteCoord(minionOrigin.x);
+            msg.WriteCoord(minionOrigin.y);
+            msg.WriteCoord(minionOrigin.z);
+            msg.WriteCoord(trailEndPoint.x);
+            msg.WriteCoord(trailEndPoint.y);
+            msg.WriteCoord(trailEndPoint.z);
+            msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
+            msg.WriteByte(1);   // Count.
+            msg.WriteByte(1);   // Life in 0.1's.
+            msg.WriteByte(5);   // Scale in 0.1's.
+            msg.WriteByte(25);  // Velocity along vector in 10's.
+            msg.WriteByte(10);  // Random velocity in 10's.
+        msg.End();
+
+        float scaledHealth = GetScaledHealth();
+        
+        // Create the rat (snark).
+        dictionary keys;
+        keys["origin"] = spawnPos.ToString();
+        keys["angles"] = pMinion.pev.v_angle.ToString();
+        keys["targetname"] = "_necrominion_rat_" + pPlayer.entindex();
+        keys["displayname"] = string(pPlayer.pev.netname) + "'s Rat";
+        keys["health"] = string(scaledHealth);
+        keys["scale"] = "2";
+        keys["model"] = strSnarkRatModel;
+        keys["spawnflags"] = "32";
+        keys["is_player_ally"] = "1";
+        
+        CBaseEntity@ pRat = g_EntityFuncs.CreateEntity("monster_snark", keys, true);
+        if(pRat !is null)
+        {
+            // Dispatch the entity first.
+            g_EntityFuncs.DispatchSpawn(pRat.edict());
+
+            // Set owner to player so frags transfer properly.
+            @pRat.pev.owner = @pPlayer.edict();
+
+            // Set health.
+            pRat.pev.max_health = scaledHealth;
+            pRat.pev.health = scaledHealth;
+
+            // Apply velocity to launch the rat outward.
+            pRat.pev.velocity = velocity;
+            
+            // Make the rat glow to show it's friendly (different color from minions).
+            pRat.pev.renderfx = kRenderFxGlowShell;
+            pRat.pev.rendermode = kRenderNormal;
+            pRat.pev.renderamt = 1;
+            pRat.pev.rendercolor = Vector(255, 195, 205); // Peach.
         }
     }
 
@@ -497,6 +623,27 @@ class NecroMinionData
 
             // Ensure glow effect is not overridden.
             ApplyMinionGlow(pExistingMinion);
+        }
+
+        // Rat spawning: Check if enough time has passed to spawn new rats on active minions.
+        if(m_flCurrentRatCooldown <= 0.0f && m_hMinions.length() > 0)
+        {
+            // Spawn rats on each active minion.
+            for(uint i = 0; i < m_hMinions.length(); i++)
+            {
+                CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
+                if(pMinion !is null && pMinion.IsAlive())
+                {
+                    // Spawn multiple rats per minion based on config.
+                    for(int j = 0; j < m_iRatSpawnCount; j++)
+                    {
+                        SpawnRat(pPlayer, pMinion);
+                    }
+                }
+            }
+            
+            // Reset cooldown after rats have spawned.
+            m_flCurrentRatCooldown = GetScaledRatCooldown();
         }
 
         // Always recalculate the reserve pool to ensure it's accurate.
@@ -868,6 +1015,7 @@ void CheckNecromancerMinions()
 
             // Always run Update for proper minion tracking
             NecroMinion.NecroUpdate(pPlayer);
+            NecroMinion.RatTimerTick();
         }
     }
 }

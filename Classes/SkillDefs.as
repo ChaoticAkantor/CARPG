@@ -103,6 +103,11 @@ const float SKILL_XENOMANCER_LIFESTEAL = 0.10f; // Minion lifesteal percent per 
     const int SKILL_XENOMANCER_LIFESTEAL_LVL = 3;
 
 
+// Necromancer.
+const float SKILL_NECROMANCER_RATS = 4.0f; // Cooldown reduction in seconds per level.
+    const int SKILL_NECROMANCER_RATS_LVL = 5;
+
+
 // Warden.
 const float SKILL_WARDEN_SHIELDHP        = 0.20f; // Ice shield HP percent increase per level.
     const int SKILL_WARDEN_SHIELDHP_LVL     = 5;
@@ -209,6 +214,7 @@ enum SkillID
     SKILL_XENOMANCER_LIFESTEAL,
 
     // Necromancer.
+    SKILL_NECROMANCER_RATS,
 
     // Warden.
     SKILL_WARDEN_SHIELDHP,
@@ -307,6 +313,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_XENOMANCER_LIFESTEAL)] = SkillDefinition("Xenomancer: Lifesteal", "+" + (SKILL_XENOMANCER_LIFESTEAL * 100.0f) + "% minion lifesteal.", SKILL_XENOMANCER_LIFESTEAL_LVL, SKILL_XENOMANCER_LIFESTEAL * 100.0f, "%");
 
     // Necromancer.
+    @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Necromancer: Zombie Rats", "-" + SKILL_NECROMANCER_RATS + "s Zombie Rat cooldown.", SKILL_NECROMANCER_RATS_LVL, SKILL_NECROMANCER_RATS, "s");
 
     // Warden.
     @g_SkillDefs[int(SkillID::SKILL_WARDEN_SHIELDHP)]       = SkillDefinition("Ice Shield: Shield HP", "+" + (SKILL_WARDEN_SHIELDHP * 100.0f) + "% shield HP.", SKILL_WARDEN_SHIELDHP_LVL, SKILL_WARDEN_SHIELDHP * 100.0f, "%");
@@ -400,6 +407,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MINIONHP);
             result.insertLast(SkillID::SKILL_MINIONREGEN);
             result.insertLast(SkillID::SKILL_MINIONDAMAGE);
+            result.insertLast(SkillID::SKILL_NECROMANCER_RATS);
             break;
 
         case PlayerClass::CLASS_DEFENDER:
