@@ -154,10 +154,10 @@ const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Fire damage duration increa
 
 
 // Swarmer.
-const float SKILL_SWARMER_SNARKDAMAGE   = 1.00f; // Snark damage per level.
+const float SKILL_SWARMER_SNARKDAMAGE   = 2.00f; // Snark damage per level.
     const int SKILL_SWARMER_SNARKDAMAGE_LVL = 5;
 
-const float SKILL_SWARMER_SNARKCOUNT    = 0.60f; // Percent of extra snarks per level.
+const float SKILL_SWARMER_SNARKCOUNT    = 0.20f; // Percent of extra snarks per level.
     const int SKILL_SWARMER_SNARKCOUNT_LVL = 5;
 
 
@@ -320,19 +320,19 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_SHOCK_LIGHTNING)] = SkillDefinition("Shockrifle: Shock Lightning","+" + (SKILL_SHOCK_LIGHTNING * 100.0f) + "% shockrifle lightning DMG.", SKILL_SHOCK_LIGHTNING_LVL, SKILL_SHOCK_LIGHTNING * 100.0f, "%");
 
     // Cloaker.
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Cloak: Damage Bonus", "+" + (SKILL_CLOAKER_CLOAKDAMAGE * 100.0f) + "% damage bonus.", SKILL_CLOAKER_CLOAKDAMAGE_LVL, SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+" + (SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f) + "% nova damage.", SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL, SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+" + (SKILL_CLOAKER_CLOAKDURATION * 100.0f) + "% cloak duration.", SKILL_CLOAKER_CLOAKDURATION_LVL, SKILL_CLOAKER_CLOAKDURATION * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Cloak: Damage Bonus", "+" + int(SKILL_CLOAKER_CLOAKDAMAGE * 100.0f) + "% damage bonus.", SKILL_CLOAKER_CLOAKDAMAGE_LVL, int(SKILL_CLOAKER_CLOAKDAMAGE * 100.0f), "%");
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+" + int(SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f) + "% nova damage.", SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL, int(SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f), "%");
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+" + int(SKILL_CLOAKER_CLOAKDURATION * 100.0f) + "% cloak duration.", SKILL_CLOAKER_CLOAKDURATION_LVL, int(SKILL_CLOAKER_CLOAKDURATION * 100.0f), "%");
 
     // Vanquisher.
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_AMMOPOOL)] = SkillDefinition("Dragon's Breath: Ammo Pool", "+" + int(SKILL_VANQUISHER_AMMOPOOL * 100.0f) + "% ammo pool.", SKILL_VANQUISHER_AMMOPOOL_LVL, int(SKILL_VANQUISHER_AMMOPOOL * 100.0f), "%");
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE)] = SkillDefinition("Dragon's Breath: Explosive Damage", "+" + int(SKILL_VANQUISHER_EXPLOSIVEDAMAGE * 100.0f) + " explosive damage.", SKILL_VANQUISHER_EXPLOSIVEDAMAGE_LVL, SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "");
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE)] = SkillDefinition("Dragon's Breath: Explosive Damage", "+" + SKILL_VANQUISHER_EXPLOSIVEDAMAGE + " explosive damage.", SKILL_VANQUISHER_EXPLOSIVEDAMAGE_LVL, SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "");
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDAMAGE)] = SkillDefinition("Dragon's Breath: Fire Damage", "+" + int(SKILL_VANQUISHER_FIREDAMAGE * 100.0f) + "% of explosion as fire damage.", SKILL_VANQUISHER_FIREDAMAGE_LVL, int(SKILL_VANQUISHER_FIREDAMAGE * 100.0f), "%");
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDURATION)] = SkillDefinition("Dragon's Breath: Fire Duration", "+" + int(SKILL_VANQUISHER_FIREDURATION) + "s fire duration.", SKILL_VANQUISHER_FIREDURATION_LVL, int(SKILL_VANQUISHER_FIREDURATION), "s");
 
     // Swarmer.
     @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKDAMAGE)] = SkillDefinition("Snarks: Snark Damage", "+" + (SKILL_SWARMER_SNARKDAMAGE * 100.0f) + "% snark damage.", SKILL_SWARMER_SNARKDAMAGE_LVL, SKILL_SWARMER_SNARKDAMAGE * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCOUNT)]  = SkillDefinition("Snarks: Snark Count", "+" + (SKILL_SWARMER_SNARKCOUNT * 100.0f) + "% swarm size.", SKILL_SWARMER_SNARKCOUNT_LVL, SKILL_SWARMER_SNARKCOUNT * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCOUNT)]  = SkillDefinition("Snarks: Snark Count", "+" + int(SKILL_SWARMER_SNARKCOUNT * 100.0f) + "% swarm size.", SKILL_SWARMER_SNARKCOUNT_LVL, int(SKILL_SWARMER_SNARKCOUNT * 100.0f), "%");
 }
 
 // Returns the standard skill IDs (shared across all classes).
