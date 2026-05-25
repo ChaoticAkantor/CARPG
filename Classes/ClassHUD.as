@@ -193,6 +193,9 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         array<NecroMinionInfo>@ minions = minionData.GetMinions();
                         if(minions !is null && minions.length() > 0)
                         {
+                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS) > 0)
+                                resourceInfo += minionData.GetRatCooldownDisplay() + " ";
+
                             array<CBaseEntity@> validMinions;
                             array<int> validTypes;
                             for(uint minionIndex = 0; minionIndex < minions.length(); minionIndex++)
