@@ -401,7 +401,7 @@ class SentryData
         m_bExplosiveActive = true; // Enable recursion guard.
 
         // Radius damage.
-        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, attackDmg, m_flExplosiveRadius, CLASS_PLAYER, DMG_BLAST | DMG_ALWAYSGIB);
+        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, attackDmg, m_flExplosiveRadius, CLASS_PLAYER, DMG_GENERIC);
         
         // Play explosion sound.
         g_SoundSystem.PlaySound(pVictim.edict(), CHAN_ITEM, strSentryExplosive, 0.6f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5));
