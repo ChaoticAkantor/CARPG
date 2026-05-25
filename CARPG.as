@@ -570,6 +570,7 @@ void PrecacheAll()
     // Snark.
         // Models/Sprites.
         g_Game.PrecacheModel(strSnarkModel);
+        g_Game.PrecacheModel(strSnarkRatModel);
         g_Game.PrecacheModel(strSnarkSpriteTinySpit);
 
 /*  Had to disable Alien Grunt for now as the hornets it fires aren't owned by it, 

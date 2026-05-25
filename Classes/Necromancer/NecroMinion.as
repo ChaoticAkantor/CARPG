@@ -2,6 +2,12 @@ string strNecroMinionSoundCreate = "debris/beamstart7.wav";
 
 // Precache strings for monsters. (Yawn)
 
+// Snark (Rat).
+    // Models/Sprites.
+    string strSnarkRatModel = "models/hunger/zombierat.mdl";
+
+    // Don't need sounds as they are already precached inside Swarmer.
+
 // Zombie.
     // Models/Sprites.
     string strZombieModel = "models/hunger/hungerzombie.mdl";
