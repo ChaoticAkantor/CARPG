@@ -690,7 +690,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
         // Alter the damage type.
         //info.bitsDamageType |= DMG_BLAST;
-        //info.bitsDamageType |= DMG_ALWAYSGIB;
 
         // Process extra damage effects.
         minion.ProcessMinionDamage(pOwner, info.flDamage);
@@ -721,7 +720,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Alter the damage type.
         info.bitsDamageType |= DMG_ACID;
         info.bitsDamageType |= DMG_POISON;
-        //info.bitsDamageType |= DMG_ALWAYSGIB;
 
         // Process extra damage effects.
         xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
@@ -751,7 +749,35 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
         // Alter the damage type.
         info.bitsDamageType |= DMG_POISON;
-        //info.bitsDamageType |= DMG_ALWAYSGIB;
+
+        // Process extra damage effects.
+        necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
+    }
+    else if(targetname.StartsWith("_necrominion_rats_"))
+    {
+        // Find owner's NecroMinionData by the index in targetname.
+        string ownerIndex = targetname.SubString(18); // Skip "_necrominion_rats_".
+        if(ownerIndex.IsEmpty())
+            return HOOK_CONTINUE;
+            
+        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(ownerIndex));
+        if(pOwner is null || !pOwner.IsConnected())
+            return HOOK_CONTINUE;
+            
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+        if(steamID.IsEmpty() || !g_NecromancerMinions.exists(steamID))
+            return HOOK_CONTINUE;
+            
+        NecroMinionData@ necroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+        if(necroMinion is null)
+            return HOOK_CONTINUE;
+            
+        // Apply the damage multiplier.
+        float damageNecroMultiplier = necroMinion.GetScaledDamage();
+        info.flDamage *= damageNecroMultiplier;
+
+        // Alter the damage type.
+        info.bitsDamageType |= DMG_POISON;
 
         // Process extra damage effects.
         necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
