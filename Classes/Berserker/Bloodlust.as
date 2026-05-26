@@ -19,7 +19,7 @@ class BloodlustData
     private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
 
     // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
-    private float m_flBaseLifesteal = 0.2f; // Lifesteal % base. Doubles during bloodlust!
+    private float m_flBaseLifesteal = 0.20f; // Lifesteal % base. Doubles during bloodlust!
 
     // Timers.
     private float m_flAbilityCharge = 0.0f; // Current charge.
@@ -180,7 +180,7 @@ class BloodlustData
             // Require minimum charge to activate.
             if(m_flAbilityCharge < GetDeactivateCost())
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + int(m_flBloodlustAbilityDeactivateCost * 100) + "%% Charge!");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + formatFloat(m_flBloodlustAbilityDeactivateCost * 100, "f", 0, 2) + "%% Charge!");
                 return;
             }
             
