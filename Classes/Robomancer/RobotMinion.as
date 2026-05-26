@@ -322,7 +322,7 @@ class MinionData
         dictionary keys;
         keys["origin"] = vecSrc.ToString();
         keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
-        keys["targetname"] = "_minion_" + pPlayer.entindex();
+        keys["targetname"] = "_robominion_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s " + MINION_NAMES[minionType];
         keys["weapons"] = "" + (minionType == 0 ? MINION_SHOTGUN : 
                                minionType == 1 ? MINION_MP5 : 

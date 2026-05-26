@@ -434,7 +434,7 @@ class NecroMinionData
         keys["model"] = NECRO_MODELS[minionType];
         keys["origin"] = vecSrc.ToString();
         keys["angles"] = Vector(0, pPlayer.pev.v_angle.y, 0).ToString();
-        keys["targetname"] = "_NecroMinion_" + pPlayer.entindex();
+        keys["targetname"] = "_necrominion_" + pPlayer.entindex();
         keys["displayname"] = string(pPlayer.pev.netname) + "'s " + NECRO_NAMES[minionType];
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1";
