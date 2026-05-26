@@ -665,10 +665,10 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Deal explosive damage from explosive skill.
         sentry.ApplyExplosiveDamage(attacker, victim, info.flDamage);
     }
-    else if(targetname.StartsWith("_minion_"))
+    else if(targetname.StartsWith("_robominion_"))
     {
         // Find owner's MinionData by the index in targetname.
-        string ownerIndex = targetname.SubString(8); // Skip "_minion_".
+        string ownerIndex = targetname.SubString(12); // Skip "_robominion_".
         if(ownerIndex.IsEmpty())
             return HOOK_CONTINUE;
             
