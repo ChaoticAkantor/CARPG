@@ -53,9 +53,10 @@ namespace Menu
                 
                 m_pOwner.SetClass(newClass); // Set class.
                 m_pOwner.CalculateStats(pPlayer); // Recalculate stats.
-                ResetPlayer(pPlayer); // Reset abilities.
 
+                ResetPlayer(pPlayer); // Reset abilities.
                 PlayClassChangeEffects(pPlayer);
+                CheckWeaponsShockRifle(); // Ensure class-given weapons are removed.
                 
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, 
                     "Class changed to: " + m_pOwner.GetClassName(newClass) + "!\n");
