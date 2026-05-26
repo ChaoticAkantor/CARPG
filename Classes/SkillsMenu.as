@@ -120,9 +120,7 @@ namespace Menu
             if(def.strength > 0.0f && curLevel > 0)
             {
                 float total = curLevel * def.strength;
-                int totalInt = int(total);
-                string totalStr = (total == float(totalInt)) ? ("" + totalInt) : ("" + total);
-                bonusStr = " [" + totalStr + def.unit + "]";
+                bonusStr = " [" + formatFloat(total, "f", 0, 2) + def.unit + "]";
             }
 
             menu.AddItem(def.name + " " + levelTag + bonusStr + " " + def.description + "\n", any(int(id)));
