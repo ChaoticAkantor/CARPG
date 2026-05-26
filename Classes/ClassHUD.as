@@ -106,13 +106,13 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         resourceInfo += "[Lifesteal: " + formatFloat(bloodlust.GetScaledLifesteal() * 100, "f", 0, 2) + "%] ";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION) > 0)
-                            resourceInfo += "[DMG Reduction: " +  int(bloodlust.GetDamageReduction(pPlayer) * 100) + "%]\n";
+                            resourceInfo += "[DMG Reduction: " +  formatFloat(bloodlust.GetDamageReduction(pPlayer) * 100, "f", 0, 2) + "%]\n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE) > 0)
-                            resourceInfo += "[Ability Charge: " +  bloodlust.GetScaledDamageAbilityCharge() * 100 + "%]\n";
+                            resourceInfo += "[Ability Charge: " +  formatFloat(bloodlust.GetScaledDamageAbilityCharge() * 100, "f", 0, 2) + "%]\n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_OVERHEAL) > 0)
-                            resourceInfo += "[Overheal Limit: " + int(pPlayer.pev.max_health * bloodlust.GetScaledOverhealPercent()) + " HP]";
+                            resourceInfo += "[Overheal Limit: " + formatFloat(pPlayer.pev.max_health * bloodlust.GetScaledOverhealPercent(), "f", 0, 0) + " HP]";
                     }
                 }
                 break;
@@ -236,15 +236,15 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                             {
                                 float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
 
-                                resourceInfo += "[Sentry HP: " + int(healthPercent) + "%] ";
+                                resourceInfo += "[Sentry HP: " + formatFloat(healthPercent, "f", 0, 0) + "%] ";
 
-                                resourceInfo += "[DMG: " + int(sentryData.GetScaledDamage() * 100) + "%]\n";
+                                resourceInfo += "[DMG: " + formatFloat(sentryData.GetScaledDamage() * 100, "f", 0, 2) + "%]\n";
 
                                 if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO) > 0)
-                                    resourceInfo += "[Explosive DMG: " + int(sentryData.GetScaledExplosiveDamage() * 100) + "%]\n";
+                                    resourceInfo += "[Explosive DMG: " + formatFloat(sentryData.GetScaledExplosiveDamage() * 100, "f", 0, 2) + "%]\n";
 
                                 if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA) > 0)
-                                    resourceInfo += "[Healing: " + sentryData.GetScaledHealAmount() + "% HP/s]\n";
+                                    resourceInfo += "[Healing: " + formatFloat(sentryData.GetScaledHealAmount(), "f", 0, 2) + "% HP/s]\n";
                             }
                         }
                     }
@@ -262,15 +262,15 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         maximum = barrier.GetShieldMaxHP();
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_DAMAGEREFLECT) > 0)
-                                resourceInfo += "[DMG Reflect: " + ceil(barrier.GetScaledDamageReflection() * 100) + "%] ";
+                                resourceInfo += "[DMG Reflect: " + formatFloat(barrier.GetScaledDamageReflection() * 100, "f", 0, 2) + "%] ";
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_HPABSORB) > 0)
-                                resourceInfo += "[HP Absorb: " + ceil(barrier.GetScaledHealthAbsorb() * 100) + "%]\n";
+                                resourceInfo += "[HP Absorb: " + formatFloat(barrier.GetScaledHealthAbsorb() * 100, "f", 0, 2) + "%]\n";
                             
                         if(barrier.IsActive())
                         {
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_ACTIVERECHARGE) > 0)
-                                resourceInfo += "[Recharge Speed: " + ceil(barrier.GetActiveRechargeRate() * 100) + "%] ";
+                                resourceInfo += "[Recharge Speed: " + formatFloat(barrier.GetActiveRechargeRate() * 100, "f", 0, 2) + "%] ";
                         }
                     }
                 }
@@ -293,7 +293,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         resourceInfo += (hasShockRifleEquipped ? "[Equipped]" : "") + "\n";
 
                         if(hasShockRifleEquipped)
-                            resourceInfo += "[Shockrifle DMG: " + int(shockData.GetScaledDamage() * 100) + "%]\n";
+                            resourceInfo += "[Shockrifle DMG: " + formatFloat(shockData.GetScaledDamage() * 100, "f", 0, 2) + "%]\n";
                     }
                 }
                 break;
@@ -310,10 +310,10 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         if(cloak.IsActive())
                         {
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE) > 0)
-                                resourceInfo += "[Cloak DMG: +" + int(cloak.GetDamageMultiplier(pPlayer) * 100) + "%]\n";
+                                resourceInfo += "[Cloak DMG: +" + formatFloat(cloak.GetDamageMultiplier(pPlayer) * 100, "f", 0, 2) + "%]\n";
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE) > 0)
-                                resourceInfo += "[Nova DMG: " + int(cloak.GetNovaDamage(pPlayer)) + "]";
+                                resourceInfo += "[Nova DMG: " + formatFloat(cloak.GetNovaDamage(pPlayer), "f", 0, 2) + "]";
                         }
                     }
                 }
@@ -333,10 +333,10 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         resourceInfo += "[Cost: " + dragonsBreath.GetPerShotCost() + "]\n";
                         if(dragonsBreath.HasRounds())
                         {
-                            resourceInfo += "[Explosive DMG: " + dragonsBreath.GetScaledExplosionDamage() + "] ";
+                            resourceInfo += "[Explosive DMG: " + formatFloat(dragonsBreath.GetScaledExplosionDamage(), "f", 0, 2) + "] ";
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VANQUISHER_FIREDAMAGE) > 0)
-                                resourceInfo += "[Fire DMG: " + dragonsBreath.GetScaledFireDamage() + "/s]";
+                                resourceInfo += "[Fire DMG: " + formatFloat(dragonsBreath.GetScaledFireDamage(), "f", 0, 2) + "/s]";
                         }
                     }
                 }
@@ -351,7 +351,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                     {
                         current = snarkData.GetAbilityCharge();
                         maximum = snarkData.GetAbilityMax();
-                        resourceInfo += "[Snark Swarm Size: " + snarkData.GetSnarkCount() + "]";
+                        resourceInfo += "[Snark Swarm Size: " + formatFloat(snarkData.GetSnarkCount(), "f", 0, 0) + "]";
                     }
                 }
                 break;
