@@ -57,6 +57,7 @@ class ShockRifleData
         if(pItem is null)
         {
             RechargeAbility();
+            m_flLastUseTime = 0.0f; // Reset last use time to prevent cooldown issues.
         }
     }
     
@@ -111,8 +112,8 @@ class ShockRifleData
         float flCurrentTime = g_Engine.time;
         float timeSinceLastUse = flCurrentTime - m_flLastUseTime;
         
-        // Fix cooldown timer if it somehow exceeds our limit.
-        if(timeSinceLastUse > m_flCooldown)
+        // Fix cooldown timer if it somehow exceeds limits.
+        if(timeSinceLastUse > m_flCooldown || timeSinceLastUse < 0.0f)
             timeSinceLastUse = m_flCooldown;
             
         // Check if player already has shock rifle.
@@ -235,25 +236,13 @@ class ShockRifleData
         m_bLightningActive = true; // Enable recursion guard.
 
         // Radius damage.
-        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, strikeDmg, m_flLightningStrikeRadius, CLASS_PLAYER, DMG_SHOCK | DMG_ALWAYSGIB);
+        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, strikeDmg, m_flLightningStrikeRadius, CLASS_PLAYER, DMG_GENERIC | DMG_SHOCK);
         
         // Play explosion sound.
         g_SoundSystem.EmitSound(pAttacker.edict(), CHAN_ITEM, strShockLightningSound, 1.0f, ATTN_NORM);
 
         m_bLightningActive = false; // Disable recursion guard.
     }
-}
-
-void ApplyMinionGlow(CBaseEntity@ pShockroachMinion)
-{
-    if(pShockroachMinion is null)
-        return;
-            
-    // Apply the glowing effect.
-    pShockroachMinion.pev.renderfx = kRenderFxGlowShell; // Effect.
-    pShockroachMinion.pev.rendermode = kRenderNormal; // Render mode.
-    pShockroachMinion.pev.renderamt = 1; // Shell thickness.
-    pShockroachMinion.pev.rendercolor = Vector(0, 100, 250); // Blue.
 }
 
 void CheckWeaponsShockRifle()
