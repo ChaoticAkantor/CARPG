@@ -44,7 +44,7 @@ final class ForceDifficulty
 		300.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
 		20.0, //Shockrifle (Primary) - Default 15.
-		3.0, //Shockrifle (Beam) - Default 2 per beam (x3 beams).
+		3.0, //Shockrifle (Beam) - Default 2.
 		350.0, //Shockrifle Touch damage (on self on detonate?) - Default 350.
 		150.0 //Shockroach Splash damage (on self when detonate?) - Default 150.
 	};
