@@ -89,7 +89,6 @@ class HealingAura
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = m_flHealAuraInterval; // Time between visual updates. Same as heal rate.
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
-    private float m_flGlowDuration = 0.25f;
     private Vector m_vGlowColor = Vector(0, 255, 0);
 
     private ClassStats@ m_pStats = null;
@@ -325,6 +324,13 @@ class HealingAura
             if (pEntity is pPlayer)
                 continue;
 
+            // Skip player-summoned minions.
+            string targetName = pEntity.pev.targetname;
+            if ((targetName.Length() >= 12 && targetName.SubString(0, 12) == "_robominion_") ||
+                (targetName.Length() >= 13 && targetName.SubString(0, 13) == "_necrominion_") ||
+                (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_xenminion_"))
+                continue;
+
             // Only damage entities that are NOT allies.
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
             if (pMonster !is null && pMonster.IsAlive())
@@ -543,6 +549,14 @@ class HealingAura
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flHealingRadius, "*", "classname")) !is null)
         {
+            // Skip player-summoned minions by checking targetname.
+            string targetName = pEntity.pev.targetname;
+            if ((targetName.Length() >= 8 && targetName.SubString(0, 8) == "_minion_") ||
+                (targetName.Length() >= 12 && targetName.SubString(0, 12) == "_necrominion_") ||
+                (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_xenminion_") ||
+                (targetName.Length() >= 7 && targetName.SubString(0, 7) == "_snark_"))
+                continue;
+
             // Skip classnames in the skip list.
             string classname = pEntity.GetClassname();
             bool shouldSkip = false;
