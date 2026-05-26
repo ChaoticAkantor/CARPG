@@ -103,7 +103,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         current = bloodlust.GetAbilityCharge();
                         maximum = bloodlust.GetAbilityMax();
 
-                        resourceInfo += "[Lifesteal: " + int(bloodlust.GetScaledLifesteal() * 100) + "%] ";
+                        resourceInfo += "[Lifesteal: " + formatFloat(bloodlust.GetScaledLifesteal() * 100, "f", 0, 2) + "%] ";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION) > 0)
                             resourceInfo += "[DMG Reduction: " +  int(bloodlust.GetDamageReduction(pPlayer) * 100) + "%]\n";
