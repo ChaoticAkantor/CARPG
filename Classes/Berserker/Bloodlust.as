@@ -19,7 +19,7 @@ class BloodlustData
     private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
 
     // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
-    private float m_flBaseLifesteal = 0.20f; // Lifesteal % base. Doubles during bloodlust!
+    private float m_flBaseLifesteal = 0.2f; // Lifesteal % base. Doubles during bloodlust!
 
     // Timers.
     private float m_flAbilityCharge = 0.0f; // Current charge.
@@ -69,23 +69,26 @@ class BloodlustData
         if(m_pStats is null)
             return 0.0f; // No lifesteal if no stats.
 
+        // First scale from the berserker lifesteal skill.
         float baseLifesteal = m_flBaseLifesteal; // Base lifesteal percentage.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_LIFESTEAL);
         float skillPower = SKILL_BERSERKER_LIFESTEAL;
-        float modifier = baseLifesteal + (skillPower * skillLevel); // Scaled from lifesteal skill.
+        float modifierBerserker = baseLifesteal + (skillPower * skillLevel); // Scaled from lifesteal skill.
 
+
+        // Then scale from the basic lifesteal skill.
         float baseLifestealBasic = 0.0f; // Base lifesteal from the basic lifesteal skill.
 
         int skillLevelBasic = m_pStats.GetSkillLevel(SkillID::SKILL_LIFESTEAL);
         float skillPowerBasic = SKILL_LIFESTEAL;
         float modifierBasic = baseLifestealBasic + (skillPowerBasic * skillLevelBasic); // Add any lifesteal from the basic lifesteal skill.
 
-        // If bloodlust is active, double the lifesteal.
+        // Add them together and if bloodlust is active, double the lifesteal.
         if(!m_bActive)
-            return modifier + modifierBasic;
+            return modifierBerserker + modifierBasic;
         else
-            return modifier + modifierBasic * 2.0f;
+            return modifierBerserker + modifierBasic * 2.0f;
     }
 
     float GetScaledDamageAbilityCharge()
@@ -181,13 +184,13 @@ class BloodlustData
                 return;
             }
             
-            m_bActive = true;
-            m_flLastDrainTime = currentTime;
-                ApplyGlow(pPlayer);
+            m_bActive = true; // Set to active.
+            m_flLastDrainTime = currentTime; // Reset drain timer on activation.
 
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustStartSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, 0, PITCH_NORM);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Activated!\n");
+
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Activated!\n");
         }
         else
         {
@@ -230,7 +233,7 @@ class BloodlustData
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
         {
-            DeactivateBloodlust(pPlayer);
+            DeactivateBloodlust(pPlayer); // Deactivate if the above criteria is not met.
             return;
         }
 
@@ -247,10 +250,13 @@ class BloodlustData
             }
         }
 
+        if(m_bActive)
+            ApplyGlow(pPlayer); // Ensure glow is applied when active.
+
         if(!m_bActive)
         {
-            // Recharge when inactive.
-            RechargeAbility();
+            RechargeAbility(); // Recharge when inactive.
+            RemoveGlow(pPlayer); // Ensure glow is removed when not active.
             return;
         }
 
@@ -275,12 +281,6 @@ class BloodlustData
 
         if(m_pStats is null) // If no stats, no lifesteal.
             return 0.0f;
-
-        if(!pPlayer.IsAlive()) // Deactivate Bloodlust if player dies.
-        {
-            DeactivateBloodlust(pPlayer);
-            return 0.0f;
-        }
 
         float lifestealMult = GetScaledLifesteal();
         float healAmount = damageDealt * lifestealMult; // Heal amount from lifesteal.
@@ -308,12 +308,6 @@ class BloodlustData
 
         if(m_pStats is null) // If no stats, no damage ability charge.
             return 0.0f;
-
-        if(!pPlayer.IsAlive()) // Deactivate if player dies.
-        {
-            DeactivateBloodlust(pPlayer);
-            return 0.0f;
-        }
 
         float damageAbilityChargeMult = GetScaledDamageAbilityCharge();
         float gainAmount = damageDealt * damageAbilityChargeMult;
@@ -369,7 +363,6 @@ class BloodlustData
             
         if(pPlayer !is null)
         {
-            RemoveGlow(pPlayer);
             m_bActive = false;
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustEndSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_LOW);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.0f, ATTN_NORM, SND_STOP);
