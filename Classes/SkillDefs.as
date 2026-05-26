@@ -22,7 +22,7 @@ const float SKILL_ABILITYRECHARGE = 0.10f; // Percent increase to ability rechar
 const int SKILL_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
     const int SKILL_AMMOREGEN_LVL = 5;
 
-const float SKILL_LIFESTEAL = 0.03f; // Percent of damage dealt as lifesteal per level.
+const float SKILL_LIFESTEAL = 0.02f; // Percent of damage dealt as lifesteal per level.
     const int SKILL_LIFESTEAL_LVL = 10;
 
 const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
@@ -62,7 +62,7 @@ const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura durat
 
 
 // Berserker.
-const float SKILL_BERSERKER_LIFESTEAL = 0.06f; // Flat increase to lifesteal per level.
+const float SKILL_BERSERKER_LIFESTEAL = 0.04f; // Flat increase to lifesteal per level.
     const int SKILL_BERSERKER_LIFESTEAL_LVL = 5;
 
 const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.01f; // Percent of damage dealt converted to ability charge per level.
@@ -140,7 +140,7 @@ const float SKILL_SHOCK_CAPACITY         = 0.20f; // Shockrifle capacity per lev
 const float SKILL_SHOCK_DAMAGE           = 0.20f; // Shockrifle damage per level.
     const int SKILL_SHOCK_DAMAGE_LVL        = 5;
 
-const float SKILL_SHOCK_LIGHTNING        = 0.20f; // Shockrifle area lightning damage per level.
+const float SKILL_SHOCK_LIGHTNING        = 0.20f; // Shockrifle damage % as area lightning damage per level.
     const int SKILL_SHOCK_LIGHTNING_LVL     = 5;
 
 
