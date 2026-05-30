@@ -22,7 +22,7 @@ const float SKILL_ABILITYRECHARGE = 0.10f; // Percent increase to ability rechar
 const int SKILL_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
     const int SKILL_AMMOREGEN_LVL = 5;
 
-const float SKILL_LIFESTEAL = 0.02f; // Percent of damage dealt as lifesteal per level.
+const float SKILL_LIFESTEAL = 0.025f; // Percent of damage dealt as lifesteal per level.
     const int SKILL_LIFESTEAL_LVL = 10;
 
 const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
@@ -48,7 +48,7 @@ const float SKILL_MINIONDAMAGE = 0.40f; // Damage percent increase for minions p
 const float SKILL_MEDIC_HEALPERCENT = 2.0f;  // Increase healing (% max health) per level.
     const int SKILL_MEDIC_HEALPERCENT_LVL = 5;
 
-const float SKILL_MEDIC_POISON = 1.0f; // Poison damage (% max health) per level.
+const float SKILL_MEDIC_POISON = 0.6f; // Poison damage (% max health) per level.
     const int SKILL_MEDIC_POISON_LVL = 5;
 
 const float SKILL_MEDIC_REVIVE = 6.0f;   // Reduce revive cooldown in seconds per level.
@@ -68,7 +68,7 @@ const float SKILL_BERSERKER_LIFESTEAL = 0.04f; // Flat increase to lifesteal per
 const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.01f; // Percent of damage dealt converted to ability charge per level.
     const int SKILL_BERSERKER_DAMAGEABILITYCHARGE_LVL = 5;
 
-const float SKILL_BERSERKER_DAMAGEREDUCTION = 0.06f; // Damage reduction per level.
+const float SKILL_BERSERKER_DAMAGEREDUCTION = 0.08f; // Damage reduction per level.
     const int SKILL_BERSERKER_DAMAGEREDUCTION_LVL = 5;
 
 const float SKILL_BERSERKER_OVERHEAL = 0.10f; // Percent of max HP to overheal from lifesteal per level.
@@ -79,9 +79,6 @@ const float SKILL_BERSERKER_APCONVERSION = 0.20f; // Percent of Max AP converted
 
 const float SKILL_BERSERKER_DURATION = 0.20f; // Percent increase to Bloodlust duration per level.
     const int SKILL_BERSERKER_BLOODLUSTDURATION_LVL = 5;
-
-const float SKILL_BERSERKER_BLOODLUSTDAMAGE = 0.10f; // Percent increase to Bloodlust damage per level.
-    const int SKILL_BERSERKER_BLOODLUSTDAMAGE_LVL = 5;
 
 
 // Engineer.
@@ -115,10 +112,10 @@ const float SKILL_WARDEN_SHIELDHP        = 0.20f; // Ice shield HP percent incre
 const float SKILL_WARDEN_DAMAGEREFLECT   = 0.20f; // Damage reflect per level.
     const int SKILL_WARDEN_DAMAGEREFLECT_LVL = 5;
 
-const float SKILL_WARDEN_ACTIVERECHARGE  = 0.06f; // Active shield recharge per level.
+const float SKILL_WARDEN_ACTIVERECHARGE  = 0.05f; // Active shield recharge per level.
     const int SKILL_WARDEN_ACTIVERECHARGE_LVL = 5;
 
-const float SKILL_WARDEN_HPABSORB        = 0.12f; // HP absorb from damage reflected per level.
+const float SKILL_WARDEN_HPABSORB        = 0.10f; // HP absorb from damage reflected per level.
     const int SKILL_WARDEN_HPABSORB_LVL     = 5;
 
 
@@ -148,18 +145,18 @@ const float SKILL_SHOCK_LIGHTNING        = 0.20f; // Shockrifle damage % as area
 const float SKILL_VANQUISHER_AMMOPOOL    = 0.60f; // Ammo pool increase per level.
     const int SKILL_VANQUISHER_AMMOPOOL_LVL = 5;
 
-const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Base damage increase of explosive damage per level.
+const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Flat increase of added explosive damage per level.
     const int SKILL_VANQUISHER_EXPLOSIVEDAMAGE_LVL = 5;
 
-const float SKILL_VANQUISHER_FIREDAMAGE = 0.04f; // Percentage of explosion as fire damage increase per level.
+const float SKILL_VANQUISHER_FIREDAMAGE = 0.04f; // Percentage of explosion converted to extra fire damage per level.
     const int SKILL_VANQUISHER_FIREDAMAGE_LVL = 5;
 
-const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Fire damage duration increase per level.
+const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage ticks per level.
     const int SKILL_VANQUISHER_FIREDURATION_LVL = 5;
 
 
 // Swarmer.
-const float SKILL_SWARMER_SNARKDAMAGE   = 2.00f; // Snark damage per level.
+const float SKILL_SWARMER_SNARKDAMAGE   = 1.50f; // Snark damage per level.
     const int SKILL_SWARMER_SNARKDAMAGE_LVL = 5;
 
 const float SKILL_SWARMER_SNARKCOUNT    = 0.20f; // Percent of extra snarks per level.
