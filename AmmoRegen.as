@@ -71,7 +71,7 @@ void InitAmmoSpriteMap()
 {
     g_AmmoSpriteEntries.resize(0);
     // Coords derived from svencoop/sprites/weapon_*.txt and hud.txt.
-    // All entries are on 640hud7.spr. Default size 24x24 unless noted.
+    // All entries are on 640hud7.spr. Default size 24x24.
     g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("health",          74,  24, 34, 35)); // cross icon.
     g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("9mm",              0,  60));
     g_AmmoSpriteEntries.insertLast(AmmoSpriteEntry("357",             24,  60));
@@ -133,16 +133,16 @@ void InitializeAmmoRegen()
     
     // Amount given, max ammo, use threshold?, threshold, willgiveweapon(doesnt seem to work), timer.
     g_AmmoTypes.insertLast(AmmoType("health", 1, 100, true, 100, false, 1.0f));
-    g_AmmoTypes.insertLast(AmmoType("9mm", 1, 300, false, 0, false, 0.8f));
-    g_AmmoTypes.insertLast(AmmoType("buckshot", 1, 125, false, 0, false, 8.0f));
-    g_AmmoTypes.insertLast(AmmoType("357", 1, 36, false, 0, false, 12.0f));
-    g_AmmoTypes.insertLast(AmmoType("556", 1, 600, false, 0, false, 1.0f));
-    g_AmmoTypes.insertLast(AmmoType("m40a1", 1, 25, false, 0, false, 15.0f));
-    g_AmmoTypes.insertLast(AmmoType("bolts", 1, 30, false, 0, false, 12.0f));
-    g_AmmoTypes.insertLast(AmmoType("sporeclip", 1, 20, false, 0, false, 20.0f));
+    g_AmmoTypes.insertLast(AmmoType("9mm", 1, 300, false, 0, false, 1.0f));
+    g_AmmoTypes.insertLast(AmmoType("buckshot", 1, 125, false, 0, false, 12.0f));
+    g_AmmoTypes.insertLast(AmmoType("357", 1, 36, false, 0, false, 15.0f));
+    g_AmmoTypes.insertLast(AmmoType("556", 1, 600, false, 0, false, 2.0f));
+    g_AmmoTypes.insertLast(AmmoType("m40a1", 1, 25, false, 0, false, 20.0f));
+    g_AmmoTypes.insertLast(AmmoType("bolts", 1, 30, false, 0, false, 20.0f));
+    g_AmmoTypes.insertLast(AmmoType("sporeclip", 1, 20, false, 0, false, 30.0f));
     g_AmmoTypes.insertLast(AmmoType("Hornets", 1, 100, false, 0, false, 1.0f));
-    g_AmmoTypes.insertLast(AmmoType("shock charges", 1, 100, false, 0, false, 1.0f));
-    g_AmmoTypes.insertLast(AmmoType("uranium", 1, 100, false, 0, false, 8.0f));
+    g_AmmoTypes.insertLast(AmmoType("shock charges", 1, 100, false, 0, false, 5.0f));
+    g_AmmoTypes.insertLast(AmmoType("uranium", 1, 100, false, 0, false, 15.0f));
     
     g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 1, 10, true, 1, true, 60.0f));
     g_AmmoTypes.insertLast(AmmoType("ARgrenades", 1, 10, true, 2, true, 60.0f));
