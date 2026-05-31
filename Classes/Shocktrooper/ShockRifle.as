@@ -7,13 +7,13 @@ dictionary g_ShockRifleData;
 class ShockRifleData 
 {
     // Shocktrooper ability scaling values.
-    private float m_flAbilityCharge = 0.0f;
-    private float m_flAbilityMax = 1.0f;
-    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge from empty.
+    private float m_flAbilityMax = 100.0f; // Ability max charge.
+    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge ability.
     private float m_flLightningStrikeRadius = 100.0f * 16.0f; // Radius of the area strike in units.
-    private bool  m_bLightningActive = false; // Re-entrancy guard: prevents RadiusDamage from triggering another strike on nearby enemies.
+    private bool m_bLightningActive = false; // Re-entrancy guard: prevents RadiusDamage from triggering another strike on nearby enemies.
 
     // Timers.
+    private float m_flAbilityCharge = 0.0f; // Used to store current ability charge.
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
     private float m_flLastUseTime = 0.0f; // Stores last use time.
 
@@ -84,7 +84,7 @@ class ShockRifleData
             
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_CAPACITY);
         float skillPower = SKILL_SHOCK_CAPACITY; // Bonus capacity based on skill level.
-        float modifier = 100.0f + (skillPower * skillLevel);
+        float modifier = maxAmmo * (1.0f + skillPower * skillLevel);
 
         return modifier;
     }
@@ -123,10 +123,10 @@ class ShockRifleData
         // If player has shock rifle and is holding it, handle dropping it as a shockroach.
         if(pWeapon !is null && pPlayer.m_hActiveItem.GetEntity() is pWeapon)
         {
-            int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
-            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex);
-            float flcurrentAmmo = float(currentAmmo) / 100.0f;
-            float flMaxAmmo = GetScaledMaxAmmo() / 100.0f;
+            int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges"); // Get ammo index.
+            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex); // Get current ammo from ammo index.
+            float flcurrentAmmo = float(currentAmmo); // Store current, convert to float.
+            float flMaxAmmo = GetScaledMaxAmmo(); // Get maximum.
 
             // Refund half of remaining battery into charge.
             m_flAbilityCharge = Math.min(m_flAbilityCharge + (flcurrentAmmo / 2), m_flAbilityMax);
@@ -162,16 +162,13 @@ class ShockRifleData
 
         // Use the charge.
         m_flAbilityCharge = 0.0f;
-
-        // Get max ammo based on level.
-        int ammotoGive = int(GetScaledMaxAmmo());
         
         // Give the weapon.
         pPlayer.GiveNamedItem("weapon_shockrifle");
         
         // Set scaled max capacity and give the ammo.
         int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges");
-        pPlayer.m_rgAmmo(ammoIndex, ammotoGive);
+        pPlayer.m_rgAmmo(ammoIndex, int(GetScaledMaxAmmo()));
         
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Shock Rifle equipped!\n");
         g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_WEAPON, strShockrifleEquipSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
@@ -195,53 +192,58 @@ class ShockRifleData
     {
         if(pAttacker is null || pVictim is null || flDealtDamage <= 0.0f)
             return;
-
+        
         if(m_bLightningActive)
             return;
 
-        Vector hitPos    = pVictim.pev.origin;
-        float  strikeDmg = flDealtDamage * GetScaledLightningDamage(); // Scale lightning damage based on skill level.
-        int    sprIdx    = g_EngineFuncs.ModelIndex(strShockLightningSprite);
-        Vector skyPos    = Vector(hitPos.x, hitPos.y, hitPos.z + 2048);
+        if(m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_LIGHTNING) > 0)
+        {
 
-        // Lightning bolt from the sky down to the target.
-        NetworkMessage bolt(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, hitPos);
-            bolt.WriteByte(TE_LIGHTNING);
-            bolt.WriteCoord(skyPos.x);
-            bolt.WriteCoord(skyPos.y);
-            bolt.WriteCoord(skyPos.z);
-            bolt.WriteCoord(hitPos.x);
-            bolt.WriteCoord(hitPos.y);
-            bolt.WriteCoord(hitPos.z);
-            bolt.WriteByte(10);   // Life * 0.1s.
-            bolt.WriteByte(50);   // Width.
-            bolt.WriteByte(80);  // Amplitude.
-            bolt.WriteShort(sprIdx);
-        bolt.End();
+            Vector hitPos    = pVictim.pev.origin;
+            float  strikeDmg = flDealtDamage * GetScaledLightningDamage(); // Scale lightning damage based on skill level.
+            int    sprIdx    = g_EngineFuncs.ModelIndex(strShockLightningSprite);
+            Vector skyPos    = Vector(hitPos.x, hitPos.y, hitPos.z + 2048);
 
-        // Dynamic light at the impact point.
-        NetworkMessage dlight(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, hitPos);
-            dlight.WriteByte(TE_DLIGHT);
-            dlight.WriteCoord(hitPos.x);
-            dlight.WriteCoord(hitPos.y);
-            dlight.WriteCoord(hitPos.z);
-            dlight.WriteByte(int(m_flLightningStrikeRadius)); // Radius.
-            dlight.WriteByte(0); // R
-            dlight.WriteByte(150); // G
-            dlight.WriteByte(255); // B
-            dlight.WriteByte(5);  // Life * 0.1s.
-            dlight.WriteByte(10);   // Decay per 0.1s.
-        dlight.End();
+            // Lightning bolt from the sky down to the target.
+            NetworkMessage bolt(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, hitPos);
+                bolt.WriteByte(TE_LIGHTNING);
+                bolt.WriteCoord(skyPos.x);
+                bolt.WriteCoord(skyPos.y);
+                bolt.WriteCoord(skyPos.z);
+                bolt.WriteCoord(hitPos.x);
+                bolt.WriteCoord(hitPos.y);
+                bolt.WriteCoord(hitPos.z);
+                bolt.WriteByte(10);   // Life * 0.1s.
+                bolt.WriteByte(50);   // Width.
+                bolt.WriteByte(80);  // Amplitude.
+                bolt.WriteShort(sprIdx);
+            bolt.End();
 
-        m_bLightningActive = true; // Enable recursion guard.
+            // Dynamic light at the impact point.
+            NetworkMessage dlight(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, hitPos);
+                dlight.WriteByte(TE_DLIGHT);
+                dlight.WriteCoord(hitPos.x);
+                dlight.WriteCoord(hitPos.y);
+                dlight.WriteCoord(hitPos.z);
+                dlight.WriteByte(int(m_flLightningStrikeRadius / 2)); // Radius.
+                dlight.WriteByte(0); // R
+                dlight.WriteByte(150); // G
+                dlight.WriteByte(255); // B
+                dlight.WriteByte(5);  // Life * 0.1s.
+                dlight.WriteByte(10);   // Decay per 0.1s.
+            dlight.End();
 
-        // Radius damage.
-        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, strikeDmg, m_flLightningStrikeRadius, CLASS_PLAYER, DMG_GENERIC | DMG_SHOCK);
-        
-        // Play explosion sound.
-        g_SoundSystem.EmitSound(pAttacker.edict(), CHAN_ITEM, strShockLightningSound, 1.0f, ATTN_NORM);
+            m_bLightningActive = true; // Enable recursion guard.
 
-        m_bLightningActive = false; // Disable recursion guard.
+            // Radius damage.
+            g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, strikeDmg, m_flLightningStrikeRadius, CLASS_PLAYER, DMG_GENERIC | DMG_SHOCK);
+            
+            // Play explosion sound.
+            g_SoundSystem.EmitSound(pAttacker.edict(), CHAN_ITEM, strShockLightningSound, 1.0f, ATTN_NORM);
+
+            m_bLightningActive = false; // Disable recursion guard.
+
+        }
     }
 }
 
