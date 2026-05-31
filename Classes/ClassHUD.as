@@ -290,10 +290,16 @@ void UpdateClassResource() // Update the class resource HUD display for all play
 
                         if(currentItem !is null && pPlayer.m_hActiveItem.GetEntity() is currentItem)
                             hasShockRifleEquipped = true;
-                        resourceInfo += (hasShockRifleEquipped ? "[Equipped]" : "") + "\n";
+                            resourceInfo += (hasShockRifleEquipped ? "[Equipped]" : "") + "\n";
 
                         if(hasShockRifleEquipped)
+                        {
                             resourceInfo += "[Shockrifle DMG: " + formatFloat(shockData.GetScaledDamage() * 100, "f", 0, 2) + "%]\n";
+                        
+                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_SHOCK_LIGHTNING) > 0)
+                            resourceInfo += "[Lightning DMG: " + formatFloat(shockData.GetScaledLightningDamage() * 100, "f", 0, 2) + "%]\n";
+
+                        }
                     }
                 }
                 break;
