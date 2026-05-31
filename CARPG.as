@@ -841,8 +841,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                                 float damageMultiplier = shockRifle.GetScaledDamage();
                                 info.flDamage *= damageMultiplier; // Scaling damage multiplier for shocktroopers.
 
-                                info.bitsDamageType |= DMG_BLAST; // Add blast damage type.
-                                info.bitsDamageType |= DMG_ALWAYSGIB; // Add always gib for feelgood effect.
+                                //info.bitsDamageType |= DMG_BLAST; // Add blast damage type.
 
                                 // Discharge chain lightning from the primary hit.
                                 shockRifle.ApplyLightningStrike(pAttacker, victim, info.flDamage);
