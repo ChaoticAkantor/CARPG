@@ -24,15 +24,15 @@ float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
     if (ammoName == "357")      return 2.00f;
     if (ammoName == "buckshot") return 0.50f;
     if (ammoName == "556")      return 1.50f;
-    if (ammoName == "bolts")    return 2.50f;
+    if (ammoName == "bolts")    return 2.00f;
     //if (ammoName == "762")      return 2.50f;
-    if (ammoName == "m40a1")    return 2.50f;
-    if (ammoName == "uranium")  return 2.00f;
-    if (ammoName == "rockets")  return 3.00f;
-    if (ammoName == "sporeclip")  return 3.00f;
-    if (ammoName == "ARgrenades") return 3.00f;
+    if (ammoName == "m40a1")    return 2.00f;
+    if (ammoName == "uranium")  return 1.50f;
+    if (ammoName == "rockets")  return 2.00f;
+    if (ammoName == "sporeclip")  return 2.00f;
+    if (ammoName == "ARgrenades") return 2.00f;
     if (ammoName == "shock charges") return 2.00f;
-    if (ammoName == "Hornets") return 1.50f;
+    if (ammoName == "Hornets") return 2.00f;
     return 1.0f; // Default multiplier if ammo type not found.
 }
 
@@ -48,10 +48,10 @@ float GetDragonsBreathAmmoCostMultiplier(const string& in ammoName)
     if (ammoName == "m40a1")    return 3.0f;
     if (ammoName == "uranium")  return 3.0f;
     if (ammoName == "rockets")  return 5.0f;
-    if (ammoName == "sporeclip")   return 3.0f;
+    if (ammoName == "sporeclip")   return 5.0f;
     if (ammoName == "ARgrenades") return 5.0f;
-    if (ammoName == "shock charges") return 5.0f;
-    if (ammoName == "Hornets") return 5.0f;
+    if (ammoName == "shock charges") return 4.0f;
+    if (ammoName == "Hornets") return 2.0f;
     return 1.0f; // Default cost multiplier if ammo type not found.
 }
 
@@ -60,21 +60,21 @@ class DragonsBreathData
     // Dragons breath shots will place a DoT effect at impact location PER shot, with no limit, that stack over each other.
 
     // Fire Damage over Time.
-    private float m_flAbilityMax = 1.0f; // Max activation charges.
-    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge all charges from empty.
+    private float m_flAbilityMax = 100.0f; // Max activation charges.
+    private float m_flAbilityCostPerActivation = 100.0f; // Amount of charge to use per activation (Filling rounds). Should match max for single activation only.
+    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge ability.
     private float m_flDragonsBreathExplosionDamageBase = 1.0f; // Base damage for explosion on impact.
     private int m_iDragonsBreathFireTicks = 3; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
     private float m_flDragonsBreathRadius = 25.0f * 16; // Radius of fire damage DoT for Dragons Breath.
-    private float m_flEnergyCostPerActivation = 1.0f; // Amount of energy to use per activation (Filling rounds).
 
     // Ammo pool.
     private int m_iDragonsBreathPoolBase = 30.0f; // Base max ammo pool for Dragons Breath.
-    private float m_flRoundsFillPercentage = 50.0f; // Percentage of max ammo pool to fill per activation.
+    private float m_flRoundsFillPercentage = 100.0f; // Percentage of max ammo pool to fill per activation.
     private float m_flRoundsInPool = 0.0f; // Used to store rounds currently in pool.
 
     // Timers.
-    private float m_flAbilityCharge = 0.0f;
+    private float m_flAbilityCharge = 0.0f; // Used to store current ability charge.
     private float m_flLastToggleTime = 0.0f; // Used for last toggle time.
     private float m_flToggleCooldown = 0.10f; // Used to delay toggling to prevent spam.
     private float m_flCurrentClip = 0.0f; // Used to track current clip.
@@ -98,7 +98,7 @@ class DragonsBreathData
     bool HasRounds() { return m_flRoundsInPool > 0; }
     bool HasPendingProcs() { return m_iPendingProcs > 0; }
     float GetRounds() { return m_flRoundsInPool; }
-    float GetEnergyCost() { return m_flEnergyCostPerActivation; }
+    float GetAbilityCost() { return m_flAbilityCostPerActivation; }
     float GetPerShotCost() { return GetDragonsBreathAmmoCostMultiplier(m_strCurrentAmmoName); }
     void ResetRounds() { m_flRoundsInPool = 0; }
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -218,7 +218,7 @@ class DragonsBreathData
 
     float GetFireInterval() { return m_flDragonsBreathFireInterval; } // Get fire DoT tick interval.
 
-    float GetRadius() { return m_flDragonsBreathRadius; } // Get fire DoT radius.
+    float GetFireRadius() { return m_flDragonsBreathRadius; } // Get fire DoT radius.
 
     float GetAmmoRefillPercent() { return m_flRoundsFillPercentage; } // Get refill percentage.
 
@@ -244,12 +244,12 @@ class DragonsBreathData
             fireAreaMsg.WriteCoord(impactPoint.x);
             fireAreaMsg.WriteCoord(impactPoint.y);
             fireAreaMsg.WriteCoord(impactPoint.z);
-            fireAreaMsg.WriteByte(uint8(GetRadius() * 0.1)); // Radius units * 10.
+            fireAreaMsg.WriteByte(uint8(GetFireRadius() * 0.1)); // Radius units * 10.
             fireAreaMsg.WriteByte(255); // Red.
             fireAreaMsg.WriteByte(100); // Green.
             fireAreaMsg.WriteByte(15); // Blue.
-            fireAreaMsg.WriteByte(uint8(GetScaledFireDuration() * 10)); // Life * 0.1s.
-            fireAreaMsg.WriteByte(uint8(GetScaledFireDuration() * 10)); // Fade speed * 1s.
+            fireAreaMsg.WriteByte(uint8(1)); // Life * 0.1s.
+            fireAreaMsg.WriteByte(uint8(1)); // Fade speed * 1s.
             fireAreaMsg.End();
 
         ApplyDragonsBreathFire(pPlayer, impactPoint); // Apply damage over time fire at location.
@@ -318,10 +318,10 @@ class DragonsBreathData
             return;
         }
 
-        float energyCost = GetEnergyCost();
-        if(m_flAbilityCharge < energyCost)
+        float abilityCost = GetAbilityCost();
+        if(m_flAbilityCharge < abilityCost)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + energyCost + " Charge!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + abilityCost + " Charge!\n");
             return;
         }
 
@@ -331,7 +331,7 @@ class DragonsBreathData
         m_flRoundsInPool = Math.min(m_flRoundsInPool + roundsToAdd, float(GetMaxRounds()));
         int actualAdded = int(m_flRoundsInPool) - oldRoundsInPool;
 
-        m_flAbilityCharge = Math.max(0.0f, m_flAbilityCharge - energyCost); // Deduct energy cost.
+        m_flAbilityCharge = Math.max(0.0f, m_flAbilityCharge - abilityCost); // Deduct ability cost.
 
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strDragonsBreathActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "+" + actualAdded + " Dragon's Breath Rounds\n");
@@ -475,7 +475,7 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
         pPlayer.pev,
         pPlayer.pev,
         dragonsBreath.GetScaledFireDamage(), // Damage per tick.
-        dragonsBreath.GetRadius(), // Radius.
+        dragonsBreath.GetFireRadius(), // Radius.
         CLASS_PLAYER, // Will not damage player or allies.
         DMG_BURN | DMG_SLOWBURN // Damage type (Fire for DoT and stacking).
     );
@@ -498,8 +498,8 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     msgFireArea.WriteCoord(endPoint.y);
     msgFireArea.WriteCoord(endPoint.z);
     msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
-    msgFireArea.WriteByte(2);  // Count - more sprites for a denser burst.
-    msgFireArea.WriteByte(3);   // Life in 0.1's.
+    msgFireArea.WriteByte(1);  // Count - more sprites for a denser burst.
+    msgFireArea.WriteByte(2);   // Life in 0.1's.
     msgFireArea.WriteByte(1);   // Scale in 0.1's.
     msgFireArea.WriteByte(25);  // Velocity along vector in 10's.
     msgFireArea.WriteByte(50);  // Random velocity in 10's - higher for more spread.
@@ -513,7 +513,7 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     fireRadiusMsg.WriteCoord(impactPoint.z);
     fireRadiusMsg.WriteCoord(impactPoint.x);
     fireRadiusMsg.WriteCoord(impactPoint.y);
-    fireRadiusMsg.WriteCoord(impactPoint.z + dragonsBreath.GetRadius()); // Height.
+    fireRadiusMsg.WriteCoord(impactPoint.z + dragonsBreath.GetFireRadius()); // Height.
     fireRadiusMsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite)); // Again borrowing heal beam sprite, for now.
     fireRadiusMsg.WriteByte(0); // Starting frame.
     fireRadiusMsg.WriteByte(0); // Frame rate (no effect).
@@ -526,6 +526,20 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     fireRadiusMsg.WriteByte(30); // Brightness.
     fireRadiusMsg.WriteByte(0); // Scroll speed (no effect).
     fireRadiusMsg.End();
+
+    // Apply dynamic light for flash effect each tick.
+    NetworkMessage firetickAreaMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
+    firetickAreaMsg.WriteByte(TE_DLIGHT);
+    firetickAreaMsg.WriteCoord(impactPoint.x);
+    firetickAreaMsg.WriteCoord(impactPoint.y);
+    firetickAreaMsg.WriteCoord(impactPoint.z);
+    firetickAreaMsg.WriteByte(uint8(dragonsBreath.GetFireRadius() * 0.1)); // Radius units * 10.
+    firetickAreaMsg.WriteByte(255); // Red.
+    firetickAreaMsg.WriteByte(100); // Green.
+    firetickAreaMsg.WriteByte(15); // Blue.
+    firetickAreaMsg.WriteByte(uint8(2)); // Life * 0.1s.
+    firetickAreaMsg.WriteByte(uint8(2)); // Fade speed * 1s.
+    firetickAreaMsg.End();
 }
 
 void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
@@ -550,7 +564,7 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
         pPlayer.pev,
         pPlayer.pev,
         dragonsBreath.GetScaledExplosionDamage(), // Damage per explosion (scaled by level and ammo type).
-        dragonsBreath.GetRadius(), // Radius.
+        dragonsBreath.GetFireRadius(), // Radius.
         CLASS_PLAYER, // Will not damage player or allies.
         DMG_BURN | DMG_SLOWBURN | DMG_ALWAYSGIB // Damage type.
     );
