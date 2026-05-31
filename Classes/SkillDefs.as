@@ -131,14 +131,14 @@ const float SKILL_CLOAKER_CLOAKDURATION = 0.20f; // Cloak duration increase per 
 
 
 // Shocktrooper.
-const float SKILL_SHOCK_CAPACITY         = 0.20f; // Shockrifle capacity per level.
-    const int SKILL_SHOCK_CAPACITY_LVL      = 5;
+const float SKILL_SHOCK_CAPACITY = 0.20f; // Shockrifle capacity per level.
+    const int SKILL_SHOCK_CAPACITY_LVL = 5;
 
-const float SKILL_SHOCK_DAMAGE           = 0.20f; // Shockrifle damage per level.
-    const int SKILL_SHOCK_DAMAGE_LVL        = 5;
+const float SKILL_SHOCK_DAMAGE = 0.20f; // Shockrifle damage per level.
+    const int SKILL_SHOCK_DAMAGE_LVL = 5;
 
-const float SKILL_SHOCK_LIGHTNING        = 0.20f; // Shockrifle damage % as area lightning damage per level.
-    const int SKILL_SHOCK_LIGHTNING_LVL     = 5;
+const float SKILL_SHOCK_LIGHTNING = 0.04f; // Shockrifle damage % as area lightning damage per level.
+    const int SKILL_SHOCK_LIGHTNING_LVL = 5;
 
 
 // Vanquisher.
@@ -148,7 +148,7 @@ const float SKILL_VANQUISHER_AMMOPOOL    = 0.60f; // Ammo pool increase per leve
 const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Flat increase of added explosive damage per level.
     const int SKILL_VANQUISHER_EXPLOSIVEDAMAGE_LVL = 5;
 
-const float SKILL_VANQUISHER_FIREDAMAGE = 0.04f; // Percentage of explosion converted to extra fire damage per level.
+const float SKILL_VANQUISHER_FIREDAMAGE = 0.05f; // Percentage of explosion converted to extra fire damage per level.
     const int SKILL_VANQUISHER_FIREDAMAGE_LVL = 5;
 
 const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage ticks per level.
@@ -332,6 +332,9 @@ void InitializeSkillDefinitions()
     // Shocktrooper.
     @g_SkillDefs[int(SkillID::SKILL_SHOCK_CAPACITY)] = SkillDefinition("Shockrifle: Shock Capacity", "+" + formatFloat(SKILL_SHOCK_CAPACITY * 100.0f, "f", 0, 2) + "% shockrifle capacity.", SKILL_SHOCK_CAPACITY_LVL, SKILL_SHOCK_CAPACITY * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_SHOCK_DAMAGE)] = SkillDefinition("Shockrifle: Shock Damage", "+" + formatFloat(SKILL_SHOCK_DAMAGE * 100.0f, "f", 0, 2) + "% shockrifle damage.", SKILL_SHOCK_DAMAGE_LVL, SKILL_SHOCK_DAMAGE * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_LIGHTNING)] = SkillDefinition("Shockrifle: Lightning Damage", "+" + formatFloat(SKILL_SHOCK_LIGHTNING * 100.0f, "f", 0, 2) + "% shockrifle damage as lightning damage.", SKILL_SHOCK_LIGHTNING_LVL, SKILL_SHOCK_LIGHTNING * 100.0f, "%");
+
+    // Cloaker.
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Cloak: Damage Bonus", "+" + formatFloat(SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "f", 0, 2) + "% damage bonus.", SKILL_CLOAKER_CLOAKDAMAGE_LVL, SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+" + formatFloat(SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "f", 0, 2) + "% nova damage.", SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL, SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+" + formatFloat(SKILL_CLOAKER_CLOAKDURATION * 100.0f, "f", 0, 2) + "% cloak duration.", SKILL_CLOAKER_CLOAKDURATION_LVL, SKILL_CLOAKER_CLOAKDURATION * 100.0f, "%");
