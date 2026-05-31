@@ -764,8 +764,6 @@ class PlayerData
                 case PlayerClass::CLASS_SWARMER:
                     break;
             }
-
-            GiveClassWeapons(pPlayer, m_CurrentClass);
         }
     }
     
