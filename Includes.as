@@ -26,9 +26,6 @@
 #include "Classes/Cloaker/Cloak"
 #include "Classes/Vanquisher/DragonsBreath"
 
-// Weapon Giver.
-#include "Classes/GiveWeapons"
-
 // Gameplay modules/Skills.
 #include "Difficulty"
 #include "AmmoRegen"
