@@ -34,13 +34,13 @@ const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP pe
 const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
     const int SKILL_MINIONPOINT_LVL = 3; // More than 3 is excessive. Changing this is not recommended.
 
-const float SKILL_MINIONHP = 0.60f; // HP percent increase for minions per level.
+const float SKILL_MINIONHP = 0.50f; // HP percent increase for minions per level.
     const int SKILL_MINIONHP_LVL = 5;
 
-const float SKILL_MINIONREGEN = 0.001f; // Max HP regen percent for minions per level.
+const float SKILL_MINIONREGEN = 0.0015f; // Max HP regen percent for minions per level.
     const int SKILL_MINIONREGEN_LVL = 5;
 
-const float SKILL_MINIONDAMAGE = 0.80f; // Damage percent increase for minions per level.
+const float SKILL_MINIONDAMAGE = 0.50f; // Damage percent increase for minions per level.
     const int SKILL_MINIONDAMAGE_LVL = 5;
 
 
@@ -82,13 +82,13 @@ const float SKILL_BERSERKER_DURATION = 0.20f; // Percent increase to Bloodlust d
 
 
 // Engineer.
-const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.60f; // Sentry damage per level.
+const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.30f; // Sentry damage per level.
     const int SKILL_ENGINEER_SENTRYDAMAGE_LVL = 5;
 
 const float SKILL_ENGINEER_MINIHEALAURA  = 1.0f; // Mini-heal Aura % max HP heal per level.
     const int SKILL_ENGINEER_MINIHEALAURA_LVL = 5;
 
-const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.10f;  // % of damage as area explosive damage per level.
+const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.20f;  // % of damage as area explosive damage per level.
     const int SKILL_ENGINEER_EXPLOSIVEAMMO_LVL = 5;
 
 const float SKILL_ENGINEER_SENTRYDURATION = 0.20f; // Sentry duration increase per level.

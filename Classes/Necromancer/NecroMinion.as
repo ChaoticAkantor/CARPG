@@ -110,7 +110,7 @@ const array<float> NECRO_HP_MODIFIERS =
 {
     2.00,  // Zombie.
     1.50,  // Skeleton.
-    2.40   // Abomination (Gonome).
+    2.50   // Abomination (Gonome).
 };
 
 const array<float> NECRO_ANIMATION_SPEEDS = 
@@ -439,7 +439,7 @@ class NecroMinionData
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1";
         keys["friendly"] = "1";
-        keys["spawnflags"] = "16384";
+        keys["spawnflags"] = "8388608"; // Was 16384
         keys["is_player_ally"] = "1";
         keys["body"] = string(Math.RandomLong(1, 11)); // Random bodygroup for zombies.
         //keys["skin"] = string(randomBody); // Random skin for zombies.

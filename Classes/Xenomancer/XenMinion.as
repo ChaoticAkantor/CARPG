@@ -206,11 +206,11 @@ enum XenType
 
 const array<float> XEN_HP_MODIFIERS = 
 {
-    1.80,  // Houndeye.
-    1.60,  // Pit Drone.
+    2.00,  // Houndeye.
+    1.50,  // Pit Drone.
     2.00,  // Bullsquid.
     1.50,  // Shocktrooper.
-    3.00   // Baby Gargantua.
+    2.50   // Baby Gargantua.
 };
 
 const array<float> XEN_ANIMATION_SPEEDS = 
@@ -515,7 +515,7 @@ class XenMinionData
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1";
         keys["friendly"] = "1";
-        keys["spawnflags"] = "16384"; // No dyn collision. No corpse fade 512.
+        keys["spawnflags"] = "8388608";
         keys["is_player_ally"] = "1";
         keys["is_not_revivable"] = "1";
 

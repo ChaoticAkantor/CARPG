@@ -45,9 +45,9 @@ enum MinionType // Minion gun type. Not all are supported.
 
 const array<float> ROBO_HP_MODIFIERS =
 {
-    0.75,  // Shotgun.
-    1.00,  // MP5.
-    1.25   // M16.
+    1.00,  // Shotgun.
+    1.25,  // MP5.
+    1.50   // M16.
 };
 
 const array<float> ROBO_DMG_MODIFIERS = 
@@ -97,7 +97,7 @@ class MinionData
     // Monster variables.
     private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
     private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
-    private float m_flBaseHealth = 150.0; // Base health of Robogrunts.
+    private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
 
@@ -330,7 +330,7 @@ class MinionData
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1";
         keys["friendly"] = "1";
-        keys["spawnflags"] = "16384";
+        keys["spawnflags"] = "8388608";
         keys["is_player_ally"] = "1";
         keys["skin"] = "2";
 
@@ -347,6 +347,8 @@ class MinionData
             @pRoboMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
             //pRoboMinion.SetClassification(pPlayer.Classify()); // Set the same classification as the player to share ally tables.
             //pRoboMinion.SetPlayerAllyDirect (true); // Set directly as ally of owner.
+
+            // No collision, add an eflag projectile?
 
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
 
