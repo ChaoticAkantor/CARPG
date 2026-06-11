@@ -27,7 +27,7 @@
 #include "Classes/Vanquisher/DragonsBreath"
 
 // Gameplay modules/Skills.
-#include "Difficulty"
+#include "DamageScaling"
 #include "AmmoRegen"
 #include "Recovery"
 #include "DebugMenu"
