@@ -80,10 +80,11 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         current = healingAura.GetAbilityCharge();
                         maximum = healingAura.GetAbilityMax();
                         
-                        resourceInfo += "[Healing: " + healingAura.GetScaledHealAmount() + "% HP] ";
+                        resourceInfo += "[Heal: " + formatFloat(healingAura.GetScaledHealAmount(), "f", 0, 2) + "%] ";
+                        resourceInfo += "[Heal AP: " + formatFloat(healingAura.GetHealAPTrueAmount(healingAura.GetScaledHealAmount(), pPlayer.pev.max_health), "f", 0, 2) + "] \n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON) > 0)
-                            resourceInfo += "[Poison: " + int(healingAura.GetPoisonDamageAmount()) + "% HP]\n";
+                            resourceInfo += "[Poison: " + formatFloat(healingAura.GetPoisonDamageAmount(), "f", 0, 2) + " DMG]\n";
 
                         
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_REVIVE) > 0)
