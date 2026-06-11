@@ -174,6 +174,6 @@ final class ForceDifficulty
 				g_EngineFuncs.ServerCommand( strStrings );
 		}
 
-		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Difficulty Scaling: " + formatFloat(flBonusPercentage, "", 0, 1) + "%% Damage Bonus (" + iCurrentPlayers + " players)]\n");
+		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Difficulty Scaling: " + formatFloat(flBonusPercentage, "", 0, 1) + "%% Player Damage (Players: " + iCurrentPlayers + ")]\n");
 	}
 }
