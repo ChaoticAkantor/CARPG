@@ -72,7 +72,7 @@ void InitializeRecovery() // Called in PluginInit().
             if(multipliers !is null)
             {
                 g_CurrentRecoveryMapMultiplier = multipliers.hpRegenTickMultiplier;
-                g_RecoveryPrefixMessage = "=== CARPG Recovery: ===\\nMap prefix'" + prefixKeys[i] + "' detected.\nHP Regen: " + multipliers.hpRegenTickMultiplier + "x | AP Regen: " + multipliers.apRegenTickMultiplier + "x | Hurt Delay: " + multipliers.hurtDelayMultiplier + "x";
+                g_RecoveryPrefixMessage = "=== CARPG Recovery Balancing: ===\nMap prefix'" + prefixKeys[i] + "' detected.\nHP Regen: " + multipliers.hpRegenTickMultiplier + "x slower | AP Regen: " + multipliers.apRegenTickMultiplier + "x slower | Hurt Delay: " + multipliers.hurtDelayMultiplier + "x slower";
                 g_Game.AlertMessage(at_console, g_RecoveryPrefixMessage + "\n\n");
             }
             break;
