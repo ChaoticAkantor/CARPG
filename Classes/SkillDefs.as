@@ -37,7 +37,7 @@ const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
 const float SKILL_MINIONHP = 0.50f; // HP percent increase for minions per level.
     const int SKILL_MINIONHP_LVL = 5;
 
-const float SKILL_MINIONREGEN = 0.0015f; // Max HP regen percent for minions per level.
+const float SKILL_MINIONREGEN = 0.002f; // Max HP regen percent for minions per level.
     const int SKILL_MINIONREGEN_LVL = 5;
 
 const float SKILL_MINIONDAMAGE = 0.50f; // Damage percent increase for minions per level.
