@@ -40,15 +40,15 @@ const float SKILL_MINIONHP = 0.60f; // HP percent increase for minions per level
 const float SKILL_MINIONREGEN = 0.001f; // Max HP regen percent for minions per level.
     const int SKILL_MINIONREGEN_LVL = 5;
 
-const float SKILL_MINIONDAMAGE = 0.40f; // Damage percent increase for minions per level.
+const float SKILL_MINIONDAMAGE = 0.80f; // Damage percent increase for minions per level.
     const int SKILL_MINIONDAMAGE_LVL = 5;
 
 
 // Medic.
-const float SKILL_MEDIC_HEALPERCENT = 2.00f;  // Increase healing (% max health) per level.
+const float SKILL_MEDIC_HEALPERCENT = 1.00f;  // Increase healing (% max health) per level.
     const int SKILL_MEDIC_HEALPERCENT_LVL = 5;
 
-const float SKILL_MEDIC_POISON = 3.00f; // Flat poison damage per level.
+const float SKILL_MEDIC_POISON = 2.00f; // Flat poison damage per level.
     const int SKILL_MEDIC_POISON_LVL = 5;
 
 const float SKILL_MEDIC_REVIVE = 6.00f;   // Reduce revive cooldown in seconds per level.
