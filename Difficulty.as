@@ -122,23 +122,36 @@ final class ForceDifficulty
 	};
 	
 
+	private int GetConnectedPlayerCount()
+	{
+		int iCount = 0;
+		for(int i = 1; i <= g_Engine.maxClients; ++i)
+		{
+			CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+			if(pPlayer !is null && pPlayer.IsConnected())
+				++iCount;
+		}
+		return iCount;
+	}
+
 	void ApplyDifficultySettings()
 	{   
-		int iCurrentPlayers = g_Engine.maxClients; // Current amount of connected players.
+		int iCurrentPlayers = GetConnectedPlayerCount(); // Current amount of connected players.
 		int iMinPlayers = 1; // Player minimum for full damage increase.
 		int iMaxPlayers = 4; // Player limit to return to normal values.
 		float flDamageBonus = 1.50f; // Total damage bonus at minimum players.
-		float flTotal = 0.0f; // Total damage bonus after scaling.
+		float flBonusPercentage = 0.0f; // Bonus percentage after scaling.
 
 		int iClampedPlayers = Math.min(iCurrentPlayers, iMaxPlayers); // Clamp to maximum.
 		float flBonusScale = Math.max(0.0f, 1.0f - float(iClampedPlayers - iMinPlayers) / float(iMaxPlayers - iMinPlayers)); // Scale bonus from full at minimum players to none at maximum players.
+		flBonusPercentage = (flDamageBonus * flBonusScale) * 100.0f; // Convert to percentage for display.
 
 		// Player Damage (Bonus is scaled back with number of players).
 		int iMax = weapon_damage_values.size();
 		for( int i = 0; i < iMax; ++i )
 		{
 			float flValue = weapon_damage_values[i];
-			flTotal = flValue * (1.0f + (flDamageBonus * flBonusScale));
+			float flTotal = flValue * (1.0f + (flDamageBonus * flBonusScale));
 			string strStrings = weapon_damage_strings[i] + " " + flTotal + "\n";
 				g_EngineFuncs.ServerCommand( strStrings );
 		}
@@ -161,6 +174,6 @@ final class ForceDifficulty
 				g_EngineFuncs.ServerCommand( strStrings );
 		}
 
-		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Difficulty Scaling: " + formatFloat(flTotal, "", 0, 2) + "%% Damage Bonus]\n");
+		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Difficulty Scaling: " + formatFloat(flBonusPercentage, "", 0, 1) + "%% Damage Bonus (" + iCurrentPlayers + " players)]\n");
 	}
 }
