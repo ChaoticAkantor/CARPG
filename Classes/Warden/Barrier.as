@@ -377,8 +377,6 @@ class BarrierData
         if(target is null)
             return;
 
-        // Add glow shell effect to entity taking damage later, with timeout to remove it. *TO DO
-
         // Also add dynamic light effect to entity.
         NetworkMessage glowreflectMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
             glowreflectMsg.WriteByte(TE_DLIGHT);
@@ -389,7 +387,7 @@ class BarrierData
             glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.x)); // Red.
             glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.y)); // Green.
             glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.z)); // Blue.
-            glowreflectMsg.WriteByte(3); // Life in 0.1s.
+            glowreflectMsg.WriteByte(2); // Life in 0.1s.
             glowreflectMsg.WriteByte(2); // Fade speed.
             glowreflectMsg.End();
 
@@ -405,7 +403,7 @@ class BarrierData
             snowmsg.WriteCoord(centerPos.y);
             snowmsg.WriteCoord(centerPos.z);
             snowmsg.WriteShort(g_EngineFuncs.ModelIndex(strBarrierReflectSprite));
-            snowmsg.WriteByte(5);   // Count.
+            snowmsg.WriteByte(3);   // Count.
             snowmsg.WriteByte(1);   // Life in 0.1's.
             snowmsg.WriteByte(2);   // Scale in 0.1's.
             snowmsg.WriteByte(25);  // Velocity along vector in 10's.
