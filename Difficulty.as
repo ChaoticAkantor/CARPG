@@ -18,33 +18,32 @@ final class ForceDifficulty
 {
 	private array<float> weapon_damage_values = 
 	{
-		// Currently 50% damage increase for all weapons.
-		25.0, //Medkit - Default 10 - Amount of charge used and amount healed per use.
-		18.0, //Crowbar - Default 15.
-		28.0, //Wrench - Default 22.
-		45.0, //Grapple (Barnacle) - Default 40.
-		15.0, //Handgun (9mm Handgun) - Default 12.
-		80.0, //357 (Deagle is 2/3 of this) - Default 66.
-		15.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
-		15.0, //MP5 (9mm AR) - Default 8.
-		13.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
-		80.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
-		18.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
-		150.0, //M203 (ARgrenades) - Default 100.
-		200.0, //RPG - Default 150.
-		25.0, //Gauss (No charge) - Default 19.
-		250.0, //Guass (Secondary, Max Charge) - Default 190.
-		15.0, //Gluon (Egon) Gun - Default 12.
-		18.0, //Hornet Gun - Default 12.
-		150.0, //Hand Grenade - Default 100.
-		200.0, //Satchel - Default 160.
-		200.0, //Tripmine - Default 150.
-		120.0, //762 (Sniper Rifle) - Default 110.
+		10.0, //Medkit - Default 10 - Amount of charge used and amount healed per use.
+		15.0, //Crowbar - Default 15.
+		22.0, //Wrench - Default 22.
+		40.0, //Grapple (Barnacle) - Default 40.
+		12.0, //Handgun (9mm Handgun) - Default 12.
+		66.0, //357 (Deagle is 2/3 of this) - Default 66.
+		10.0, //Uzi (Also Akimbo, Gold do +1 extra damage) - Default 10.
+		8.0, //MP5 (9mm AR) - Default 8.
+		10.0, //Buckshot (7 pellets primary, 6 pellets secondary) - Default 10.
+		60.0, //Crossbow (Alt weapon mode is explosive on impact) - Default 60.
+		12.0, //556 (M16/SAW/Minigun, also effects enemies damage!) - Default 12.
+		100.0, //M203 (ARgrenades) - Default 100.
+		150.0, //RPG - Default 150.
+		19.0, //Gauss (No charge) - Default 19.
+		190.0, //Guass (Secondary, Max Charge) - Default 190.
+		12.0, //Gluon (Egon) Gun - Default 12.
+		12.0, //Hornet Gun - Default 12.
+		100.0, //Hand Grenade - Default 100.
+		160.0, //Satchel - Default 160.
+		150.0, //Tripmine - Default 150.
+		110.0, //762 (Sniper Rifle) - Default 110.
 		100.0, //Spore Launcher - Default 100.
-		300.0, //Displacer (Primary) - Default 250.
+		250.0, //Displacer (Primary) - Default 250.
 		300.0, //Displacer Radius - Default 300.
-		20.0, //Shockrifle (Primary) - Default 15.
-		3.0, //Shockrifle (Beam) - Default 2.
+		15.0, //Shockrifle (Primary) - Default 15.
+		2.0, //Shockrifle (Beam) - Default 2.
 		350.0, //Shockrifle Touch damage (on self on detonate?) - Default 350.
 		150.0 //Shockroach Splash damage (on self when detonate?) - Default 150.
 	};
@@ -80,232 +79,6 @@ final class ForceDifficulty
 		"sk_plr_shockrifle_beam",
 		"sk_shockroach_dmg_xpl_touch",
 		"sk_shockroach_dmg_xpl_splash"
-	};
-
-
-	private array<float> monster_damage_values = 
-	{
-		150.0, // sk_agrunt_health
-		15.0, // sk_agrunt_dmg_punch - Default 15
-		256.0, // sk_agrunt_melee_engage_distance
-		20.0, // sk_agrunt_berserker_dmg_punch - Default 20
-		500.0, // sk_apache_health
-		50.0, // sk_barnacle_health
-		15.0, // sk_barnacle_bite - Default 15
-		65.0, // sk_barney_health
-		150.0, // sk_bullsquid_health - Default 110
-		10.0, // sk_bullsquid_dmg_bite - Default 10
-		25.0, // sk_bullsquid_dmg_whip - Default 25
-		10.0, // sk_bullsquid_dmg_spit - Default 10
-		1.0, // sk_bigmomma_health_factor
-		50.0, // sk_bigmomma_dmg_slash - Default 50
-		100.0, // sk_bigmomma_dmg_blast - Default 100
-		260.0, // sk_bigmomma_radius_blast
-		1000.0, // sk_gargantua_health
-		30.0, // sk_gargantua_dmg_slash - Default 30
-		8.0, // sk_gargantua_dmg_fire - Default 4
-		100.0, // sk_gargantua_dmg_stomp - Default 100
-		50.0, // sk_hassassin_health
-		20.0, // sk_headcrab_health - Default 20
-		30.0, // sk_headcrab_dmg_bite - Default 10
-		100.0, // sk_hgrunt_health
-		15.0, // sk_hgrunt_kick - Default 15?
-		500.0, // sk_hgrunt_gspeed
-		100.0, // sk_houndeye_health - Default 50
-		10.0, // sk_houndeye_dmg_blast - Default 10
-		80.0, // sk_islave_health
-		10.0, // sk_islave_dmg_claw - Default 10
-		10.0, // sk_islave_dmg_clawrake - Default 10
-		10.0, // sk_islave_dmg_zap - Default 10
-		350.0, // sk_ichthyosaur_health
-		30.0, // sk_ichthyosaur_shake
-		3.0, // sk_leech_health
-		5.0, // sk_leech_dmg_bite
-		100.0, // sk_controller_health
-		5.0, // sk_controller_dmgzap - Default 5
-		900.0, // sk_controller_speedball
-		5.0, // sk_controller_dmgball - Default 5
-		900.0, // sk_nihilanth_health
-		30.0, // sk_nihilanth_zap
-		50.0, // sk_scientist_health
-		2.0, // sk_snark_health
-		10.0, // sk_snark_dmg_bite - Default 5 or 10?
-		5.0, // sk_snark_dmg_pop - Default 5?
-		150.0, // sk_zombie_health
-		20.0, // sk_zombie_dmg_one_slash - Default 10
-		30.0, // sk_zombie_dmg_both_slash - Default 20
-		200.0, // sk_turret_health
-		80.0, // sk_miniturret_health
-		80.0, // sk_sentry_health
-		600.0, // sk_babygargantua_health
-		30.0, // sk_babygargantua_dmg_slash
-		4.0, // sk_babygargantua_dmg_fire - Default 4?
-		50.0, // sk_babygargantua_dmg_stomp - Default 50?
-		200.0, // sk_hwgrunt_health
-		100.0, // sk_rgrunt_explode
-		50.0, // sk_massassin_sniper
-		65.0, // sk_otis_health
-		150.0, // sk_zombie_barney_health
-		20.0, // sk_zombie_barney_dmg_one_slash - Default 10
-		30.0, // sk_zombie_barney_dmg_both_slash - Default 20
-		180.0, // sk_zombie_soldier_health
-		25.0, // sk_zombie_soldier_dmg_one_slash - Default 10
-		35.0, // sk_zombie_soldier_dmg_both_slash - Default 20
-		250.0, // sk_gonome_health - Default 200.0
-		10.0, // sk_gonome_dmg_one_slash - Default 5
-		10.0, // sk_gonome_dmg_guts - Default 5
-		10.0, // sk_gonome_dmg_one_bite - Default 5
-		100.0, // sk_pitdrone_health - Default 50
-		10.0, // sk_pitdrone_dmg_bite - Default 10
-		10.0, // sk_pitdrone_dmg_whip - Default 10
-		10.0, // sk_pitdrone_dmg_spit - Default 10
-		200.0, // sk_shocktrooper_health
-		40.0, // sk_shocktrooper_kick - Default 12
-		12.0, // sk_shocktrooper_maxcharge
-		800.0, // sk_tor_health
-		30.0, // sk_tor_punch
-		3.0, // sk_tor_energybeam
-		15.0, // sk_tor_sonicblast
-		500.0, // sk_voltigore_health
-		30.0, // sk_voltigore_dmg_punch - Default 30.
-		50.0, // sk_voltigore_dmg_beam
-		750.0, // sk_tentacle
-		600.0, // sk_blkopsosprey
-		600.0, // sk_osprey
-		125.0, // sk_stukabat
-		20.0, // sk_stukabat_dmg_bite
-		50.0, // sk_sqknest_health
-		500.0, // sk_kingpin_health - Default 450.0
-		20.0, // sk_kingpin_lightning
-		15.0, // sk_kingpin_tele_blast
-		50.0, // sk_kingpin_plasma_blast
-		30.0, // sk_kingpin_melee
-		500.0 // sk_kingpin_telefrag
-	};
-
-
-    private array<string> monster_damage_strings = 
-	{
-		"sk_agrunt_health",
-		"sk_agrunt_dmg_punch",
-		"sk_agrunt_melee_engage_distance",
-		"sk_agrunt_berserker_dmg_punch",
-		"sk_apache_health",
-		"sk_barnacle_health",
-		"sk_barnacle_bite",
-		"sk_barney_health",
-		"sk_bullsquid_health",
-		"sk_bullsquid_dmg_bite",
-		"sk_bullsquid_dmg_whip",
-		"sk_bullsquid_dmg_spit",
-		"sk_bigmomma_health_factor",
-		"sk_bigmomma_dmg_slash",
-		"sk_bigmomma_dmg_blast",
-		"sk_bigmomma_radius_blast",
-		"sk_gargantua_health",
-		"sk_gargantua_dmg_slash",
-		"sk_gargantua_dmg_fire",
-		"sk_gargantua_dmg_stomp",
-		"sk_hassassin_health",
-		"sk_headcrab_health",
-		"sk_headcrab_dmg_bite",
-		"sk_hgrunt_health",
-		"sk_hgrunt_kick",
-		"sk_hgrunt_gspeed",
-		"sk_houndeye_health",
-		"sk_houndeye_dmg_blast",
-		"sk_islave_health",
-		"sk_islave_dmg_claw",
-		"sk_islave_dmg_clawrake",
-		"sk_islave_dmg_zap",
-		"sk_ichthyosaur_health",
-		"sk_ichthyosaur_shake",
-		"sk_leech_health",
-		"sk_leech_dmg_bite",
-		"sk_controller_health",
-		"sk_controller_dmgzap",
-		"sk_controller_speedball",
-		"sk_controller_dmgball",
-		"sk_nihilanth_health",
-		"sk_nihilanth_zap",
-		"sk_scientist_health",
-		"sk_snark_health",
-		"sk_snark_dmg_bite",
-		"sk_snark_dmg_pop",
-		"sk_zombie_health",
-		"sk_zombie_dmg_one_slash",
-		"sk_zombie_dmg_both_slash",
-		"sk_turret_health",
-		"sk_miniturret_health",
-		"sk_sentry_health",
-		"sk_babygargantua_health",
-		"sk_babygargantua_dmg_slash",
-		"sk_babygargantua_dmg_fire",
-		"sk_babygargantua_dmg_stomp",
-		"sk_hwgrunt_health",
-		"sk_rgrunt_explode",
-		"sk_massassin_sniper",
-		"sk_otis_health",
-		"sk_zombie_barney_health",
-		"sk_zombie_barney_dmg_one_slash",
-		"sk_zombie_barney_dmg_both_slash",
-		"sk_zombie_soldier_health",
-		"sk_zombie_soldier_dmg_one_slash",
-		"sk_zombie_soldier_dmg_both_slash",
-		"sk_gonome_health",
-		"sk_gonome_dmg_one_slash",
-		"sk_gonome_dmg_guts",
-		"sk_gonome_dmg_one_bite",
-		"sk_pitdrone_health",
-		"sk_pitdrone_dmg_bite",
-		"sk_pitdrone_dmg_whip",
-		"sk_pitdrone_dmg_spit",
-		"sk_shocktrooper_health",
-		"sk_shocktrooper_kick",
-		"sk_shocktrooper_maxcharge",
-		"sk_tor_health",
-		"sk_tor_punch",
-		"sk_tor_energybeam",
-		"sk_tor_sonicblast",
-		"sk_voltigore_health",
-		"sk_voltigore_dmg_punch",
-		"sk_voltigore_dmg_beam",
-		"sk_tentacle",
-		"sk_blkopsosprey",
-		"sk_osprey",
-		"sk_stukabat",
-		"sk_stukabat_dmg_bite",
-		"sk_sqknest_health",
-		"sk_kingpin_health",
-		"sk_kingpin_lightning",
-		"sk_kingpin_tele_blast",
-		"sk_kingpin_plasma_blast",
-		"sk_kingpin_melee",
-		"sk_kingpin_telefrag"
-	};
-
-
-	private array<float> monster_damage_values_bullet = 
-	{
-		8, // sk_12mm_bullet - Default 8
-		3, // sk_9mmAR_bullet - Default 3
-		3, // sk_9mm_bullet - Default 3
-		8, // sk_hornet_dmg - Default 8
-		34, // sk_otis_bullet - Default 34
-		3, // sk_grunt_buckshot - Default 3
-		20 // sk_556_bullet - Default 12
-	};
-
-
-	private array<string> monster_damage_strings_bullet = 
-	{
-		"sk_12mm_bullet",
-		"sk_9mmAR_bullet",
-		"sk_9mm_bullet",
-		"sk_hornet_dmg",
-		"sk_otis_bullet",
-		"sk_grunt_buckshot",
-		"sk_556_bullet"
 	};
 
 
@@ -351,50 +124,43 @@ final class ForceDifficulty
 
 	void ApplyDifficultySettings()
 	{   
+		int iCurrentPlayers = g_Engine.maxClients; // Current amount of connected players.
+		int iMinPlayers = 1; // Player minimum for full damage increase.
+		int iMaxPlayers = 4; // Player limit to return to normal values.
+		float flDamageBonus = 1.50f; // Total damage bonus at minimum players.
+		float flTotal = 0.0f; // Total damage bonus after scaling.
 
-		// Player Damage.
+		int iClampedPlayers = Math.min(iCurrentPlayers, iMaxPlayers); // Clamp to maximum.
+		float flBonusScale = Math.max(0.0f, 1.0f - float(iClampedPlayers - iMinPlayers) / float(iMaxPlayers - iMinPlayers)); // Scale bonus from full at minimum players to none at maximum players.
+
+		// Player Damage (Bonus is scaled back with number of players).
 		int iMax = weapon_damage_values.size();
 		for( int i = 0; i < iMax; ++i )
 		{
 			float flValue = weapon_damage_values[i];
-			string strStrings = weapon_damage_strings[i] + " " + flValue + "\n";
-			g_EngineFuncs.ServerCommand( strStrings );
-		}
-
-        // Monster Damage.
-		iMax = monster_damage_values.size();
-		for( int i = 0; i < iMax; ++i )
-		{
-			float flValue = monster_damage_values[i];
-			string strStrings = monster_damage_strings[i] + " " + flValue + "\n";
-			g_EngineFuncs.ServerCommand( strStrings );
-		}
-
-		// Monster Damage Bullet.
-		iMax = monster_damage_values_bullet.size();
-		for( int i = 0; i < iMax; ++i )
-		{
-			float flValue = monster_damage_values_bullet[i];
-			string strStrings = monster_damage_strings_bullet[i] + " " + flValue + "\n";
-			g_EngineFuncs.ServerCommand( strStrings );
+			flTotal = flValue * (1.0f + (flDamageBonus * flBonusScale));
+			string strStrings = weapon_damage_strings[i] + " " + flTotal + "\n";
+				g_EngineFuncs.ServerCommand( strStrings );
 		}
 		
-		// Player location damage.
+		// Player location damage (Currently not scaled with number of players).
 		iMax = player_location_values.size();
 		for( int i = 0; i < iMax; ++i )
 		{
 			float flValue = player_location_values[i];
 			string strStrings = player_location_strings[i] + " " + flValue + "\n";
-			g_EngineFuncs.ServerCommand( strStrings );
+				g_EngineFuncs.ServerCommand( strStrings );
 		}
 		
-		// Monster location damage.
+		// Monster location damage (Currently not scaled with number of players).
 		iMax = monster_location_values.size( );
 		for( int i = 0; i < iMax; ++i )
 		{
 			float flValue = monster_location_values[i];
 			string strStrings = monster_location_strings[i] + " " + flValue + "\n";
-			g_EngineFuncs.ServerCommand( strStrings );
+				g_EngineFuncs.ServerCommand( strStrings );
 		}
+
+		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Difficulty Scaling: " + formatFloat(flTotal, "", 0, 2) + "%% Damage Bonus]\n");
 	}
 }
