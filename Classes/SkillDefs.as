@@ -45,16 +45,16 @@ const float SKILL_MINIONDAMAGE = 0.40f; // Damage percent increase for minions p
 
 
 // Medic.
-const float SKILL_MEDIC_HEALPERCENT = 2.0f;  // Increase healing (% max health) per level.
+const float SKILL_MEDIC_HEALPERCENT = 2.00f;  // Increase healing (% max health) per level.
     const int SKILL_MEDIC_HEALPERCENT_LVL = 5;
 
-const float SKILL_MEDIC_POISON = 0.6f; // Poison damage (% max health) per level.
+const float SKILL_MEDIC_POISON = 3.00f; // Flat poison damage per level.
     const int SKILL_MEDIC_POISON_LVL = 5;
 
-const float SKILL_MEDIC_REVIVE = 6.0f;   // Reduce revive cooldown in seconds per level.
+const float SKILL_MEDIC_REVIVE = 6.00f;   // Reduce revive cooldown in seconds per level.
     const int SKILL_MEDIC_REVIVE_LVL = 5;
 
-const float SKILL_MEDIC_HEALAP = 0.02f;  // Percent of heal applied as AP per level.
+const float SKILL_MEDIC_HEALAP = 2.00f;  // Percent of heal applied as AP per level.
     const int SKILL_MEDIC_HEALAP_LVL = 5;
 
 const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura duration per level.
@@ -128,6 +128,9 @@ const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.60f; // Cloak nova damage increase
 
 const float SKILL_CLOAKER_CLOAKDURATION = 0.20f; // Cloak duration increase per level.
     const int SKILL_CLOAKER_CLOAKDURATION_LVL = 5;
+
+const float SKILL_CLOAKER_STANDINGDRAIN = 0.20f; // Percent drain reduction while standing still.
+    const int SKILL_CLOAKER_STANDINGDRAIN_LVL = 5;
 
 
 // Shocktrooper.
@@ -239,6 +242,7 @@ enum SkillID
     SKILL_CLOAKER_CLOAKDAMAGE,
     SKILL_CLOAKER_CLOAKNOVADAMAGE,
     SKILL_CLOAKER_CLOAKDURATION,
+    SKILL_CLOAKER_STANDINGDRAIN,
 
     // Vanquisher.
     SKILL_VANQUISHER_AMMOPOOL,
@@ -296,9 +300,9 @@ void InitializeSkillDefinitions()
 
     // Medic.
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal Aura: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT * 100.0f, "f", 0, 2) + "% max heal.", SKILL_MEDIC_HEALPERCENT_LVL, SKILL_MEDIC_HEALPERCENT * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal Aura: Poison", "+" + formatFloat(SKILL_MEDIC_POISON * 100.0f, "f", 0, 2) + "% poison damage.", SKILL_MEDIC_POISON_LVL, SKILL_MEDIC_POISON * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal Aura: Poison", "+" + formatFloat(SKILL_MEDIC_POISON, "f", 0, 2) + " poison damage.", SKILL_MEDIC_POISON_LVL, SKILL_MEDIC_POISON, "");
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal Aura: Revive", "-" + formatFloat(SKILL_MEDIC_REVIVE, "f", 0, 2) + "s revive cooldown.", SKILL_MEDIC_REVIVE_LVL, SKILL_MEDIC_REVIVE, "s");
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal Aura: AP Heal", "+" + formatFloat(SKILL_MEDIC_HEALAP * 100.0f, "f", 0, 2) + "% of heal to AP.", SKILL_MEDIC_HEALAP_LVL, SKILL_MEDIC_HEALAP * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal Aura: AP Heal", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heal to AP.", SKILL_MEDIC_HEALAP_LVL, SKILL_MEDIC_HEALAP, "%");
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_DURATION)] = SkillDefinition("Heal Aura: Duration", "+" + formatFloat(SKILL_MEDIC_DURATION * 100.0f, "f", 0, 2) + "% heal aura duration.", SKILL_MEDIC_DURATION_LVL, SKILL_MEDIC_DURATION * 100.0f, "%");
 
     // Berserker.
@@ -338,6 +342,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Cloak: Damage Bonus", "+" + formatFloat(SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "f", 0, 2) + "% damage bonus.", SKILL_CLOAKER_CLOAKDAMAGE_LVL, SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+" + formatFloat(SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "f", 0, 2) + "% nova damage.", SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL, SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+" + formatFloat(SKILL_CLOAKER_CLOAKDURATION * 100.0f, "f", 0, 2) + "% cloak duration.", SKILL_CLOAKER_CLOAKDURATION_LVL, SKILL_CLOAKER_CLOAKDURATION * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_STANDINGDRAIN)] = SkillDefinition("Cloak: Standing Drain", "-" + formatFloat(SKILL_CLOAKER_STANDINGDRAIN * 100.0f, "f", 0, 2) + "% reduced drain whilst motionless.", SKILL_CLOAKER_STANDINGDRAIN_LVL, SKILL_CLOAKER_STANDINGDRAIN * 100.0f, "%");
 
     // Vanquisher.
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_AMMOPOOL)] = SkillDefinition("Dragon's Breath: Ammo Pool", "+" + formatFloat(SKILL_VANQUISHER_AMMOPOOL * 100.0f, "f", 0, 2) + "% ammo pool.", SKILL_VANQUISHER_AMMOPOOL_LVL, SKILL_VANQUISHER_AMMOPOOL * 100.0f, "%");
@@ -435,6 +440,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE);
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKDURATION);
+            result.insertLast(SkillID::SKILL_CLOAKER_STANDINGDRAIN);
             break;
 
         case PlayerClass::CLASS_VANQUISHER:
