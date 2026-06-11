@@ -109,7 +109,7 @@ void PluginReset() // Used to force a full reload.
     RegisterHooks(); // Re-register Hooks.
     InitializeAmmoRegen(); // Re-apply multipliers for ammo recovery.
     InitializeRecovery(); // Re-apply multipliers for HP/AP recovery and hurt delay.
-    ApplyDifficultySettings(); // Re-apply difficulty settings.
+    ApplyDamageScaling(); // Re-apply damage scaling.
     SetupTimers(); // Re-setup timers.
 
     g_Game.AlertMessage(at_console, "=== CARPG Reset! ===\n"); // Confirmation.
@@ -1038,7 +1038,7 @@ HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer)
         g_Scheduler.SetTimeout("ShowClassMenuDelayed", 0.1f, @pPlayer);
     }
 
-    ApplyDifficultySettings(); // Re-apply difficulty settings as the player count has changed.
+    ApplyDamageScaling(); // Re-apply damage scaling as the player count has changed.
 
     return HOOK_CONTINUE;
 }
@@ -1121,7 +1121,7 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
         }
     }
 
-    ApplyDifficultySettings(); // Re-apply difficulty settings as player count has changed.
+    ApplyDamageScaling(); // Re-apply damage scaling as player count has changed.
 
     return HOOK_CONTINUE;
 }
@@ -1164,11 +1164,6 @@ HookReturnCode ClientSay(SayParameters@ pParams)
             }
         }
         */
-        else if(command == "difficulty" || command == "scaling")
-        {
-            ApplyDifficultySettings(); // Re-apply difficulty settings on command.
-            return HOOK_HANDLED;
-        }
         else if(command == "skills")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -1372,6 +1367,12 @@ HookReturnCode ClientSay(SayParameters@ pParams)
         else if(command == "info")
         {
             ShowClassInfo(pPlayer);
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
+        else if(command == "difficulty" || command == "scaling")
+        {
+            ApplyDamageScaling(); // Re-apply damage scaling on command.
             pParams.ShouldHide = true;
             return HOOK_HANDLED;
         }
@@ -1712,6 +1713,7 @@ void ShowHints()
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Commands: Type 'class' to select your class. Bind mouse3 \"say UseAbility\" to a button to use your Class Ability.\n");
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Skills' to spend your skillpoints.\n");
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Info' to see a summary of your class.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Difficulty or Scaling' to see current player damage scaling.\n");
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Help' to display this again.\n");
 }
 
