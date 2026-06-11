@@ -18,7 +18,7 @@ class CloakData
     private float m_flCloakCostCap = 10.0f; // Max duration drained per damage instance. Will never drain more than this value.
     private float m_flCloakDrainInterval = 1.0f; // Energy drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
-    private float m_flBaseDrainRate = 1.0f; // Base drain rate.
+    private float m_flCloakBaseDrainRate = 1.0f; // Base drain rate.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
@@ -31,6 +31,7 @@ class CloakData
     private float m_flNovaRadius = 50.0f * 16.0f; // Radius of the nova. Ft to units.
 
     private ClassStats@ m_pStats = null;
+    private CBasePlayer@ m_pPlayer;
 
     ClassStats@ GetStats() { return m_pStats; }
 
@@ -104,6 +105,18 @@ class CloakData
         float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
 
         return modifier * m_flAbilityMax; // Total duration is modified base duration.
+    }
+
+    float GetScaledCloakDrainRate()
+    {
+        if(m_pStats is null)
+            return m_flCloakBaseDrainRate; // Return base drain rate if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_STANDINGDRAIN);
+        float skillPower = SKILL_CLOAKER_STANDINGDRAIN;
+        float modifier = m_flCloakBaseDrainRate - (skillLevel * skillPower); // Drain reduction scales with skill level.
+
+        return modifier; // Modified drain rate.
     }
 
     void ToggleCloak(CBasePlayer@ pPlayer)
@@ -237,7 +250,17 @@ class CloakData
         if(currentTime - m_flLastDrainTime >= m_flCloakDrainInterval) // Drain interval.
         {
             m_flLastEnergyConsumed = m_flAbilityCharge;
-            m_flAbilityCharge -= m_flBaseDrainRate;
+
+            if(pPlayer.pev.velocity.Length() <= 0.0f) // If player is standing still, apply drain reduction.
+            {
+                float standingDrainRate = GetScaledCloakDrainRate();
+                m_flAbilityCharge -= standingDrainRate;
+            }
+            else // Otherwise drain normally.
+            {
+                m_flAbilityCharge -= m_flCloakBaseDrainRate;
+            }
+
             
             if(m_flAbilityCharge <= 0.0f)
             {
