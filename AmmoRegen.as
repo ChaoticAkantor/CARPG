@@ -125,7 +125,7 @@ void InitializeAmmoRegen()
         if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix)
         {
             g_CurrentAmmoMapMultiplier = float(prefixes[prefixKeys[i]]);
-            g_AmmoPrefixMessage = "\n=== CARPG Ammo Resupply: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nAmmo Regen: " + g_CurrentAmmoMapMultiplier + "x. | Throwables DISABLED.";
+            g_AmmoPrefixMessage = "\n=== CARPG Ammo Regen: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nAmmo Regen: " + g_CurrentAmmoMapMultiplier + "x slower | Throwables regen DISABLED";
             g_Game.AlertMessage(at_console, g_AmmoPrefixMessage + "\n\n");
             break;
         }
