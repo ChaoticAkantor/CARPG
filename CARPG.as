@@ -228,6 +228,7 @@ void PrecacheAll()
         // Models/Sprites.
         g_Game.PrecacheModel(strHealAuraSprite);
         g_Game.PrecacheModel(strHealAuraEffectSprite);
+        g_Game.PrecacheModel(strHealAuraAPEffectSprite);
         g_Game.PrecacheModel(strHealAuraPoisonEffectSprite);
 
         // Sounds.
@@ -1037,6 +1038,8 @@ HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer)
         g_Scheduler.SetTimeout("ShowClassMenuDelayed", 0.1f, @pPlayer);
     }
 
+    ApplyDifficultySettings(); // Re-apply difficulty settings as the player count has changed.
+
     return HOOK_CONTINUE;
 }
 
@@ -1060,7 +1063,7 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
         }
     }
 
-    AdjustAmmoForClass(pPlayer);
+    AdjustAmmoForClass(pPlayer); // Unused.
     return HOOK_CONTINUE;
 }
 
@@ -1118,6 +1121,8 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
         }
     }
 
+    ApplyDifficultySettings(); // Re-apply difficulty settings as player count has changed.
+
     return HOOK_CONTINUE;
 }
 
@@ -1159,6 +1164,11 @@ HookReturnCode ClientSay(SayParameters@ pParams)
             }
         }
         */
+        else if(command == "difficulty" || command == "scaling")
+        {
+            ApplyDifficultySettings(); // Re-apply difficulty settings on command.
+            return HOOK_HANDLED;
+        }
         else if(command == "skills")
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
