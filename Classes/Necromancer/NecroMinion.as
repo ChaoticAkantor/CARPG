@@ -172,8 +172,8 @@ class NecroMinionData
     private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
-    private int m_iRatSpawnCount = 2; // Number of rats to spawn with the rat ability.
-    private float m_flRatSpawnCooldown = 40.0f; // Base cooldown for spawning rats.
+    private int m_iRatSpawnCount = 2; // Number of rats to spawn with the rat ability, per active minion.
+    private float m_flRatSpawnCooldown = 30.0f; // Base cooldown for spawning rats.
     private float m_flRatLaunchForce = 500.0f; // Velocity that rats are thrown outward.
 
     // Timers and trackers.
