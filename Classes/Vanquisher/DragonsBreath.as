@@ -20,19 +20,19 @@ bool IsDragonsBreathProjectileAmmo(const string& in ammoName)
 // Damage multipliers per ammo type for Dragons Breath.
 float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
-    if (ammoName == "9mm")      return 1.00f;
-    if (ammoName == "357")      return 2.00f;
-    if (ammoName == "buckshot") return 0.50f;
-    if (ammoName == "556")      return 1.50f;
-    if (ammoName == "bolts")    return 2.00f;
-    //if (ammoName == "762")      return 2.50f;
-    if (ammoName == "m40a1")    return 2.00f;
-    if (ammoName == "uranium")  return 1.50f;
-    if (ammoName == "rockets")  return 2.00f;
-    if (ammoName == "sporeclip")  return 2.00f;
-    if (ammoName == "ARgrenades") return 2.00f;
-    if (ammoName == "shock charges") return 2.00f;
-    if (ammoName == "Hornets") return 2.00f;
+    if (ammoName == "9mm")      return 0.50f;
+    if (ammoName == "357")      return 1.50f;
+    if (ammoName == "buckshot") return 0.20f;
+    if (ammoName == "556")      return 1.00f;
+    if (ammoName == "bolts")    return 1.50f;
+    //if (ammoName == "762")      return 2.00f;
+    if (ammoName == "m40a1")    return 1.50f;
+    if (ammoName == "uranium")  return 1.25f;
+    if (ammoName == "rockets")  return 1.25f;
+    if (ammoName == "sporeclip")  return 1.25f;
+    if (ammoName == "ARgrenades") return 1.25f;
+    if (ammoName == "shock charges") return 1.00f;
+    if (ammoName == "Hornets") return 1.00f;
     return 1.0f; // Default multiplier if ammo type not found.
 }
 
@@ -44,13 +44,13 @@ float GetDragonsBreathAmmoCostMultiplier(const string& in ammoName)
     if (ammoName == "buckshot") return 6.0f; // One per pellet.
     if (ammoName == "556")      return 1.0f;
     if (ammoName == "bolts")    return 3.0f;
-    //if (ammoName == "762")      return 3.0f;
+    //if (ammoName == "762")      return 2.0f;
     if (ammoName == "m40a1")    return 3.0f;
     if (ammoName == "uranium")  return 3.0f;
     if (ammoName == "rockets")  return 5.0f;
     if (ammoName == "sporeclip")   return 5.0f;
     if (ammoName == "ARgrenades") return 5.0f;
-    if (ammoName == "shock charges") return 4.0f;
+    if (ammoName == "shock charges") return 3.0f;
     if (ammoName == "Hornets") return 2.0f;
     return 1.0f; // Default cost multiplier if ammo type not found.
 }
@@ -62,7 +62,7 @@ class DragonsBreathData
     // Fire Damage over Time.
     private float m_flAbilityMax = 100.0f; // Max activation charges.
     private float m_flAbilityCostPerActivation = 100.0f; // Amount of charge to use per activation (Filling rounds). Should match max for single activation only.
-    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge ability.
+    private float m_flAbilityRechargeTime = 100.0f; // Seconds to fully recharge ability.
     private float m_flDragonsBreathExplosionDamageBase = 1.0f; // Base damage for explosion on impact.
     private int m_iDragonsBreathFireTicks = 3; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
@@ -79,6 +79,7 @@ class DragonsBreathData
     private float m_flToggleCooldown = 0.10f; // Used to delay toggling to prevent spam.
     private float m_flCurrentClip = 0.0f; // Used to track current clip.
     private float m_flPreviousClip = 0.0f; // Used to track previous clip.
+    private int m_iPreviousAmmoIndex = 0; // Used to track ammo index for non-clip weapons.
     private int m_iLastWeaponIndex = -1; // Used to detect weapon switches.
     private int m_iPendingProcs = 0; // Pending projectile procs waiting on a target hit.
     private string m_strCurrentAmmoName = ""; // Set per shot based on ammo type.
@@ -143,19 +144,52 @@ class DragonsBreathData
 
         int currentClip = pWeapon.m_iClip;
         int currentWeaponIdx = pWeapon.entindex();
+        int maxClip = pWeapon.iMaxClip();
+        int ammoTypeIdx = pWeapon.PrimaryAmmoIndex();
 
         // Reset tracking on weapon switch or first run.
         if(currentWeaponIdx != m_iLastWeaponIndex)
         {
             m_iLastWeaponIndex = currentWeaponIdx;
             m_flPreviousClip = float(currentClip);
+            m_iPreviousAmmoIndex = ammoTypeIdx;
             m_iPendingProcs = 0; // Discard orphaned projectile procs on weapon switch.
             return;
         }
 
-        if(HasRounds() && currentClip < int(m_flPreviousClip))
+        int ammoConsumed = 0;
+
+        // Detect ammo consumption based on weapon type.
+        if(currentClip != -1 && maxClip != -1)
         {
-            int ammoConsumed = int(m_flPreviousClip) - currentClip;
+            // Clip-based weapon - track clip changes.
+            if(HasRounds() && currentClip < int(m_flPreviousClip))
+            {
+                ammoConsumed = int(m_flPreviousClip) - currentClip;
+            }
+            m_flPreviousClip = float(currentClip);
+        }
+        else if(currentClip == -1 && maxClip == -1 || ammoTypeIdx != -1)
+        {
+            // Non-clip weapon - track ammo index changes.
+            // When ammo is consumed, the count value decreases.
+            int currentAmmo = pPlayer.m_rgAmmo(ammoTypeIdx);
+            int previousAmmo = 0;
+            
+            if(m_iPreviousAmmoIndex == ammoTypeIdx)
+            {
+                previousAmmo = pPlayer.m_rgAmmo(m_iPreviousAmmoIndex);
+                if(HasRounds() && currentAmmo < previousAmmo)
+                {
+                    ammoConsumed = previousAmmo - currentAmmo;
+                }
+            }
+            
+            m_iPreviousAmmoIndex = ammoTypeIdx;
+        }
+
+        if(HasRounds() && ammoConsumed > 0)
+        {
             for(int i = 0; i < ammoConsumed; i++)
             {
                 if(!HasRounds()) break;
@@ -170,8 +204,6 @@ class DragonsBreathData
                 }
             }
         }
-
-        m_flPreviousClip = float(currentClip);
     }
 
     float GetScaledExplosionDamage() // Calculate scaled explosion damage.
@@ -244,7 +276,7 @@ class DragonsBreathData
             fireAreaMsg.WriteCoord(impactPoint.x);
             fireAreaMsg.WriteCoord(impactPoint.y);
             fireAreaMsg.WriteCoord(impactPoint.z);
-            fireAreaMsg.WriteByte(uint8(GetFireRadius() * 0.1)); // Radius units * 10.
+            fireAreaMsg.WriteByte(16); // Radius units * 10.
             fireAreaMsg.WriteByte(255); // Red.
             fireAreaMsg.WriteByte(100); // Green.
             fireAreaMsg.WriteByte(15); // Blue.
@@ -484,11 +516,11 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     Vector endPoint = impactPoint;
 
     // End point moves outward from impact in a random direction.
-    endPoint.x = startPoint.x + Math.RandomFloat(-50, 50);
-    endPoint.y = startPoint.y + Math.RandomFloat(-50, 50);
-    endPoint.z = startPoint.z + Math.RandomFloat(20, 50); // Bias upward.
+    //endPoint.x = startPoint.x + Math.RandomFloat(-50, 50);
+    //endPoint.y = startPoint.y + Math.RandomFloat(-50, 50);
+    //endPoint.z = startPoint.z + Math.RandomFloat(20, 50); // Bias upward.
 
-    // Create sprite trail effect to show fire damage tick (temporary, will change later).
+    // Create sprite trail effect to show fire damage tick.
     NetworkMessage msgFireArea(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
     msgFireArea.WriteByte(TE_SPRITETRAIL);
     msgFireArea.WriteCoord(startPoint.x);
@@ -498,11 +530,11 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     msgFireArea.WriteCoord(endPoint.y);
     msgFireArea.WriteCoord(endPoint.z);
     msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
-    msgFireArea.WriteByte(1);  // Count - more sprites for a denser burst.
-    msgFireArea.WriteByte(2);   // Life in 0.1's.
-    msgFireArea.WriteByte(1);   // Scale in 0.1's.
-    msgFireArea.WriteByte(25);  // Velocity along vector in 10's.
-    msgFireArea.WriteByte(50);  // Random velocity in 10's - higher for more spread.
+    msgFireArea.WriteByte(2);  // Count - more sprites for a denser burst.
+    msgFireArea.WriteByte(1);   // Life in 0.1's.
+    msgFireArea.WriteByte(2);   // Scale in 0.1's.
+    msgFireArea.WriteByte(uint8(dragonsBreath.GetFireRadius()));  // Velocity along vector in 10's.
+    msgFireArea.WriteByte(uint8(dragonsBreath.GetFireRadius()));  // Random velocity in 10's - higher for more spread.
     msgFireArea.End();
 
     // Fire DoT Beam Cylinder Effect.
@@ -533,12 +565,12 @@ void ApplyFireDamage(int playerIdx, Vector impactPoint)
     firetickAreaMsg.WriteCoord(impactPoint.x);
     firetickAreaMsg.WriteCoord(impactPoint.y);
     firetickAreaMsg.WriteCoord(impactPoint.z);
-    firetickAreaMsg.WriteByte(uint8(dragonsBreath.GetFireRadius() * 0.1)); // Radius units * 10.
+    firetickAreaMsg.WriteByte(16); // Radius units * 10.
     firetickAreaMsg.WriteByte(255); // Red.
     firetickAreaMsg.WriteByte(100); // Green.
     firetickAreaMsg.WriteByte(15); // Blue.
-    firetickAreaMsg.WriteByte(uint8(2)); // Life * 0.1s.
-    firetickAreaMsg.WriteByte(uint8(2)); // Fade speed * 1s.
+    firetickAreaMsg.WriteByte(uint8(1)); // Life * 0.1s.
+    firetickAreaMsg.WriteByte(uint8(1)); // Fade speed * 1s.
     firetickAreaMsg.End();
 }
 
@@ -577,7 +609,7 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
     //endPoint.y = startPoint.y + Math.RandomFloat(-50, 50);
     //endPoint.z = startPoint.z + Math.RandomFloat(20, 50); // Bias upward.
 
-    // Create sprite trail effect to show explosive damage (temporary, will change later).
+    // Create sprite trail effect to show explosive damage at initial impact.
     NetworkMessage msgFireArea(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, impactPoint);
     msgFireArea.WriteByte(TE_SPRITETRAIL);
     msgFireArea.WriteCoord(impactPoint.x);
@@ -587,10 +619,10 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
     msgFireArea.WriteCoord(impactPoint.y);
     msgFireArea.WriteCoord(impactPoint.z);
     msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
-    msgFireArea.WriteByte(3);  // Count - more sprites for a denser burst.
-    msgFireArea.WriteByte(2);   // Life in 0.1's.
-    msgFireArea.WriteByte(3);   // Scale in 0.1's.
-    msgFireArea.WriteByte(25);  // Velocity along vector in 10's.
+    msgFireArea.WriteByte(4);  // Count - more sprites for a denser burst.
+    msgFireArea.WriteByte(1);   // Life in 0.1's.
+    msgFireArea.WriteByte(4);   // Scale in 0.1's.
+    msgFireArea.WriteByte(50);  // Velocity along vector in 10's.
     msgFireArea.WriteByte(50);  // Random velocity in 10's - higher for more spread.
     msgFireArea.End();
 }

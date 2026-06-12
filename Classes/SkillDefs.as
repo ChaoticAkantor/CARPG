@@ -82,10 +82,10 @@ const float SKILL_BERSERKER_DURATION = 0.20f; // Percent increase to Bloodlust d
 
 
 // Engineer.
-const float SKILL_ENGINEER_SENTRYDAMAGE   = 0.30f; // Sentry damage per level.
+const float SKILL_ENGINEER_SENTRYDAMAGE = 0.30f; // Sentry damage per level.
     const int SKILL_ENGINEER_SENTRYDAMAGE_LVL = 5;
 
-const float SKILL_ENGINEER_MINIHEALAURA  = 1.0f; // Mini-heal Aura % max HP heal per level.
+const float SKILL_ENGINEER_MINIHEALAURA = 1.0f; // Mini-heal Aura % max HP heal per level.
     const int SKILL_ENGINEER_MINIHEALAURA_LVL = 5;
 
 const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.20f;  // % of damage as area explosive damage per level.
@@ -101,26 +101,26 @@ const float SKILL_XENOMANCER_LIFESTEAL = 0.10f; // Minion lifesteal percent per 
 
 
 // Necromancer.
-const float SKILL_NECROMANCER_RATS = 4.0f; // Cooldown reduction in seconds per level.
+const float SKILL_NECROMANCER_RATS = 3.0f; // Cooldown reduction in seconds per level.
     const int SKILL_NECROMANCER_RATS_LVL = 5;
 
 
 // Warden.
-const float SKILL_WARDEN_SHIELDHP        = 0.20f; // Ice shield HP percent increase per level.
-    const int SKILL_WARDEN_SHIELDHP_LVL     = 5;
+const float SKILL_WARDEN_SHIELDHP = 0.20f; // Ice shield HP percent increase per level.
+    const int SKILL_WARDEN_SHIELDHP_LVL = 5;
 
-const float SKILL_WARDEN_DAMAGEREFLECT   = 0.20f; // Damage reflect per level.
+const float SKILL_WARDEN_DAMAGEREFLECT = 0.20f; // Damage reflect per level.
     const int SKILL_WARDEN_DAMAGEREFLECT_LVL = 5;
 
-const float SKILL_WARDEN_ACTIVERECHARGE  = 0.05f; // Active shield recharge per level.
+const float SKILL_WARDEN_ACTIVERECHARGE = 0.05f; // Active shield recharge per level.
     const int SKILL_WARDEN_ACTIVERECHARGE_LVL = 5;
 
-const float SKILL_WARDEN_HPABSORB        = 0.10f; // HP absorb from damage reflected per level.
-    const int SKILL_WARDEN_HPABSORB_LVL     = 5;
+const float SKILL_WARDEN_HPABSORB = 0.10f; // HP absorb from damage reflected per level.
+    const int SKILL_WARDEN_HPABSORB_LVL = 5;
 
 
 // Cloaker.
-const float SKILL_CLOAKER_CLOAKDAMAGE    = 0.30f; // Cloak damage bonus increase per level.
+const float SKILL_CLOAKER_CLOAKDAMAGE = 0.30f; // Cloak damage bonus increase per level.
     const int SKILL_CLOAKER_CLOAKDAMAGE_LVL = 5;
 
 const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.60f; // Cloak nova damage increase per level.
@@ -145,13 +145,13 @@ const float SKILL_SHOCK_LIGHTNING = 0.04f; // Shockrifle damage % as area lightn
 
 
 // Vanquisher.
-const float SKILL_VANQUISHER_AMMOPOOL    = 0.60f; // Ammo pool increase per level.
+const float SKILL_VANQUISHER_AMMOPOOL = 0.60f; // Ammo pool increase per level.
     const int SKILL_VANQUISHER_AMMOPOOL_LVL = 5;
 
 const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Flat increase of added explosive damage per level.
     const int SKILL_VANQUISHER_EXPLOSIVEDAMAGE_LVL = 5;
 
-const float SKILL_VANQUISHER_FIREDAMAGE = 0.05f; // Percentage of explosion converted to extra fire damage per level.
+const float SKILL_VANQUISHER_FIREDAMAGE = 0.06f; // Percentage of explosion converted to extra fire damage per level.
     const int SKILL_VANQUISHER_FIREDAMAGE_LVL = 5;
 
 const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage ticks per level.
@@ -159,14 +159,14 @@ const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage tick
 
 
 // Swarmer.
-const float SKILL_SWARMER_SNARKDAMAGE   = 1.50f; // Snark damage per level.
+const float SKILL_SWARMER_SNARKDAMAGE = 1.50f; // Snark damage per level.
     const int SKILL_SWARMER_SNARKDAMAGE_LVL = 5;
 
-const float SKILL_SWARMER_SNARKCOUNT    = 0.20f; // Percent of extra snarks per level.
+const float SKILL_SWARMER_SNARKCOUNT = 0.20f; // Percent of extra snarks per level.
     const int SKILL_SWARMER_SNARKCOUNT_LVL = 5;
 
 
-// formatFloat is for display strings only. strength (4th ctor arg) must stay a raw float for math.
+// formatFloat is for display strings only, strength (4th ctor arg) must stay a raw float for math.
 string FormatSkillPerLevelText(float perLevelValue)
 {
     return formatFloat(perLevelValue, "f", 0, 2);
@@ -290,7 +290,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_ABILITYRECHARGE)] = SkillDefinition("Ability Recharge", "+" + formatFloat(SKILL_ABILITYRECHARGE * 100, "f", 0, 2) + "% ability recharge speed.", SKILL_ABILITYRECHARGE_LVL, SKILL_ABILITYRECHARGE * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_AMMOREGEN)] = SkillDefinition("Ammo Regen", "+" + int(SKILL_AMMOREGEN) + " ammo gain per interval.", SKILL_AMMOREGEN_LVL, int(SKILL_AMMOREGEN), " Ammo");
     @g_SkillDefs[int(SkillID::SKILL_LIFESTEAL)] = SkillDefinition("Lifesteal", "+" + formatFloat(SKILL_LIFESTEAL * 100.0f, "f", 0, 2) + "% lifesteal.", SKILL_LIFESTEAL_LVL, SKILL_LIFESTEAL * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_HPCONVERSION)] = SkillDefinition("Convert HP > AP", "+" + formatFloat(SKILL_HPCONVERSION * 100.0f, "f", 0, 2) + "% of Max HP converted to AP.", SKILL_HPCONVERSION_LVL, SKILL_HPCONVERSION * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+" + formatFloat(SKILL_HPCONVERSION * 100.0f, "f", 0, 2) + "% of Max HP converted to AP.", SKILL_HPCONVERSION_LVL, SKILL_HPCONVERSION * 100.0f, "%");
 
     // Minion Class exclusive.
     @g_SkillDefs[int(SkillID::SKILL_MINIONPOINT)] = SkillDefinition("Minions: Minion Point", "+" + SKILL_MINIONPOINT + " minion point.", SKILL_MINIONPOINT_LVL, SKILL_MINIONPOINT, " Point");
@@ -315,8 +315,8 @@ void InitializeSkillDefinitions()
 
     // Engineer.
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+" + formatFloat(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "f", 0, 2) + "% damage.", SKILL_ENGINEER_SENTRYDAMAGE_LVL, SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Sentry: Mini-Heal Aura",  "+" + formatFloat(SKILL_ENGINEER_MINIHEALAURA * 100.0f, "f", 0, 2) + "% max HP heal/s.", SKILL_ENGINEER_MINIHEALAURA_LVL, SKILL_ENGINEER_MINIHEALAURA * 100.0f, "%");
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Sentry: Explosive Ammo",  "+" + formatFloat(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "f", 0, 2) + "% explosive damage.", SKILL_ENGINEER_EXPLOSIVEAMMO_LVL, SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Sentry: Mini-Heal Aura", "+" + formatFloat(SKILL_ENGINEER_MINIHEALAURA * 100.0f, "f", 0, 2) + "% max HP heal/s.", SKILL_ENGINEER_MINIHEALAURA_LVL, SKILL_ENGINEER_MINIHEALAURA * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Sentry: Explosive Ammo", "+" + formatFloat(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "f", 0, 2) + "% explosive damage.", SKILL_ENGINEER_EXPLOSIVEAMMO_LVL, SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDURATION)] = SkillDefinition("Sentry: Duration", "+" + formatFloat(SKILL_ENGINEER_SENTRYDURATION * 100.0f, "f", 0, 2) + "% sentry duration.", SKILL_ENGINEER_SENTRYDURATION_LVL, SKILL_ENGINEER_SENTRYDURATION * 100.0f, "%");
 
     // Robomancer.
