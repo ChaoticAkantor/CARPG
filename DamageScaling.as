@@ -136,12 +136,12 @@ final class DamageScaling
 		int iCurrentPlayers = GetConnectedPlayerCount(); // Current amount of connected players.
 		int iMinPlayers = 1; // Player minimum for full damage increase.
 		int iMaxPlayers = 4; // Player limit to return to normal values.
-		float flDamageBonus = 0.50f; // Extra percent added damage bonus at minimum players.
+		float flDamageBonus = 0.50f; // Total damage bonus at minimum players.
 		float flBonusPercentage = 0.0f; // Bonus percentage after scaling.
 
 		int iClampedPlayers = Math.min(iCurrentPlayers, iMaxPlayers); // Clamp to maximum.
 		float flBonusScale = Math.max(0.0f, 1.0f - float(iClampedPlayers - iMinPlayers) / float(iMaxPlayers - iMinPlayers)); // Scale bonus from full at minimum players to none at maximum players.
-		flBonusPercentage = (flDamageBonus * flBonusScale) * 100.0f; // Convert to percentage for display.
+			flBonusPercentage = (flDamageBonus * flBonusScale) * 100.0f; // Convert to percentage for display.
 
 		// Player Damage (Bonus is scaled back with number of players).
 		int iMax = weapon_damage_values.size();
@@ -171,6 +171,6 @@ final class DamageScaling
 				g_EngineFuncs.ServerCommand( strStrings );
 		}
 
-		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Damage Scaling: +" + formatFloat(flBonusPercentage, "", 0, 1) + "%% Player Damage (Players: " + iCurrentPlayers + ")]\n");
+		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Damage Scaling: Bonus Player Damage " + "(" + iCurrentPlayers + "/" + iMaxPlayers + " Players) - " + formatFloat(flBonusPercentage, "", 0, 1) + "%%" + "]\n");
 	}
 }
