@@ -107,6 +107,18 @@ class CloakData
         return modifier * m_flAbilityMax; // Total duration is modified base duration.
     }
 
+    float GetScaledCloakSpeed()
+    {
+        if(m_pStats is null)
+            return 1.0f; // Return base speed if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_SPEED);
+        float skillPower = SKILL_CLOAKER_SPEED;
+        float modifier = 1.0f + (skillLevel * skillPower); // Speed increase scales with skill level.
+
+        return modifier; // Modified speed multiplier.
+    }
+
     float GetScaledCloakDrainRate()
     {
         if(m_pStats is null)
@@ -160,6 +172,10 @@ class CloakData
                     // AI targeting.
                     pPlayer.pev.flags |= FL_NOTARGET;
 
+                    // Player speed (default is 270).
+                    int cloakSpeedDefault = pPlayer.GetMaxSpeed(); // Set max speed whilst cloaked, scaled by skill level.
+                        pPlayer.SetMaxSpeedOverride(int(cloakSpeedDefault * GetScaledCloakSpeed())); // Temporarily set speed boost from skill.
+
                     // Sounds - activation and loop.
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
                     g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strCloakActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
@@ -191,6 +207,9 @@ class CloakData
         
         // Reset AI targeting.
         pPlayer.pev.flags &= ~FL_NOTARGET;
+
+        // Restore Player speed.
+            pPlayer.SetMaxSpeedOverride(-1);
         
         // Stop looping sound and play deactivation sound.
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strCloakActivateSound, 1.0f, ATTN_NORM, 0, PITCH_LOW);    

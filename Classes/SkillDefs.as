@@ -132,6 +132,9 @@ const float SKILL_CLOAKER_CLOAKDURATION = 0.20f; // Cloak duration increase per 
 const float SKILL_CLOAKER_STANDINGDRAIN = 0.20f; // Percent drain reduction while standing still.
     const int SKILL_CLOAKER_STANDINGDRAIN_LVL = 5;
 
+const float SKILL_CLOAKER_SPEED = 0.20f; // Percent speed increase while cloaked.
+    const int SKILL_CLOAKER_SPEED_LVL = 5;
+
 
 // Shocktrooper.
 const float SKILL_SHOCK_CAPACITY = 0.20f; // Shockrifle capacity per level.
@@ -243,6 +246,7 @@ enum SkillID
     SKILL_CLOAKER_CLOAKNOVADAMAGE,
     SKILL_CLOAKER_CLOAKDURATION,
     SKILL_CLOAKER_STANDINGDRAIN,
+    SKILL_CLOAKER_SPEED,
 
     // Vanquisher.
     SKILL_VANQUISHER_AMMOPOOL,
@@ -343,6 +347,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+" + formatFloat(SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "f", 0, 2) + "% nova damage.", SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL, SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+" + formatFloat(SKILL_CLOAKER_CLOAKDURATION * 100.0f, "f", 0, 2) + "% cloak duration.", SKILL_CLOAKER_CLOAKDURATION_LVL, SKILL_CLOAKER_CLOAKDURATION * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_STANDINGDRAIN)] = SkillDefinition("Cloak: Standing Drain", "-" + formatFloat(SKILL_CLOAKER_STANDINGDRAIN * 100.0f, "f", 0, 2) + "% reduced drain whilst motionless.", SKILL_CLOAKER_STANDINGDRAIN_LVL, SKILL_CLOAKER_STANDINGDRAIN * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_SPEED)] = SkillDefinition("Cloak: Speed Boost", "+" + formatFloat(SKILL_CLOAKER_SPEED * 100.0f, "f", 0, 2) + "% speed whilst cloaked.", SKILL_CLOAKER_SPEED_LVL, SKILL_CLOAKER_SPEED * 100.0f, "%");
 
     // Vanquisher.
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_AMMOPOOL)] = SkillDefinition("Dragon's Breath: Ammo Pool", "+" + formatFloat(SKILL_VANQUISHER_AMMOPOOL * 100.0f, "f", 0, 2) + "% ammo pool.", SKILL_VANQUISHER_AMMOPOOL_LVL, SKILL_VANQUISHER_AMMOPOOL * 100.0f, "%");
@@ -441,6 +446,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE);
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKDURATION);
             result.insertLast(SkillID::SKILL_CLOAKER_STANDINGDRAIN);
+            result.insertLast(SkillID::SKILL_CLOAKER_SPEED);
             break;
 
         case PlayerClass::CLASS_VANQUISHER:
