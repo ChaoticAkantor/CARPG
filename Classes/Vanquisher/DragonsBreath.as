@@ -20,19 +20,19 @@ bool IsDragonsBreathProjectileAmmo(const string& in ammoName)
 // Damage multipliers per ammo type for Dragons Breath.
 float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
-    if (ammoName == "9mm")      return 0.50f;
-    if (ammoName == "357")      return 1.50f;
-    if (ammoName == "buckshot") return 0.20f;
-    if (ammoName == "556")      return 1.00f;
+    if (ammoName == "9mm")      return 1.00f;
+    if (ammoName == "357")      return 2.00f;
+    if (ammoName == "buckshot") return 0.25f;
+    if (ammoName == "556")      return 1.25f;
     if (ammoName == "bolts")    return 1.50f;
     //if (ammoName == "762")      return 2.00f;
     if (ammoName == "m40a1")    return 1.50f;
-    if (ammoName == "uranium")  return 1.25f;
+    if (ammoName == "uranium")  return 1.50f;
     if (ammoName == "rockets")  return 1.25f;
     if (ammoName == "sporeclip")  return 1.25f;
     if (ammoName == "ARgrenades") return 1.25f;
-    if (ammoName == "shock charges") return 1.00f;
-    if (ammoName == "Hornets") return 1.00f;
+    if (ammoName == "shock charges") return 1.25f;
+    if (ammoName == "Hornets") return 1.50f;
     return 1.0f; // Default multiplier if ammo type not found.
 }
 
