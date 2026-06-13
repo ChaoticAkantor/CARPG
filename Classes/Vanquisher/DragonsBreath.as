@@ -80,6 +80,7 @@ class DragonsBreathData
     private float m_flCurrentClip = 0.0f; // Used to track current clip.
     private float m_flPreviousClip = 0.0f; // Used to track previous clip.
     private int m_iPreviousAmmoIndex = 0; // Used to track ammo index for non-clip weapons.
+    private int m_iPreviousAmmo = 0; // Used to track previous ammo count for non-clip weapons.
     private int m_iLastWeaponIndex = -1; // Used to detect weapon switches.
     private int m_iPendingProcs = 0; // Pending projectile procs waiting on a target hit.
     private string m_strCurrentAmmoName = ""; // Set per shot based on ammo type.
@@ -153,6 +154,7 @@ class DragonsBreathData
             m_iLastWeaponIndex = currentWeaponIdx;
             m_flPreviousClip = float(currentClip);
             m_iPreviousAmmoIndex = ammoTypeIdx;
+            m_iPreviousAmmo = pPlayer.m_rgAmmo(ammoTypeIdx);
             m_iPendingProcs = 0; // Discard orphaned projectile procs on weapon switch.
             return;
         }
@@ -169,22 +171,21 @@ class DragonsBreathData
             }
             m_flPreviousClip = float(currentClip);
         }
-        else if(currentClip == -1 && maxClip == -1 || ammoTypeIdx != -1)
+        else if(currentClip == -1 && maxClip == -1)
         {
             // Non-clip weapon - track ammo index changes.
             // When ammo is consumed, the count value decreases.
             int currentAmmo = pPlayer.m_rgAmmo(ammoTypeIdx);
-            int previousAmmo = 0;
             
             if(m_iPreviousAmmoIndex == ammoTypeIdx)
             {
-                previousAmmo = pPlayer.m_rgAmmo(m_iPreviousAmmoIndex);
-                if(HasRounds() && currentAmmo < previousAmmo)
+                if(HasRounds() && currentAmmo < m_iPreviousAmmo)
                 {
-                    ammoConsumed = previousAmmo - currentAmmo;
+                    ammoConsumed = m_iPreviousAmmo - currentAmmo;
                 }
             }
             
+            m_iPreviousAmmo = currentAmmo;
             m_iPreviousAmmoIndex = ammoTypeIdx;
         }
 
