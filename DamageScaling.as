@@ -171,6 +171,6 @@ final class DamageScaling
 				g_EngineFuncs.ServerCommand( strStrings );
 		}
 
-		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Damage Scaling: Bonus Player Damage " + "(" + iCurrentPlayers + "/" + iMaxPlayers + " Players) - " + formatFloat(flBonusPercentage, "", 0, 1) + "%%" + "]\n");
+		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Damage Scaling: Bonus Player Damage " + "(" + iCurrentPlayers + "/" + iMaxPlayers + " Players) +" + formatFloat(flBonusPercentage, "", 0, 1) + "%%" + "]\n");
 	}
 }
