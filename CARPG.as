@@ -1148,7 +1148,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
             }
         }
         // SKILLS command (no arguments).
-        else if(command == "skills" && args.ArgC() == 1)
+        else if(command == "skills" || command == "skillmenu" || command == "spendskills" && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerRPGData.exists(steamID))
@@ -1701,8 +1701,8 @@ void ShowHints()
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Commands: Type 'Class' to select your class. Bind mouse3 \"say UseAbility\" to a button to use your Class Ability.\n");
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Skills' to spend your skillpoints.\n");
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Info' to see a summary of your class.\n");
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Difficulty or Scaling' to see current player damage scaling.\n");
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type `Hints or /help' to display this again.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Difficulty' or 'Scaling' to see current player damage scaling.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Hints' or '/help' to display this again.\n");
 }
 
 void RefillHealthArmor(CBasePlayer@ pPlayer)
