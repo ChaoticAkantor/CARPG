@@ -138,13 +138,17 @@
 
 # Installation instructions:
 
-1. Extract/drop CARPG into perferably Svencoop/scripts/plugins/
+1. 
+
+Extract/drop CARPG into perferably Svencoop/scripts/plugins/
 or 
 Sven Co-op/Svencoop_addon/scripts/plugins/
 
 Svencoop/scripts/plugins/CARPG should be what the structure looks like.
 
-2. Add the following to your default_plugins.txt located inside Sven Co-op/svencoop/;
+2. 
+
+Add the following to your default_plugins.txt located inside Sven Co-op/svencoop/;
 
 		"plugin"
  	{
@@ -152,6 +156,8 @@ Svencoop/scripts/plugins/CARPG should be what the structure looks like.
 		"script" "CARPG/CARPG"
 	}
 
-3. Go into Sven Co-op/svencoop/scripts/plugins and ensure you have a folder called "store" without the quotes, if you do not, you will need to create a blank folder and name it "store". If not, the plugin will not have the required access to store player data, as I don't think Angelscript has permission or functions to create folders, only text files.
+3. 
+
+Go into Sven Co-op/svencoop/scripts/plugins and ensure you have a folder called "store" without the quotes, if you do not, you will need to create a blank folder and name it "store". If not, the plugin will not have the required access to store player data, as I don't think Angelscript has permission or functions to create folders, only text files.
 
 ENSURE THE PLUGIN FOLDER IS NAMED AS ABOVE, OR IT WON'T LOAD!
