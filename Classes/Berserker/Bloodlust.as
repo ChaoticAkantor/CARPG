@@ -12,9 +12,9 @@ class BloodlustData
 {
     // Remember to account for bloodlust double bonus when balancing!
     private bool m_bActive = false; // Used for active state of ability.
-    private float m_flAbilityMax = 30.0f; // Base max duration.
-    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge from empty.
-    private float m_flBloodlustAbilityDrainInterval = 1.0f; // Interval to remove ability charge.
+    private float m_flAbilityMax = 100.0f; // Base max duration.
+    private float m_flAbilityRechargeTime = 30.0f; // Seconds to fully recharge from empty.
+    private float m_flBloodlustAbilityDrainInterval = 0.1f; // Interval to remove ability charge.
     private float m_flBloodlustAbilityCost = 1.0f; // Ability drain per interval.
     private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
 
