@@ -1131,7 +1131,9 @@ HookReturnCode ClientSay(SayParameters@ pParams)
     if(args.ArgC() > 0)
     {
         string command = args.Arg(0).ToLowercase();
-        if(command == "class")
+        
+        // CLASS command (no arguments).
+        if(command == "class" && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerRPGData.exists(steamID))
@@ -1145,23 +1147,8 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 }
             }
         }
-        /*
-        else if(command == "stats")
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerRPGData.exists(steamID))
-            {
-                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() != PlayerClass::CLASS_NONE)
-                {
-                    ShowClassStats(pPlayer); // Show class stats menu.
-                    pParams.ShouldHide = true;
-                    return HOOK_HANDLED;
-                }
-            }
-        }
-        */
-        else if(command == "skills")
+        // SKILLS command (no arguments).
+        else if(command == "skills" && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerRPGData.exists(steamID))
@@ -1178,7 +1165,8 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 }
             }
         }
-        else if(command == "useability")
+        // USEABILITY command (no arguments).
+        else if(command == "useability" && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             
@@ -1187,7 +1175,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(data !is null)
                 {
-                    // Engineer ability handling (new)
+                    // Engineer ability handling.
                     if(data.GetCurrentClass() == PlayerClass::CLASS_ENGINEER)
                     {
                         if(!g_PlayerSentries.exists(steamID))
@@ -1200,7 +1188,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         if(sentry !is null)
                             sentry.ToggleSentry(pPlayer);
                     }
-                    // Robomancer ability handling (keep existing)
+                    // Robomancer ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
                     {
                         if(!g_PlayerMinions.exists(steamID))
@@ -1248,7 +1236,6 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         }
                         else
                         {
-                            // Re-initialize if switching from another class.
                             BarrierData@ existingBarrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                             if(existingBarrier !is null)
                             {
@@ -1274,7 +1261,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
 
                         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                         if(bloodlust !is null)
-                        bloodlust.ToggleBloodlust(pPlayer);
+                            bloodlust.ToggleBloodlust(pPlayer);
                     }
                     // Cloaker ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_CLOAKER)
@@ -1345,7 +1332,29 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 }
             }
         }
-        else if(command == "debug")
+        // INFO command (no arguments).
+        else if(command == "info" && args.ArgC() == 1)
+        {
+            ShowClassInfo(pPlayer);
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
+        // DIFFICULTY / SCALING command (no arguments).
+        else if((command == "difficulty" || command == "scaling") && args.ArgC() == 1)
+        {
+            ApplyDamageScaling();
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
+        // HELP command (no arguments).
+        else if(command == "hints" || command == "/help" && args.ArgC() == 1)
+        {
+            ShowHints();
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
+        // DEBUG command (no arguments, admin only).
+        else if(command == "debug" && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(IsAdmin(steamID))
@@ -1360,24 +1369,6 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 pParams.ShouldHide = true;
                 return HOOK_HANDLED;
             }
-        }
-        else if(command == "info")
-        {
-            ShowClassInfo(pPlayer);
-            pParams.ShouldHide = true;
-            return HOOK_HANDLED;
-        }
-        else if(command == "difficulty" || command == "scaling")
-        {
-            ApplyDamageScaling(); // Re-apply damage scaling on command.
-            pParams.ShouldHide = true;
-            return HOOK_HANDLED;
-        }
-        else if(command == "help")
-        {
-            ShowHints();
-            pParams.ShouldHide = true;
-            return HOOK_HANDLED;
         }
     }
     
@@ -1707,11 +1698,11 @@ void AdjustAmmoForClass(CBasePlayer@ pPlayer)
 
 void ShowHints()
 {
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Commands: Type 'class' to select your class. Bind mouse3 \"say UseAbility\" to a button to use your Class Ability.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Commands: Type 'Class' to select your class. Bind mouse3 \"say UseAbility\" to a button to use your Class Ability.\n");
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Skills' to spend your skillpoints.\n");
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Info' to see a summary of your class.\n");
     g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Difficulty or Scaling' to see current player damage scaling.\n");
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Help' to display this again.\n");
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type `Hints or /help' to display this again.\n");
 }
 
 void RefillHealthArmor(CBasePlayer@ pPlayer)
