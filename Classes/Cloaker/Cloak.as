@@ -12,13 +12,13 @@ class CloakData
 {
     // Cloak.
     private bool m_bActive = false;
-    private float m_flAbilityMax = 15.0f; // Base max duration.
+    private float m_flAbilityMax = 100.0f; // Base max duration.
     private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
-    private float m_flBaseCloakCostPerShot = 1.0f; // Base duration drained per damage instance, drain scales with amount of damage dealt.
-    private float m_flCloakCostCap = 10.0f; // Max duration drained per damage instance. Will never drain more than this value.
-    private float m_flCloakDrainInterval = 1.0f; // Energy drain interval.
-    private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
     private float m_flCloakBaseDrainRate = 1.0f; // Base drain rate.
+    private float m_flBaseCloakCostPerShot = 10.0f; // Base duration drained per damage instance, drain scales with amount of damage dealt.
+    private float m_flCloakCostCap = 50.0f; // Max duration drained per damage instance. Will never drain more than this value.
+    private float m_flCloakDrainInterval = 0.1f; // Drain interval.
+    private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
@@ -27,8 +27,9 @@ class CloakData
     private float m_flLastEnergyConsumed = 0.0f;
 
     //Nova.
-    private bool m_bNovaActive = false;
     private float m_flNovaRadius = 50.0f * 16.0f; // Radius of the nova. Ft to units.
+    private float m_flNovaDamageModifier = 0.33f; // Nova damage is scaled by remaining charge * this value.
+    // If it's not modified to be lower, it will be incredibly high, especially if duration skill is taken.
 
     private ClassStats@ m_pStats = null;
     private CBasePlayer@ m_pPlayer;
@@ -36,7 +37,6 @@ class CloakData
     ClassStats@ GetStats() { return m_pStats; }
 
     bool IsActive() { return m_bActive; }
-    bool IsNovaActive() { return m_bNovaActive;}
     float GetAbilityCharge() { return m_flAbilityCharge; }
     float GetAbilityMax() { return GetScaledCloakDuration(); }
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
@@ -45,36 +45,23 @@ class CloakData
 
     float GetNovaRadius() { return m_flNovaRadius; }
 
-    // Used specifically for stats menu to display full potential damage bonus, without energy scaling.
-    float GetDamageMultiplierTotal() 
-    { 
-        if(m_pStats is null)
-            return 0.0f; // Return default if no stats.
-
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
-        float skillPower = SKILL_CLOAKER_CLOAKDAMAGE;
-        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
-
-        return modifier;
-    }
-
-    float GetNovaDamage(CBasePlayer@ pPlayer)
+    float GetNovaDamage()
     { 
         if(m_pStats is null)
             return 0.0f; // Return 0 if no stats.
 
         // Scale nova damage.
-        float novadamage = 0.0f; // Initialise.
+        float novaDamage = 0.0f; // Initialise.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE);
         float skillPower = SKILL_CLOAKER_CLOAKNOVADAMAGE;
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        // Scale nova damage based on max and remaining energy and modifier.
+        // Scale nova damage based on max and remaining charge multiplied by skill modifier.
         float remainingAbilityCharge = m_flAbilityCharge;
-        novadamage = remainingAbilityCharge * modifier;
+        novaDamage = remainingAbilityCharge * modifier * m_flNovaDamageModifier;
 
-        return novadamage;
+        return novaDamage;
     }
 
     float GetDamageMultiplier(CBasePlayer@ pPlayer)
@@ -91,7 +78,7 @@ class CloakData
 
         float totalPossibleBonus = modifier; // Total possible bonus.
         
-        float powerScale = Math.min(1.0f, m_flLastEnergyConsumed / m_flAbilityMax);
+        float powerScale = Math.min(1.0f, m_flLastEnergyConsumed / GetAbilityMax()); // Scale bonus based on remaining charge.
         return totalPossibleBonus * powerScale;
     }
 
@@ -143,7 +130,7 @@ class CloakData
         if(!m_bActive)
         {
             // Cloak needs to be fully charged to activate.
-            if(m_flAbilityCharge < m_flAbilityMax)
+            if(m_flAbilityCharge < GetScaledCloakDuration())
             {
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Cloak recharging...\n");
                 return;
@@ -196,9 +183,6 @@ class CloakData
             return;
 
         m_bActive = false;
-
-        // Set charge to 0 when cloak ends so it must fully recharge before re-use.
-        m_flAbilityCharge = 0.0f;
         
         // Reset visual effects.
         pPlayer.pev.rendermode = kRenderNormal;
@@ -219,6 +203,9 @@ class CloakData
         // Create damaging nova when cloak ends, if the player has the skill.
         if(m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE) > 0)
             CreateNova(pPlayer);
+
+        // Set charge to 0 when cloak ends so it must fully recharge before re-use.
+        m_flAbilityCharge = 0.0f;
         
         m_flLastEnergyConsumed = 0.0f;
     }
@@ -303,8 +290,10 @@ class CloakData
         
         if(damage > 0.0f)
         {
-            float damageScale = damage / 10.0f;
-            drainAmount += (damageScale * 0.15f * m_flBaseCloakCostPerShot);
+            float damageScale = damage; // Get damage dealt.
+            drainAmount += damageScale; // Scale drain by base, with damage dealt added on top.
+
+            // Cap the drain amount to prevent excessive drain from high damage.
             if(drainAmount > m_flCloakCostCap)
                 drainAmount = m_flCloakCostCap;
         }
@@ -323,8 +312,8 @@ class CloakData
         if(pPlayer is null)
             return;
 
-        // Calculate explosion damage.
-        float explosionDamage = GetNovaDamage(pPlayer);
+        // Calculate nova damage.
+        float novaDamage = GetNovaDamage();
         
         // Create beam cylinder effect for nova visuals.
         Vector playerOrigin = pPlayer.pev.origin;
@@ -360,29 +349,22 @@ class CloakData
             lightMsg.WriteByte(0);   // Red.
             lightMsg.WriteByte(50); // Green.
             lightMsg.WriteByte(255);   // Blue.
-            lightMsg.WriteByte(10);  // Life in 0.1s (1s).
+            lightMsg.WriteByte(2);  // Life in 0.1s (1s).
             lightMsg.WriteByte(100);  // Decay rate (instant).
         lightMsg.End();
 
-        // Nova has started.
-        m_bNovaActive = true;
-
         // Apply radius damage centered on the player.
-        g_WeaponFuncs.RadiusDamage
-        (
-            playerOrigin, // Explosion center.
+        g_WeaponFuncs.RadiusDamage(
+            playerOrigin, // Radius damage center.
             pPlayer.pev, // Inflictor.
             pPlayer.pev, // Attacker.
-            explosionDamage, // Scaled Damage.
+            novaDamage, // Damage.
             m_flNovaRadius, // Radius.
-            CLASS_PLAYER, // Will not damage player or allies.
-            DMG_BLAST | DMG_ALWAYSGIB // Damage type and always gib.
+            CLASS_PLAYER, // Class type to ignore.
+            DMG_GENERIC // Damage type.
         );
 
         // Play explosion sound.
         g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strCloakNovaSound, 1.0f, ATTN_NORM);
-
-        // Nova has finished.
-        m_bNovaActive = false;
     }
 }
