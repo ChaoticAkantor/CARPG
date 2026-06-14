@@ -900,10 +900,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                         {
                             float damageMultiplier = cloak.GetDamageMultiplier(pAttacker); // Get multiplier.
                             float originalDamage = info.flDamage; // Store original damage so we can use to to scale drain.
-                            info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
-                            
-                            //info.bitsDamageType |= DMG_BLAST; // Add blast damage type.
-                            info.bitsDamageType |= DMG_ALWAYSGIB; // Make always gib.
+                                info.flDamage *= damageMultiplier; // Calculate damage with the multiplier.
 
                             cloak.DrainEnergyFromShot(pAttacker, originalDamage); // Drain energy on dealing damage.
                         }
