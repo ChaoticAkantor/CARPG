@@ -62,14 +62,18 @@ class HealingAura
 {
     // Healing Aura.
     private bool m_bIsActive = false;
-    private float m_flAbilityMax = 10.0f; // Base max duration.
-    private float m_flAbilityRechargeTime = 10.0f; // Time it takes for the ability to fully recharge.
+    private float m_flAbilityMax = 100.0f; // Base max duration.
+    private float m_flAbilityRechargeTime = 15.0f; // Time it takes for the ability to fully recharge.
     private float m_flHealingRadius = 60.0f * 16; // // Radius of the healing aura (ft converted to units).
     private float m_flBaseHealAmount = 5.0f; // Base health restored, as a percentage of max health.
+    private float m_flHealAuraInterval = 1.0f; // Time between heals/damage tick.
+    private float m_flDrainInterval = 0.1f; // Time between charge drain ticks.
+    private float m_flDrainAmount = 1.0f; // Charge drained per interval tick.
+    private float m_flHealAuraDeactivateCost = 0.15f; // Cost to deactivate the aura early.
+
+    // Revive.
     private float m_flHealAuraReviveHealthPercent = 1.00f; // Health percent to revive at.
     private float m_flHealAuraReviveCooldown = 60.0f; // Default cooldown for revive.
-    private float m_flHealAuraInterval = 1.0f; // Time between heals/damage tick.
-    private int m_iDrainAmount = 1.0f; // Energy drained per interval tick.
 
     // Score bonuses.
     private int m_iHealFragBonus = 2; // Frags awarded for healing once.
@@ -80,8 +84,8 @@ class HealingAura
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 0.5f;
     private float m_flLastHealTime = 0.0f;
+    private float m_flLastDrainTime = 0.0f;
     private float m_flLastPoisonTime = 0.0f;
-    private float m_flHealInterval = 1.0f;
     private float m_flCurrentReviveCooldown = 0.0f;
     private float m_flReviveGracePeriod = 1.0f; // Amount of time to allow revives before going into cooldown.
     private float m_flReviveGraceEndTime = 0.0f;
@@ -104,7 +108,7 @@ class HealingAura
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
     void ConsumeCharge(float amount) { m_flAbilityCharge = Math.max(0.0f, m_flAbilityCharge - amount); }
     float GetHealingRadius() { return m_flHealingRadius; }
-    float GetEnergyCost() { return m_iDrainAmount; }
+    float GetDeactivateCost() { return m_flHealAuraDeactivateCost * GetScaledHealAuraDuration();} // Ability cost to deactivate.
 
     float GetScaledAbilityRecharge()
     {
@@ -164,27 +168,6 @@ class HealingAura
         return modifier;
     }
 
-    float GetHealAPPercent()
-    {
-        if (m_pStats is null)
-            return 0.0f; // Return 0 if no stats.
-
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALAP);
-        float skillPower = SKILL_MEDIC_HEALAP;
-        float healAmount = GetScaledHealAmount();
-
-        float modifier = skillPower * skillLevel; // AP heal scales from heal amount, dependent on skill level.
-
-        return modifier;
-    }
-
-    float GetHealAPTrueAmount(float hpHealPercentage, float maxHealth)
-    {
-        float actualHealAmount = hpHealPercentage * maxHealth / 100;
-        float apPercent = GetHealAPPercent();
-        return actualHealAmount * (apPercent / 100);
-    }
-
     float GetScaledHealAmount()
     {
         if (m_pStats is null)
@@ -197,6 +180,18 @@ class HealingAura
         float modifier = skillPower * skillLevel; // Heal amount scales from skill level.
 
         return modifier + healAmount;
+    }
+
+    float GetScaledHealAP()
+    {
+        if (m_pStats is null)
+            return 0.0f; // Return base if no stats.
+                    
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALAP);
+        float skillPower = SKILL_MEDIC_HEALAP;
+        float modifier = skillPower * skillLevel; // Heal amount scales from skill level.
+
+        return modifier;
     }
 
     void RechargeAbility()
@@ -221,6 +216,13 @@ class HealingAura
         if (currentTime - m_flLastToggleTime < m_flToggleCooldown)
             return;
 
+        // Require minimum charge to activate.
+        if(m_flAbilityCharge < GetDeactivateCost())
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + formatFloat(m_flHealAuraDeactivateCost * 100, "f", 0, 2) + "%% Charge!");
+            return;
+        }
+
         m_bIsActive = !m_bIsActive;
         string message = m_bIsActive ? "Healing Aura On!\n" : "Healing Aura Off!\n";
         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, message);
@@ -233,6 +235,11 @@ class HealingAura
         }
         else
         {
+            // Apply ability cost for manual deactivation.
+            m_flAbilityCharge -= GetDeactivateCost();
+            if(m_flAbilityCharge < 0.0f)
+                m_flAbilityCharge = 0.0f;
+
             RemoveAuraGlow(pPlayer);
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
         }
@@ -264,6 +271,7 @@ class HealingAura
         m_flAbilityCharge = 0.0f;
         m_flLastToggleTime = 0.0f;
         m_flLastHealTime = 0.0f;
+        m_flLastDrainTime = 0.0f;
         m_flNextVisualUpdate = 0.0f;
         m_flReviveGraceEndTime = 0.0f;
     }
@@ -298,6 +306,7 @@ class HealingAura
 
         if (m_bIsActive) 
         {
+            ProcessDrain(pPlayer); // Drain charge independently.
             if (ProcessAbility(pPlayer))
             {
                 ProcessHeal(pPlayer); // Apply healing/AP heal.
@@ -319,7 +328,7 @@ class HealingAura
             return;
 
         float currentTime = g_Engine.time;
-        if (currentTime - m_flLastPoisonTime < m_flHealInterval)
+        if (currentTime - m_flLastPoisonTime < m_flHealAuraInterval)
             return;
 
         Vector playerOrigin = pPlayer.pev.origin;
@@ -464,24 +473,33 @@ class HealingAura
             m_flReviveGraceEndTime = currentTime + m_flReviveGracePeriod;
     }
 
-    private bool ProcessAbility(CBasePlayer@ pPlayer)
+    private void ProcessDrain(CBasePlayer@ pPlayer)
     {
         float currentTime = g_Engine.time;
-        if (currentTime - m_flLastHealTime < m_flHealInterval)
-            return false;
+        if (currentTime - m_flLastDrainTime < m_flDrainInterval)
+            return;
 
         float current = GetAbilityCharge();
 
-        if (current < m_iDrainAmount)
+        if (current < m_flDrainAmount)
         {
             m_bIsActive = false;
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Healing Aura Off!\n");
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
             RemoveAuraGlow(pPlayer);
-            return false;
+            return;
         }
 
-        m_flAbilityCharge = current - m_iDrainAmount;
+        m_flAbilityCharge = current - m_flDrainAmount;
+        m_flLastDrainTime = currentTime;
+    }
+
+    private bool ProcessAbility(CBasePlayer@ pPlayer)
+    {
+        float currentTime = g_Engine.time;
+        if (currentTime - m_flLastHealTime < m_flHealAuraInterval)
+            return false;
+
         m_flLastHealTime = currentTime;
         return true;
     }
@@ -544,9 +562,9 @@ class HealingAura
                 {
                     if (pEntity.pev.armorvalue < pEntity.pev.armortype) // Don't heal if at max.
                     {
-                        float healAmount = GetScaledHealAmount() * pEntity.pev.max_health / 100; // Recalculate the HP heal amount.
-                        float healAPAmount = healAmount * (GetHealAPPercent() / 100); // Apply percentage of heal as AP.
-                        pEntity.pev.armorvalue = Math.min(pEntity.pev.armorvalue + healAPAmount, pEntity.pev.armortype); // Heal AP for a percent of heal value.
+                        float healAPAmount = GetScaledHealAP() * pEntity.pev.armortype / 100; // Heal based on max AP.
+
+                        pEntity.pev.armorvalue = Math.min(pEntity.pev.armorvalue + healAPAmount, pEntity.pev.armortype); // Heal AP for a percent of max.
 
                         ApplyHealAPEffect(pEntity);
                             g_SoundSystem.EmitSoundDyn(pEntity.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);

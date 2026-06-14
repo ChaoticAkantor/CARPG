@@ -16,7 +16,7 @@ const float SKILL_REGENHP = 0.002f;  // HP regen scale (% of max HP) per level.
 const float SKILL_REGENAP = 0.0005f;  // AP regen scale (% of max AP) per level.
     const int SKILL_REGENAP_LVL = 10;
 
-const float SKILL_ABILITYRECHARGE = 0.10f; // Percent increase to ability recharge speed per level.
+const float SKILL_ABILITYRECHARGE = 0.05f; // Percent increase to ability recharge speed per level.
     const int SKILL_ABILITYRECHARGE_LVL = 10;
 
 const int SKILL_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
@@ -54,7 +54,7 @@ const float SKILL_MEDIC_POISON = 2.00f; // Flat poison damage per level.
 const float SKILL_MEDIC_REVIVE = 6.00f;   // Reduce revive cooldown in seconds per level.
     const int SKILL_MEDIC_REVIVE_LVL = 5;
 
-const float SKILL_MEDIC_HEALAP = 2.00f;  // Percent of heal applied as AP per level.
+const float SKILL_MEDIC_HEALAP = 0.40f;  // Percent of heal applied as AP per level.
     const int SKILL_MEDIC_HEALAP_LVL = 5;
 
 const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura duration per level.
@@ -306,7 +306,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal Aura: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT * 100.0f, "f", 0, 2) + "% max heal.", SKILL_MEDIC_HEALPERCENT_LVL, SKILL_MEDIC_HEALPERCENT * 100.0f, "%");
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal Aura: Poison", "+" + formatFloat(SKILL_MEDIC_POISON, "f", 0, 2) + " poison damage.", SKILL_MEDIC_POISON_LVL, SKILL_MEDIC_POISON, "");
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal Aura: Revive", "-" + formatFloat(SKILL_MEDIC_REVIVE, "f", 0, 2) + "s revive cooldown.", SKILL_MEDIC_REVIVE_LVL, SKILL_MEDIC_REVIVE, "s");
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal Aura: AP Heal", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heal to AP.", SKILL_MEDIC_HEALAP_LVL, SKILL_MEDIC_HEALAP, "%");
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal Aura: Restore AP", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heal to AP.", SKILL_MEDIC_HEALAP_LVL, SKILL_MEDIC_HEALAP, "%");
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_DURATION)] = SkillDefinition("Heal Aura: Duration", "+" + formatFloat(SKILL_MEDIC_DURATION * 100.0f, "f", 0, 2) + "% heal aura duration.", SKILL_MEDIC_DURATION_LVL, SKILL_MEDIC_DURATION * 100.0f, "%");
 
     // Berserker.
