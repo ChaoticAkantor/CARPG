@@ -120,10 +120,10 @@ const float SKILL_WARDEN_HPABSORB = 0.10f; // HP absorb from damage reflected pe
 
 
 // Cloaker.
-const float SKILL_CLOAKER_CLOAKDAMAGE = 0.30f; // Cloak damage bonus increase per level.
+const float SKILL_CLOAKER_CLOAKDAMAGE = 0.20f; // Cloak damage bonus increase per level.
     const int SKILL_CLOAKER_CLOAKDAMAGE_LVL = 5;
 
-const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.60f; // Cloak nova damage increase per level.
+const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.20f; // Cloak nova damage increase per level.
     const int SKILL_CLOAKER_CLOAKNOVADAMAGE_LVL = 5;
 
 const float SKILL_CLOAKER_CLOAKDURATION = 0.20f; // Cloak duration increase per level.
