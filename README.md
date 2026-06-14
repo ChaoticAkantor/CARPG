@@ -8,16 +8,27 @@
 
  Most classes bring something to the fight and push them into a specific role based on the holy trinity. Tank, DPS, Support.
 
+# Chat commands
+  All commands should be typed without quotes!
+
+ Type "Class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
+
+ Type "Skills" to display the skills menu, to view and purchase skills with skillpoints from leveling.
+
+ Type "useability" to use your class ability. It's advised to bind this to a button. Help command will explain how.
+
+ Type "Info" to display a window with brief information on current selected class.
+
+ Type "Hints" or "/help" to display all commands and explain how to activate abilities.
+
+ Type "scaling" or "difficulty" to show current player damage bonus based on number of players.
+
 # Leveling
  Default Max Level is 60.
 
  Default 1 skillpoint per level.
 
  Each class has it's own max level and skills saved individually.
-
- Type "class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
-
- Type "stats" without quotes in chat to bring up the stats menu to see your current stat and ability bonuses.
 
 # Skills
   Type "skills" to see skills menu and spend skillpoints.
@@ -27,12 +38,9 @@
   Ability skills are available only to that class and vary based on ability. These are usually in the second or third skill page, these add extra varying effects or increase aspects of a skill to make it stronger.
 
 # Difficulty
- Player weapon damage is slightly increased, and will be forced, regardless of map.
-
- Certain things do increased damage to the player:
- Zombies
- Headcrabs
- Grunts with 556 (as it's also tied to player damage grrr).
+ Player weapon damage is slightly increased based on player count.
+ Currently +50% at 1 player and will reduce per extra player that joins, removing any bonus at 4 players.
+ Does not alter balancefactor server setting. But will change outgoing damage regardless.
 
 # How do I use Abilities?
  Typing useability in chat, or binding a button to it and pressing it will activate your class ability.
