@@ -317,10 +317,10 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         if(cloak.IsActive())
                         {
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE) > 0)
-                                resourceInfo += "[Cloak DMG: +" + formatFloat(cloak.GetDamageMultiplier(pPlayer) * 100, "f", 0, 2) + "%]\n";
+                                resourceInfo += "[Cloaked DMG: +" + formatFloat(cloak.GetDamageMultiplier(pPlayer) * 100, "f", 0, 2) + "%]\n";
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE) > 0)
-                                resourceInfo += "[Nova DMG: " + formatFloat(cloak.GetNovaDamage(pPlayer), "f", 0, 2) + "]";
+                                resourceInfo += "[Nova DMG: " + formatFloat(cloak.GetNovaDamage(), "f", 0, 2) + "]";
                         }
                     }
                 }
