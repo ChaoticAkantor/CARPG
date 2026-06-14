@@ -60,7 +60,7 @@
 # Berserker
   Bloodlust is a passive ability, that can be activated to double all healing bonuses, draining charge.
 
-  Can steal health by dealing damage.
+  Can steal health by dealing damage inside and outside of bloodlust.
 
 
 # Engineer
@@ -76,7 +76,7 @@
 
  Robogrunts are naturally armored and take significantly reduced damage from most damage types.
 
- They move faster than normal.
+ They move and attack faster than normal.
 
 
 # Xenomancer
@@ -84,7 +84,7 @@
 
  Uses a summon menu to choose monster type, teleport or kill them.
 
- They move faster than normal.
+ They move and attack faster than normal.
 
 
 # Necromancer
@@ -96,7 +96,7 @@
 
  Uses a summon menu to choose monster type, teleport or kill them.
 
- They move faster than normal.
+ They move and attack faster than normal.
 
 
 # Warden
@@ -116,7 +116,7 @@
 # Cloaker
  Cloaking device that will render you completely undetectable to NPC's.
 
- Gains a massive damage bonus to shots whilst active. Shooting drains battery, damage bonus depends on remaining battery.
+ Has to fully recharge between uses.
 
 
 # Vanquisher
@@ -146,6 +146,7 @@ Sven Co-op/Svencoop_addon/scripts/plugins/
 
 Svencoop/scripts/plugins/CARPG should be what the structure looks like.
 
+
 2. 
 
 Add the following to your default_plugins.txt located inside Sven Co-op/svencoop/
@@ -160,6 +161,9 @@ Name is the name of the plugin.
 
 Script is the file path of the script being loaded (which also loads the rest of the files in the folder.)
 
-3. Go into Sven Co-op/svencoop/scripts/plugins and ensure you have a folder called "store" without the quotes, if you do not, you will need to create a blank folder and name it "store". If not, the plugin will not have the required access to store player data, as I don't think Angelscript has permission or functions to create folders, only text files.
+
+3. 
+
+Go into Sven Co-op/svencoop/scripts/plugins and ensure you have a folder called "store" without the quotes, if you do not, you will need to create a blank folder and name it "store". If not, the plugin will not have the required access to store player data, as I don't think Angelscript has permission or functions to create folders, only text files.
 
 ENSURE THE FOLDER NAMES MATCH THE FILE PATH, OR IT WON'T LOAD!
