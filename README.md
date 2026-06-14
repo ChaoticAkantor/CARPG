@@ -146,9 +146,7 @@ Sven Co-op/Svencoop_addon/scripts/plugins/
 
 Svencoop/scripts/plugins/CARPG should be what the structure looks like.
 
-2. 
-
-Add the following to your default_plugins.txt located inside Sven Co-op/svencoop/;
+2. Add the following to your default_plugins.txt located inside Sven Co-op/svencoop/
 
 		"plugin"
  	{
@@ -156,8 +154,10 @@ Add the following to your default_plugins.txt located inside Sven Co-op/svencoop
 		"script" "CARPG/CARPG"
 	}
 
-3. 
+Name is the name of the plugin.
 
-Go into Sven Co-op/svencoop/scripts/plugins and ensure you have a folder called "store" without the quotes, if you do not, you will need to create a blank folder and name it "store". If not, the plugin will not have the required access to store player data, as I don't think Angelscript has permission or functions to create folders, only text files.
+Script is the file path of the script being loaded (which also loads the rest of the files in the folder.)
 
-ENSURE THE PLUGIN FOLDER IS NAMED AS ABOVE, OR IT WON'T LOAD!
+3. Go into Sven Co-op/svencoop/scripts/plugins and ensure you have a folder called "store" without the quotes, if you do not, you will need to create a blank folder and name it "store". If not, the plugin will not have the required access to store player data, as I don't think Angelscript has permission or functions to create folders, only text files.
+
+ENSURE THE FOLDER NAMES MATCH THE FILE PATH, OR IT WON'T LOAD!
