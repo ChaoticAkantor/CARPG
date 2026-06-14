@@ -146,8 +146,9 @@ Sven Co-op/Svencoop_addon/scripts/plugins/
 
 Svencoop/scripts/plugins/CARPG should be what the structure looks like.
 
-2. Add the following to your default_plugins.txt located inside Sven Co-op/svencoop/
+2. 
 
+Add the following to your default_plugins.txt located inside Sven Co-op/svencoop/
 
 		"plugin"
  	{
