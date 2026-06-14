@@ -162,7 +162,7 @@ class DragonsBreathData
         int ammoConsumed = 0;
 
         // Detect ammo consumption based on weapon type.
-        if(currentClip != -1 && maxClip != -1)
+        if(currentClip != -1 && maxClip != -1 || ammoTypeIdx == -1)
         {
             // Clip-based weapon - track clip changes.
             if(HasRounds() && currentClip < int(m_flPreviousClip))
@@ -599,7 +599,7 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint)
         dragonsBreath.GetScaledExplosionDamage(), // Damage per explosion (scaled by level and ammo type).
         dragonsBreath.GetFireRadius(), // Radius.
         CLASS_PLAYER, // Will not damage player or allies.
-        DMG_BURN | DMG_SLOWBURN | DMG_ALWAYSGIB // Damage type.
+        DMG_BURN // Damage type.
     );
 
     Vector startPoint = impactPoint;
