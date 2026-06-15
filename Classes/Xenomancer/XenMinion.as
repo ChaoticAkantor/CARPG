@@ -479,7 +479,7 @@ class XenMinionData
 
         if(m_flAbilityCharge < float(XEN_COSTS[minionType]))
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, XEN_NAMES[minionType] + " is recharging!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + XEN_NAMES[minionType] + "!\n");
             return;
         }
 
