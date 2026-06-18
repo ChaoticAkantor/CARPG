@@ -45,7 +45,7 @@ const float SKILL_MINIONDAMAGE = 0.50f; // Damage percent increase for minions p
 
 
 // Medic.
-const float SKILL_MEDIC_HEALPERCENT = 1.00f;  // Increase healing (% max health) per level.
+const float SKILL_MEDIC_HEALPERCENT = 1.00f;  // Increase max health percent healed per level (divided by 100).
     const int SKILL_MEDIC_HEALPERCENT_LVL = 5;
 
 const float SKILL_MEDIC_POISON = 2.00f; // Flat poison damage per level.
@@ -54,7 +54,7 @@ const float SKILL_MEDIC_POISON = 2.00f; // Flat poison damage per level.
 const float SKILL_MEDIC_REVIVE = 6.00f;   // Reduce revive cooldown in seconds per level.
     const int SKILL_MEDIC_REVIVE_LVL = 5;
 
-const float SKILL_MEDIC_HEALAP = 0.40f;  // Percent of heal applied as AP per level.
+const float SKILL_MEDIC_HEALAP = 0.40f;  // Percent of max AP to heal per level (divided by 100).
     const int SKILL_MEDIC_HEALAP_LVL = 5;
 
 const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura duration per level.
