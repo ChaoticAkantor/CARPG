@@ -3,16 +3,6 @@
 // Data Handling.
 #include "PlayerData"
 
-// Skill Definitions and balancing.
-#include "Classes/SkillDefs"
-
-// Menus.
-#include "Classes/ClassMenu" // Class selection and handling.
-#include "Classes/ClassHUD" // Class hud display.
-//#include "classes/ClassStatsMenu" // Class stats info - Depriciated.
-#include "Classes/ClassInfo" // Class information menu.
-#include "Classes/SkillsMenu" // Skill selection and handling.
-
 // Classes.
 #include "Classes/Engineer/SentryMinion"
 #include "Classes/Robomancer/RobotMinion"
@@ -25,6 +15,16 @@
 #include "Classes/Berserker/Bloodlust"
 #include "Classes/Cloaker/Cloak"
 #include "Classes/Vanquisher/DragonsBreath"
+
+// Skill Definitions and balancing.
+#include "Classes/SkillDefs"
+
+// Menus.
+#include "Classes/ClassMenu" // Class selection and handling.
+#include "Classes/ClassHUD" // Class hud display.
+//#include "classes/ClassStatsMenu" // Class stats info - Depriciated.
+#include "Classes/ClassInfo" // Class information menu.
+#include "Classes/SkillsMenu" // Skill selection and handling.
 
 // Gameplay modules/Skills.
 #include "DamageScaling"
