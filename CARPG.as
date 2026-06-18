@@ -215,6 +215,16 @@ void SetupTimers()
 
 void PrecacheAll()
 {
+    string mapname = string(g_Engine.mapname).ToLowercase(); // Get map name.
+
+    // If map is from AoM series, precache AoM sprites for compatibility.
+    if(mapname.StartsWith("aomdc_") || mapname.StartsWith("aomclassic_") || mapname.StartsWith("aom_"))
+    {
+        // AoM Precache.
+        g_Game.PrecacheModel("svencoop_addon/sprites/aomdc/tinyspit.spr");
+        g_Game.PrecacheModel("svencoop_addon/sprites/aomclassic/tinyspit.spr");
+    }
+
     // CARPG Systems Precache.
         // Sounds.
         g_SoundSystem.PrecacheSound(strLevelUpSound);
@@ -222,7 +232,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strSkillSpendSound);
 
         // Models/Sprites.
-        //g_Game.PrecacheModel(AMMO_SPRITE_SHEET);
+        //g_Game.PrecacheModel(AMMO_SPRITE_SHEET); // Should already be in global precache.
 
     // Medic Ability Precache.
         // Models/Sprites.
