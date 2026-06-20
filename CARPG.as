@@ -795,9 +795,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Apply the damage multiplier.
         float damageSnarkMultiplier = snarkNest.GetScaledDamage();
         info.flDamage *= damageSnarkMultiplier;
-
-        // Alter the damage type.
-        info.bitsDamageType |= DMG_POISON;
     }
 
     if(info.pAttacker is null || !info.pAttacker.IsPlayer())
