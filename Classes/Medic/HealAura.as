@@ -19,7 +19,8 @@ array<string> g_SkipClassNames =
     "monster_human_grunt_ally_dead",
     "monster_otis_dead",
     "monster_scientist_dead",
-    "func_breakable"
+    "func_breakable",
+    "func_pushable"
 
 };
 
@@ -337,8 +338,12 @@ class HealingAura
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flHealingRadius, "*", "classname")) !is null)
         {
-            // Skip the aura owner.
+            // Skip the aura owner and other players.
             if (pEntity is pPlayer)
+                continue;
+
+            // Only damage entities with 1 point or more health.
+            if (pEntity.pev.health <= 0)
                 continue;
 
             // Skip player-summoned minions.
@@ -510,7 +515,11 @@ class HealingAura
         CBaseEntity@ pEntity = null;
         while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, playerOrigin, m_flHealingRadius, "*", "classname")) !is null)
         {
-            if (!pEntity.IsAlive())
+            if (!pEntity.IsAlive()) // Skip non-living, non-solid, or non-damageable entities quickly.
+                continue;
+
+            // Players and monsters should have more than 0HP. Skip func_ and trigger_ types and anything dead or inactive.
+            if (pEntity.pev.health <= 0)
                 continue;
 
             bool shouldHeal = false;
