@@ -280,44 +280,6 @@ class SnarkNestData
         // Schedule the next spawn.
         g_Scheduler.SetTimeout("ContinueSnarkSpawning", 0.05f, spawnParams);
     }
-
-    // Called when a minion deals damage to an enemy.
-    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt, CBaseEntity@ pSnark)
-    {
-        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
-            return;
-
-        if(pSnark is null)
-            return;
-
-        Vector snarkOrigin = pSnark.pev.origin;
-        float explRadius = 25.0f * 16.0f;
-
-        // Snarks detonate on first instance of damage.
-        g_WeaponFuncs.RadiusDamage
-        (
-            snarkOrigin, // Explosion center.
-            pPlayer.pev, // Inflictor.
-            pPlayer.pev, // Attacker.
-            15.0f, // Scaled Damage.
-            explRadius, // Radius.
-            CLASS_PLAYER, // Will not damage player or allies.
-            DMG_ACID | DMG_ALWAYSGIB // Damage type and always gib.
-        );
-
-        NetworkMessage lightMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, snarkOrigin);
-            lightMsg.WriteByte(TE_DLIGHT);
-            lightMsg.WriteCoord(snarkOrigin.x);
-            lightMsg.WriteCoord(snarkOrigin.y);
-            lightMsg.WriteCoord(snarkOrigin.z);
-            lightMsg.WriteByte(uint8(explRadius)); // Radius.
-            lightMsg.WriteByte(0);   // Red.
-            lightMsg.WriteByte(255); // Green.
-            lightMsg.WriteByte(30);   // Blue.
-            lightMsg.WriteByte(10);  // Life in 0.1s (1s).
-            lightMsg.WriteByte(10);  // Decay rate (instant).
-        lightMsg.End();
-    }
 }
 
 // Function to continue the staggered snark spawning.
