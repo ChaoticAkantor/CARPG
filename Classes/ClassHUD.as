@@ -261,15 +261,15 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                     {
                         current = barrier.GetAbilityCharge();
                         maximum = barrier.GetShieldMaxHP();
-
+                            
+                        if(barrier.IsActive())
+                        {
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_DAMAGEREFLECT) > 0)
                                 resourceInfo += "[DMG Reflect: " + formatFloat(barrier.GetScaledDamageReflection() * 100, "f", 0, 2) + "%] ";
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_HPABSORB) > 0)
                                 resourceInfo += "[HP Absorb: " + formatFloat(barrier.GetScaledHealthAbsorb() * 100, "f", 0, 2) + "%]\n";
-                            
-                        if(barrier.IsActive())
-                        {
+
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_ACTIVERECHARGE) > 0)
                                 resourceInfo += "[Recharge Speed: " + formatFloat(barrier.GetActiveRechargeRate() * 100, "f", 0, 2) + "%] ";
                         }
