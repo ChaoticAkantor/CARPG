@@ -22,7 +22,7 @@ const float SKILL_ABILITYRECHARGE = 0.05f; // Percent increase to ability rechar
 const int SKILL_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
     const int SKILL_AMMOREGEN_LVL = 5;
 
-const float SKILL_LIFESTEAL = 0.025f; // Percent of damage dealt as lifesteal per level.
+const float SKILL_LIFESTEAL = 0.01f; // Percent of damage dealt as lifesteal per level.
     const int SKILL_LIFESTEAL_LVL = 10;
 
 const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
@@ -40,7 +40,7 @@ const float SKILL_MINIONHP = 0.50f; // HP percent increase for minions per level
 const float SKILL_MINIONREGEN = 0.001f; // Max HP regen percent for minions per level.
     const int SKILL_MINIONREGEN_LVL = 5;
 
-const float SKILL_MINIONDAMAGE = 0.50f; // Damage percent increase for minions per level.
+const float SKILL_MINIONDAMAGE = 0.40f; // Damage percent increase for minions per level.
     const int SKILL_MINIONDAMAGE_LVL = 5;
 
 
@@ -62,7 +62,7 @@ const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura durat
 
 
 // Berserker.
-const float SKILL_BERSERKER_LIFESTEAL = 0.04f; // Flat increase to lifesteal per level.
+const float SKILL_BERSERKER_LIFESTEAL = 0.05f; // Flat increase to lifesteal per level.
     const int SKILL_BERSERKER_LIFESTEAL_LVL = 5;
 
 const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.01f; // Percent of damage dealt converted to ability charge per level.
@@ -109,18 +109,18 @@ const float SKILL_NECROMANCER_RATS = 3.0f; // Cooldown reduction in seconds per 
 const float SKILL_WARDEN_SHIELDHP = 0.20f; // Ice shield HP percent increase per level.
     const int SKILL_WARDEN_SHIELDHP_LVL = 5;
 
-const float SKILL_WARDEN_DAMAGEREFLECT = 0.20f; // Damage reflect per level.
+const float SKILL_WARDEN_DAMAGEREFLECT = 0.08f; // Damage reflect per level.
     const int SKILL_WARDEN_DAMAGEREFLECT_LVL = 5;
 
 const float SKILL_WARDEN_ACTIVERECHARGE = 0.05f; // Active shield recharge per level.
     const int SKILL_WARDEN_ACTIVERECHARGE_LVL = 5;
 
-const float SKILL_WARDEN_HPABSORB = 0.10f; // HP absorb from damage reflected per level.
+const float SKILL_WARDEN_HPABSORB = 0.06f; // HP absorb from damage reflected per level.
     const int SKILL_WARDEN_HPABSORB_LVL = 5;
 
 
 // Cloaker.
-const float SKILL_CLOAKER_CLOAKDAMAGE = 0.20f; // Cloak damage bonus increase per level.
+const float SKILL_CLOAKER_CLOAKDAMAGE = 0.10f; // Cloak damage bonus increase per level.
     const int SKILL_CLOAKER_CLOAKDAMAGE_LVL = 5;
 
 const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.20f; // Cloak nova damage increase per level.
