@@ -249,8 +249,8 @@ const array<int> XEN_COSTS = // Pool cost per summon of each type.
     1, // Houndeye.
     1, // Pit Drone.
     2, // Bullsquid.
-    2, // Shocktrooper.
-    3  // Baby Garg.
+    3, // Shocktrooper.
+    4  // Baby Garg.
 };
 
 // Structure to track minion type
