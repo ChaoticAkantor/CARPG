@@ -37,7 +37,7 @@ const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
 const float SKILL_MINIONHP = 0.50f; // HP percent increase for minions per level.
     const int SKILL_MINIONHP_LVL = 5;
 
-const float SKILL_MINIONREGEN = 0.002f; // Max HP regen percent for minions per level.
+const float SKILL_MINIONREGEN = 0.001f; // Max HP regen percent for minions per level.
     const int SKILL_MINIONREGEN_LVL = 5;
 
 const float SKILL_MINIONDAMAGE = 0.50f; // Damage percent increase for minions per level.
@@ -96,7 +96,7 @@ const float SKILL_ENGINEER_SENTRYDURATION = 0.20f; // Sentry duration increase p
 
 
 // Xenomancer.
-const float SKILL_XENOMANCER_LIFESTEAL = 0.10f; // Minion lifesteal percent per level.
+const float SKILL_XENOMANCER_LIFESTEAL = 0.01f; // Minion lifesteal percent to players per level.
     const int SKILL_XENOMANCER_LIFESTEAL_LVL = 3;
 
 
@@ -326,7 +326,7 @@ void InitializeSkillDefinitions()
     // Robomancer.
 
     // Xenomancer.
-    @g_SkillDefs[int(SkillID::SKILL_XENOMANCER_LIFESTEAL)] = SkillDefinition("Xenomancer: Lifesteal", "+" + formatFloat(SKILL_XENOMANCER_LIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal.", SKILL_XENOMANCER_LIFESTEAL_LVL, SKILL_XENOMANCER_LIFESTEAL * 100.0f, "%");
+    @g_SkillDefs[int(SkillID::SKILL_XENOMANCER_LIFESTEAL)] = SkillDefinition("Xenomancer: Lifesteal", "+" + formatFloat(SKILL_XENOMANCER_LIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal to players.", SKILL_XENOMANCER_LIFESTEAL_LVL, SKILL_XENOMANCER_LIFESTEAL * 100.0f, "%");
 
     // Necromancer.
     @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Necromancer: Zombie Rats", "-" + formatFloat(SKILL_NECROMANCER_RATS, "f", 0, 2) + "s Zombie Rat cooldown.", SKILL_NECROMANCER_RATS_LVL, SKILL_NECROMANCER_RATS, "s");

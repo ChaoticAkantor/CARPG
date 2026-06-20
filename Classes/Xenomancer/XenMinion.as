@@ -274,6 +274,7 @@ class XenMinionData
     private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
+    private float m_flLifestealRadius = 60.0f * 16.0f; // Radius for lifesteal effect.
 
     // Timers and trackers.
     private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
@@ -818,78 +819,47 @@ class XenMinionData
     }
 
     // Called when a minion deals damage to an enemy.
-    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
+    void ProcessMinionLifesteal(CBasePlayer@ pPlayer, float flDamageDealt)
     {
-        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+        if(pPlayer is null || !pPlayer.IsConnected() || flDamageDealt <= 0.0f)
             return;
 
         // Calculate health to return to player based on level scaling.
         float lifeStealPercent = GetLifestealPercent(); // Use scaled lifesteal from skill.
-        float healthToGive = flDamageDealt * lifeStealPercent;
-        
-        // Apply the healing to the player.
-        if(pPlayer.pev.health < pPlayer.pev.max_health)
-        {
-            pPlayer.pev.health = Math.min(pPlayer.pev.health + healthToGive, pPlayer.pev.max_health);
-            
-            // Visual feedback for the lifesteal effect - Heal sprites - Player.
-            Vector pos = pPlayer.pev.origin;
-            Vector mins = pos - Vector(16, 16, 0);
-            Vector maxs = pos + Vector(16, 16, 64);
+        float healAmount = flDamageDealt * lifeStealPercent;
 
-            NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
-            healeffect.WriteByte(TE_BUBBLES);
-            healeffect.WriteCoord(mins.x);
-            healeffect.WriteCoord(mins.y);
-            healeffect.WriteCoord(mins.z);
-            healeffect.WriteCoord(maxs.x);
-            healeffect.WriteCoord(maxs.y);
-            healeffect.WriteCoord(maxs.z);
-            healeffect.WriteCoord(80.0f); // Height of the bubble effect
-            healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-            healeffect.WriteByte(18); // Count
-            healeffect.WriteCoord(6.0f); // Speed
-            healeffect.End();
-        }
+        Vector pos = pPlayer.pev.origin;
+        Vector mins = pos - Vector(16, 16, 0);
+        Vector maxs = pos + Vector(16, 16, 64);
         
-        // Find the active minion that dealt the damage (most likely the last one that dealt damage).
-        // Needs better tracking, currently heals all minions.
-        for(uint i = 0; i < m_hMinions.length(); i++)
-        {
-            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
-            if(pMinion !is null)
+            CBaseEntity@ pEntity = null;
+            while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, pos, m_flLifestealRadius, "player", "classname")) !is null)
             {
-                // Cast to CBaseMonster to check monster-specific properties.
-                CBaseMonster@ pMonster = cast<CBaseMonster@>(pMinion);
+                if (!pEntity.IsAlive())
+                    continue;
+
+            // Apply the healing to all players, if they are alive and the amount is positive.
+            if(pPlayer.pev.health < pPlayer.pev.max_health && pPlayer.IsAlive() && healAmount > 0.0f)
+            {
+                pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, pPlayer.pev.max_health);
                 
-                // Only heal if the monster is alive.
-                if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO && pMinion.pev.health > 0)
-                {
-                    // Apply healing to the minion if it's not at max health.
-                    if(pMinion.pev.health < pMinion.pev.max_health)
-                    {
-                        pMinion.pev.health = Math.min(pMinion.pev.health + healthToGive, pMinion.pev.max_health);
+                // Visual feedback for the lifesteal effect - Heal sprites - Player.
+                NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
+                healeffect.WriteByte(TE_BUBBLES);
+                healeffect.WriteCoord(mins.x);
+                healeffect.WriteCoord(mins.y);
+                healeffect.WriteCoord(mins.z);
+                healeffect.WriteCoord(maxs.x);
+                healeffect.WriteCoord(maxs.y);
+                healeffect.WriteCoord(maxs.z);
+                healeffect.WriteCoord(112.0f); // Height of the bubble effect.
+                healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+                healeffect.WriteByte(3); // Count.
+                healeffect.WriteCoord(2.0f); // Lifetime.
+                healeffect.End();
 
-                        // Visual feedback for the lifesteal effect - Heal sprites - Minion.
-                        Vector pos = pMinion.pev.origin;
-                        Vector mins = pos - Vector(16, 16, 0);
-                        Vector maxs = pos + Vector(16, 16, 64);
-
-                        NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
-                        healeffect.WriteByte(TE_BUBBLES);
-                        healeffect.WriteCoord(mins.x);
-                        healeffect.WriteCoord(mins.y);
-                        healeffect.WriteCoord(mins.z);
-                        healeffect.WriteCoord(maxs.x);
-                        healeffect.WriteCoord(maxs.y);
-                        healeffect.WriteCoord(maxs.z);
-                        healeffect.WriteCoord(80.0f); // Height of the bubble effect.
-                        healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
-                        healeffect.WriteByte(18); // Count.
-                        healeffect.WriteCoord(6.0f); // Speed.
-                        healeffect.End();
-                    }
-                }
+                int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+                    g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
             }
         }
     }
