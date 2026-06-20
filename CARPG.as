@@ -1,11 +1,7 @@
 /*
-My personal attempt at writing an RPG mod for Sven Co-op from the ground up, to replace the SCXPM style mods.
-This plugin uses a class based system with singular abilities
-.
+My personal attempt at writing an RPG mod for Sven Co-op from the ground up.
 Attempts to strike a better balance than other RPG mods.
-
 Credit to Johnboy, his RPG mod was an inspiration for learning.
-
 Credit to Namira, Zebigdt and LostHeart (and their friends) for most testing, as well as balancing, class and ability ideas.
 
 This is our core file.
@@ -698,12 +694,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Apply the damage multiplier.
         float damageRoboMultiplier = minion.GetScaledDamage();
         info.flDamage *= damageRoboMultiplier;
-
-        // Alter the damage type.
-        //info.bitsDamageType |= DMG_BLAST;
-
-        // Process extra damage effects.
-        minion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_xenminion_"))
     {
@@ -728,12 +718,8 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageXenMultiplier = xenMinion.GetScaledDamage();
         info.flDamage *= damageXenMultiplier;
 
-        // Alter the damage type.
-        info.bitsDamageType |= DMG_ACID;
-        info.bitsDamageType |= DMG_POISON;
-
         // Process extra damage effects.
-        xenMinion.ProcessMinionDamage(pOwner, info.flDamage);
+        xenMinion.ProcessMinionLifesteal(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_necrominion_"))
     {
@@ -760,9 +746,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
         // Alter the damage type.
         info.bitsDamageType |= DMG_POISON;
-
-        // Process extra damage effects.
-        necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_necrominion_rats_"))
     {
@@ -789,9 +772,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
         // Alter the damage type.
         info.bitsDamageType |= DMG_POISON;
-
-        // Process extra damage effects.
-        necroMinion.ProcessMinionDamage(pOwner, info.flDamage);
     }
     else if(targetname.StartsWith("_snark_"))
     {
@@ -818,10 +798,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
         // Alter the damage type.
         info.bitsDamageType |= DMG_POISON;
-        //info.bitsDamageType |= DMG_ALWAYSGIB;
-
-        // Process extra damage effects.
-        snarkNest.ProcessMinionDamage(pOwner, info.flDamage, attacker);
     }
 
     if(info.pAttacker is null || !info.pAttacker.IsPlayer())
