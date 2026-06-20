@@ -86,8 +86,9 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_MEDIC:
             return
                 "Ability: Heal Aura.\n\n"
+                "Can be de-activated for a cost.\n"
                 "Heals allies (players and friendly NPCs) every tick.\n" 
-                "Healing is dealt as a percentage of the target's health.\n"
+                "Healing is dealt as a percentage of the target's max health.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
@@ -113,7 +114,7 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_ROBOMANCER:
             return
                 "Ability: Robogrunt Menu.\n\n"
-                "Can summon friendly Robogrunts and choose their weapon type.\n"
+                "Can summon friendly Robogrunts and choose their weapon type, HP varies by type.\n"
                 "Robogrunts are armored and are resistant to all forms of damage except for explosives and electric.\n"
                 "Minion movement and attack speed is increased.\n"
                 "Minion limit depends on minion type and points reserved.\n"
@@ -126,7 +127,7 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_XENOMANCER:
             return
                 "Ability: Xen Creature Menu.\n\n"
-                "Can summon different friendly Xen Creatures, HP and damage varies per type.\n"
+                "Can summon different friendly Xen Creatures, HP varies by type.\n"
                 "Minion movement and attack speed is increased, varies by type.\n"
                 "Minion limit depends on minion type and points reserved.\n"
                 "Can be commanded with Sven NPC keybinds.\n"
@@ -137,7 +138,7 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_NECROMANCER:
             return
                 "Ability: Undead Menu.\n\n"
-                "Can summon different friendly Undead Creatures, HP and damage varies per type.\n"
+                "Can summon different friendly Undead Creatures, HP and damage varies by type.\n"
                 "Undead Creatures have higher health than other minion types.\n"
                 "Minion movement and attack speed is increased, varies by type.\n"
                 "Minion limit depends on minion type and points reserved.\n"
@@ -176,9 +177,9 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_VANQUISHER:
             return
                 "Ability: Dragon's Breath Ammo.\n\n"
-                "Dragon's Breath rounds only work for non-projectile weapons, which grant explosive damage.\n"
-                "Activating the ability will consume a percentage of ability charge and add more rounds to the ammo pool.\n"
-                "Shots consume rounds and multiply damage based on the ammo type used.\n"
+                "Dragon's Breath rounds, which grant added explosive damage to non-throwable weapons.\n"
+                "Activating the ability will consume all charge and add more rounds to the ammo pool.\n"
+                "Shots consume a number of rounds and multiply damage based on the ammo type used.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
@@ -186,7 +187,8 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_SWARMER:
             return
                 "Ability: Snark Swarm.\n\n"
-                "Release a swarm of enhanced friendly Snarks at high velocity to attack enemies.\n"
+                "Release a small swarm of supercharged Snarks at high velocity to attack enemies.\n"
+                "Supercharged Snarks are larger and have increased health and damage.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
