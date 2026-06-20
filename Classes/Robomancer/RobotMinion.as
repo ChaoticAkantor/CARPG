@@ -45,9 +45,9 @@ enum MinionType // Minion gun type. Not all are supported.
 
 const array<float> ROBO_HP_MODIFIERS =
 {
-    1.00,  // Shotgun.
-    1.25,  // MP5.
-    1.50   // M16.
+    0.75,  // Shotgun.
+    1.00,  // MP5.
+    1.25   // M16.
 };
 
 const array<float> ROBO_DMG_MODIFIERS = 
