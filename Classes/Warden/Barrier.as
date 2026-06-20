@@ -16,7 +16,7 @@ class BarrierData
     private float m_flAbilityRechargeTime = 20.0f; // Time it takes for the ability to fully recharge.
     private float m_flBarrierDamageReduction = 1.00f; // Player damage reduction multiplier whilst shield is active. 1.0 = 100% damage reduction (no damage to HP/AP).
     private float m_flBarrierDurabilityMultiplier = 1.0f; // Shield damage reduction multiplier, used to make shield tougher or weaker overall.
-    private float m_flBarrierDeactivateEnergyCost = 0.25f; // Energy cost percentage when manually deactivating barrier.
+    private float m_flBarrierDeactivateCost = 0.30f; // Energy cost percentage when manually deactivating barrier.
     private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
     
 
@@ -33,7 +33,7 @@ class BarrierData
     float GetAbilityCharge() { return m_flAbilityCharge; }
     void FillAbilityCharge() { m_flAbilityCharge = GetShieldMaxHP(); }
     float GetShieldMaxHP() { return GetScaledShieldMaxHP(); }
-    float GetShieldDeactivateCost() { return m_flBarrierDeactivateEnergyCost * GetScaledShieldMaxHP(); }
+    float GetShieldDeactivateCost() { return m_flBarrierDeactivateCost * GetScaledShieldMaxHP(); }
 
     ClassStats@ GetStats() {return m_pStats;}
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -201,7 +201,7 @@ class BarrierData
         {
             if(m_flAbilityCharge < GetShieldDeactivateCost())
             {
-                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Ice Shield is broken!\n");
+                g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + formatFloat(m_flBarrierDeactivateCost * 100, "f", 0, 2) + "%% Charge!");
                 return;
             }
 
