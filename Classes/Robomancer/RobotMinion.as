@@ -603,13 +603,6 @@ class MinionData
         m_iReservePool = newReservePool;
     }
 
-    // Called when a minion deals damage to an enemy.
-    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
-    {
-        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
-            return;
-    }
-
     void TeleportMinions(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
