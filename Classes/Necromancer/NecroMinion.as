@@ -115,7 +115,7 @@ const array<float> NECRO_HP_MODIFIERS =
 
 const array<float> NECRO_ANIMATION_SPEEDS = 
 {
-    2.80,  // Zombie.
+    3.00,  // Zombie.
     1.40,  // Skeleton.
     1.60   // Abomination (Gonome).
 };

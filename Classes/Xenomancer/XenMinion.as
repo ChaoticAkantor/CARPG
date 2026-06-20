@@ -215,10 +215,10 @@ const array<float> XEN_HP_MODIFIERS =
 
 const array<float> XEN_ANIMATION_SPEEDS = 
 {
-    1.60,  // Houndeye.
-    1.80,  // Pit Drone.
-    1.80,  // Bullsquid.
-    1.80,  // Shocktrooper.
+    1.80,  // Houndeye.
+    1.40,  // Pit Drone.
+    1.40,  // Bullsquid.
+    1.40,  // Shocktrooper.
     1.80   // Baby Gargantua.
 };
 
