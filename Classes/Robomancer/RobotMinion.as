@@ -344,13 +344,16 @@ class MinionData
             if(pMonster !is null)
                 pMonster.m_hGuardEnt = EHandle(pPlayer); // Guard the player, turn down follow requests.
 
-            @pRoboMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
-            //pRoboMinion.SetClassification(pPlayer.Classify()); // Set the same classification as the player to share ally tables.
-            //pRoboMinion.SetPlayerAllyDirect (true); // Set directly as ally of owner.
-
-            // No collision, add an eflag projectile?
+            //@pRoboMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
 
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
+
+            // Set its bounding box to zero.
+            pMonster.pev.mins = Vector(0, 0, 0);
+            pMonster.pev.maxs = Vector(0, 0, 0);
+
+            // Refresh entity origin.
+            g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
 
             // Store both the minion handle and its type
             MinionInfo info;
@@ -414,6 +417,7 @@ class MinionData
             
             // Ensure max_health is properly set and updated dynamically (e.g. when skills change).
             pExistingMinion.pev.max_health = GetScaledHealth(m_hMinions[i].type);
+            
             if(pExistingMinion.pev.health > pExistingMinion.pev.max_health)
                 pExistingMinion.pev.health = pExistingMinion.pev.max_health;
             

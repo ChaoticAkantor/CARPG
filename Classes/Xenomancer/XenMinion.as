@@ -530,11 +530,16 @@ class XenMinionData
             if(pMonster !is null)
                 pMonster.m_hGuardEnt = EHandle(pPlayer); // Guard the player, turn down follow requests.
 
-            @pXenMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
-            //pXenMinion.SetClassification(pPlayer.Classify()); // Set the same classification as the player to share ally tables.
-            //pXenMinion.SetPlayerAllyDirect (true); // Set directly as ally of owner.
+            //@pXenMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
 
             g_EntityFuncs.DispatchSpawn(pXenMinion.edict()); // Dispatch the entity.
+
+            // Set its bounding box to zero.
+            pMonster.pev.mins = Vector(0, 0, 0);
+            pMonster.pev.maxs = Vector(0, 0, 0);
+
+            // Refresh entity origin.
+            g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
 
             // Store both the minion handle and its type
             XenMinionInfo info;
@@ -607,15 +612,11 @@ class XenMinionData
                 pExistingMinion.pev.frags = 0;
             }
             
-            // Ensure max_health is properly set during updates.
-            if(pExistingMinion.pev.max_health <= 0)
-            {
-                // Get the creature type from our stored information
-                int creatureType = m_hMinions[i].type;
-                
-                // Use our scaled health formula that accounts for player level.
-                pExistingMinion.pev.max_health = GetScaledHealth();
-            }
+            /// Ensure max_health is properly set and updated dynamically (e.g. when skills change).
+            pExistingMinion.pev.max_health = GetScaledHealth(m_hMinions[i].type);
+            
+            if(pExistingMinion.pev.health > pExistingMinion.pev.max_health)
+                pExistingMinion.pev.health = pExistingMinion.pev.max_health;
             
             // Ensure glow effect is maintained.
             ApplyMinionGlow(pExistingMinion);
@@ -756,12 +757,9 @@ class XenMinionData
                 if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO && pMinion.pev.health > 0)
                 {
                     // Ensure max_health is properly set.
-                    if(pMinion.pev.max_health <= 0) 
-                    {
-                        pMinion.pev.max_health = GetScaledHealth();
-                    }
+                    pMinion.pev.max_health = GetScaledHealth(m_hMinions[i].type);
 
-                    // Get scaled regen based on player level.
+                    // Get scaled regen based on skill level.
                     float regenAmount = GetMinionRegen(); // This already scales with level.
                     float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
 

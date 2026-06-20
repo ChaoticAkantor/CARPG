@@ -454,9 +454,16 @@ class NecroMinionData
             if(pMonster !is null)
                 pMonster.m_hGuardEnt = EHandle(pPlayer); // Guard the player, turn down follow requests.
 
-            @pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
-
+            //@pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
+            
             g_EntityFuncs.DispatchSpawn(pNecroMinion.edict()); // Dispatch the entity.
+
+            // Set its bounding box to zero.
+            pMonster.pev.mins = Vector(0, 0, 0);
+            pMonster.pev.maxs = Vector(0, 0, 0);
+
+            // Refresh entity origin.
+            g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
 
             // Store both the minion handle and its type.
             NecroMinionInfo info;
@@ -617,7 +624,8 @@ class NecroMinionData
             }
             
             // Ensure max_health is properly set and updated dynamically (e.g. when skills change).
-            pExistingMinion.pev.max_health = GetScaledHealth();
+            pExistingMinion.pev.max_health = GetScaledHealth(m_hMinions[i].type);
+
             if(pExistingMinion.pev.health > pExistingMinion.pev.max_health)
                 pExistingMinion.pev.health = pExistingMinion.pev.max_health;
 
@@ -626,24 +634,28 @@ class NecroMinionData
         }
 
         // Rat spawning: Check if enough time has passed to spawn new rats on active minions.
-        if(m_flCurrentRatCooldown <= 0.0f && m_hMinions.length() > 0)
+        if (m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS) > 0)
         {
-            // Spawn rats on each active minion.
-            for(uint i = 0; i < m_hMinions.length(); i++)
+            if(m_flCurrentRatCooldown <= 0.0f && m_hMinions.length() > 0)
             {
-                CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
-                if(pMinion !is null && pMinion.IsAlive())
+
+                // Spawn rats on each active minion.
+                for(uint i = 0; i < m_hMinions.length(); i++)
                 {
-                    // Spawn multiple rats per minion based on config.
-                    for(int j = 0; j < m_iRatSpawnCount; j++)
+                    CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
+                    if(pMinion !is null && pMinion.IsAlive())
                     {
-                        SpawnRat(pPlayer, pMinion);
+                        // Spawn multiple rats per minion based on config.
+                        for(int j = 0; j < m_iRatSpawnCount; j++)
+                        {
+                            SpawnRat(pPlayer, pMinion);
+                        }
                     }
                 }
+                
+                // Reset cooldown after rats have spawned.
+                m_flCurrentRatCooldown = GetScaledRatCooldown();
             }
-            
-            // Reset cooldown after rats have spawned.
-            m_flCurrentRatCooldown = GetScaledRatCooldown();
         }
 
         // Always recalculate the reserve pool to ensure it's accurate.
@@ -781,9 +793,9 @@ class NecroMinionData
                 if(pMonster !is null && pMonster.pev.deadflag == DEAD_NO && pMinion.pev.health > 0)
                 {
                     // Ensure max_health is properly set.
-                    pMinion.pev.max_health = GetScaledHealth();
+                    pMinion.pev.max_health = GetScaledHealth(m_hMinions[i].type);
 
-                    // Get scaled regen based on player level.
+                    // Get scaled regen based on skill level.
                     float regenAmount = GetMinionRegen(); // This already scales with level.
                     float flHealAmount = pMinion.pev.max_health * regenAmount; // Apply scaled regen.
 
