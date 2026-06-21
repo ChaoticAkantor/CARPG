@@ -1,147 +1,193 @@
 # CARPG
- Class-based RPG Mod for Sven Co-op by Chaotic Akantor. Many features are still a work in progress and may be subject to change, especially class balancing. Discord can be found here, if you have any feedback or suggestions.
+ Class-based RPG Mod for Sven Co-op.
+ 
+ Discord can be found here, if you have any feedback or suggestions.
 
  https://discord.gg/FbsxHMvPGN
 
 # What is it?
- This plugin takes the basic principals of SCXPM but in an attempt to simplify features and do something completely different. The goal is always balance, no more immortal tanks bunny hopping through maps without a care.
+ This plugin offers RPG style leveling with multiple classes and a skill system, as well as file based player saves and seperate level/skillpoints per class.
+ 
+ Also attempts to be more balanced and grounded, whilst using ZERO custom content, all assets are recycled from vanilla Sven install.
 
- Most classes bring something to the fight and push them into a specific role based on the holy trinity. Tank, DPS, Support.
+ Most classes play a role based on the holy trinity. Tank, DPS, Support.
+
 
 # Chat commands
-  All commands should be typed without quotes!
+ - All commands should be typed without quotes!
 
- Type "Class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
+   - Type "Class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
 
- Type "Skills" to display the skills menu, to view and purchase skills with skillpoints from leveling.
+   - Type "Skills" to display the skills menu, to view and purchase skills with skillpoints from leveling.
 
- Type "useability" to use your class ability. It's advised to bind this to a button. Help command will explain how.
+   - Type "useability" to use your class ability. It's advised to bind this to a button. Help command will explain how.
 
- Type "Info" to display a window with brief information on current selected class.
+   - Type "Info" to display a window with brief information on current selected class.
 
- Type "Hints" or "/help" to display all commands and explain how to activate abilities.
+   - Type "Hints" or "/help" to display all commands and explain how to activate abilities.
 
- Type "scaling" or "difficulty" to show current player damage bonus based on number of players.
+   - Type "scaling" or "difficulty" to show current player damage bonus based on number of players.
+
 
 # Leveling
- Default Max Level is 60.
+ - Gaining score will award you with XP, by default you will gain 1XP per score point. 
 
- Default 1 skillpoint per level.
+   - Earning enough XP will increase your Class level and also contribute towards your Rank.
 
- Each class has it's own max level and skills saved individually.
+   - Each class has it's own max level and skills saved individually.
+
+   - Gain +1 Skillpoint per level by default. Can be spent on Basic or Ability skills (dependent on Class).
+
+   - Default Max Level is 60.
+   
+   - XP is shared and all players will recieve the XP that another player earns (even from minions!).
+
+   - Still earn XP even whilst dead or spectating.
+
+ - Ranks - After earning enough XP, your rank will increase by +1.
+
+   - Rank increases the maximum skill level cap of Basic Skills by +1 (except for ammo regen), allowing you to spend more skillpoints in those skills.
+
+   - Rank also increases XP per score by +1 per Rank.
+
+   - Default Max Rank is 10.
+
 
 # Skills
-  Type "skills" to see skills menu and spend skillpoints.
+ - Skills can be purchased and increased with Skillpoints via a menu.
 
-  Basic skills are available to all classes. These are displayed first in the list.
+   - There are two types of skills, Basic Skills and Ability Skills. 
 
-  Ability skills are available only to that class and vary based on ability. These are usually in the second or third skill page, these add extra varying effects or increase aspects of a skill to make it stronger.
+   - Basic Skills are available to every class, are passive and always enabled.
+
+   - Ability Skills only affect your Class Ability and are only available to the chosen class.
+
+   - Type "skills" to see skills menu and spend skillpoints.
+
 
 # Difficulty
- Player weapon damage is slightly increased based on player count.
- Currently +50% at 1 player and will reduce per extra player that joins, removing any bonus at 4 players.
- Does not alter balancefactor server setting. But will change outgoing damage regardless.
+ - Player Weapon damage is automatically adjusted for low-player count to make solo play more viable.
+
+   - By default +50% damage at 1 player and will reduce per player that joins, giving 0 at 4 players by default.
+
+   - Does not alter mp_pcbalancefactor server setting.
+
 
 # How do I use Abilities?
- Typing useability in chat, or binding a button to it and pressing it will activate your class ability.
- Type bind mouse3 say "useability" in console and replace mouse3 with the key you want to use.
+  - Typing useability in chat, or binding a button to it and pressing it will activate your class ability.
 
-# XP Gain
- XP gain is naturally quite fast.
+  - Use [bind mouse3 say "useability"] in console and replace mouse3 with the key you want to use (without the brackets).
 
- All XP is shared between players.
- 
- Minion classes share all of their accumulated XP with their team. 
- 
- Continue to earn XP even if dead or spectating.
 
- By default 1 Score/Frag = 1 XP. A customisable multiplier does exist in PlayerData, but no console commands yet.
+# Classes
+  - Classes have a unique ability that can be modified with Ability Skills, duration, charge time and activation/deactivation costs vary.
 
-# Classes?!
- Classes have a single abilitiy that automatically scales in various ways as you level up.
-
-# Current Classes
 # Medic
- Healing Aura that restores a percentage of HP for allies (including NPC's).
+  - Healing Aura that restores a percentage of Max HP for allies (Players & NPC's).
 
 
 # Berserker
-  Bloodlust is a passive ability, that can be activated to double all healing bonuses, draining charge.
+  - Bloodlust doubles all lifesteal and Ability related HP bonuses whilst active.
 
-  Can steal health by dealing damage inside and outside of bloodlust.
+  - Can restore health by dealing damage.
 
 
 # Engineer
- Summons a single friendly Sentry.
+  - Summon a friendly Sentry Turret for a duration.
 
- Activating whilst active will recall the turret for a cost.
+  - Has a lot of HP.
+
+  - Can be recalled for a cost.
 
 
 # Robomancer
- Can summon friendly robogrunts, amount depends on points used.
+  - Can permanently summon different types of friendly robogrunts.
 
- Uses a summon menu to choose weapon type, teleport or kill them.
+  - Has access to minion only skills.
 
- Robogrunts are naturally armored and take significantly reduced damage from most damage types.
+  - Amount that can be summoned and Max HP depends on their weapon type.
 
- They move and attack faster than normal.
+  - Uses a summon menu to choose type, teleport or kill them.
+
+  - Robogrunts are naturally armored and take significantly reduced damage from most damage types, as a result they have lower HP scaling.
+
+  - Animation speeds increased.
+
+  - They have 360 degrees FoV and react faster as a result.
 
 
 # Xenomancer
- Can summon friendly robogrunts, amount depends on points used.
+  - Can permanently summon friendly Xen creatures.
 
- Uses a summon menu to choose monster type, teleport or kill them.
+  - Has access to minion only skills.
 
- They move and attack faster than normal.
+  - Amount that can be summoned and Max HP depends on creature type.
+
+  - Uses a summon menu to choose type, teleport or kill them.
+
+  - Animation speeds are increased based on type.
+
+  - 360 degrees FoV and react faster as a result.
 
 
 # Necromancer
- Can summon friendly Undead, amount depends on points used.
+  - Can permanently summon friendly Undead.
 
- Has higher HP than other minion types.
+  - Has access to minion only skills.
 
- Can summon more of the weaker variant than other minion types.
+  - Amount that can be summoned and Max HP depends on undead type.
 
- Uses a summon menu to choose monster type, teleport or kill them.
+  - Uses a summon menu to choose monster type, teleport or kill them.
 
- They move and attack faster than normal.
+  - Animation speeds are increased based on type. 
+  
+  - Zombies have much higher animation speeds than any other minion type.
+
+  - 360 degrees FoV and react faster as a result.
 
 
 # Warden
- Ice Shield that absorbs all damage and has it's own HP.
+  - Ice Shield that absorbs all damage and has it's own HP.
 
- Restores Shield HP when not active.
+  - Any damage taken will be completely negated whilst the shield has at least 1HP.
+
+  - Will not recharge when active, unless affected by skills.
  
- Activating whilst active will break the shield for a cost.
+  - Can be deactivated for a cost.
 
 
 # Shocktrooper
- Equips an improved Shockrifle.
+  - Equips an improved Shockrifle.
 
- Can activate whilst holding a Shockrifle to stow it and restore a portion of ammo to battery.
+  - Will not recharge whilst holding any Shockrifle.
+
+  - Can activate whilst holding any Shockrifle to convert a portion of remaining ammo to Ability Charge.
 
 
 # Cloaker
- Cloaking device that will render you completely undetectable to NPC's.
+  - Cloaking device that will render you completely undetectable to NPC's.
 
- Has to fully recharge between uses.
+  - Has faster Ability Charge than most skills.
+
+  - Requires 100% Ability Charge to activate.
 
 
 # Vanquisher
- Can load Dragon's Breath rounds into a seperate ammo pool.
+  - Loads Dragon's Breath rounds into a seperate ammo pool.
 
- If you have Dragon's Breath ammo, all shots will cause an explosion of fire damage where you shoot.
+  - If you have rounds in the ammo pool, all shots will cause an explosion of fire damage where you shoot.
 
- Fire damage is low but will stack for each area of effect.
+  - Explosive damage and ammo pool cost varies by ammo type.
 
- Area of effects have no limit.
+  - Area of effects from skills can stack indefinetely.
+
 
 # Swarmer
- Summons a swarm of improved snarks.
+  - Summons a small swarm of large super Snarks.
 
- Snarks have considerably increased HP and damage.
+  - Snarks have considerably increased HP, damage and size.
 
- Snarks are thrown out at random infront of you, at signifcant velocity. Allowing you to throw them over or bounce them around obsticles.
+  - Snarks are thrown out at random infront of you, at signifcant velocity. Allowing you to throw them behind cover and over walls.
 
 
 # Installation instructions:
