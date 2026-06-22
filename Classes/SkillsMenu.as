@@ -113,8 +113,10 @@ namespace Menu
             if(def is null) return;
 
             int curLevel = (stats !is null) ? stats.GetSkillLevel(id) : 0;
+            int rebirthRank = m_pOwner.GetRebirthRank(); // FIXED: use m_pOwner
+            int effectiveMax = def.GetEffectiveMaxLevel(rebirthRank);
 
-            string levelTag = (curLevel >= def.maxLevel) ? "(MAX)" : ("(" + curLevel + "/" + def.maxLevel + ")");
+            string levelTag = (curLevel >= effectiveMax) ? "(MAX)" : ("(" + curLevel + "/" + effectiveMax + ")");
 
             string bonusStr = "";
             if(def.strength > 0.0f && curLevel > 0)
