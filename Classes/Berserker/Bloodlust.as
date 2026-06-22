@@ -286,6 +286,9 @@ class BloodlustData
         float healAmount = damageDealt * lifestealMult; // Heal amount from lifesteal.
         float overhealPercent = pPlayer.pev.max_health * GetScaledOverhealPercent(); // Max health including overheal.
 
+        if (healAmount > 0.0f && healAmount < 1.0f) // Ensure at least 1HP healed if healAmount returns a value below 1.
+            healAmount = 1.0f;
+
         if(pPlayer.pev.health < overhealPercent) // Heal HP if below max.
         {
             pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, overhealPercent);
