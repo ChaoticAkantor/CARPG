@@ -12,13 +12,15 @@ namespace Menu
             if(pPlayer is null) return;
             
             @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
-            m_pMenu.SetTitle("Admin Debug Menu\n");
+            m_pMenu.SetTitle("Debug Menu\n");
             
             m_pMenu.AddItem("Add 1000 XP\n", any(0));
             m_pMenu.AddItem("Set Max Level\n", any(1));
-            m_pMenu.AddItem("Reset Level\n", any(2));
-            m_pMenu.AddItem("Fill Class Resource\n", any(3));
-            m_pMenu.AddItem("Toggle God Mode\n", any(4));
+            m_pMenu.AddItem("Set Max Rank\n", any(2));
+            m_pMenu.AddItem("Reset Level\n", any(3));
+            m_pMenu.AddItem("Reset Rank\n", any(4));
+            m_pMenu.AddItem("Fill Class Resource\n", any(5));
+            m_pMenu.AddItem("Toggle God Mode\n", any(6));
             
             m_pMenu.Register();
             m_pMenu.Open(0, 0, pPlayer);
@@ -43,23 +45,37 @@ namespace Menu
                     if(choice == 0 && stats !is null)
                     {
                         stats.AddXP(1000, pPlayer, data);
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Added 1000 XP to current class.\n");
+                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Added 1000 XP to current class.\n");
                     }
                     else if(choice == 1 && stats !is null)
                     {
                         stats.SetLevel(g_iMaxLevel);
                         data.CalculateStats(pPlayer);
                         data.SaveToFile();
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Set current class to maximum level.\n");
+                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Set current class to maximum level.\n");
                     }
                     else if(choice == 2 && stats !is null)
+                    {
+                        data.SetRebirthRank(g_iMaxRebirthRank); // Set rank to maximum.
+                        data.CalculateStats(pPlayer);
+                        data.SaveToFile();                        
+                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Rank has been set to maximum.\n");
+                    }
+                    else if(choice == 3 && stats !is null)
                     {
                         stats.SetLevel(1);
                         data.CalculateStats(pPlayer);
                         data.SaveToFile();
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Reset current class to level 1.\n");
+                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Current class has been reset to level 1.\n");
                     }
-                    else if(choice == 3)
+                    else if(choice == 4 && stats !is null)
+                    {
+                        data.SetRebirthRank(0); // Reset rank to 0.
+                        data.CalculateStats(pPlayer);
+                        data.SaveToFile();                        
+                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Rank has been reset to 0.\n");
+                    }
+                    else if(choice == 5)
                     {
                         switch(data.GetCurrentClass())
                         {
@@ -165,7 +181,7 @@ namespace Menu
                         }
                         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Class resource filled.\n");
                     }
-                    else if(choice == 4)
+                    else if(choice == 6)
                     {
                         pPlayer.pev.flags = pPlayer.pev.flags ^ FL_GODMODE;
                         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Godmode " + ((pPlayer.pev.flags & FL_GODMODE) != 0 ? "enabled" : "disabled") + "\n");
