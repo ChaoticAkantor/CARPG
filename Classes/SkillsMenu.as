@@ -112,9 +112,9 @@ namespace Menu
             SkillDefinition@ def = (int(g_SkillDefs.length()) > idx) ? g_SkillDefs[idx] : null;
             if(def is null) return;
 
-            int curLevel = (stats !is null) ? stats.GetSkillLevel(id) : 0;
-            int rebirthRank = m_pOwner.GetRebirthRank(); // FIXED: use m_pOwner
-            int effectiveMax = def.GetEffectiveMaxLevel(rebirthRank);
+            int curLevel = (stats !is null) ? stats.GetSkillLevel(id) : 0; // Get current level.
+            int rebirthRank = m_pOwner.GetRebirthRank(); // Get rank.
+            int effectiveMax = def.GetEffectiveMaxLevel(rebirthRank); // Use int function to get effective max level based on rank.
 
             string levelTag = (curLevel >= effectiveMax) ? "(MAX)" : ("(" + curLevel + "/" + effectiveMax + ")");
 
