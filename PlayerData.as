@@ -282,10 +282,10 @@ class ClassStats
             g_Game.AlertMessage(at_console, "CARPG: Spent skillpoints (" + GetSpentSkillPoints() + ") exceed total (" + m_iSkillPoints + "). Resetting skills.\n");
             ResetSkills();
         }
-        else
+        /*else
         {
-            // Clamp each skill to its effective max.
-            for(int i = 0; i < int(SkillID::SKILL_MAX_COUNT); i++)
+            
+            for(int i = 0; i < int(SkillID::SKILL_MAX_COUNT); i++) // Clamp each skill to its effective max (Needs better conditions).
             {
                 SkillDefinition@ def = g_SkillDefs[i];
                 if(def !is null)
@@ -298,7 +298,7 @@ class ClassStats
                     }
                 }
             }
-        }
+        }*/
     }
 }
 
