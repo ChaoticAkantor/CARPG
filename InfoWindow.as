@@ -1,7 +1,7 @@
 // Sends the MOTD GUI window to the player.
 // The title is set via ServerName, text is split into 32-char chunks,
 // then the server name is restored when done.
-void ShowClassInfoMOTD(CBasePlayer@ pPlayer, const string& in szTitle, const string& in szMessage)
+void ShowInfoMOTD(CBasePlayer@ pPlayer, const string& in szTitle, const string& in szMessage)
 {
     if(pPlayer is null)
         return;
@@ -52,7 +52,7 @@ void ShowClassInfoMOTD(CBasePlayer@ pPlayer, const string& in szTitle, const str
 }
 
 // Looks up the player's current class and displays its description.
-void ShowClassInfo(CBasePlayer@ pPlayer)
+void ShowInfo(CBasePlayer@ pPlayer)
 {
     if(pPlayer is null)
         return;
@@ -82,7 +82,7 @@ void ShowClassInfo(CBasePlayer@ pPlayer)
         + "[Class Ability]\n";
                 szDesc += GetClassDescription(data.GetCurrentClass());
 
-    ShowClassInfoMOTD(pPlayer, szTitle, szDesc);
+    ShowInfoMOTD(pPlayer, szTitle, szDesc);
 }
 
 // Returns the description string for the given class.

@@ -1318,7 +1318,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
         // INFO command (no arguments).
         else if(command == "info" && args.ArgC() == 1)
         {
-            ShowClassInfo(pPlayer);
+            ShowInfo(pPlayer);
             pParams.ShouldHide = true;
             return HOOK_HANDLED;
         }

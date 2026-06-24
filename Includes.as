@@ -25,7 +25,7 @@
 #include "Classes/SkillsMenu" // Skill selection and handling.
 
 // Gameplay modules/Skills.
-#include "InfoMenu" // Information menu.
+#include "InfoWindow" // Information menu.
 #include "DamageScaling" // Automatic player damage scaling based on player count.
 #include "AmmoRegen" // Ammo regen skill and difficulty adjuster.
 #include "Recovery" // Recovery related skills and difficulty adjuster.
