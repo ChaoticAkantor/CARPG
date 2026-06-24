@@ -22,12 +22,11 @@
 // Menus.
 #include "Classes/ClassMenu" // Class selection and handling.
 #include "Classes/ClassHUD" // Class hud display.
-//#include "classes/ClassStatsMenu" // Class stats info - Depriciated.
-#include "Classes/ClassInfo" // Class information menu.
 #include "Classes/SkillsMenu" // Skill selection and handling.
 
 // Gameplay modules/Skills.
-#include "DamageScaling"
-#include "AmmoRegen"
-#include "Recovery"
-#include "DebugMenu"
+#include "InfoMenu" // Information menu.
+#include "DamageScaling" // Automatic player damage scaling based on player count.
+#include "AmmoRegen" // Ammo regen skill and difficulty adjuster.
+#include "Recovery" // Recovery related skills and difficulty adjuster.
+#include "DebugMenu" // Debug menu for admins/testers.

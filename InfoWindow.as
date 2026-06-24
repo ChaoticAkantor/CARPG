@@ -72,8 +72,15 @@ void ShowClassInfo(CBasePlayer@ pPlayer)
         return;
     }
 
-    string szTitle = "CARPG - " + data.GetClassName(data.GetCurrentClass());
-    string szDesc  = GetClassDescription(data.GetCurrentClass());
+    string szTitle = "CARPG Info - " + data.GetClassName(data.GetCurrentClass());
+        string szDesc = "[XP]\n"
+        + "Gain score to earn XP and increase your Class Level, awarding you with Skillpoints and also contributing towards your Rank.\n\n"
+        + "[Rank]\n"
+        + "Rank increases maximum level of all skills, but less for Ability Skills.\n\n"
+        + "[Skills]\n"
+        + "Type 'skills' to view your current skills and spend skillpoints.\n\n"
+        + "[Class Ability]\n";
+                szDesc += GetClassDescription(data.GetCurrentClass());
 
     ShowClassInfoMOTD(pPlayer, szTitle, szDesc);
 }
@@ -85,7 +92,7 @@ string GetClassDescription(PlayerClass pClass)
     {
         case PlayerClass::CLASS_MEDIC:
             return
-                "Ability: Heal Aura.\n\n"
+                "{Heal Aura}.\n\n"
                 "Can be de-activated for a cost.\n"
                 "Heals allies (players and friendly NPCs) every tick.\n" 
                 "Healing is dealt as a percentage of the target's max health.\n"
@@ -95,7 +102,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_BERSERKER:
             return
-                "Ability: Bloodlust.\n\n"
+                "{Bloodlust}.\n\n"
                 "Starts with passive life steal.\n"
                 "All bonuses are counted as passives.\n"
                 "Activating Bloodlust doubles all HP and healing related bonuses (except for AP conversion).\n"
@@ -105,7 +112,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_ENGINEER:
             return
-                "Ability: Deploy Sentry Turret.\n\n"
+                "{Sentry Turret}.\n\n"
                 "Can be recalled for a cost by activating again.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
@@ -113,7 +120,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_ROBOMANCER:
             return
-                "Ability: Robogrunt Menu.\n\n"
+                "{Robogrunts}.\n\n"
                 "Can summon friendly Robogrunts and choose their weapon type, HP varies by type.\n"
                 "Robogrunts are armored and are resistant to all forms of damage except for explosives and electric.\n"
                 "Minion movement and attack speed is increased.\n"
@@ -126,7 +133,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_XENOMANCER:
             return
-                "Ability: Xen Creature Menu.\n\n"
+                "{Xen Creatures}.\n\n"
                 "Can summon different friendly Xen Creatures, HP varies by type.\n"
                 "Minion movement and attack speed is increased, varies by type.\n"
                 "Minion limit depends on minion type and points reserved.\n"
@@ -137,7 +144,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_NECROMANCER:
             return
-                "Ability: Undead Menu.\n\n"
+                "{Undead Menu}.\n\n"
                 "Can summon different friendly Undead Creatures, HP and damage varies by type.\n"
                 "Undead Creatures have higher health than other minion types.\n"
                 "Minion movement and attack speed is increased, varies by type.\n"
@@ -150,7 +157,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_DEFENDER:
             return
-                "Ability: Ice Shield.\n\n"
+                "{Ice Shield}.\n\n"
                 "Ice Shield will absorb all damage until it shatters, HP depends on skill.\n"
                 "Can be deactivated for a cost.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
@@ -159,7 +166,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_SHOCKTROOPER:
             return
-                "Ability: Super Shockrifle.\n\n"
+                "{Super Shockrifle}.\n\n"
                 "Equips an improved version of the Shockrifle.\n"
                 "Activating the ability whilst holding a Shockrifle will refund half of the ammo as Ability Charge.\n"
                 "Alt-fire will restore AP for allies hit by the beams.\n"
@@ -167,7 +174,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_CLOAKER:
             return
-                "Ability: Cloak.\n"
+                "{Cloak}.\n"
                 "Activating Cloak will grant invisibility.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
@@ -176,7 +183,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_VANQUISHER:
             return
-                "Ability: Dragon's Breath Ammo.\n\n"
+                "{Dragon's Breath Ammo}.\n\n"
                 "Dragon's Breath rounds, which grant added explosive damage to non-throwable weapons.\n"
                 "Activating the ability will consume all charge and add more rounds to the ammo pool.\n"
                 "Shots consume a number of rounds and multiply damage based on the ammo type used.\n"
@@ -186,7 +193,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_SWARMER:
             return
-                "Ability: Snark Swarm.\n\n"
+                "{Super Snark Swarm}.\n\n"
                 "Release a small swarm of supercharged Snarks at high velocity to attack enemies.\n"
                 "Supercharged Snarks are larger and have increased health and damage.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
