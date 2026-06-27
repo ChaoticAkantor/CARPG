@@ -342,7 +342,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         resourceInfo += "[Cost: " + dragonsBreath.GetPerShotCost() + "]\n";
                         if(dragonsBreath.HasRounds())
                         {
-                            resourceInfo += "[Explosive DMG: " + formatFloat(dragonsBreath.GetScaledExplosionDamage(), "f", 0, 2) + "] ";
+                            resourceInfo += "[Radius DMG: +" + formatFloat(dragonsBreath.GetScaledExplosionDamage(), "f", 0, 2) + "] ";
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VANQUISHER_FIREDAMAGE) > 0)
                                 resourceInfo += "[Fire DMG: " + formatFloat(dragonsBreath.GetScaledFireDamage(), "f", 0, 2) + "/s]";
