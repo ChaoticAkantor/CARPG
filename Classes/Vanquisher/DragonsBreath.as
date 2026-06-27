@@ -20,19 +20,19 @@ bool IsDragonsBreathProjectileAmmo(const string& in ammoName)
 // Damage multipliers per ammo type for Dragons Breath.
 float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
-    if (ammoName == "9mm")      return 1.00f;
-    if (ammoName == "357")      return 2.00f;
-    if (ammoName == "buckshot") return 0.25f;
-    if (ammoName == "556")      return 1.25f;
-    if (ammoName == "bolts")    return 1.50f;
+    if (ammoName == "9mm")      return 0.50f;
+    if (ammoName == "357")      return 1.00f;
+    if (ammoName == "buckshot") return 0.20f;
+    if (ammoName == "556")      return 0.50f;
+    if (ammoName == "bolts")    return 1.00f;
     //if (ammoName == "762")      return 2.00f;
-    if (ammoName == "m40a1")    return 1.50f;
-    if (ammoName == "uranium")  return 1.50f;
-    if (ammoName == "rockets")  return 1.25f;
-    if (ammoName == "sporeclip")  return 1.25f;
-    if (ammoName == "ARgrenades") return 1.25f;
-    if (ammoName == "shock charges") return 1.25f;
-    if (ammoName == "Hornets") return 1.50f;
+    if (ammoName == "m40a1")    return 1.00f;
+    if (ammoName == "uranium")  return 0.60f;
+    if (ammoName == "rockets")  return 1.00f;
+    if (ammoName == "sporeclip")  return 1.00f;
+    if (ammoName == "ARgrenades") return 1.00f;
+    if (ammoName == "shock charges") return 0.60f;
+    if (ammoName == "Hornets") return 0.60f;
     return 1.0f; // Default multiplier if ammo type not found.
 }
 
@@ -40,17 +40,17 @@ float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 float GetDragonsBreathAmmoCostMultiplier(const string& in ammoName)
 {
     if (ammoName == "9mm")      return 1.0f;
-    if (ammoName == "357")      return 3.0f;
+    if (ammoName == "357")      return 2.0f;
     if (ammoName == "buckshot") return 6.0f; // One per pellet.
     if (ammoName == "556")      return 1.0f;
-    if (ammoName == "bolts")    return 3.0f;
+    if (ammoName == "bolts")    return 2.0f;
     //if (ammoName == "762")      return 2.0f;
-    if (ammoName == "m40a1")    return 3.0f;
-    if (ammoName == "uranium")  return 3.0f;
-    if (ammoName == "rockets")  return 5.0f;
-    if (ammoName == "sporeclip")   return 5.0f;
-    if (ammoName == "ARgrenades") return 5.0f;
-    if (ammoName == "shock charges") return 3.0f;
+    if (ammoName == "m40a1")    return 2.0f;
+    if (ammoName == "uranium")  return 2.0f;
+    if (ammoName == "rockets")  return 3.0f;
+    if (ammoName == "sporeclip")   return 3.0f;
+    if (ammoName == "ARgrenades") return 3.0f;
+    if (ammoName == "shock charges") return 2.0f;
     if (ammoName == "Hornets") return 2.0f;
     return 1.0f; // Default cost multiplier if ammo type not found.
 }
@@ -64,7 +64,7 @@ class DragonsBreathData
     private float m_flAbilityCostPerActivation = 100.0f; // Amount of charge to use per activation (Filling rounds). Should match max for single activation only.
     private float m_flAbilityRechargeTime = 100.0f; // Seconds to fully recharge ability.
     private float m_flDragonsBreathExplosionDamageBase = 1.0f; // Base damage for explosion on impact.
-    private int m_iDragonsBreathFireTicks = 3; // Number of damage over time ticks PER DoT.
+    private int m_iDragonsBreathFireTicks = 2; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
     private float m_flDragonsBreathRadius = 25.0f * 16; // Radius of fire damage DoT for Dragons Breath.
 
