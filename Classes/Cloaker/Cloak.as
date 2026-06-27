@@ -109,13 +109,19 @@ class CloakData
     float GetScaledCloakDrainRate()
     {
         if(m_pStats is null)
-            return m_flCloakBaseDrainRate; // Return base drain rate if no stats.
+            return m_flCloakBaseDrainRate;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_STANDINGDRAIN);
-        float skillPower = SKILL_CLOAKER_STANDINGDRAIN;
-        float modifier = m_flCloakBaseDrainRate - (skillLevel * skillPower); // Drain reduction scales with skill level.
-
-        return modifier; // Modified drain rate.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_DRAINREDUCTION);
+        float skillPower = SKILL_CLOAKER_DRAINREDUCTION;
+        
+        // Calculate the remaining percentage.
+        float reduction = skillLevel * skillPower;
+        float remainingMultiplier = 1.0f - reduction;
+        
+        if (remainingMultiplier < 0.0f) // Clamp to prevent negative drain.
+            remainingMultiplier = 0.0f;
+        
+        return m_flCloakBaseDrainRate * remainingMultiplier;
     }
 
     void ToggleCloak(CBasePlayer@ pPlayer)
@@ -257,15 +263,8 @@ class CloakData
         {
             m_flLastEnergyConsumed = m_flAbilityCharge;
 
-            if(pPlayer.pev.velocity.Length() <= 0.0f) // If player is standing still, apply drain reduction.
-            {
-                float standingDrainRate = GetScaledCloakDrainRate();
-                m_flAbilityCharge -= standingDrainRate;
-            }
-            else // Otherwise drain normally.
-            {
-                m_flAbilityCharge -= m_flCloakBaseDrainRate;
-            }
+                float drainRate = GetScaledCloakDrainRate(); // Drain based on drain reduction as a percentage.
+                m_flAbilityCharge -= drainRate;
 
             
             if(m_flAbilityCharge <= 0.0f)
@@ -298,7 +297,7 @@ class CloakData
                 drainAmount = m_flCloakCostCap;
         }
         
-        m_flAbilityCharge -= drainAmount;
+        m_flAbilityCharge -= drainAmount * GetScaledCloakDrainRate();
         
         if(m_flAbilityCharge <= 0.0f)
         {
