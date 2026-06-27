@@ -66,9 +66,9 @@ const float SKILL_SHOCK_DAMAGE = 0.15f; // Shockrifle damage per level.
 const float SKILL_SHOCK_LIGHTNING = 0.04f; // Shockrifle damage % as area lightning damage per level.
 
 // Vanquisher.
-const float SKILL_VANQUISHER_AMMOPOOL = 0.40f; // Ammo pool increase per level.
-const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Flat increase of added explosive damage per level.
-const float SKILL_VANQUISHER_FIREDAMAGE = 0.05f; // Percentage of explosion converted to extra fire damage per level.
+const float SKILL_VANQUISHER_AMMOPOOL = 0.30f; // Ammo pool increase per level.
+const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 2.0f; // Flat increase of added explosive damage per level.
+const float SKILL_VANQUISHER_FIREDAMAGE = 0.10f; // Percentage of explosion converted to extra fire damage per level.
 const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage ticks per level.
 
 // Swarmer.
@@ -216,7 +216,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_MINIONDAMAGE)] = SkillDefinition("Minions: Damage", "+" + formatFloat(SKILL_MINIONDAMAGE * 100.0f, "f", 0, 2) + "% minion damage.", 5, SKILL_MINIONDAMAGE * 100.0f, "%", 0.0f);
 
     // Medic.
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal Aura: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT, "f", 0, 2) + "% max heal.", 5, SKILL_MEDIC_HEALPERCENT, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Ability: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT, "f", 0, 2) + "% max heal.", 5, SKILL_MEDIC_HEALPERCENT, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal Aura: Acid", "+" + formatFloat(SKILL_MEDIC_POISON, "f", 0, 2) + " acid damage.", 5, SKILL_MEDIC_POISON, "", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal Aura: Revive", "-" + formatFloat(SKILL_MEDIC_REVIVE, "f", 0, 2) + "s revive cooldown.", 5, SKILL_MEDIC_REVIVE, "s", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal Aura: Restore AP", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heal to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.5f);
@@ -263,10 +263,10 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_SPEED)] = SkillDefinition("Cloak: Speed Boost", "+" + formatFloat(SKILL_CLOAKER_SPEED * 100.0f, "f", 0, 2) + "% speed whilst cloaked.", 5, SKILL_CLOAKER_SPEED * 100.0f, "%", 0.5f);
 
     // Vanquisher.
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_AMMOPOOL)] = SkillDefinition("Dragon's Breath: Ammo Pool", "+" + formatFloat(SKILL_VANQUISHER_AMMOPOOL * 100.0f, "f", 0, 2) + "% ammo pool.", 5, SKILL_VANQUISHER_AMMOPOOL * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE)] = SkillDefinition("Dragon's Breath: Explosive Damage", "+" + formatFloat(SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "f", 0, 2) + " explosive damage.", 5, SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDAMAGE)] = SkillDefinition("Dragon's Breath: Fire Damage", "+" + formatFloat(SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "f", 0, 2) + "% of explosion as fire damage.", 5, SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDURATION)] = SkillDefinition("Dragon's Breath: Fire Duration", "+" + formatFloat(SKILL_VANQUISHER_FIREDURATION, "f", 0, 2) + "s fire duration.", 5, SKILL_VANQUISHER_FIREDURATION, "s", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_AMMOPOOL)] = SkillDefinition("Ability: Ammo Pool", "+" + formatFloat(SKILL_VANQUISHER_AMMOPOOL * 100.0f, "f", 0, 2) + "% ammo pool.", 5, SKILL_VANQUISHER_AMMOPOOL * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE)] = SkillDefinition("Ability: Extra Damage", "+" + formatFloat(SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "f", 0, 2) + " Added radius damage.", 5, SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDAMAGE)] = SkillDefinition("Ability: Fire Damage", "+" + formatFloat(SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "f", 0, 2) + "% fire damage.", 5, SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDURATION)] = SkillDefinition("Ability: Fire Duration", "+" + formatFloat(SKILL_VANQUISHER_FIREDURATION, "f", 0, 2) + "s fire duration.", 5, SKILL_VANQUISHER_FIREDURATION, "s", 0.5f);
 
     // Swarmer.
     @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKDAMAGE)] = SkillDefinition("Snarks: Snark Damage", "+" + formatFloat(SKILL_SWARMER_SNARKDAMAGE * 100.0f, "f", 0, 2) + "% snark damage.", 5, SKILL_SWARMER_SNARKDAMAGE * 100.0f, "%", 0.5f);
