@@ -67,8 +67,8 @@ const float SKILL_SHOCK_LIGHTNING = 0.04f; // Shockrifle damage % as area lightn
 
 // Vanquisher.
 const float SKILL_VANQUISHER_AMMOPOOL = 0.30f; // Ammo pool increase per level.
-const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 2.0f; // Flat increase of added explosive damage per level.
-const float SKILL_VANQUISHER_FIREDAMAGE = 0.10f; // Percentage of explosion converted to extra fire damage per level.
+const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Flat increase of added explosive damage per level.
+const float SKILL_VANQUISHER_FIREDAMAGE = 0.12f; // Percentage of explosion converted to extra fire damage per level.
 const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage ticks per level.
 
 // Swarmer.
@@ -264,7 +264,7 @@ void InitializeSkillDefinitions()
 
     // Vanquisher.
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_AMMOPOOL)] = SkillDefinition("Ability: Ammo Pool", "+" + formatFloat(SKILL_VANQUISHER_AMMOPOOL * 100.0f, "f", 0, 2) + "% ammo pool.", 5, SKILL_VANQUISHER_AMMOPOOL * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE)] = SkillDefinition("Ability: Extra Damage", "+" + formatFloat(SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "f", 0, 2) + " Added radius damage.", 5, SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE)] = SkillDefinition("Ability: Extra Damage", "+" + formatFloat(SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "f", 0, 2) + "radius damage.", 5, SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDAMAGE)] = SkillDefinition("Ability: Fire Damage", "+" + formatFloat(SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "f", 0, 2) + "% fire damage.", 5, SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDURATION)] = SkillDefinition("Ability: Fire Duration", "+" + formatFloat(SKILL_VANQUISHER_FIREDURATION, "f", 0, 2) + "s fire duration.", 5, SKILL_VANQUISHER_FIREDURATION, "s", 0.5f);
 

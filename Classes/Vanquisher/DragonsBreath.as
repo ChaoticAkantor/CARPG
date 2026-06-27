@@ -20,19 +20,19 @@ bool IsDragonsBreathProjectileAmmo(const string& in ammoName)
 // Damage multipliers per ammo type for Dragons Breath.
 float GetDragonsBreathAmmoMultiplier(const string& in ammoName)
 {
-    if (ammoName == "9mm")      return 0.08f; // Very fast fire rate weapons.
-    if (ammoName == "357")      return 0.30f;
-    if (ammoName == "buckshot") return 0.05f;
-    if (ammoName == "556")      return 0.10f; // Also fast fire rate weapons.
-    if (ammoName == "bolts")    return 0.50f;
+    if (ammoName == "9mm")      return 0.16f; // Very fast fire rate weapons.
+    if (ammoName == "357")      return 0.60f;
+    if (ammoName == "buckshot") return 0.10f;
+    if (ammoName == "556")      return 0.20f; // Also fast fire rate weapons.
+    if (ammoName == "bolts")    return 1.00f;
     //if (ammoName == "762")      return 2.00f;
-    if (ammoName == "m40a1")    return 0.40f;
-    if (ammoName == "uranium")  return 0.20f;
-    if (ammoName == "rockets")  return 0.50f;
-    if (ammoName == "sporeclip")  return 0.30f;
-    if (ammoName == "ARgrenades") return 0.40f;
-    if (ammoName == "shock charges") return 0.20f;
-    if (ammoName == "Hornets") return 0.15f;
+    if (ammoName == "m40a1")    return 0.80f;
+    if (ammoName == "uranium")  return 0.40f;
+    if (ammoName == "rockets")  return 1.00f;
+    if (ammoName == "sporeclip")  return 0.60f;
+    if (ammoName == "ARgrenades") return 0.80f;
+    if (ammoName == "shock charges") return 0.40f;
+    if (ammoName == "Hornets") return 0.30f;
     return 1.0f; // Default multiplier if ammo type not found.
 }
 
@@ -63,7 +63,7 @@ class DragonsBreathData
     private float m_flAbilityMax = 100.0f; // Max activation charges.
     private float m_flAbilityCostPerActivation = 100.0f; // Amount of charge to use per activation (Filling rounds). Should match max for single activation only.
     private float m_flAbilityRechargeTime = 100.0f; // Seconds to fully recharge ability.
-    private float m_flDragonsBreathExplosionDamageBase = 4.0f; // Base damage for explosion on impact.
+    private float m_flDragonsBreathExplosionDamageBase = 2.0f; // Base damage for explosion on impact.
     private int m_iDragonsBreathFireTicks = 6; // Number of damage over time ticks PER DoT.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
     private float m_flDragonsBreathRadius = 25.0f * 16; // Radius of fire damage DoT for Dragons Breath.
