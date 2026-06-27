@@ -23,22 +23,22 @@ const float SKILL_MINIONDAMAGE = 0.20f; // Damage percent increase for minions p
 // Medic.
 const float SKILL_MEDIC_HEALPERCENT = 1.00f;  // Increase max health percent healed per level (divided by 100).
 const float SKILL_MEDIC_POISON = 2.00f; // Flat poison damage per level.
-const float SKILL_MEDIC_REVIVE = 6.00f;   // Reduce revive cooldown in seconds per level.
+const float SKILL_MEDIC_REVIVE = 3.00f;   // Reduce revive cooldown in seconds per level.
 const float SKILL_MEDIC_HEALAP = 0.40f;  // Percent of max AP to heal per level (divided by 100).
 const float SKILL_MEDIC_DURATION = 0.20f; // Percent increase to heal aura duration per level.
 
 // Berserker.
 const float SKILL_BERSERKER_LIFESTEAL = 0.05f; // Flat increase to lifesteal per level.
-const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.01f; // Percent of damage dealt converted to ability charge per level.
-const float SKILL_BERSERKER_DAMAGEREDUCTION = 0.08f; // Damage reduction per level.
+const float SKILL_BERSERKER_DAMAGEABILITYCHARGE = 0.005f; // Percent of damage dealt converted to ability charge per level.
+const float SKILL_BERSERKER_DAMAGEREDUCTION = 0.05f; // Damage reduction per level.
 const float SKILL_BERSERKER_OVERHEAL = 0.10f; // Percent of max HP to overheal from lifesteal per level.
-const float SKILL_BERSERKER_APCONVERSION = 0.20f; // Percent of Max AP converted into Max HP.
+const float SKILL_BERSERKER_APCONVERSION = 0.15f; // Percent of Max AP converted into Max HP.
 const float SKILL_BERSERKER_DURATION = 0.20f; // Percent increase to Bloodlust duration per level.
 
 // Engineer.
-const float SKILL_ENGINEER_SENTRYDAMAGE = 0.30f; // Sentry damage per level.
-const float SKILL_ENGINEER_MINIHEALAURA = 1.0f; // Mini-heal Aura % max HP heal per level.
-const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.20f;  // % of damage as area explosive damage per level.
+const float SKILL_ENGINEER_SENTRYDAMAGE = 0.15f; // Sentry damage per level.
+const float SKILL_ENGINEER_MINIHEALAURA = 0.5f; // Mini-heal Aura % max HP heal per level (divided by 100).
+const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.10f;  // % of damage as area explosive damage per level.
 const float SKILL_ENGINEER_SENTRYDURATION = 0.20f; // Sentry duration increase per level.
 
 // Xenomancer.
@@ -48,31 +48,31 @@ const float SKILL_XENOMANCER_LIFESTEAL = 0.01f; // Minion lifesteal percent to p
 const float SKILL_NECROMANCER_RATS = 3.0f; // Cooldown reduction in seconds per level.
 
 // Warden.
-const float SKILL_WARDEN_SHIELDHP = 0.20f; // Ice shield HP percent increase per level.
+const float SKILL_WARDEN_SHIELDHP = 0.15f; // Ice shield HP percent increase per level.
 const float SKILL_WARDEN_DAMAGEREFLECT = 0.08f; // Damage reflect per level.
-const float SKILL_WARDEN_ACTIVERECHARGE = 0.05f; // Active shield recharge per level.
-const float SKILL_WARDEN_HPABSORB = 0.06f; // HP absorb from damage reflected per level.
+const float SKILL_WARDEN_ACTIVERECHARGE = 0.04f; // Active shield recharge per level.
+const float SKILL_WARDEN_HPABSORB = 0.05f; // HP absorb from damage reflected per level.
 
 // Cloaker.
 const float SKILL_CLOAKER_CLOAKDAMAGE = 0.10f; // Cloak damage bonus increase per level.
 const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.20f; // Cloak nova damage increase per level.
 const float SKILL_CLOAKER_CLOAKDURATION = 0.20f; // Cloak duration increase per level.
-const float SKILL_CLOAKER_STANDINGDRAIN = 0.20f; // Percent drain reduction while standing still.
+const float SKILL_CLOAKER_DRAINREDUCTION = 0.05f; // Percent drain reduction.
 const float SKILL_CLOAKER_SPEED = 0.20f; // Percent speed increase while cloaked.
 
 // Shocktrooper.
 const float SKILL_SHOCK_CAPACITY = 0.20f; // Shockrifle capacity per level.
-const float SKILL_SHOCK_DAMAGE = 0.20f; // Shockrifle damage per level.
+const float SKILL_SHOCK_DAMAGE = 0.15f; // Shockrifle damage per level.
 const float SKILL_SHOCK_LIGHTNING = 0.04f; // Shockrifle damage % as area lightning damage per level.
 
 // Vanquisher.
-const float SKILL_VANQUISHER_AMMOPOOL = 0.60f; // Ammo pool increase per level.
+const float SKILL_VANQUISHER_AMMOPOOL = 0.40f; // Ammo pool increase per level.
 const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Flat increase of added explosive damage per level.
-const float SKILL_VANQUISHER_FIREDAMAGE = 0.06f; // Percentage of explosion converted to extra fire damage per level.
+const float SKILL_VANQUISHER_FIREDAMAGE = 0.05f; // Percentage of explosion converted to extra fire damage per level.
 const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage ticks per level.
 
 // Swarmer.
-const float SKILL_SWARMER_SNARKDAMAGE = 1.50f; // Snark damage per level.
+const float SKILL_SWARMER_SNARKDAMAGE = 1.00f; // Snark damage per level.
 const float SKILL_SWARMER_SNARKCOUNT = 0.20f; // Percent of extra snarks per level.
 
 // formatFloat is for display strings only, strength (4th ctor arg) must stay a raw float for math.
@@ -150,7 +150,7 @@ enum SkillID
     SKILL_CLOAKER_CLOAKDAMAGE,
     SKILL_CLOAKER_CLOAKNOVADAMAGE,
     SKILL_CLOAKER_CLOAKDURATION,
-    SKILL_CLOAKER_STANDINGDRAIN,
+    SKILL_CLOAKER_DRAINREDUCTION,
     SKILL_CLOAKER_SPEED,
 
     // Vanquisher.
@@ -259,7 +259,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Cloak: Damage Bonus", "+" + formatFloat(SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "f", 0, 2) + "% damage bonus.", 5, SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+" + formatFloat(SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "f", 0, 2) + "% nova damage.", 5, SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+" + formatFloat(SKILL_CLOAKER_CLOAKDURATION * 100.0f, "f", 0, 2) + "% cloak duration.", 5, SKILL_CLOAKER_CLOAKDURATION * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_STANDINGDRAIN)] = SkillDefinition("Cloak: Standing Drain", "-" + formatFloat(SKILL_CLOAKER_STANDINGDRAIN * 100.0f, "f", 0, 2) + "% reduced drain whilst motionless.", 5, SKILL_CLOAKER_STANDINGDRAIN * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_DRAINREDUCTION)] = SkillDefinition("Cloak: Drain Reduction", "-" + formatFloat(SKILL_CLOAKER_DRAINREDUCTION * 100.0f, "f", 0, 2) + "% reduced drain.", 5, SKILL_CLOAKER_DRAINREDUCTION * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_SPEED)] = SkillDefinition("Cloak: Speed Boost", "+" + formatFloat(SKILL_CLOAKER_SPEED * 100.0f, "f", 0, 2) + "% speed whilst cloaked.", 5, SKILL_CLOAKER_SPEED * 100.0f, "%", 0.5f);
 
     // Vanquisher.
@@ -358,7 +358,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE);
             result.insertLast(SkillID::SKILL_CLOAKER_CLOAKDURATION);
-            result.insertLast(SkillID::SKILL_CLOAKER_STANDINGDRAIN);
+            result.insertLast(SkillID::SKILL_CLOAKER_DRAINREDUCTION);
             result.insertLast(SkillID::SKILL_CLOAKER_SPEED);
             break;
 
