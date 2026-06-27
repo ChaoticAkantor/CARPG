@@ -19,7 +19,7 @@ class BloodlustData
     private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
 
     // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
-    private float m_flBaseLifesteal = 0.20f; // Lifesteal % base. Doubles during bloodlust!
+    private float m_flBaseLifesteal = 0.10f; // Lifesteal % base. Doubles during bloodlust!
 
     // Timers.
     private float m_flAbilityCharge = 0.0f; // Current charge.
