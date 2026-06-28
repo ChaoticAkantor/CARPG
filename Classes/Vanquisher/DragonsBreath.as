@@ -2,6 +2,7 @@ dictionary g_PlayerDragonsBreath;
 string strDragonsBreathActivateSound = "weapons/reload3.wav";
 string strDragonsBreathImpactSound = "weapons/explode3.wav"; // Explosion sound.
 string strDragonsBreathExplosionSprite = "sprites/zerogxplode.spr"; // Explosion sprite.
+string strDragonsBreathFireSound = "sound/tfc/ambience/fire1.wav"; // Fire DoT sound.
 string strDragonsBreathFireSprite = "sprites/fire.spr"; // Fire effect.
 
 // Ammo types that are projectile-based (proc on target hit rather than on fire).
