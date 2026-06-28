@@ -26,16 +26,16 @@ class SentryData
     // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flAbilityMax = 30.0f; // Base max duration.
+    private float m_flAbilityMax = 100.0f; // Base max duration.
     private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
     private float m_flBaseHealth = 5000.0; // Base health of the sentry. Must be very high for it to be able to survive most encounters.
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
     private float m_flHealRadius = 50.0f * 16.0f; // Sentry heal radius (ft converted to units).
     private float m_flExplosiveRadius = 30.0f * 16.0f; // Radius of the extra explosive damage.
 
-    private float m_flEnergyDrain = 1.0f; // Energy drain per interval.
-    private float m_flDrainInterval = 1.0f; // Energy drain interval in seconds.
-    private float m_flRecallEnergyCost = 0.20f; // Energy percentage cost to recall.
+    private float m_flAbilityDrain = 1.0f; // Ability drain per interval.
+    private float m_flDrainInterval = 0.1f; // Ability drain interval in seconds.
+    private float m_flRecallEnergyCost = 0.25f; // Ability percentage cost to recall.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
@@ -43,7 +43,7 @@ class SentryData
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 1.0f;
     private float m_flNextHeal = 0.0f;
-    private float m_flHealInterval = 1.0f;
+    private float m_flHealInterval = 1.0f; // Interval between each heal tick.
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = 1.0f; // Time between visual updates. Same as heal rate.
     private bool m_bExplosiveActive = false; // Recursion guard for explosive damage.
@@ -607,11 +607,11 @@ class SentryData
     float GetEnergyDrain()
     {
         if(!HasStats() || m_pStats is null)
-            return m_flEnergyDrain;
+            return m_flAbilityDrain;
 
-        float drain = m_flEnergyDrain;
+        float abilityDrain = m_flAbilityDrain;
 
-        return drain;
+        return abilityDrain;
     }
 }
 
