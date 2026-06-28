@@ -38,8 +38,8 @@ const float SKILL_BERSERKER_DURATION = 0.20f; // Percent increase to Bloodlust d
 // Engineer.
 const float SKILL_ENGINEER_SENTRYDAMAGE = 0.15f; // Sentry damage per level.
 const float SKILL_ENGINEER_MINIHEALAURA = 0.5f; // Mini-heal Aura % max HP heal per level (divided by 100).
-const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.10f;  // % of damage as area explosive damage per level.
-const float SKILL_ENGINEER_SENTRYDURATION = 0.20f; // Sentry duration increase per level.
+const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.12f;  // % of damage as area explosive damage per level.
+const float SKILL_ENGINEER_SENTRYDURATION = 0.25f; // Sentry duration increase per level.
 
 // Xenomancer.
 const float SKILL_XENOMANCER_LIFESTEAL = 0.01f; // Minion lifesteal percent to players per level.
