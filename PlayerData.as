@@ -544,7 +544,7 @@ class PlayerData
                         HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[m_szSteamID]);
                         if (aura !is null && aura.IsActive() && pPlayer !is null) 
                         {
-                            aura.DeactivateAura(pPlayer);
+                            aura.DeactivateHeal(pPlayer);
                         }
                         g_HealingAuras.delete(m_szSteamID);
                     }
