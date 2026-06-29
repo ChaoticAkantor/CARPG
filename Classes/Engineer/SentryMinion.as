@@ -142,7 +142,7 @@ class SentryData
             
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO);
         float skillPower = SKILL_ENGINEER_EXPLOSIVEAMMO; // Bonus damage based on skill level.
-        float modifier = (1.0 + skillPower * skillLevel); // Total damage multiplier.
+        float modifier = skillPower * skillLevel; // Total damage multiplier.
 
         return modifier;
     }
@@ -380,12 +380,12 @@ class SentryData
             explAreaMsg.WriteCoord(center.x);
             explAreaMsg.WriteCoord(center.y);
             explAreaMsg.WriteCoord(center.z);
-            explAreaMsg.WriteByte(25); // Radius units * 10.
+            explAreaMsg.WriteByte(30); // Radius units * 10.
             explAreaMsg.WriteByte(255); // Red.
             explAreaMsg.WriteByte(255); // Green.
             explAreaMsg.WriteByte(50); // Blue.
-            explAreaMsg.WriteByte(uint8(5)); // Life * 0.1s.
-            explAreaMsg.WriteByte(uint8(5)); // Fade speed * 1s.
+            explAreaMsg.WriteByte(uint8(1)); // Life * 0.1s.
+            explAreaMsg.WriteByte(uint8(1)); // Fade speed * 1s.
             explAreaMsg.End();
 
         NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, center);
