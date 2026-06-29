@@ -1193,7 +1193,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         }
                         HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
                         if(aura !is null)
-                            aura.ToggleAura(pPlayer);
+                            aura.ActivateHeal(pPlayer);
                     }
                     // Shocktrooper ability handling.
                     else if(data.GetCurrentClass() == PlayerClass::CLASS_SHOCKTROOPER)
@@ -1443,7 +1443,7 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
         HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
         if (aura !is null)
         {
-            aura.ResetAura(pPlayer);
+            aura.ResetHeal(pPlayer);
         }
     }
 
