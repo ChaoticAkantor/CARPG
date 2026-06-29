@@ -71,7 +71,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
         switch(currentClass)
         {
             case PlayerClass::CLASS_MEDIC:
-                resourceName = "Heal Aura";
+                resourceName = "Heal";
                 if(g_HealingAuras.exists(steamID))
                 {
                     HealingAura@ healingAura = cast<HealingAura@>(g_HealingAuras[steamID]);
@@ -79,14 +79,19 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                     {
                         current = healingAura.GetAbilityCharge();
                         maximum = healingAura.GetAbilityMax();
+
+                        string regenInfo = " + " + healingAura.GetScaledRegenAmount() + "%/s (8s)";
                         
-                        resourceInfo += "[Heal: " + formatFloat(healingAura.GetScaledHealAmount(), "f", 0, 2) + "%] ";
+                        resourceInfo += "[Heal: " + formatFloat(healingAura.GetScaledHealAmount(), "f", 0, 2) + "%" + regenInfo + "] ";
+
+                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALREGEN) > 0)
+
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALAP) > 0)
-                            resourceInfo += "[Restore AP: " + formatFloat(healingAura.GetScaledHealAP(), "f", 0, 2) + "%] \n";
+                            resourceInfo += "[AP Restore: " + formatFloat(healingAura.GetScaledHealAP(), "f", 0, 2) + "%] \n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON) > 0)
-                            resourceInfo += "[Poison: " + formatFloat(healingAura.GetPoisonDamageAmount(), "f", 0, 2) + " DMG]\n";
+                            resourceInfo += "[Acid DMG: " + formatFloat(healingAura.GetPoisonDamageAmount(), "f", 0, 2) + " DMG]\n";
 
                         
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_REVIVE) > 0)
@@ -239,15 +244,15 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                             {
                                 float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
 
-                                resourceInfo += "[Sentry HP: " + formatFloat(healthPercent, "f", 0, 0) + "%] ";
+                                resourceInfo += "[HP: " + formatFloat(healthPercent, "f", 0, 0) + "%] ";
 
                                 resourceInfo += "[DMG: " + formatFloat(sentryData.GetScaledDamage() * 100, "f", 0, 2) + "%]\n";
 
                                 if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO) > 0)
-                                    resourceInfo += "[Explosive DMG: " + formatFloat(sentryData.GetScaledExplosiveDamage() * 100, "f", 0, 2) + "%]\n";
+                                    resourceInfo += "[Explosive DMG: +" + formatFloat(sentryData.GetScaledExplosiveDamage() * 100, "f", 0, 2) + "%]\n";
 
                                 if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA) > 0)
-                                    resourceInfo += "[Healing: " + formatFloat(sentryData.GetScaledHealAmount(), "f", 0, 2) + "% HP/s]\n";
+                                    resourceInfo += "[Heal: " + formatFloat(sentryData.GetScaledHealAmount(), "f", 0, 2) + "% HP/s]\n";
                             }
                         }
                     }
