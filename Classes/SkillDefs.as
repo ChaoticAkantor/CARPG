@@ -17,8 +17,8 @@ const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP pe
 // Minion Class exclusive.
 const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
 const float SKILL_MINIONHP = 0.50f; // HP percent increase for minions per level.
-const float SKILL_MINIONREGEN = 0.001f; // Max HP regen percent for minions per level.
-const float SKILL_MINIONDAMAGE = 0.20f; // Damage percent increase for minions per level.
+const float SKILL_MINIONREGEN = 0.0001f; // Max HP regen percent for minions per level.
+const float SKILL_MINIONDAMAGE = 0.10f; // Damage percent increase for minions per level.
 
 // Medic.
 const float SKILL_MEDIC_HEALPERCENT = 3.00f; // Increase max health percent healed per level (divided by 100).
@@ -211,9 +211,9 @@ void InitializeSkillDefinitions()
 
     // Minion Class exclusive.
     @g_SkillDefs[int(SkillID::SKILL_MINIONPOINT)] = SkillDefinition("Minions: Minion Point", "+" + SKILL_MINIONPOINT + " minion point.", 3, SKILL_MINIONPOINT, " Point", 0.0f);
-    @g_SkillDefs[int(SkillID::SKILL_MINIONHP)] = SkillDefinition("Minions: Max HP", "+" + int(SKILL_MINIONHP * 100) + "% minion HP.", 5, int(SKILL_MINIONHP * 100.0f), "%", 0.0f);
-    @g_SkillDefs[int(SkillID::SKILL_MINIONREGEN)] = SkillDefinition("Minions: HP Regen", "+" + formatFloat(SKILL_MINIONREGEN * 100.0f, "f", 0, 2) + "% minion HP/s.", 5, SKILL_MINIONREGEN * 100.0f, "% HP/s", 0.0f);
-    @g_SkillDefs[int(SkillID::SKILL_MINIONDAMAGE)] = SkillDefinition("Minions: Damage", "+" + formatFloat(SKILL_MINIONDAMAGE * 100.0f, "f", 0, 2) + "% minion damage.", 5, SKILL_MINIONDAMAGE * 100.0f, "%", 0.0f);
+    @g_SkillDefs[int(SkillID::SKILL_MINIONHP)] = SkillDefinition("Minions: Max HP", "+" + int(SKILL_MINIONHP * 100) + "% minion HP.", 5, int(SKILL_MINIONHP * 100.0f), "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MINIONREGEN)] = SkillDefinition("Minions: HP Regen", "+" + formatFloat(SKILL_MINIONREGEN * 100.0f, "f", 0, 2) + "% minion HP/s.", 5, SKILL_MINIONREGEN * 100.0f, "% HP/s", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MINIONDAMAGE)] = SkillDefinition("Minions: Damage", "+" + formatFloat(SKILL_MINIONDAMAGE * 100.0f, "f", 0, 2) + "% minion damage.", 5, SKILL_MINIONDAMAGE * 100.0f, "%", 0.5f);
 
     // Medic.
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Ability: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT, "f", 0, 2) + "% HP.", 5, SKILL_MEDIC_HEALPERCENT, "%", 0.5f);
