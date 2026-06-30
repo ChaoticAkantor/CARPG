@@ -239,7 +239,7 @@ void InitializeSkillDefinitions()
     // Robomancer – none defined yet.
 
     // Xenomancer.
-    @g_SkillDefs[int(SkillID::SKILL_XENOMANCER_LIFESTEAL)] = SkillDefinition("Ability: Lifesteal", "+" + formatFloat(SKILL_XENOMANCER_LIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal to players.", 3, SKILL_XENOMANCER_LIFESTEAL * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_XENOMANCER_LIFESTEAL)] = SkillDefinition("Ability: Lifesteal", "+" + formatFloat(SKILL_XENOMANCER_LIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal to players.", 5, SKILL_XENOMANCER_LIFESTEAL * 100.0f, "%", 0.5f);
 
     // Necromancer.
     @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Ability: Zombie Rats", "-" + formatFloat(SKILL_NECROMANCER_RATS, "f", 0, 2) + "s Zombie Rat cooldown.", 5, SKILL_NECROMANCER_RATS, "s", 0.5f);
