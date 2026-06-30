@@ -46,8 +46,8 @@ enum MinionType // Minion gun type. Not all are supported.
 const array<float> ROBO_HP_MODIFIERS =
 {
     1.00,  // Shotgun.
-    1.15,  // MP5.
-    1.30   // M16.
+    1.00,  // MP5.
+    1.00   // M16.
 };
 
 const array<float> ROBO_DMG_MODIFIERS = 
@@ -97,7 +97,7 @@ class MinionData
     // Monster variables.
     private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
     private float m_flAbilityRechargeTime = 60.0f; // Time in seconds to recharge one minion point.
-    private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
+    private float m_flBaseHealth = 180.0; // Base health of Robogrunts.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
 
