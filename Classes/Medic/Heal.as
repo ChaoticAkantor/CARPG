@@ -370,9 +370,9 @@ class HealingAura
             string targetName = pEntity.pev.targetname;
             if ((targetName.Length() >= 12 && targetName.SubString(0, 12) == "_robominion_") ||
                 (targetName.Length() >= 13 && targetName.SubString(0, 13) == "_necrominion_") ||
-                (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_necrominion_rat_") ||
+                (targetName.Length() >= 17 && targetName.SubString(0, 17) == "_necrominion_rat_") ||
                 (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_xenminion_") ||
-                (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_snark_"))
+                (targetName.Length() >= 7 && targetName.SubString(0, 7) == "_snark_"))
                 continue;
 
             // Only damage entities that are NOT allies.
