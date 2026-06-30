@@ -366,7 +366,7 @@ class HealingAura
             if (pEntity.pev.health <= 0)
                 continue;
 
-            // Skip player-summoned minions.
+            // Don't damage player-summoned minions.
             string targetName = pEntity.pev.targetname;
             if ((targetName.Length() >= 12 && targetName.SubString(0, 12) == "_robominion_") ||
                 (targetName.Length() >= 13 && targetName.SubString(0, 13) == "_necrominion_") ||
@@ -579,7 +579,7 @@ class HealingAura
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
             if (pMonster !is null && pMonster.IsAlive())
             {
-                // Check if this entity is in the skip list
+                // Check if this entity is in the skip list.
                 string classname = string(pMonster.pev.classname);
                 bool bSkip = false;
                 for (uint j = 0; j < g_SkipClassNames.length(); j++)
