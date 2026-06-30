@@ -80,7 +80,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         current = healingAura.GetAbilityCharge();
                         maximum = healingAura.GetAbilityMax();
 
-                        string regenInfo = " + " + healingAura.GetScaledRegenAmount() + "%/s (8s)";
+                        string regenInfo = " + " + healingAura.GetScaledRegenAmount() + "%/s";
                         
                         resourceInfo += "[Heal: " + formatFloat(healingAura.GetScaledHealAmount(), "f", 0, 2) + "%" + regenInfo + "] ";
 
