@@ -169,7 +169,7 @@ class NecroMinionData
 
     // Monster variables.
     private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
-    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
+    private float m_flAbilityRechargeTime = 20.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private int m_iRatSpawnCount = 2; // Number of rats to spawn with the rat ability, per active minion.
