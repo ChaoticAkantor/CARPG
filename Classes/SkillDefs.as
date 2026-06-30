@@ -16,7 +16,7 @@ const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP pe
 // Class/Ability specific skills.
 // Minion Class exclusive.
 const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
-const float SKILL_MINIONHP = 0.50f; // HP percent increase for minions per level.
+const float SKILL_MINIONHP = 0.60f; // HP percent increase for minions per level.
 const float SKILL_MINIONREGEN = 0.0001f; // Max HP regen percent for minions per level.
 const float SKILL_MINIONDAMAGE = 0.10f; // Damage percent increase for minions per level.
 
