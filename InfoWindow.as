@@ -92,9 +92,9 @@ string GetClassDescription(PlayerClass pClass)
     {
         case PlayerClass::CLASS_MEDIC:
             return
-                "{Heal Aura}.\n\n"
-                "Can be de-activated for a cost.\n"
-                "Heals allies (players and friendly NPCs) every tick.\n" 
+                "{Heal}.\n\n"
+                "Cost all charge to activate.\n"
+                "Heals allies (players and friendly NPCs) in a very large radius.\n" 
                 "Healing is dealt as a percentage of the target's max health.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"

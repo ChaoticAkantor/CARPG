@@ -82,8 +82,9 @@
 # Classes
   - Classes have a unique ability that can be modified with Ability Skills, duration, charge time and activation/deactivation costs vary.
 
+
 # Medic
-  - Healing Aura that restores a percentage of Max HP for allies (Players & NPC's).
+  - Heal that restores a percentage of Max HP for allies (Players & NPC's) in a very large radius.
 
 
 # Berserker
