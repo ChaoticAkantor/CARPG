@@ -122,7 +122,7 @@ string GetClassDescription(PlayerClass pClass)
             return
                 "{Robogrunts}.\n\n"
                 "Can summon friendly Robogrunts and choose their weapon type, HP varies by type.\n"
-                "Robogrunts are armored and are resistant to all forms of damage except for explosives and electric.\n"
+                "Robogrunts have 80% resistance to damage except for explosion, shock, frost, acid and energy types.\n"
                 "Minion movement and attack speed is increased.\n"
                 "Minion limit depends on minion type and points reserved.\n"
                 "Can be commanded with Sven NPC keybinds.\n"
