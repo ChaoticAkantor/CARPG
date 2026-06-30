@@ -106,18 +106,25 @@ const array<int> ZOMBIE_BODYGROUPS =
     11  // Male patient.
 };
 
+const array<float> NECRO_HP_BASE = 
+{
+    150.0f,  // Zombie (soldier type).
+    80.0f,  // Skeleton.
+    200.0f  // Abomination (Gonome).
+};
+
 const array<float> NECRO_HP_MODIFIERS = 
 {
-    2.00,  // Zombie.
-    1.50,  // Skeleton.
-    2.50   // Abomination (Gonome).
+    1.00,  // Zombie.
+    1.00,  // Skeleton.
+    1.00   // Abomination (Gonome).
 };
 
 const array<float> NECRO_ANIMATION_SPEEDS = 
 {
-    3.00,  // Zombie.
-    1.40,  // Skeleton.
-    1.60   // Abomination (Gonome).
+    2.50,  // Zombie.
+    1.30,  // Skeleton.
+    1.25   // Abomination (Gonome).
 };
 
 // Used to change monster name in UI.
@@ -169,7 +176,7 @@ class NecroMinionData
 
     // Monster variables.
     private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
-    private float m_flAbilityRechargeTime = 20.0f; // Time in seconds to recharge one minion point.
+    private float m_flAbilityRechargeTime = 60.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private int m_iRatSpawnCount = 2; // Number of rats to spawn with the rat ability, per active minion.
@@ -240,7 +247,7 @@ class NecroMinionData
         if (m_flAbilityCharge >= chargeMax)
             return;
 
-        float rechargeRate = 1.0f / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
@@ -273,16 +280,16 @@ class NecroMinionData
     float GetScaledHealth(int minionType = 0)
     {
         if(m_pStats is null)
-            return m_flBaseHealth * NECRO_HP_MODIFIERS[minionType]; // Return base health with type modifier if no stats.
+            return NECRO_HP_BASE[minionType] * NECRO_HP_MODIFIERS[minionType]; // Return base health with type modifier if no stats.
 
-        float minionScaledHealth = m_flBaseHealth; // Start with base health.
+        float minionScaledHealth = NECRO_HP_BASE[minionType]; // Start with base health based on type.
 
         float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONHP);
         float skillPower = SKILL_MINIONHP;
 
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        minionScaledHealth *= modifier * NECRO_HP_MODIFIERS[minionType]; // Apply skill and type modifier.
+        minionScaledHealth *= modifier * NECRO_HP_MODIFIERS[minionType]; // Apply skill and type modifier after scaling.
 
         return minionScaledHealth;
     }

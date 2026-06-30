@@ -204,22 +204,31 @@ enum XenType
     XEN_BABYGARG = 4
 }
 
+const array<float> XEN_HP_BASE = 
+{
+    60.0f,  // Houndeye.
+    60.0f,  // Pit Drone.
+    110.0f,  // Bullsquid.
+    200.0f,  // Shocktrooper.
+    600.0f   // Baby Gargantua.
+};
+
 const array<float> XEN_HP_MODIFIERS = 
 {
-    2.00,  // Houndeye.
-    1.50,  // Pit Drone.
-    2.00,  // Bullsquid.
-    1.50,  // Shocktrooper.
-    2.50   // Baby Gargantua.
+    1.00,  // Houndeye.
+    1.00,  // Pit Drone.
+    1.00,  // Bullsquid.
+    1.00,  // Shocktrooper.
+    1.00   // Baby Gargantua.
 };
 
 const array<float> XEN_ANIMATION_SPEEDS = 
 {
-    1.80,  // Houndeye.
-    1.40,  // Pit Drone.
-    1.40,  // Bullsquid.
-    1.40,  // Shocktrooper.
-    1.80   // Baby Gargantua.
+    1.60,  // Houndeye.
+    1.30,  // Pit Drone.
+    1.30,  // Bullsquid.
+    1.30,  // Shocktrooper.
+    1.25   // Baby Gargantua.
 };
 
 const array<string> XEN_NAMES = 
@@ -271,7 +280,7 @@ class XenMinionData
 
     // Ability variables.
     private int m_iMinionPointMax = 1; // Max pool for minions, can be increased with skill.
-    private float m_flAbilityRechargeTime = 20.0f; // Time in seconds to recharge one minion point.
+    private float m_flAbilityRechargeTime = 60.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private float m_flLifestealRadius = 60.0f * 16.0f; // Radius for lifesteal effect.
@@ -320,7 +329,7 @@ class XenMinionData
         if (m_flAbilityCharge >= chargeMax)
             return;
 
-        float rechargeRate = 1.0f / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
@@ -362,16 +371,16 @@ class XenMinionData
     float GetScaledHealth(int minionType = 0)
     {
         if(m_pStats is null)
-            return m_flBaseHealth * XEN_HP_MODIFIERS[minionType]; // Return base health with type modifier if no stats.
+            return XEN_HP_BASE[minionType] * XEN_HP_MODIFIERS[minionType]; // Return base health with type modifier if no stats.
 
-        float minionScaledHealth = m_flBaseHealth; // Start with base health.
+        float minionScaledHealth = XEN_HP_BASE[minionType]; // Start with base health for each type.
 
         float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONHP);
         float skillPower = SKILL_MINIONHP;
         
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        minionScaledHealth *= modifier * XEN_HP_MODIFIERS[minionType]; // Apply skill and type modifier.
+        minionScaledHealth *= modifier * XEN_HP_MODIFIERS[minionType]; // Apply skill and type modifier after scaling.
 
         return minionScaledHealth;
     }

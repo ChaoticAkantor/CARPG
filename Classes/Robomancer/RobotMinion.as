@@ -45,14 +45,14 @@ enum MinionType // Minion gun type. Not all are supported.
 
 const array<float> ROBO_HP_MODIFIERS =
 {
-    0.75,  // Shotgun.
-    1.00,  // MP5.
-    1.25   // M16.
+    1.00,  // Shotgun.
+    1.15,  // MP5.
+    1.30   // M16.
 };
 
 const array<float> ROBO_DMG_MODIFIERS = 
 {
-    1.50,  // Shotgun. Pump, not semi-auto so the DPS is terrible without a modifier.
+    1.30,  // Shotgun. Pump, not semi-auto so the DPS is terrible without a modifier.
     1.00,  // MP5.
     1.00   // M16.
 };
@@ -96,10 +96,10 @@ class MinionData
 
     // Monster variables.
     private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
-    private float m_flAbilityRechargeTime = 20.0f; // Time in seconds to recharge one minion point.
+    private float m_flAbilityRechargeTime = 60.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Robogrunts.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
-    private float m_flAnimationSpeed = 1.40; // Animation speed modifier, for ALL types.
+    private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
 
     // Timers and trackers.
     private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
@@ -154,7 +154,7 @@ class MinionData
         if (m_flAbilityCharge >= chargeMax)
             return;
 
-        float rechargeRate = 1.0f / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
