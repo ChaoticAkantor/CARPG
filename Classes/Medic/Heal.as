@@ -73,7 +73,7 @@ class HealingAura
     private float m_flAbilityMax = 100.0f; // Base max duration/charge.
     private float m_flAbilityRechargeTime = 15.0f; // Time it takes for the ability to fully recharge.
     private float m_flHealingRadius = 80.0f * 16; // // Radius of the healing aura (ft converted to units).
-    private float m_flBaseHealAmount = 40.0f; // Base health restored, as a percentage of max health.
+    private float m_flBaseHealAmount = 30.0f; // Base health restored, as a percentage of max health.
     private float m_flDrainAmount = 100.0f; // Charge drained per activation.
     private float m_flActivateCooldown = 0.5f; // Cooldown for each activation.
     private float m_flHealRegenInterval = 1.0f; // Time between heals/damage tick, now used for regen skill.
@@ -370,7 +370,9 @@ class HealingAura
             string targetName = pEntity.pev.targetname;
             if ((targetName.Length() >= 12 && targetName.SubString(0, 12) == "_robominion_") ||
                 (targetName.Length() >= 13 && targetName.SubString(0, 13) == "_necrominion_") ||
-                (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_xenminion_"))
+                (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_necrominion_rat_") ||
+                (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_xenminion_") ||
+                (targetName.Length() >= 11 && targetName.SubString(0, 11) == "_snark_"))
                 continue;
 
             // Only damage entities that are NOT allies.
@@ -609,7 +611,7 @@ class HealingAura
                 if (healAmount > 0.0f)
                 {
                     if (!pEntity.IsPlayer())
-                        healAmount *= 1.5f; // If target is an NPC, modify healing amount.
+                        healAmount *= 0.75f; // If target is an NPC, modify healing amount.
 
                     pEntity.pev.health = Math.min(pEntity.pev.health + healAmount, pEntity.pev.max_health);
                     pPlayer.pev.frags += m_iHealFragBonus;
@@ -625,7 +627,7 @@ class HealingAura
                     {
                         float amount = regenPercent * pEntity.pev.max_health / 100.0f; // Heal based on max HP.
                         if (!pEntity.IsPlayer())
-                            amount *= 1.5f;  // If target is an NPC, modify healing amount.
+                            amount *= 0.75f;  // If target is an NPC, modify healing amount.
 
                         // Number of ticks = duration / interval.
                         int ticks = int(m_flHealRegenDuration / m_flHealRegenInterval);
