@@ -9,7 +9,7 @@ class ShockRifleData
     // Shocktrooper ability scaling values.
     private float m_flAbilityMax = 100.0f; // Ability max charge.
     private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge ability.
-    private float m_flLightningStrikeRadius = 100.0f * 16.0f; // Radius of the area strike in units.
+    private float m_flLightningStrikeRadius = 150.0f * 16.0f; // Radius of the area strike in units.
     private bool m_bLightningActive = false; // Re-entrancy guard: prevents RadiusDamage from triggering another strike on nearby enemies.
 
     // Timers.
@@ -225,7 +225,7 @@ class ShockRifleData
                 dlight.WriteCoord(hitPos.x);
                 dlight.WriteCoord(hitPos.y);
                 dlight.WriteCoord(hitPos.z);
-                dlight.WriteByte(int(m_flLightningStrikeRadius / 2)); // Radius.
+                dlight.WriteByte(int(32)); // Radius.
                 dlight.WriteByte(0); // R
                 dlight.WriteByte(150); // G
                 dlight.WriteByte(255); // B
