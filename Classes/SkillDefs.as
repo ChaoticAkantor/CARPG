@@ -62,11 +62,11 @@ const float SKILL_CLOAKER_SPEED = 0.20f; // Percent speed increase while cloaked
 
 // Shocktrooper.
 const float SKILL_SHOCK_CAPACITY = 0.20f; // Shockrifle capacity per level.
-const float SKILL_SHOCK_DAMAGE = 0.15f; // Shockrifle damage per level.
-const float SKILL_SHOCK_LIGHTNING = 0.04f; // Shockrifle damage % as area lightning damage per level.
+const float SKILL_SHOCK_DAMAGE = 0.10f; // Shockrifle damage per level.
+const float SKILL_SHOCK_LIGHTNING = 0.03f; // Shockrifle damage % as area lightning damage per level.
 
 // Vanquisher.
-const float SKILL_VANQUISHER_AMMOPOOL = 0.30f; // Ammo pool increase per level.
+const float SKILL_VANQUISHER_AMMOPOOL = 0.40f; // Ammo pool increase per level.
 const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Flat increase of added explosive damage per level.
 const float SKILL_VANQUISHER_FIREDAMAGE = 0.06f; // Percentage of explosion converted to extra fire damage per level.
 const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage ticks per level.
