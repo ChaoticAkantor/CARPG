@@ -77,6 +77,7 @@ namespace Menu
             if(choice == SKILL_MENU_RESET)
             {
                 m_pOwner.ResetCurrentSkills(pPlayer);
+                ResetPlayer(pPlayer); // Reset abilities.
                 g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK,
                     "[CARPG] " + m_pOwner.GetClassName(m_pOwner.GetCurrentClass()) + " - All skillpoints refunded.\n");
             }
