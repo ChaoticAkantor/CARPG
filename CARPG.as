@@ -894,13 +894,14 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         }
     }
 
-    // Handle basic skill lifesteal.
+    // Handle basic skills lifesteal and armorsteal.
     if(g_PlayerRPGData.exists(steamID))
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
         if(data !is null && !isFriendlyDamage)
         {
             ProcessBasicLifesteal(pAttacker, info.flDamage);
+            ProcessBasicArmorsteal(pAttacker, info.flDamage);
         }
     }
 
