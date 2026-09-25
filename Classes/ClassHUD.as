@@ -244,7 +244,8 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                             {
                                 float healthPercent = (pSentry.pev.health / pSentry.pev.max_health) * 100;
 
-                                resourceInfo += "[HP: " + formatFloat(healthPercent, "f", 0, 0) + "%] ";
+                                // Disabled HP display as turret is now functionally immortal.
+                                //resourceInfo += "[HP: " + formatFloat(healthPercent, "f", 0, 0) + "%] ";
 
                                 resourceInfo += "[DMG: " + formatFloat(sentryData.GetScaledDamage() * 100, "f", 0, 2) + "%]\n";
 
