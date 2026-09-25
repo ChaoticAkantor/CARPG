@@ -264,6 +264,18 @@ float GetScaledBasicLifesteal(PlayerData@ data)
     return modifier;
 }
 
+float GetScaledBasicArmorsteal(PlayerData@ data)
+{
+    if(data is null)
+        return 0.0f; // No armorsteal if no stats.
+
+    int skillLevel = data.GetSkillLevel(SkillID::SKILL_ARMORSTEAL);
+    float skillPower = SKILL_ARMORSTEAL;
+    float modifier = skillPower * skillLevel; // Scaled from armorsteal skill.
+
+    return modifier;
+}
+
 float ProcessBasicLifesteal(CBasePlayer@ pPlayer, float damageDealt)
 {
     if(pPlayer is null)
@@ -283,15 +295,57 @@ float ProcessBasicLifesteal(CBasePlayer@ pPlayer, float damageDealt)
     float lifestealMult = GetScaledBasicLifesteal(data);
     float healAmount = damageDealt * lifestealMult; // Heal amount from lifesteal.
     float maxHealth = pPlayer.pev.max_health; // Max health including overheal.
+    float healAmountMin = 0.5f; // Minimum lifesteal amount to heal.
 
-    if (healAmount > 0.0f && healAmount < 1.0f) // Ensure at 1HP healed if healAmount returns a value below 1.
-        healAmount = 1.0f;
+    // Clamp to minimum value if it's below the threshold. Gives the skill more oomph if it returns too low.
+    if (healAmount > 0.0f && healAmount < healAmountMin) // Ensure a minimum amount is healed if healAmount returns a value below 1.
+        healAmount = healAmountMin;
 
     if(pPlayer.pev.health < maxHealth) // Heal HP if below max.
     {
         pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, maxHealth);
 
         ApplyLifestealEffectBasic(pPlayer); // Visual effect for healing from lifesteal.
+
+        int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
+            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
+
+        return healAmount;
+    }
+
+    return 0.0f;
+}
+
+float ProcessBasicArmorsteal(CBasePlayer@ pPlayer, float damageDealt)
+{
+    if(pPlayer is null)
+        return 0.0f;
+
+    if(!pPlayer.IsAlive()) // No armorsteal if player is dead.
+        return 0.0f;
+
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(steamID.IsEmpty() || !g_PlayerRPGData.exists(steamID))
+        return 0.0f;
+
+    PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+    if(data is null)
+        return 0.0f;
+
+    float armorstealMult = GetScaledBasicArmorsteal(data);
+    float healAmount = damageDealt * armorstealMult; // Heal amount from armorsteal.
+    float maxArmor = pPlayer.pev.armortype; // Max armor including overheal.
+    float healAmountMin = 0.25f; // Minimum armorsteal amount to heal.
+
+    // Clamp to minimum value if it's below the threshold. Gives the skill more oomph if it returns too low.
+    if (healAmount > 0.0f && healAmount < healAmountMin) // Ensure a minimum amount is healed if healAmount returns a value below 1.
+        healAmount = healAmountMin;
+
+    if(pPlayer.pev.armorvalue < maxArmor) // Heal armor if below max.
+    {
+        pPlayer.pev.armorvalue = Math.min(pPlayer.pev.armorvalue + healAmount, maxArmor);
+
+        ApplyLifestealEffectBasic(pPlayer); // Visual effect for healing from lifesteal. TO CHANGE
 
         int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
             g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);

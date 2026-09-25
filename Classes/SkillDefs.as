@@ -11,14 +11,15 @@ const float SKILL_REGENAP = 0.0005f;  // AP regen scale (% of max AP) per level.
 const float SKILL_ABILITYRECHARGE = 0.05f; // Percent increase to ability recharge speed per level.
 const int SKILL_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
 const float SKILL_LIFESTEAL = 0.01f; // Percent of damage dealt as lifesteal per level.
+const float SKILL_ARMORSTEAL = 0.0030f; // Percent of damage dealt as armorsteal per level.
 const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
 
 // Class/Ability specific skills.
-// Minion Class exclusive.
+// Minion Class exclusive (excluding Engineer).
 const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
 const float SKILL_MINIONHP = 0.60f; // HP percent increase for minions per level.
 const float SKILL_MINIONREGEN = 0.0001f; // Max HP regen percent for minions per level.
-const float SKILL_MINIONDAMAGE = 0.10f; // Damage percent increase for minions per level.
+const float SKILL_MINIONDAMAGE = 0.20f; // Damage percent increase for minions per level.
 
 // Medic.
 const float SKILL_MEDIC_HEALPERCENT = 3.00f; // Increase max health percent healed per level (divided by 100).
@@ -98,6 +99,7 @@ enum SkillID
     SKILL_ABILITYRECHARGE,
     SKILL_AMMOREGEN,
     SKILL_LIFESTEAL,
+    SKILL_ARMORSTEAL,
     SKILL_HPCONVERSION,
 
     //Minion Classes.
@@ -207,6 +209,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_ABILITYRECHARGE)] = SkillDefinition("Ability Recharge", "+" + formatFloat(SKILL_ABILITYRECHARGE * 100, "f", 0, 2) + "% ability recharge speed.", 10, SKILL_ABILITYRECHARGE * 100.0f, "%", 1.0f);
     @g_SkillDefs[int(SkillID::SKILL_AMMOREGEN)] = SkillDefinition("Ammo Regen", "+" + int(SKILL_AMMOREGEN) + " ammo gain per interval.", 5, int(SKILL_AMMOREGEN), " Ammo", 0.0f);
     @g_SkillDefs[int(SkillID::SKILL_LIFESTEAL)] = SkillDefinition("Lifesteal", "+" + formatFloat(SKILL_LIFESTEAL * 100.0f, "f", 0, 2) + "% lifesteal.", 10, SKILL_LIFESTEAL * 100.0f, "%", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_ARMORSTEAL)] = SkillDefinition("Armorsteal", "+" + formatFloat(SKILL_ARMORSTEAL * 100.0f, "f", 0, 2) + "% armorsteal.", 10, SKILL_ARMORSTEAL * 100.0f, "%", 1.0f);
     @g_SkillDefs[int(SkillID::SKILL_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+" + formatFloat(SKILL_HPCONVERSION * 100.0f, "f", 0, 2) + "% of Max HP converted to AP.", 10, SKILL_HPCONVERSION * 100.0f, "%", 1.0f);
 
     // Minion Class exclusive.
@@ -284,6 +287,7 @@ array<SkillID> GetStandardSkillIDs()
     result.insertLast(SkillID::SKILL_ABILITYRECHARGE);
     result.insertLast(SkillID::SKILL_AMMOREGEN);
     result.insertLast(SkillID::SKILL_LIFESTEAL);
+    result.insertLast(SkillID::SKILL_ARMORSTEAL);
     result.insertLast(SkillID::SKILL_HPCONVERSION);
     return result;
 }
