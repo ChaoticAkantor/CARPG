@@ -45,14 +45,14 @@ enum MinionType // Minion gun type. Not all are supported.
 
 const array<float> ROBO_HP_MODIFIERS =
 {
-    1.00,  // Shotgun.
-    1.00,  // MP5.
+    0.25,  // Shotgun.
+    0.50,  // MP5.
     1.00   // M16.
 };
 
 const array<float> ROBO_DMG_MODIFIERS = 
 {
-    1.30,  // Shotgun. Pump, not semi-auto so the DPS is terrible without a modifier.
+    1.25,  // Shotgun. Pump, not semi-auto so the DPS is terrible without a modifier.
     1.00,  // MP5.
     1.00   // M16.
 };
@@ -96,10 +96,11 @@ class MinionData
 
     // Monster variables.
     private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
-    private float m_flAbilityRechargeTime = 60.0f; // Time in seconds to recharge one minion point.
+    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 180.0; // Base health of Robogrunts.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
+    private float m_flSelfHealMult = 0.10f; // Multiplier for self-healing from minion lifesteal.
 
     // Timers and trackers.
     private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
@@ -132,7 +133,11 @@ class MinionData
         return int(SKILL_MINIONPOINT * skillLevel); // Bonus minion points from skill.
     }
 
-    int GetAbilityMax() { return m_iMinionPointMax + GetMinionPointIncrease(); }
+    int GetAbilityMax()
+    {
+        int maxPoints = m_iMinionPointMax + GetMinionPointIncrease();
+        return maxPoints < 1 ? 1 : maxPoints;
+    }
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
     void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
@@ -140,7 +145,7 @@ class MinionData
     float GetScaledAbilityRecharge()
     {
         if (m_pStats is null)
-            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+            return 1.0f; // Use the base recharge rate if no stats.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
         float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
@@ -150,11 +155,11 @@ class MinionData
 
     void RechargeAbility()
     {
-        float chargeMax = float(GetAbilityMax() - m_iReservePool);
+        float chargeMax = Math.max(0.0f, float(GetAbilityMax() - m_iReservePool));
         if (m_flAbilityCharge >= chargeMax)
             return;
 
-        float rechargeRate = m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = GetScaledAbilityRecharge() / m_flAbilityRechargeTime;
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
@@ -224,6 +229,18 @@ class MinionData
 
         return modifier;
     }
+
+    float GetLifestealPercent() // Get minion lifesteal based on level.
+    { 
+        if(m_pStats is null)
+            return 0.0f; // Default if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONLIFESTEAL);
+        float skillPower = SKILL_MINIONLIFESTEAL;
+        float modifier = skillLevel * skillPower; // Scale from skill.
+
+        return modifier;
+    }
     
     array<MinionInfo>@ GetMinions() { return m_hMinions; }
 
@@ -238,7 +255,7 @@ class MinionData
         {
             // Entity is invalid or dead, remove it from our list.
             m_hMinions.removeAt(index);
-            RecalculateReservePool();
+            PruneMinions();
             return null;
         }
         
@@ -273,14 +290,7 @@ class MinionData
         if(maxPool <= 0)
             return;
 
-        // First clean up invalid minions to make sure we have an accurate count.
-        for(int i = m_hMinions.length() - 1; i >= 0; i--)
-        {
-            if(!m_hMinions[i].hMinion.IsValid())
-            {
-                m_hMinions.removeAt(i);
-            }
-        }
+        PruneMinions();
 
         // Check resources for spawning new minion.
         if(m_iReservePool + MINION_COSTS[minionType] > maxPool)
@@ -348,14 +358,23 @@ class MinionData
 
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
 
-            // Set its bounding box to zero.
-            pMonster.pev.mins = Vector(0, 0, 0);
-            pMonster.pev.maxs = Vector(0, 0, 0);
 
-            // Refresh entity origin.
+            //Some strange behaviour with bounding boxes for monster_robogrunt, 
+            //so instead just reduce bounding boxes to acceptable limit, so shots can still connect. :(
+            Vector reducedMins = pMonster.pev.mins * 0.5f;
+            Vector reducedMaxs = pMonster.pev.maxs * 0.5f;
+
+            g_EntityFuncs.SetSize(pMonster.pev, reducedMins, reducedMaxs);
             g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
 
-            // Store both the minion handle and its type
+            // Set its bounding box to zero.
+            //pMonster.pev.mins = Vector(0, 0, 0);
+            //pMonster.pev.maxs = Vector(0, 0, 0);
+
+            // Refresh entity origin.
+            //g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
+
+            // Store both the minion handle and its type.
             MinionInfo info;
             info.hMinion = EHandle(pRoboMinion);
             info.type = minionType;
@@ -426,7 +445,7 @@ class MinionData
         }
 
         // Always recalculate the reserve pool to ensure it's accurate.
-        RecalculateReservePool();
+        PruneMinions();
 
         // Update stats reference for stat menu.
         if(m_pStats is null)
@@ -445,20 +464,17 @@ class MinionData
 
     void DestroyAllMinions(CBasePlayer@ pPlayer)
     {
-        if(pPlayer is null || m_hMinions.length() == 0)
+        if(pPlayer is null)
             return;
 
-        uint MinionCount = m_hMinions.length();
-        if(MinionCount == 0)
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Robots to destroy!\n");
+        PruneMinions();
+        if(m_hMinions.length() == 0 && m_iReservePool == 0)
             return;
-        }
 
         bool anyDestroyed = false;
         
         // Destroy all Minions from last to first.
-        for(int i = MinionCount - 1; i >= 0; i--)
+        for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
             if(pExistingMinion !is null)
@@ -471,7 +487,8 @@ class MinionData
             m_hMinions.removeAt(i);
         }
 
-        // Reset reserve pool after destroying all minions.
+        // Return spent points only when the player manually clears their minions.
+        m_flAbilityCharge = Math.min(m_flAbilityCharge + float(m_iReservePool), float(GetAbilityMax()));
         m_iReservePool = 0;
         
         if(anyDestroyed)
@@ -523,7 +540,7 @@ class MinionData
             // Clear the array and reset pool.
             m_hMinions.resize(0);
             m_iReservePool = 0;
-            m_flAbilityCharge = float(GetAbilityMax());
+            m_flAbilityCharge = 1.0f;
         }
     }
 
@@ -578,33 +595,83 @@ class MinionData
         pMinion.pev.rendercolor = ROBO_GLOW_COLORS[minionType];
     }
     
-    void RecalculateReservePool()
+    void PruneMinions()
     {
-        // Recalculate the reserve pool based on current minions.
         int newReservePool = 0;
-        
-        // Process from last to first to allow safe removal during iteration
         for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
         {
-            // First verify the minion actually exists and is alive
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion is null || !pMinion.IsAlive() || pMinion.pev.health <= 0)
             {
-                // Invalid or dead minion, remove it from our tracking
                 m_hMinions.removeAt(i);
                 continue;
             }
-            
-            // Only count valid, alive minions toward the reserve pool
+
             int minionType = m_hMinions[i].type;
             if(minionType >= 0 && uint(minionType) < MINION_COSTS.length())
-            {
                 newReservePool += MINION_COSTS[minionType];
             }
-        }
         
-        // Update the reserve pool.
         m_iReservePool = newReservePool;
+    }
+
+    // Called when a minion deals damage to an enemy. Take damage dealt, then heal nearby players based on lifesteal percentage.
+    void ProcessMinionLifesteal(CBasePlayer@ pPlayer, CBaseEntity@ pMinion, float flDamageDealt)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected() || flDamageDealt <= 0.0f)
+            return;
+
+        float healAmount = flDamageDealt * GetLifestealPercent();
+        if(healAmount <= 0.0f)
+            return;
+
+        if(pMinion !is null && pMinion.IsAlive() && pMinion.pev.health < pMinion.pev.max_health)
+        {
+            float minionHealAmount = healAmount * m_flSelfHealMult; // Also heal the attacking minion for a fraction.
+            pMinion.pev.health = Math.min(pMinion.pev.health + minionHealAmount, pMinion.pev.max_health);
+        }
+
+        // Find all players within the radius.
+        Vector searchOrigin = pPlayer.pev.origin;
+        CBaseEntity@ pEntity = null;
+        while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, searchOrigin, 1440, "player", "classname")) !is null)
+        {
+            CBasePlayer@ pRecipient = cast<CBasePlayer@>(pEntity);
+            if(pRecipient is null || !pRecipient.IsConnected() || !pRecipient.IsAlive() || pRecipient.pev.health >= pRecipient.pev.max_health)
+                continue;
+
+            // Set minimum heal amount.
+            float minHeal = 0.25f;
+
+            // Ensure minimum heal amount.
+            if (healAmount < minHeal)
+                healAmount = minHeal;
+
+            // Heal the player, do not exceed max.
+            pRecipient.pev.health = Math.min(pRecipient.pev.health + healAmount, pRecipient.pev.max_health);
+
+            // Play healing effects on the recipient.
+            Vector pos = pRecipient.pev.origin;
+            Vector mins = pos - Vector(16, 16, 0);
+            Vector maxs = pos + Vector(16, 16, 64);
+            NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
+            healeffect.WriteByte(TE_BUBBLES);
+            healeffect.WriteCoord(mins.x);
+            healeffect.WriteCoord(mins.y);
+            healeffect.WriteCoord(mins.z);
+            healeffect.WriteCoord(maxs.x);
+            healeffect.WriteCoord(maxs.y);
+            healeffect.WriteCoord(maxs.z);
+            healeffect.WriteCoord(112.0f);
+            healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            healeffect.WriteByte(3);
+            healeffect.WriteCoord(2.0f);
+            healeffect.End();
+
+            // Play a sound effect for the lifesteal (on the player).
+            int randomPitch = int(Math.RandomFloat(120.0f, 200.0f));
+            g_SoundSystem.PlaySound(pRecipient.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
+        }
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)
@@ -665,7 +732,7 @@ class MinionMenu
         }
 
         // Add management options if we have minions.
-        if(m_pOwner.GetMinionCount() > 0) 
+        if(m_pOwner.GetMinionCount() > 0 || m_pOwner.GetReservePool() > 0) 
         {
             m_pMenu.AddItem("Teleport All\n", any(99));
             m_pMenu.AddItem("Destroy All\n", any(98));
@@ -737,7 +804,7 @@ void CheckEngineerMinions()
                         if(data.GetCurrentClass() != PlayerClass::CLASS_ROBOMANCER)
                         {
                             // Player is not Engineer, destroy active minions or clear references.
-                            if(Minion.IsActive())
+                            if(Minion.IsActive() || Minion.GetReservePool() > 0)
                             {
                                 //g_Game.AlertMessage(at_console, "CARPG: Player " + steamID + " is not Robomancer, clearing minions\n");
                                 Minion.DestroyAllMinions(pPlayer);
@@ -753,7 +820,7 @@ void CheckEngineerMinions()
                 }
                 
                 // Make sure resource limits are enforced.
-                Minion.RecalculateReservePool();
+                Minion.PruneMinions();
                 int roboMax = Minion.GetAbilityMax();
                 if(roboMax > 0 && Minion.GetReservePool() > roboMax)
                 {
