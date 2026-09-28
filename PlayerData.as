@@ -9,6 +9,8 @@ int g_iMaxLevel = 60; // Max player level, skill points are given per level, inc
 int g_iScoreToXP = 1; // Amount of XP each score point is worth, 1 = 1 score is 1 XP.
 int g_iScorePerRebirthRank = 1; // Amount of extra XP per score awarded for each rank gained.
 int g_iMaxRebirthRank = 10; // Max rebirth rank.
+float g_iAbilitySkillBonus = 0.5f; // Max skill level limit increase for Ability Skills per rank.
+float g_iBasicSkillBonus = 1.0f; // Max skill level limit increase for Basic Skills per rank.
 
 dictionary g_ClassNames = 
 {
@@ -334,8 +336,11 @@ class PlayerData
     
     // Rebirth getters.
     int GetRebirthRank() { return m_iRebirthRank; }
+    int GetCurrentXPMultiplier() { return g_iScoreToXP + (m_iRebirthRank * m_iScorePerRebirthRank); }
     int GetCurrentRebirthRankXP() { return m_iCurrentRebirthRankXP; }
     int GetNeededRebirthXP() { return GetXPForRank(m_iRebirthRank); }
+    float GetAbilitySkillBonus() { return g_iAbilitySkillBonus * m_iRebirthRank; }
+    float GetBasicSkillBonus() { return g_iBasicSkillBonus * m_iRebirthRank; }
 
     private int GetXPForRank(int rank) { return int(m_iXPNeededBaseRebirth * (rank + 1) * m_fXPNeededMultRebirth); }
 
@@ -878,7 +883,8 @@ class PlayerData
             int scoreDiff = currentScore - m_iLastScore;
             if(scoreDiff > 0)
             {
-                m_iScore += int(scoreDiff * g_iScoreToXP + (m_iRebirthRank * m_iScorePerRebirthRank));
+                int xpAward = scoreDiff * GetCurrentXPMultiplier();
+                m_iScore += xpAward;
                 
                 // Share XP with all players.
                 const int iMaxPlayers = g_Engine.maxClients;
@@ -897,7 +903,8 @@ class PlayerData
                                 ClassStats@ stats = otherData.GetCurrentClassStats();
                                 if(stats !is null)
                                 {
-                                    stats.AddXP(scoreDiff, pOtherPlayer, otherData); // Add the actual XP.
+                                    int sharedXPAward = scoreDiff * otherData.GetCurrentXPMultiplier();
+                                    stats.AddXP(sharedXPAward, pOtherPlayer, otherData); // Add the actual XP.
                                     //g_PlayerFuncs.ClientPrint(pOtherPlayer, HUD_PRINTCONSOLE, "+" + scoreDiff + " XP\n"); // Show gained XP.
                                 }
                             }
@@ -1083,14 +1090,23 @@ class PlayerData
         
         string RPGHudText = "";
         RPGHudText += "" + GetClassName(m_CurrentClass) + "\n"; // Class.
-        RPGHudText += "Level: " + stats.GetLevel() + " | "; // Level.
+        RPGHudText += "Level: " + stats.GetLevel() + " | ";
         RPGHudText += "XP: " + (stats.IsMaxLevel() ? "(--/--)" : "(" + stats.GetCurrentLevelXP() + "/" + stats.GetNeededXP() + ")") + "\n\n"; // XP.
 
         RPGHudText += "Rank: " + m_iRebirthRank + " | "; // Rank.
         RPGHudText += "XP: " + (IsMaxRebirthRank() ? "(--/--)" : "(" + m_iCurrentRebirthRankXP + "/" + GetNeededRebirthXP() + ")") + "\n"; // Rank XP.
 
+        if(m_iRebirthRank > 0)
+            RPGHudText += "XP Bonus: " + "(+" + GetCurrentXPMultiplier() + ")" + "\n"; // XP per score bonus.
+
+        if(m_iRebirthRank > 0)
+            RPGHudText += "Ability Skill Limit: " + "(+" + floor(GetAbilitySkillBonus()) + ")" + "\n"; // Ability skill bonus.
+
+        if(m_iRebirthRank > 0)
+            RPGHudText += "Basic Skill Limit: " + "(+" + GetBasicSkillBonus() + ")" + "\n"; // Basic skill bonus.
+
         if(stats.GetSkillPoints() > 0) 
-            RPGHudText += "Skillpoints: " + stats.GetSkillPoints() + "\n"; // Current skillpoints.
+            RPGHudText += "\n" + "Skillpoints: " + stats.GetSkillPoints() + "\n"; // Current skillpoints.
         
         g_PlayerFuncs.HudMessage(pPlayer, RPGHudParams, RPGHudText);
     }
