@@ -17,9 +17,10 @@ const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP pe
 // Class/Ability specific skills.
 // Minion Class exclusive (excluding Engineer).
 const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
-const float SKILL_MINIONHP = 0.60f; // HP percent increase for minions per level.
-const float SKILL_MINIONREGEN = 0.0001f; // Max HP regen percent for minions per level.
+const float SKILL_MINIONHP = 0.80f; // HP percent increase for minions per level.
+const float SKILL_MINIONREGEN = 0.001f; // Max HP regen percent for minions per level.
 const float SKILL_MINIONDAMAGE = 0.20f; // Damage percent increase for minions per level.
+const float SKILL_MINIONLIFESTEAL = 0.02f; // Minion lifesteal percent to players (team) per level.
 
 // Medic.
 const float SKILL_MEDIC_HEALPERCENT = 3.00f; // Increase max health percent healed per level (divided by 100).
@@ -38,12 +39,11 @@ const float SKILL_BERSERKER_DURATION = 0.20f; // Percent increase to Bloodlust d
 
 // Engineer.
 const float SKILL_ENGINEER_SENTRYDAMAGE = 0.10f; // Sentry damage per level.
-const float SKILL_ENGINEER_MINIHEALAURA = 0.6f; // Mini-heal Aura % max HP heal per level (divided by 100).
+const float SKILL_ENGINEER_MINIHEALAURA = 0.60f; // Mini-heal Aura % max HP heal per level (divided by 100).
 const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.05f;  // % of damage as area explosive damage per level.
 const float SKILL_ENGINEER_SENTRYDURATION = 0.50f; // Sentry duration increase per level.
 
 // Xenomancer.
-const float SKILL_XENOMANCER_LIFESTEAL = 0.01f; // Minion lifesteal percent to players per level.
 
 // Necromancer.
 const float SKILL_NECROMANCER_RATS = 3.0f; // Cooldown reduction in seconds per level.
@@ -107,6 +107,7 @@ enum SkillID
     SKILL_MINIONHP,
     SKILL_MINIONREGEN,
     SKILL_MINIONDAMAGE,
+    SKILL_MINIONLIFESTEAL,
 
     // Medic.
     SKILL_MEDIC_HEALPERCENT,
@@ -217,6 +218,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_MINIONHP)] = SkillDefinition("Minions: Max HP", "+" + int(SKILL_MINIONHP * 100) + "% minion HP.", 5, int(SKILL_MINIONHP * 100.0f), "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MINIONREGEN)] = SkillDefinition("Minions: HP Regen", "+" + formatFloat(SKILL_MINIONREGEN * 100.0f, "f", 0, 2) + "% minion HP/s.", 5, SKILL_MINIONREGEN * 100.0f, "% HP/s", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MINIONDAMAGE)] = SkillDefinition("Minions: Damage", "+" + formatFloat(SKILL_MINIONDAMAGE * 100.0f, "f", 0, 2) + "% minion damage.", 5, SKILL_MINIONDAMAGE * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MINIONLIFESTEAL)] = SkillDefinition("Minions: Lifesteal", "+" + formatFloat(SKILL_MINIONLIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal to team.", 5, SKILL_MINIONLIFESTEAL * 100.0f, "%", 0.5f);
 
     // Medic.
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Ability: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT, "f", 0, 2) + "% HP.", 5, SKILL_MEDIC_HEALPERCENT, "%", 0.5f);
@@ -235,14 +237,13 @@ void InitializeSkillDefinitions()
 
     // Engineer.
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Ability: Sentry Damage", "+" + formatFloat(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "f", 0, 2) + "% damage.", 5, SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Ability: Heal Aura", "+" + formatFloat(SKILL_ENGINEER_MINIHEALAURA, "f", 0, 2) + "% HP/s.", 5, SKILL_ENGINEER_MINIHEALAURA, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Ability: Heal Aura", "+" + formatFloat(SKILL_ENGINEER_MINIHEALAURA * 100.0f, "f", 0, 2) + "% HP/s.", 5, SKILL_ENGINEER_MINIHEALAURA, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Ability: Explosive Ammo", "+" + formatFloat(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "f", 0, 2) + "% explosive damage.", 5, SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDURATION)] = SkillDefinition("Ability: Duration", "+" + formatFloat(SKILL_ENGINEER_SENTRYDURATION * 100.0f, "f", 0, 2) + "% sentry duration.", 5, SKILL_ENGINEER_SENTRYDURATION * 100.0f, "%", 0.5f);
 
-    // Robomancer – none defined yet.
+    // Robomancer.
 
     // Xenomancer.
-    @g_SkillDefs[int(SkillID::SKILL_XENOMANCER_LIFESTEAL)] = SkillDefinition("Ability: Lifesteal", "+" + formatFloat(SKILL_XENOMANCER_LIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal to players.", 5, SKILL_XENOMANCER_LIFESTEAL * 100.0f, "%", 0.5f);
 
     // Necromancer.
     @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Ability: Zombie Rats", "-" + formatFloat(SKILL_NECROMANCER_RATS, "f", 0, 2) + "s Zombie Rat cooldown.", 5, SKILL_NECROMANCER_RATS, "s", 0.5f);
@@ -328,6 +329,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MINIONHP);
             result.insertLast(SkillID::SKILL_MINIONREGEN);
             result.insertLast(SkillID::SKILL_MINIONDAMAGE);
+            result.insertLast(SkillID::SKILL_MINIONLIFESTEAL);
             break;
 
         case PlayerClass::CLASS_XENOMANCER:
@@ -335,7 +337,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MINIONHP);
             result.insertLast(SkillID::SKILL_MINIONREGEN);
             result.insertLast(SkillID::SKILL_MINIONDAMAGE);
-            result.insertLast(SkillID::SKILL_XENOMANCER_LIFESTEAL);
+            result.insertLast(SkillID::SKILL_MINIONLIFESTEAL);
             break;
 
         case PlayerClass::CLASS_NECROMANCER:
@@ -343,6 +345,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MINIONHP);
             result.insertLast(SkillID::SKILL_MINIONREGEN);
             result.insertLast(SkillID::SKILL_MINIONDAMAGE);
+            result.insertLast(SkillID::SKILL_MINIONLIFESTEAL);
             result.insertLast(SkillID::SKILL_NECROMANCER_RATS);
             break;
 

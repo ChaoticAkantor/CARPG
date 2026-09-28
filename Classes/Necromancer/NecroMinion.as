@@ -176,12 +176,13 @@ class NecroMinionData
 
     // Monster variables.
     private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
-    private float m_flAbilityRechargeTime = 60.0f; // Time in seconds to recharge one minion point.
+    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private int m_iRatSpawnCount = 2; // Number of rats to spawn with the rat ability, per active minion.
     private float m_flRatSpawnCooldown = 30.0f; // Base cooldown for spawning rats.
     private float m_flRatLaunchForce = 500.0f; // Velocity that rats are thrown outward.
+    private float m_flSelfHealMult = 0.25f; // Multiplier for self-healing from minion lifesteal.
 
     // Timers and trackers.
     private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
@@ -215,7 +216,11 @@ class NecroMinionData
         return int(SKILL_MINIONPOINT * skillLevel); // Bonus minion points from skill.
     }
 
-    int GetAbilityMax() { return m_iMinionPointMax + GetMinionPointIncrease(); }
+    int GetAbilityMax()
+    {
+        int maxPoints = m_iMinionPointMax + GetMinionPointIncrease();
+        return maxPoints < 1 ? 1 : maxPoints;
+    }
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
     void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
@@ -233,7 +238,7 @@ class NecroMinionData
     float GetScaledAbilityRecharge()
     {
         if (m_pStats is null)
-            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+            return 1.0f; // Use the base recharge rate if no stats.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
         float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
@@ -243,11 +248,11 @@ class NecroMinionData
 
     void RechargeAbility()
     {
-        float chargeMax = float(GetAbilityMax() - m_iReservePool);
+        float chargeMax = Math.max(0.0f, float(GetAbilityMax() - m_iReservePool));
         if (m_flAbilityCharge >= chargeMax)
             return;
 
-        float rechargeRate = m_flAbilityRechargeTime * GetScaledAbilityRecharge();
+        float rechargeRate = GetScaledAbilityRecharge() / m_flAbilityRechargeTime;
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
@@ -318,6 +323,18 @@ class NecroMinionData
         return modifier;
     }
 
+    float GetLifestealPercent() // Get minion lifesteal based on level.
+    { 
+        if(m_pStats is null)
+            return 0.0f; // Default if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONLIFESTEAL);
+        float skillPower = SKILL_MINIONLIFESTEAL;
+        float modifier = skillLevel * skillPower; // Scale from skill.
+
+        return modifier;
+    }
+
     float GetScaledRatCooldown()
     {
         if(m_pStats is null)
@@ -356,7 +373,7 @@ class NecroMinionData
         {
             // Entity is invalid or dead, remove it from our list.
             m_hMinions.removeAt(index);
-            RecalculateReservePool();
+            PruneMinions();
             return null;
         }
         
@@ -391,14 +408,7 @@ class NecroMinionData
         if(maxPool <= 0)
             return;
 
-        // First clean up invalid minions to make sure we have an accurate count.
-        for(int i = m_hMinions.length() - 1; i >= 0; i--)
-        {
-            if(!m_hMinions[i].hMinion.IsValid())
-            {
-                m_hMinions.removeAt(i);
-            }
-        }
+        PruneMinions();
 
         // Check resources for spawning new minion.
         if(m_iReservePool + NECRO_COSTS[minionType] > maxPool)
@@ -666,7 +676,7 @@ class NecroMinionData
         }
 
         // Always recalculate the reserve pool to ensure it's accurate.
-        RecalculateReservePool();
+        PruneMinions();
 
         // Update stats reference for stat menu.
         if(m_pStats is null)
@@ -685,20 +695,17 @@ class NecroMinionData
 
     void DestroyAllMinions(CBasePlayer@ pPlayer)
     {
-        if(pPlayer is null || m_hMinions.length() == 0)
+        if(pPlayer is null)
             return;
 
-        uint MinionCount = m_hMinions.length();
-        if(MinionCount == 0)
-        {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Undead to destroy!\n");
+        PruneMinions();
+        if(m_hMinions.length() == 0 && m_iReservePool == 0)
             return;
-        }
 
         bool anyDestroyed = false;
         
         // Destroy all Minions from last to first.
-        for(int i = MinionCount - 1; i >= 0; i--)
+        for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
         {
             CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
             if(pExistingMinion !is null)
@@ -711,7 +718,8 @@ class NecroMinionData
             m_hMinions.removeAt(i);
         }
 
-        // Reset individual reserve pool.
+        // Return spent points only when the player manually clears their minions.
+        m_flAbilityCharge = Math.min(m_flAbilityCharge + float(m_iReservePool), float(GetAbilityMax()));
         m_iReservePool = 0;
         
         if(anyDestroyed)
@@ -775,7 +783,7 @@ class NecroMinionData
             // Clear the array and reset pool.
             m_hMinions.resize(0);
             m_iReservePool = 0;
-            m_flAbilityCharge = float(GetAbilityMax());
+            m_flAbilityCharge = 1.0f;
         }
     }
 
@@ -830,40 +838,83 @@ class NecroMinionData
         pMinion.pev.rendercolor = Vector(255, 195, 205); // Peach.
     }
     
-    void RecalculateReservePool()
+    void PruneMinions()
     {
-        // Recalculate the reserve pool based on current minions.
         int newReservePool = 0;
-        
-        // Process from last to first to allow safe removal during iteration.
         for(int i = int(m_hMinions.length()) - 1; i >= 0; i--)
         {
-            // First verify the minion actually exists and is alive.
             CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
             if(pMinion is null || !pMinion.IsAlive() || pMinion.pev.health <= 0)
             {
-                // Invalid or dead minion, remove it from our tracking.
                 m_hMinions.removeAt(i);
                 continue;
             }
-            
-            // Only count valid, alive minions toward the reserve pool.
+
             int minionType = m_hMinions[i].type;
             if(minionType >= 0 && uint(minionType) < NECRO_COSTS.length())
-            {
                 newReservePool += NECRO_COSTS[minionType];
-            }
         }
-        
-        // Update the reserve pool.
+
         m_iReservePool = newReservePool;
     }
 
-    // Called when a minion deals damage to an enemy.
-    void ProcessMinionDamage(CBasePlayer@ pPlayer, float flDamageDealt)
+    // Called when a minion deals damage to an enemy. Take damage dealt, then heal nearby players based on lifesteal percentage.
+    void ProcessMinionLifesteal(CBasePlayer@ pPlayer, CBaseEntity@ pMinion, float flDamageDealt)
     {
-        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+        if(pPlayer is null || !pPlayer.IsConnected() || flDamageDealt <= 0.0f)
             return;
+
+        float healAmount = flDamageDealt * GetLifestealPercent();
+        if(healAmount <= 0.0f)
+            return;
+
+        if(pMinion !is null && pMinion.IsAlive() && pMinion.pev.health < pMinion.pev.max_health)
+        {
+            float minionHealAmount = healAmount * m_flSelfHealMult; // Also heal the attacking minion for a fraction.
+            pMinion.pev.health = Math.min(pMinion.pev.health + minionHealAmount, pMinion.pev.max_health);
+        }
+
+        // Find all players within the radius.
+        Vector searchOrigin = pPlayer.pev.origin;
+        CBaseEntity@ pEntity = null;
+        while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, searchOrigin, 1440, "player", "classname")) !is null)
+        {
+            CBasePlayer@ pRecipient = cast<CBasePlayer@>(pEntity);
+            if(pRecipient is null || !pRecipient.IsConnected() || !pRecipient.IsAlive() || pRecipient.pev.health >= pRecipient.pev.max_health)
+                continue;
+
+            // Set minimum heal amount.
+            float minHeal = 0.25f;
+
+            // Ensure minimum heal amount.
+            if (healAmount < minHeal)
+                healAmount = minHeal;
+
+            // Heal the player, do not exceed max.
+            pRecipient.pev.health = Math.min(pRecipient.pev.health + healAmount, pRecipient.pev.max_health);
+
+            // Play healing effects on the recipient.
+            Vector pos = pRecipient.pev.origin;
+            Vector mins = pos - Vector(16, 16, 0);
+            Vector maxs = pos + Vector(16, 16, 64);
+            NetworkMessage healeffect(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
+            healeffect.WriteByte(TE_BUBBLES);
+            healeffect.WriteCoord(mins.x);
+            healeffect.WriteCoord(mins.y);
+            healeffect.WriteCoord(mins.z);
+            healeffect.WriteCoord(maxs.x);
+            healeffect.WriteCoord(maxs.y);
+            healeffect.WriteCoord(maxs.z);
+            healeffect.WriteCoord(112.0f);
+            healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            healeffect.WriteByte(3);
+            healeffect.WriteCoord(2.0f);
+            healeffect.End();
+
+            // Play a sound effect for the lifesteal (on the player).
+            int randomPitch = int(Math.RandomFloat(120.0f, 200.0f));
+            g_SoundSystem.PlaySound(pRecipient.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
+        }
     }
 
     void TeleportMinions(CBasePlayer@ pPlayer)
@@ -925,7 +976,7 @@ class NecroMinionMenu
             m_pMenu.AddItem(menuText + "\n", any(i));
         }
         
-        if(m_pOwner.GetMinionCount() > 0) 
+        if(m_pOwner.GetMinionCount() > 0 || m_pOwner.GetReservePool() > 0) 
         {
             m_pMenu.AddItem("Teleport All\n", any(98));
             m_pMenu.AddItem("Kill All\n", any(99));
@@ -1004,7 +1055,7 @@ void CheckNecromancerMinions()
                     if(data.GetCurrentClass() != PlayerClass::CLASS_NECROMANCER)
                     {
                         // Player is no longer this class, destroy active minions.
-                        if(NecroMinion.GetMinionCount() > 0)
+                        if(NecroMinion.GetMinionCount() > 0 || NecroMinion.GetReservePool() > 0)
                         {
                             NecroMinion.DestroyAllMinions(pPlayer);
                             continue;  // Skip rest of updates.
@@ -1019,7 +1070,7 @@ void CheckNecromancerMinions()
             }
             
                 // Make sure resource limits are enforced
-                NecroMinion.RecalculateReservePool();
+                NecroMinion.PruneMinions();
                 int necroMax = NecroMinion.GetAbilityMax();
                 if(necroMax > 0 && NecroMinion.GetReservePool() > necroMax)
                 {
