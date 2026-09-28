@@ -694,6 +694,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Apply the damage multiplier.
         float damageRoboMultiplier = minion.GetScaledDamage();
         info.flDamage *= damageRoboMultiplier;
+
+        // Process extra damage effects.
+        minion.ProcessMinionLifesteal(pOwner, attacker, info.flDamage);
     }
     else if(targetname.StartsWith("_xenminion_"))
     {
@@ -719,7 +722,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         info.flDamage *= damageXenMultiplier;
 
         // Process extra damage effects.
-        xenMinion.ProcessMinionLifesteal(pOwner, info.flDamage);
+        xenMinion.ProcessMinionLifesteal(pOwner, attacker, info.flDamage);
     }
     else if(targetname.StartsWith("_necrominion_"))
     {
@@ -743,6 +746,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Apply the damage multiplier.
         float damageNecroMultiplier = necroMinion.GetScaledDamage();
         info.flDamage *= damageNecroMultiplier;
+
+        // Process extra damage effects.
+        necroMinion.ProcessMinionLifesteal(pOwner, attacker, info.flDamage);
 
         // Alter the damage type.
         info.bitsDamageType |= DMG_POISON;
@@ -770,6 +776,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageNecroMultiplier = necroMinion.GetScaledDamage();
         info.flDamage *= damageNecroMultiplier;
 
+        // Process extra damage effects.
+        necroMinion.ProcessMinionLifesteal(pOwner, attacker, info.flDamage);
+
         // Alter the damage type.
         info.bitsDamageType |= DMG_POISON;
     }
@@ -795,6 +804,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         // Apply the damage multiplier.
         float damageSnarkMultiplier = snarkNest.GetScaledDamage();
         info.flDamage *= damageSnarkMultiplier;
+
+        // Process extra damage effects.
+        //snarkNest.ProcessMinionLifesteal(pOwner, info.flDamage);
     }
 
     if(info.pAttacker is null || !info.pAttacker.IsPlayer())
