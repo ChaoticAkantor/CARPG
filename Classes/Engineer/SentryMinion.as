@@ -477,7 +477,8 @@ class SentryData
         if(pSentry.pev.health < pSentry.pev.max_health)
         {
             // Sentry self-healing is modified.
-            healAmount = GetScaledHealAmount() * pSentry.pev.max_health / 100; // Calculate heal amount based on sentry's max health and scaling.
+            float healthMaxPercent = pSentry.pev.max_health / 100.0f; // Calculate senty's max health as percentage.
+            healAmount = GetScaledHealAmount() * healthMaxPercent; // Calculate heal amount based on sentry's max health and scaling.
             pSentry.pev.health = Math.min(pSentry.pev.health + (healAmount * m_flSelfHealModifier), pSentry.pev.max_health);
         }
 
@@ -493,7 +494,8 @@ class SentryData
                 {
                     if(pTarget.pev.health < pTarget.pev.max_health)
                     {
-                        healAmount = GetScaledHealAmount() * pTarget.pev.max_health / 100; // Calculate heal amount based on target's max health and scaling.
+                        float healthMaxPercent = pTarget.pev.max_health / 100.0f; // Calculate target's max health as percentage.
+                        healAmount = GetScaledHealAmount() * healthMaxPercent; // Calculate heal amount based on target's max health and scaling.
                         pTarget.pev.health = Math.min(pTarget.pev.health + healAmount, pTarget.pev.max_health);
                     }
 
