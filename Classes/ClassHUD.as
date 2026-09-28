@@ -126,7 +126,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                 break;
 
             case PlayerClass::CLASS_ROBOMANCER:
-                resourceName = "Robo Points";
+                resourceName = "(Robo) Minion Points";
                 if(g_PlayerMinions.exists(steamID))
                 {
                     MinionData@ minionData = cast<MinionData@>(g_PlayerMinions[steamID]);
@@ -154,7 +154,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                 break;
 
             case PlayerClass::CLASS_XENOMANCER:
-                resourceName = "Xeno Points";
+                resourceName = "(Xeno) Minion Points";
                 if(g_XenologistMinions.exists(steamID))
                 {
                     XenMinionData@ minionData = cast<XenMinionData@>(g_XenologistMinions[steamID]);
@@ -190,7 +190,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                 break;
 
             case PlayerClass::CLASS_NECROMANCER:
-                resourceName = "Necro Points";
+                resourceName = "(Necro) Minion Points";
                 if(g_NecromancerMinions.exists(steamID))
                 {
                     NecroMinionData@ minionData = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
