@@ -249,8 +249,8 @@ void UpdateClassResource() // Update the class resource HUD display for all play
 
                                 resourceInfo += "[DMG: " + formatFloat(sentryData.GetScaledDamage() * 100, "f", 0, 2) + "%]\n";
 
-                                if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO) > 0)
-                                    resourceInfo += "[Explosive DMG: +" + formatFloat(sentryData.GetScaledExplosiveDamage() * 100, "f", 0, 2) + "%]\n";
+                                if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_ROCKETS) > 0)
+                                    resourceInfo += sentryData.GetRocketCooldownDisplay() + "\n";
 
                                 if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA) > 0)
                                     resourceInfo += "[Heal: " + formatFloat(sentryData.GetScaledHealAmount(), "f", 0, 2) + "% HP/s]\n";
@@ -348,10 +348,10 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         resourceInfo += "[Cost: " + dragonsBreath.GetPerShotCost() + "]\n";
                         if(dragonsBreath.HasRounds())
                         {
-                            resourceInfo += "[Radius DMG: +" + formatFloat(dragonsBreath.GetScaledExplosionDamage(), "f", 0, 2) + "] ";
+                            resourceInfo += "[Radius DMG: " + formatFloat(dragonsBreath.GetScaledExplosionDamagePercent() * 100.0f, "f", 0, 1) + "%] ";
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VANQUISHER_FIREDAMAGE) > 0)
-                                resourceInfo += "[Fire DMG: " + formatFloat(dragonsBreath.GetScaledFireDamage(), "f", 0, 2) + "/s]";
+                                resourceInfo += "[Fire DMG: " + formatFloat(dragonsBreath.GetScaledFireDamagePercent() * 100.0f, "f", 0, 2) + "%/s]";
                         }
                     }
                 }
