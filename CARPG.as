@@ -130,6 +130,7 @@ void ResetData()
     g_PlayerBloodlusts.deleteAll();
     g_PlayerCloaks.deleteAll();
     g_PlayerDragonsBreath.deleteAll();
+    g_DragonsBreathBurns.resize(0);
     g_ShockRifleData.deleteAll();
     g_PlayerSnarkNests.deleteAll();
 }
@@ -307,6 +308,7 @@ void PrecacheAll()
         // Models/Sprites.
         g_Game.PrecacheModel(strSentryModel);
         g_Game.PrecacheModel(strSentryGibs);
+        g_Game.PrecacheOther("rpg_rocket");
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strSentryCreate);
@@ -320,7 +322,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strSentrySpinDown);
         g_SoundSystem.PrecacheSound(strSentrySearch);
         g_SoundSystem.PrecacheSound(strSentryAlert);
-        g_SoundSystem.PrecacheSound(strSentryExplosive);
 
     // Robogrunt.
         // Models/Sprites.
@@ -669,8 +670,6 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
         float damageSentryMultiplier = sentry.GetScaledDamage();
         info.flDamage *= damageSentryMultiplier;
 
-        // Deal explosive damage from explosive skill.
-        sentry.ApplyExplosiveDamage(attacker, victim, info.flDamage);
     }
     else if(targetname.StartsWith("_robominion_"))
     {
@@ -868,9 +867,12 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                     if(g_PlayerDragonsBreath.exists(steamID))
                     {
                         DragonsBreathData@ db = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
-                        if(db !is null && db.HasPendingProcs())
+                        if(db !is null)
                         {
-                            db.ProcPendingAtTarget(pAttacker, victim.pev.origin);
+                            if(db.HasPendingProcs())
+                                db.ProcPendingAtTarget(pAttacker, victim.pev.origin, info.flDamage);
+                            else if(!isFriendlyDamage)
+                                db.RecordDirectDamage(pAttacker, info.flDamage, info.bitsDamageType);
                         }
                     }
                     break;
