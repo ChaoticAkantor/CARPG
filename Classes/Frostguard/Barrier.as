@@ -57,8 +57,8 @@ class BarrierData
         if (m_pStats is null)
             return m_flAbilityMax; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_WARDEN_SHIELDHP);
-        float skillPower = SKILL_WARDEN_SHIELDHP;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_SHIELDHP);
+        float skillPower = SKILL_FROSTGUARD_SHIELDHP;
 
         return m_flAbilityMax * (1.0f + skillPower * skillLevel); // Scale max HP based on skill level.
     }
@@ -68,8 +68,8 @@ class BarrierData
         if(m_pStats is null)
             return 0.0f; // Return base if no stats.
         
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_WARDEN_DAMAGEREFLECT);
-        float skillPower = SKILL_WARDEN_DAMAGEREFLECT;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_DAMAGEREFLECT);
+        float skillPower = SKILL_FROSTGUARD_DAMAGEREFLECT;
 
         return skillLevel * skillPower; // Scale damage reflection based on skill level.
     }
@@ -79,8 +79,8 @@ class BarrierData
         if(m_pStats is null)
             return 0.0f; // Return base if no stats.
         
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_WARDEN_HPABSORB);
-        float skillPower = SKILL_WARDEN_HPABSORB;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_HPABSORB);
+        float skillPower = SKILL_FROSTGUARD_HPABSORB;
 
         return skillLevel * skillPower; // Scale health absorb based on skill level.
     }
@@ -90,8 +90,8 @@ class BarrierData
         if(m_pStats is null)
             return 0.0f; // Return base if no stats.
         
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_WARDEN_ACTIVERECHARGE);
-        float skillPower = SKILL_WARDEN_ACTIVERECHARGE;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_ACTIVERECHARGE);
+        float skillPower = SKILL_FROSTGUARD_ACTIVERECHARGE;
 
         return skillLevel * skillPower; // Scale recharge penalty based on skill level.
     }

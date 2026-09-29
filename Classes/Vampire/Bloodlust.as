@@ -57,8 +57,8 @@ class BloodlustData
         if(m_pStats is null)
             return m_flAbilityMax; // Return base duration if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_DURATION);
-        float skillPower = SKILL_BERSERKER_DURATION;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DURATION);
+        float skillPower = SKILL_VAMPIRE_DURATION;
         float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
 
         return modifier * m_flAbilityMax; // Total duration is modified base duration.
@@ -69,12 +69,12 @@ class BloodlustData
         if(m_pStats is null)
             return 0.0f; // No lifesteal if no stats.
 
-        // First scale from the berserker lifesteal skill.
+        // First scale from the vampire lifesteal skill.
         float baseLifesteal = m_flBaseLifesteal; // Base lifesteal percentage.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_LIFESTEAL);
-        float skillPower = SKILL_BERSERKER_LIFESTEAL;
-        float modifierBerserker = baseLifesteal + (skillPower * skillLevel); // Scaled from lifesteal skill.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_LIFESTEAL);
+        float skillPower = SKILL_VAMPIRE_LIFESTEAL;
+        float modifierVampire = baseLifesteal + (skillPower * skillLevel); // Scaled from lifesteal skill.
 
 
         // Then scale from the basic lifesteal skill.
@@ -86,9 +86,9 @@ class BloodlustData
 
         // Add them together and if bloodlust is active, double the lifesteal.
         if(!m_bActive)
-            return modifierBerserker + modifierBasic;
+            return modifierVampire + modifierBasic;
         else
-            return modifierBerserker + modifierBasic * 2.0f;
+            return modifierVampire + modifierBasic * 2.0f;
     }
 
     float GetScaledDamageAbilityCharge()
@@ -98,8 +98,8 @@ class BloodlustData
 
         float damageAbilityCharge = 0.0f; // Base.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE);
-        float skillPower = SKILL_BERSERKER_DAMAGEABILITYCHARGE;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE);
+        float skillPower = SKILL_VAMPIRE_DAMAGEABILITYCHARGE;
         float modifier = damageAbilityCharge + (skillPower * skillLevel); // Scaled from damage to ability charge skill.
 
         return modifier;
@@ -111,8 +111,8 @@ class BloodlustData
         if(m_pStats is null)
             return 0.0f;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION);
-        float skillPower = SKILL_BERSERKER_DAMAGEREDUCTION;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION);
+        float skillPower = SKILL_VAMPIRE_DAMAGEREDUCTION;
         float damageReduction = skillPower * skillLevel;
 
         //if(m_bActive)
@@ -126,8 +126,8 @@ class BloodlustData
         if(m_pStats is null)
             return 1.0f; // No overheal if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_OVERHEAL);
-        float skillPower = SKILL_BERSERKER_OVERHEAL;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_OVERHEAL);
+        float skillPower = SKILL_VAMPIRE_OVERHEAL;
         float overhealBonus = skillPower * skillLevel; // Overheal percent scaled from skill.
             
         if(m_bActive)
@@ -141,8 +141,8 @@ class BloodlustData
         if(m_pStats is null)
             return;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BERSERKER_APCONVERSION);
-        float skillPower = SKILL_BERSERKER_APCONVERSION;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_APCONVERSION);
+        float skillPower = SKILL_VAMPIRE_APCONVERSION;
         float apConversionBonus = skillPower * skillLevel; // AP conversion percent scaled from skill.
 
         float maxHealth = pPlayer.pev.max_health;
@@ -243,7 +243,7 @@ class BloodlustData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_VAMPIRE)
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }

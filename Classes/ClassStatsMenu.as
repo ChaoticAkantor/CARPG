@@ -55,24 +55,24 @@ namespace Menu
                     }
                     break;
                 }
-                case PlayerClass::CLASS_BERSERKER:
+                case PlayerClass::CLASS_VAMPIRE:
                 {
                     BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
                     if(bloodlust !is null)
                     {
-                        string BerserkerStatsText = "=== Bloodlust (Passive): ===" + "\n";
-                        BerserkerStatsText += "Damage Reduction Max (50% HP): " + bloodlust.GetDamageReductionMax() + "%\n";
-                        BerserkerStatsText += "Bloodlust Gain from Damage: " + bloodlust.GetEnergySteal() + "%\n";
-                        BerserkerStatsText += "Lifesteal: " + bloodlust.GetLifestealAmount() * 100 + "%\n";
-                        BerserkerStatsText += "Max HP (Overheal): " + (pPlayer.pev.max_health * bloodlust.GetOverhealPercentFlat()) + " HP\n\n";
+                        string VampireStatsText = "=== Bloodlust (Passive): ===" + "\n";
+                        VampireStatsText += "Damage Reduction Max (50% HP): " + bloodlust.GetDamageReductionMax() + "%\n";
+                        VampireStatsText += "Bloodlust Gain from Damage: " + bloodlust.GetEnergySteal() + "%\n";
+                        VampireStatsText += "Lifesteal: " + bloodlust.GetLifestealAmount() * 100 + "%\n";
+                        VampireStatsText += "Max HP (Overheal): " + (pPlayer.pev.max_health * bloodlust.GetOverhealPercentFlat()) + " HP\n\n";
 
-                        BerserkerStatsText += "=== Bloodlust (Active): ===" + "\n";
-                        BerserkerStatsText += "Damage Reduction Max (50% HP): " + bloodlust.GetDamageReductionMax() * 2 + "%\n";
-                        BerserkerStatsText += "Bloodlust Gain from Damage: " + bloodlust.GetEnergySteal() * 2 + "%\n";
-                        BerserkerStatsText += "Lifesteal: " + bloodlust.GetLifestealAmount() * 100 * 2 + "%\n";
-                        BerserkerStatsText += "Max HP (Overheal): " + ((pPlayer.pev.max_health * bloodlust.GetOverhealPercentFlat()) * 2) + " HP\n\n";
+                        VampireStatsText += "=== Bloodlust (Active): ===" + "\n";
+                        VampireStatsText += "Damage Reduction Max (50% HP): " + bloodlust.GetDamageReductionMax() * 2 + "%\n";
+                        VampireStatsText += "Bloodlust Gain from Damage: " + bloodlust.GetEnergySteal() * 2 + "%\n";
+                        VampireStatsText += "Lifesteal: " + bloodlust.GetLifestealAmount() * 100 * 2 + "%\n";
+                        VampireStatsText += "Max HP (Overheal): " + ((pPlayer.pev.max_health * bloodlust.GetOverhealPercentFlat()) * 2) + " HP\n\n";
 
-                        m_pMenu.AddItem(BerserkerStatsText, null);
+                        m_pMenu.AddItem(VampireStatsText, null);
                     }
                     break;
                 }
@@ -137,19 +137,19 @@ namespace Menu
                     }
                     break;
                 }
-                case PlayerClass::CLASS_DEFENDER:
+                case PlayerClass::CLASS_FROSTGUARD:
                 {
                     BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
                     if(barrier !is null)
                     {
-                        string DefenderStatsText = "=== Ice Shield: ===" + "\n";
-                            DefenderStatsText += "Max Durability: " + int(barrier.GetScaledShieldMaxHP()) + " HP\n";
-                            DefenderStatsText += "Damage Reflect: " + barrier.GetScaledDamageReflection() * 100 + "%\n";
-                            DefenderStatsText += "Health Absorb: " + barrier.GetScaledHealthAbsorb() * 100 + "%\n";
-                            //DefenderStatsText += "Active Recharge Speed: " + (barrier.GetScaledRechargeSpeed()) + "/s\n";
-                            DefenderStatsText += "Deactivation Cost: " + int(barrier.GetBarrierDeactivateEnergyCost() * 100) + "%\n";
+                        string FrostguardStatsText = "=== Ice Shield: ===" + "\n";
+                            FrostguardStatsText += "Max Durability: " + int(barrier.GetScaledShieldMaxHP()) + " HP\n";
+                            FrostguardStatsText += "Damage Reflect: " + barrier.GetScaledDamageReflection() * 100 + "%\n";
+                            FrostguardStatsText += "Health Absorb: " + barrier.GetScaledHealthAbsorb() * 100 + "%\n";
+                            //FrostguardStatsText += "Active Recharge Speed: " + (barrier.GetScaledRechargeSpeed()) + "/s\n";
+                            FrostguardStatsText += "Deactivation Cost: " + int(barrier.GetBarrierDeactivateEnergyCost() * 100) + "%\n";
 
-                        m_pMenu.AddItem(DefenderStatsText, null);
+                        m_pMenu.AddItem(FrostguardStatsText, null);
                     }
                     break;
                 }
@@ -168,21 +168,21 @@ namespace Menu
                     }
                 }
                 break;
-                case PlayerClass::CLASS_VANQUISHER:
+                case PlayerClass::CLASS_FIREBUG:
                 {
                     DragonsBreathData@ DragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
                     if(DragonsBreath !is null)
                     {
-                        string VanquisherStatsText = "=== Dragon's Breath Ammo (Current Weapon): ===" + "\n";
-                            VanquisherStatsText += "Explosive Damage: " + formatFloat(DragonsBreath.GetScaledExplosionDamagePercent() * 100.0f, "f", 0, 1) + "% of weapon damage.\n";
-                            VanquisherStatsText += "Fire Damage: " + formatFloat(DragonsBreath.GetScaledFireDamagePercent() * 100.0f, "f", 0, 2) + "% per tick\n";
-                            VanquisherStatsText += "Fire Duration: " + DragonsBreath.GetFireDuration() + "s\n";
-                            VanquisherStatsText += "Fire Radius: " + DragonsBreath.GetRadius() / 16 + "ft\n";
+                        string FirebugStatsText = "=== Dragon's Breath Ammo (Current Weapon): ===" + "\n";
+                            FirebugStatsText += "Explosive Damage: " + formatFloat(DragonsBreath.GetScaledExplosionDamagePercent() * 100.0f, "f", 0, 1) + "% of weapon damage.\n";
+                            FirebugStatsText += "Fire Damage: " + formatFloat(DragonsBreath.GetScaledFireDamagePercent() * 100.0f, "f", 0, 2) + "% per tick\n";
+                            FirebugStatsText += "Fire Duration: " + DragonsBreath.GetFireDuration() + "s\n";
+                            FirebugStatsText += "Fire Radius: " + DragonsBreath.GetRadius() / 16 + "ft\n";
                         
-                        VanquisherStatsText += "\nMax Ammo Capacity: " + int(DragonsBreath.GetMaxRounds()) + "\n";
-                        VanquisherStatsText += "Refill: " + DragonsBreath.GetAmmoRefillPercent() + "% (" + DragonsBreath.GetAmmoPerPack() + " rounds)\n\n";
+                        FirebugStatsText += "\nMax Ammo Capacity: " + int(DragonsBreath.GetMaxRounds()) + "\n";
+                        FirebugStatsText += "Refill: " + DragonsBreath.GetAmmoRefillPercent() + "% (" + DragonsBreath.GetAmmoPerPack() + " rounds)\n\n";
 
-                        m_pMenu.AddItem(VanquisherStatsText, null);
+                        m_pMenu.AddItem(FirebugStatsText, null);
                     }
                     break;
                 }

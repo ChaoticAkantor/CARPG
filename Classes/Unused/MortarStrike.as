@@ -279,7 +279,7 @@ void UpdateMortarStrikes()
             continue;
 
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-        if(data is null || data.GetCurrentClass() != PlayerClass::CLASS_VANQUISHER)
+        if(data is null || data.GetCurrentClass() != PlayerClass::CLASS_FIREBUG)
             continue;
 
         if(!g_PlayerMortarStrikes.exists(steamID))

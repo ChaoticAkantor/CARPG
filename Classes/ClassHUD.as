@@ -1,4 +1,4 @@
-﻿/*
+/*
 This file handles class HUD display.
 */
 
@@ -101,7 +101,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                 }
                 break;
 
-            case PlayerClass::CLASS_BERSERKER:
+            case PlayerClass::CLASS_VAMPIRE:
                 resourceName = "Bloodlust";
                 if(g_PlayerBloodlusts.exists(steamID))
                 {
@@ -113,13 +113,13 @@ void UpdateClassResource() // Update the class resource HUD display for all play
 
                         resourceInfo += "[Lifesteal: " + formatFloat(bloodlust.GetScaledLifesteal() * 100, "f", 0, 2) + "%] ";
 
-                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEREDUCTION) > 0)
+                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION) > 0)
                             resourceInfo += "[DMG Reduction: " +  formatFloat(bloodlust.GetDamageReduction(pPlayer) * 100, "f", 0, 2) + "%]\n";
 
-                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_DAMAGEABILITYCHARGE) > 0)
+                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE) > 0)
                             resourceInfo += "[Ability Charge: " +  formatFloat(bloodlust.GetScaledDamageAbilityCharge() * 100, "f", 0, 2) + "%]\n";
 
-                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_BERSERKER_OVERHEAL) > 0)
+                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VAMPIRE_OVERHEAL) > 0)
                             resourceInfo += "[Overheal Limit: " + formatFloat(pPlayer.pev.max_health * bloodlust.GetScaledOverhealPercent(), "f", 0, 0) + " HP]";
                     }
                 }
@@ -260,7 +260,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                 }
                 break;
 
-            case PlayerClass::CLASS_DEFENDER:
+            case PlayerClass::CLASS_FROSTGUARD:
                 resourceName = "Ice Shield";
                 if(g_PlayerBarriers.exists(steamID))
                 {
@@ -272,13 +272,13 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                             
                         if(barrier.IsActive())
                         {
-                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_DAMAGEREFLECT) > 0)
+                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_DAMAGEREFLECT) > 0)
                                 resourceInfo += "[DMG Reflect: " + formatFloat(barrier.GetScaledDamageReflection() * 100, "f", 0, 2) + "%] ";
 
-                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_HPABSORB) > 0)
+                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_HPABSORB) > 0)
                                 resourceInfo += "[HP Absorb: " + formatFloat(barrier.GetScaledHealthAbsorb() * 100, "f", 0, 2) + "%]\n";
 
-                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_WARDEN_ACTIVERECHARGE) > 0)
+                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_ACTIVERECHARGE) > 0)
                                 resourceInfo += "[Recharge Speed: " + formatFloat(barrier.GetActiveRechargeRate() * 100, "f", 0, 2) + "%] ";
                         }
                     }
@@ -334,7 +334,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                 }
                 break;
 
-            case PlayerClass::CLASS_VANQUISHER:
+            case PlayerClass::CLASS_FIREBUG:
                 resourceName = "Dragon's Breath";
                 if(g_PlayerDragonsBreath.exists(steamID))
                 {
@@ -350,7 +350,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         {
                             resourceInfo += "[Radius DMG: " + formatFloat(dragonsBreath.GetScaledExplosionDamagePercent() * 100.0f, "f", 0, 1) + "%] ";
 
-                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VANQUISHER_FIREDAMAGE) > 0)
+                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_FIREBUG_FIREDAMAGE) > 0)
                                 resourceInfo += "[Fire DMG: " + formatFloat(dragonsBreath.GetScaledFireDamagePercent() * 100.0f, "f", 0, 2) + "%/s]";
                         }
                     }

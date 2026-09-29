@@ -100,7 +100,7 @@ string GetClassDescription(PlayerClass pClass)
                 "Type skills to spend skillpoints.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
-        case PlayerClass::CLASS_BERSERKER:
+        case PlayerClass::CLASS_VAMPIRE:
             return
                 "{Bloodlust}.\n\n"
                 "Starts with passive life steal.\n"
@@ -155,7 +155,7 @@ string GetClassDescription(PlayerClass pClass)
                 "Type skills to spend skillpoints.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
-        case PlayerClass::CLASS_DEFENDER:
+        case PlayerClass::CLASS_FROSTGUARD:
             return
                 "{Ice Shield}.\n\n"
                 "Ice Shield will absorb all damage until it shatters, HP depends on skill.\n"
@@ -181,7 +181,7 @@ string GetClassDescription(PlayerClass pClass)
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 
 
-        case PlayerClass::CLASS_VANQUISHER:
+        case PlayerClass::CLASS_FIREBUG:
             return
                 "{Dragon's Breath Ammo}.\n\n"
                 "Dragon's Breath rounds, which grant added explosive damage to non-throwable weapons.\n"

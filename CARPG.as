@@ -210,10 +210,10 @@ void SetupTimers()
     // Necromancer.
     g_Scheduler.SetInterval("CheckNecromancerMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Necromancer minions.
 
-    // Defender.
+    // Frostguard.
     g_Scheduler.SetInterval("CheckBarrier", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Barrier.
 
-    // Berserker.
+    // Vampire.
     g_Scheduler.SetInterval("UpdateBloodlusts", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating bloodlust.
 
     // Cloaker.
@@ -222,7 +222,7 @@ void SetupTimers()
     // Shocktrooper.
     g_Scheduler.SetInterval("UpdateShockRifles", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating shock rifle charge.
 
-    // Vanquisher.
+    // Firebug.
     g_Scheduler.SetInterval("UpdateDragonsBreath", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating dragons breath charge.
 
     // Swarmer.
@@ -304,7 +304,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strShockrifleEquipSound);
         g_SoundSystem.PrecacheSound(strShockLightningSound);
 
-    // Berserker Ability Precache.
+    // Vampire Ability Precache.
         // Models/Sprites.
         PrecacheModelIndexed(strBloodlustSprite);
 
@@ -314,7 +314,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strBloodlustActiveSound);
         g_SoundSystem.PrecacheSound(strBloodlustHitSound);
 
-    // Warden Ability Precache.
+    // Frostguard Ability Precache.
         // Models/Sprites.
         PrecacheModelIndexed(strBarrierReflectSprite);
 
@@ -333,7 +333,7 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strCloakActiveSound);
         g_SoundSystem.PrecacheSound(strCloakNovaSound);
 
-    // Vanquisher Class Precache.
+    // Firebug Class Precache.
         // Models/Sprites.
         PrecacheModelIndexed(strDragonsBreathExplosionSprite);
         PrecacheModelIndexed(strDragonsBreathFireSprite);
@@ -885,7 +885,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                     }
                     break;
                 }
-                case PlayerClass::CLASS_BERSERKER:
+                case PlayerClass::CLASS_VAMPIRE:
                 {
                     // Get bloodlust data for lifesteal and energy steal processing.
                     if(g_PlayerBloodlusts.exists(steamID))
@@ -902,7 +902,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
                     }
                     break;
                 }
-                case PlayerClass::CLASS_VANQUISHER:
+                case PlayerClass::CLASS_FIREBUG:
                 {
                     if(g_PlayerDragonsBreath.exists(steamID))
                     {
@@ -922,7 +922,7 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
                     break;
                 }
-                case PlayerClass::CLASS_DEFENDER:
+                case PlayerClass::CLASS_FROSTGUARD:
                 {
 
                     break;
@@ -991,7 +991,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     if(g_PlayerRPGData.exists(steamID)) // Barrier damage checks.
     {
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-        if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER && g_PlayerBarriers.exists(steamID))
+        if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_FROSTGUARD && g_PlayerBarriers.exists(steamID))
         {
             BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
             if(barrier !is null && barrier.IsActive())
@@ -1022,14 +1022,14 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         return HOOK_CONTINUE;
     }
 
-    // Berserker low health damage reduction.
+    // Vampire low health damage reduction.
     if(g_PlayerRPGData.exists(steamID))
     {
         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
         if(bloodlust !is null)
         {
             PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-            if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
+            if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_VAMPIRE)
             {
                 float reducedDamage = 0.0f;
                 bloodlust.HandleDamageReduction(pPlayer, pDamageInfo.flDamage, reducedDamage);
@@ -1263,8 +1263,8 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         if(shockRifle !is null)
                             shockRifle.EquipShockRifle(pPlayer);
                     }
-                    // Defender ability handling.
-                    else if(data.GetCurrentClass() == PlayerClass::CLASS_DEFENDER)
+                    // Frostguard ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_FROSTGUARD)
                     {
                         if(!g_PlayerBarriers.exists(steamID))
                         {
@@ -1287,8 +1287,8 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                             barrierRef.ToggleBarrier(pPlayer);
                         }
                     }
-                    // Berserker ability handling.
-                    else if(data.GetCurrentClass() == PlayerClass::CLASS_BERSERKER)
+                    // Vampire ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_VAMPIRE)
                     {
                         if(!g_PlayerBloodlusts.exists(steamID))
                         {
@@ -1314,8 +1314,8 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         if(cloak !is null)
                             cloak.ToggleCloak(pPlayer);
                     }
-                    // Vanquisher ability handling.
-                    else if(data.GetCurrentClass() == PlayerClass::CLASS_VANQUISHER)
+                    // Firebug ability handling.
+                    else if(data.GetCurrentClass() == PlayerClass::CLASS_FIREBUG)
                     {
                         if(!g_PlayerDragonsBreath.exists(steamID))
                         {

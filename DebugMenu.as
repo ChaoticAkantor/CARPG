@@ -88,7 +88,7 @@ namespace Menu
                                 }
                                 break;
                             }
-                            case PlayerClass::CLASS_BERSERKER:
+                            case PlayerClass::CLASS_VAMPIRE:
                             {
                                 if(g_PlayerBloodlusts.exists(steamID))
                                 {
@@ -133,7 +133,7 @@ namespace Menu
                                 }
                                 break;
                             }
-                            case PlayerClass::CLASS_DEFENDER:
+                            case PlayerClass::CLASS_FROSTGUARD:
                             {
                                 if(g_PlayerBarriers.exists(steamID))
                                 {
@@ -160,7 +160,7 @@ namespace Menu
                                 }
                                 break;
                             }
-                            case PlayerClass::CLASS_VANQUISHER:
+                            case PlayerClass::CLASS_FIREBUG:
                             {
                                 if(g_PlayerDragonsBreath.exists(steamID))
                                 {

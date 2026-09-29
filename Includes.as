@@ -10,11 +10,11 @@
 #include "Classes/Necromancer/NecroMinion"
 #include "Classes/Swarmer/SnarkSwarm"
 #include "Classes/Medic/Heal"
-#include "Classes/Warden/Barrier"
+#include "Classes/Frostguard/Barrier"
 #include "Classes/Shocktrooper/ShockRifle"
-#include "Classes/Berserker/Bloodlust"
+#include "Classes/Vampire/Bloodlust"
 #include "Classes/Cloaker/Cloak"
-#include "Classes/Vanquisher/DragonsBreath"
+#include "Classes/Firebug/DragonsBreath"
 
 // Skill Definitions and balancing.
 #include "Classes/SkillDefs"

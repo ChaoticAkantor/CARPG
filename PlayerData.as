@@ -16,30 +16,30 @@ dictionary g_ClassNames =
 {
     {PlayerClass::CLASS_NONE, "None"},
     {PlayerClass::CLASS_MEDIC, "Medic"},
-    {PlayerClass::CLASS_BERSERKER, "Berserker"},
+    {PlayerClass::CLASS_VAMPIRE, "Vampire"},
     {PlayerClass::CLASS_ENGINEER, "Engineer"},
     {PlayerClass::CLASS_ROBOMANCER, "Robomancer"},
     {PlayerClass::CLASS_XENOMANCER, "Xenomancer"},
     {PlayerClass::CLASS_NECROMANCER, "Necromancer"},
-    {PlayerClass::CLASS_DEFENDER, "Warden"},
+    {PlayerClass::CLASS_FROSTGUARD, "Frostguard"},
     {PlayerClass::CLASS_SHOCKTROOPER, "Shocktrooper"},
     {PlayerClass::CLASS_CLOAKER, "Cloaker"},
-    {PlayerClass::CLASS_VANQUISHER, "Vanquisher"},
+    {PlayerClass::CLASS_FIREBUG, "Firebug"},
     {PlayerClass::CLASS_SWARMER, "Swarmer"}
 };
 
 array<PlayerClass> g_ClassList = 
 {
     PlayerClass::CLASS_MEDIC,
-    PlayerClass::CLASS_BERSERKER,
+    PlayerClass::CLASS_VAMPIRE,
     PlayerClass::CLASS_ENGINEER,
     PlayerClass::CLASS_ROBOMANCER,
     PlayerClass::CLASS_XENOMANCER,
     PlayerClass::CLASS_NECROMANCER,
-    PlayerClass::CLASS_DEFENDER,
+    PlayerClass::CLASS_FROSTGUARD,
     PlayerClass::CLASS_SHOCKTROOPER,
     PlayerClass::CLASS_CLOAKER,
-    PlayerClass::CLASS_VANQUISHER,
+    PlayerClass::CLASS_FIREBUG,
     PlayerClass::CLASS_SWARMER
 };
 
@@ -47,15 +47,15 @@ enum PlayerClass
 {
     CLASS_NONE = 0,
     CLASS_MEDIC,
-    CLASS_BERSERKER,
+    CLASS_VAMPIRE,
     CLASS_ENGINEER,
     CLASS_ROBOMANCER,
     CLASS_XENOMANCER,
     CLASS_NECROMANCER,
-    CLASS_DEFENDER,
+    CLASS_FROSTGUARD,
     CLASS_SHOCKTROOPER,
     CLASS_CLOAKER,
-    CLASS_VANQUISHER,
+    CLASS_FIREBUG,
     CLASS_SWARMER
 }
 
@@ -530,7 +530,7 @@ class PlayerData
             // Handle class-specific cleanup.
             switch(m_CurrentClass) 
             {
-                case PlayerClass::CLASS_DEFENDER: // Clean up barrier data.
+                case PlayerClass::CLASS_FROSTGUARD: // Clean up barrier data.
                     if (g_PlayerBarriers.exists(m_szSteamID)) 
                     {
                         BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[m_szSteamID]);
@@ -555,7 +555,7 @@ class PlayerData
                     }
                     break;
                     
-                case PlayerClass::CLASS_BERSERKER: // Clean up bloodlust data.
+                case PlayerClass::CLASS_VAMPIRE: // Clean up bloodlust data.
                     if (g_PlayerBloodlusts.exists(m_szSteamID)) 
                     {
                         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[m_szSteamID]);
@@ -634,7 +634,7 @@ class PlayerData
                     }
                     break;
                     
-                case PlayerClass::CLASS_VANQUISHER: // Clean up Dragon's Breath data.
+                case PlayerClass::CLASS_FIREBUG: // Clean up Dragon's Breath data.
                     if (g_PlayerDragonsBreath.exists(m_szSteamID)) 
                     {
                         g_PlayerDragonsBreath.delete(m_szSteamID);
@@ -705,7 +705,7 @@ class PlayerData
                 }
                 break;
                         
-            case PlayerClass::CLASS_DEFENDER:
+            case PlayerClass::CLASS_FROSTGUARD:
                 if(!g_PlayerBarriers.exists(steamID))
                 {
                     BarrierData data;
@@ -750,7 +750,7 @@ class PlayerData
                 }
                 break;
                         
-               case PlayerClass::CLASS_BERSERKER:
+               case PlayerClass::CLASS_VAMPIRE:
                 if(!g_PlayerBloodlusts.exists(steamID))
                 {
                     BloodlustData data;
@@ -768,7 +768,7 @@ class PlayerData
                 }
                 break;
 
-               case PlayerClass::CLASS_VANQUISHER:
+               case PlayerClass::CLASS_FIREBUG:
                 if(!g_PlayerDragonsBreath.exists(steamID))
                 {
                     DragonsBreathData data;
@@ -825,10 +825,10 @@ class PlayerData
             if (pPlayer.pev.max_health > newMaxHP)
                 pPlayer.pev.max_health = newMaxHP; // Reduce current HP if it exceeds new max to remove any overheal.
 
-            // Special case for Berserker conversion bonuses.
-            if (PlayerClass::CLASS_BERSERKER == m_CurrentClass)
+            // Special case for Vampire conversion bonuses.
+            if (PlayerClass::CLASS_VAMPIRE == m_CurrentClass)
             {
-                // Berserker's Bloodlust grants bonus HP based on missing health, so we need to trigger a recalculation here.
+                // Vampire's Bloodlust grants bonus HP based on missing health, so we need to trigger a recalculation here.
                 if(g_PlayerBloodlusts.exists(steamID))
                 {
                     BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
@@ -852,19 +852,19 @@ class PlayerData
             {
                 case PlayerClass::CLASS_MEDIC:
                     break;
-                case PlayerClass::CLASS_BERSERKER:
+                case PlayerClass::CLASS_VAMPIRE:
                     break;
                 case PlayerClass::CLASS_ENGINEER:
                     break;
                 case PlayerClass::CLASS_ROBOMANCER:
                     break;
-                case PlayerClass::CLASS_DEFENDER:
+                case PlayerClass::CLASS_FROSTGUARD:
                     break;
                 case PlayerClass::CLASS_SHOCKTROOPER:
                     break;
                 case PlayerClass::CLASS_CLOAKER:
                     break;
-                case PlayerClass::CLASS_VANQUISHER:
+                case PlayerClass::CLASS_FIREBUG:
                     break;
                 case PlayerClass::CLASS_SWARMER:
                     break;

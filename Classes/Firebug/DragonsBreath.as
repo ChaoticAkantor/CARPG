@@ -238,9 +238,9 @@ class DragonsBreathData
     {
         int skillLevel = 0;
         if(m_pStats !is null)
-            skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE);
+            skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FIREBUG_EXPLOSIVEDAMAGE);
 
-        return m_flDragonsBreathExplosionDamageBase * (1.0f + SKILL_VANQUISHER_EXPLOSIVEDAMAGE * skillLevel);
+        return m_flDragonsBreathExplosionDamageBase * (1.0f + SKILL_FIREBUG_EXPLOSIVEDAMAGE * skillLevel);
     }
 
     float GetScaledExplosionDamage(float flDirectDamage)
@@ -252,9 +252,9 @@ class DragonsBreathData
     {
         int skillLevel = 0;
         if(m_pStats !is null)
-            skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VANQUISHER_FIREDAMAGE);
+            skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FIREBUG_FIREDAMAGE);
 
-        float fireDamagePercent = m_flDragonsBreathFireDamageBase * (1.0f +SKILL_VANQUISHER_FIREDAMAGE * skillLevel);
+        float fireDamagePercent = m_flDragonsBreathFireDamageBase * (1.0f +SKILL_FIREBUG_FIREDAMAGE * skillLevel);
         //return fireDamagePercent * GetDragonsBreathAmmoMultiplier(m_strCurrentAmmoName);
         return fireDamagePercent;
     }
@@ -269,8 +269,8 @@ class DragonsBreathData
         if(m_pStats is null)
             return m_iDragonsBreathFireTicks * m_flDragonsBreathFireInterval; // Return base duration if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VANQUISHER_FIREDURATION);
-        float modifier = 1.0f + (SKILL_VANQUISHER_FIREDURATION * skillLevel);
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FIREBUG_FIREDURATION);
+        float modifier = 1.0f + (SKILL_FIREBUG_FIREDURATION * skillLevel);
         float baseDuration = m_iDragonsBreathFireTicks * m_flDragonsBreathFireInterval;
 
         return baseDuration * modifier;
@@ -360,8 +360,8 @@ class DragonsBreathData
         if(m_pStats is null)
             return m_iDragonsBreathPoolBase;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VANQUISHER_AMMOPOOL);
-        float skillPower = SKILL_VANQUISHER_AMMOPOOL;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FIREBUG_AMMOPOOL);
+        float skillPower = SKILL_FIREBUG_AMMOPOOL;
         float modifier = m_iDragonsBreathPoolBase * (1.0f + skillPower * skillLevel); // Ammo pool size increase based on skill level.
 
         return int(modifier);
@@ -490,7 +490,7 @@ void UpdateDragonsBreath()
             continue;
 
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-        if(data is null || data.GetCurrentClass() != PlayerClass::CLASS_VANQUISHER)
+        if(data is null || data.GetCurrentClass() != PlayerClass::CLASS_FIREBUG)
             continue;
 
         if(!g_PlayerDragonsBreath.exists(steamID))

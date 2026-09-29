@@ -87,7 +87,7 @@
   - Heal that restores a percentage of Max HP for allies (Players & NPC's) in a very large radius.
 
 
-# Berserker
+# Vampire
   - Bloodlust doubles all lifesteal and Ability related HP bonuses whilst active.
 
   - Can restore health by dealing damage.
@@ -147,7 +147,7 @@
   - 360 degrees FoV and react faster as a result.
 
 
-# Warden
+# Frostguard
   - Ice Shield that absorbs all damage and has it's own HP.
 
   - Any damage taken will be completely negated whilst the shield has at least 1HP.
@@ -173,7 +173,7 @@
   - Requires 100% Ability Charge to activate.
 
 
-# Vanquisher
+# Firebug
   - Loads Dragon's Breath rounds into a seperate ammo pool.
 
   - If you have rounds in the ammo pool, all shots will cause an explosion of fire damage where you shoot.
