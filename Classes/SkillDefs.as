@@ -40,13 +40,13 @@ const float SKILL_BERSERKER_DURATION = 0.20f; // Percent increase to Bloodlust d
 // Engineer.
 const float SKILL_ENGINEER_SENTRYDAMAGE = 0.10f; // Sentry damage per level.
 const float SKILL_ENGINEER_MINIHEALAURA = 0.60f; // Mini-heal Aura % max HP heal per level (divided by 100).
-const float SKILL_ENGINEER_EXPLOSIVEAMMO = 0.05f;  // % of damage as area explosive damage per level.
+const float SKILL_ENGINEER_ROCKETS = 0.06f; // Rocket % cooldown reduction per level.
 const float SKILL_ENGINEER_SENTRYDURATION = 0.50f; // Sentry duration increase per level.
 
 // Xenomancer.
 
 // Necromancer.
-const float SKILL_NECROMANCER_RATS = 3.0f; // Cooldown reduction in seconds per level.
+const float SKILL_NECROMANCER_RATS = 0.06f; // Rat % cooldown reduction per level.
 
 // Warden.
 const float SKILL_WARDEN_SHIELDHP = 0.15f; // Ice shield HP percent increase per level.
@@ -68,9 +68,9 @@ const float SKILL_SHOCK_LIGHTNING = 0.03f; // Shockrifle damage % as area lightn
 
 // Vanquisher.
 const float SKILL_VANQUISHER_AMMOPOOL = 0.40f; // Ammo pool increase per level.
-const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 1.0f; // Flat increase of added explosive damage per level.
-const float SKILL_VANQUISHER_FIREDAMAGE = 0.06f; // Percentage of explosion converted to extra fire damage per level.
-const float SKILL_VANQUISHER_FIREDURATION = 1.0f; // Flat added fire damage ticks per level.
+const float SKILL_VANQUISHER_EXPLOSIVEDAMAGE = 0.10f; // Increase % of weapon damage dealt as radius damage per level.
+const float SKILL_VANQUISHER_FIREDAMAGE = 0.20f; // Increase % of weapon damage dealt as fire per tick per level.
+const float SKILL_VANQUISHER_FIREDURATION = 0.20f; // Fire duration increase per level.
 
 // Swarmer.
 const float SKILL_SWARMER_SNARKDAMAGE = 1.00f; // Snark damage per level.
@@ -127,7 +127,7 @@ enum SkillID
     // Engineer.
     SKILL_ENGINEER_SENTRYDAMAGE,
     SKILL_ENGINEER_MINIHEALAURA,
-    SKILL_ENGINEER_EXPLOSIVEAMMO,
+    SKILL_ENGINEER_ROCKETS,
     SKILL_ENGINEER_SENTRYDURATION,
 
     // Robomancer.
@@ -238,7 +238,7 @@ void InitializeSkillDefinitions()
     // Engineer.
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Ability: Sentry Damage", "+" + formatFloat(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "f", 0, 2) + "% damage.", 5, SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Ability: Heal Aura", "+" + formatFloat(SKILL_ENGINEER_MINIHEALAURA * 100.0f, "f", 0, 2) + "% HP/s.", 5, SKILL_ENGINEER_MINIHEALAURA, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO)] = SkillDefinition("Ability: Explosive Ammo", "+" + formatFloat(SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "f", 0, 2) + "% explosive damage.", 5, SKILL_ENGINEER_EXPLOSIVEAMMO * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_ROCKETS)] = SkillDefinition("Ability: Rockets", "-" + formatFloat(SKILL_ENGINEER_ROCKETS * 100.0f, "f", 0, 2) + "% rocket cooldown.", 5, SKILL_ENGINEER_ROCKETS * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDURATION)] = SkillDefinition("Ability: Duration", "+" + formatFloat(SKILL_ENGINEER_SENTRYDURATION * 100.0f, "f", 0, 2) + "% sentry duration.", 5, SKILL_ENGINEER_SENTRYDURATION * 100.0f, "%", 0.5f);
 
     // Robomancer.
@@ -246,7 +246,7 @@ void InitializeSkillDefinitions()
     // Xenomancer.
 
     // Necromancer.
-    @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Ability: Zombie Rats", "-" + formatFloat(SKILL_NECROMANCER_RATS, "f", 0, 2) + "s Zombie Rat cooldown.", 5, SKILL_NECROMANCER_RATS, "s", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Ability: Zombie Rats", "-" + formatFloat(SKILL_NECROMANCER_RATS * 100.0f, "f", 0, 2) + "% Zombie Rat cooldown.", 5, SKILL_NECROMANCER_RATS * 100.0f, "%", 0.5f);
 
     // Warden.
     @g_SkillDefs[int(SkillID::SKILL_WARDEN_SHIELDHP)] = SkillDefinition("Ability: Shield HP", "+" + formatFloat(SKILL_WARDEN_SHIELDHP * 100.0f, "f", 0, 2) + "% shield HP.", 5, SKILL_WARDEN_SHIELDHP * 100.0f, "%", 0.5f);
@@ -268,9 +268,9 @@ void InitializeSkillDefinitions()
 
     // Vanquisher.
     @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_AMMOPOOL)] = SkillDefinition("Ability: Ammo Pool", "+" + formatFloat(SKILL_VANQUISHER_AMMOPOOL * 100.0f, "f", 0, 2) + "% ammo pool.", 5, SKILL_VANQUISHER_AMMOPOOL * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE)] = SkillDefinition("Ability: Extra Damage", "+" + formatFloat(SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "f", 0, 2) + " radius damage.", 5, SKILL_VANQUISHER_EXPLOSIVEDAMAGE, "", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDAMAGE)] = SkillDefinition("Ability: Fire Damage", "+" + formatFloat(SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "f", 0, 2) + "% fire damage.", 5, SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDURATION)] = SkillDefinition("Ability: Fire Duration", "+" + formatFloat(SKILL_VANQUISHER_FIREDURATION, "f", 0, 2) + "s fire duration.", 5, SKILL_VANQUISHER_FIREDURATION, "s", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_EXPLOSIVEDAMAGE)] = SkillDefinition("Ability: Area Damage", "+" + formatFloat(SKILL_VANQUISHER_EXPLOSIVEDAMAGE * 100.0f, "f", 0, 2) + "% weapon damage in a radius.", 5, SKILL_VANQUISHER_EXPLOSIVEDAMAGE * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDAMAGE)] = SkillDefinition("Ability: Fire Damage", "+" + formatFloat(SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "f", 0, 2) + "% weapon damage as fire per tick.", 5, SKILL_VANQUISHER_FIREDAMAGE * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VANQUISHER_FIREDURATION)] = SkillDefinition("Ability: Fire Duration", "+" + formatFloat(SKILL_VANQUISHER_FIREDURATION * 100.0f, "f", 0, 2) + "% fire duration.", 5, SKILL_VANQUISHER_FIREDURATION * 100.0f, "%", 0.5f);
 
     // Swarmer.
     @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKDAMAGE)] = SkillDefinition("Ability: Snark Damage", "+" + formatFloat(SKILL_SWARMER_SNARKDAMAGE * 100.0f, "f", 0, 2) + "% snark damage.", 5, SKILL_SWARMER_SNARKDAMAGE * 100.0f, "%", 0.5f);
@@ -320,7 +320,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
         case PlayerClass::CLASS_ENGINEER:
             result.insertLast(SkillID::SKILL_ENGINEER_SENTRYDAMAGE);
             result.insertLast(SkillID::SKILL_ENGINEER_MINIHEALAURA);
-            result.insertLast(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO);
+            result.insertLast(SkillID::SKILL_ENGINEER_ROCKETS);
             result.insertLast(SkillID::SKILL_ENGINEER_SENTRYDURATION);
             break;
 
