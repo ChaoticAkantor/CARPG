@@ -534,7 +534,7 @@ class NecroMinionData
             msg.WriteCoord(trailEndPoint.x);
             msg.WriteCoord(trailEndPoint.y);
             msg.WriteCoord(trailEndPoint.z);
-            msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
+            msg.WriteShort(GetModelIndex("sprites/tinyspit.spr"));
             msg.WriteByte(1);   // Count.
             msg.WriteByte(1);   // Life in 0.1's.
             msg.WriteByte(5);   // Scale in 0.1's.
@@ -911,7 +911,7 @@ class NecroMinionData
             healeffect.WriteCoord(maxs.y);
             healeffect.WriteCoord(maxs.z);
             healeffect.WriteCoord(112.0f);
-            healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            healeffect.WriteShort(GetModelIndex(strHealAuraEffectSprite));
             healeffect.WriteByte(3);
             healeffect.WriteCoord(2.0f);
             healeffect.End();

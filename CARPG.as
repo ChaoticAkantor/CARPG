@@ -57,6 +57,23 @@ bool IsFriendlyDamage(CBaseEntity@ pAttacker, CBaseEntity@ pVictim)
     return false;
 }
 
+dictionary g_ModelIndexCache;
+
+int PrecacheModelIndexed(const string& in szModel)
+{
+    int iIndex = g_Game.PrecacheModel(szModel);
+    g_ModelIndexCache[szModel] = iIndex;
+    return iIndex;
+}
+
+int GetModelIndex(const string& in szModel)
+{
+    if(g_ModelIndexCache.exists(szModel))
+        return int(g_ModelIndexCache[szModel]);
+
+    return g_EngineFuncs.ModelIndex(szModel);
+}
+
 // Timers, precaches, and hook handling go here.
 void PluginInit()
 {
@@ -68,7 +85,8 @@ void PluginInit()
 
 void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
 {
-    PrecacheNPC(); // Precache everything attached to spawnable NPC's first, incase anything is model swapped.
+    g_ModelIndexCache.deleteAll(); // Indices are only valid for the map they were precached on.
+    PrecacheMonster(); // Precache monsters first, incase anything is model swapped.
     PrecacheAll(); // Precache everything else needed for plugin.
 }
 
@@ -211,45 +229,38 @@ void SetupTimers()
     g_Scheduler.SetInterval("CheckSnarks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking snarks.
 }
 
-void PrecacheNPC()
+void PrecacheMonster()
 {
     // Engineer Sentry.
-    g_Game.PrecacheOther("monster_sentry");
+    g_Game.PrecacheMonster("monster_sentry", true);
 
     // Robomancer Minions.
-    g_Game.PrecacheOther("monster_robogrunt");
+    g_Game.PrecacheMonster("monster_robogrunt", true);
 
     // Necromancer Minions.
-    g_Game.PrecacheOther("monster_zombie"); // Does not use this model!
-    g_Game.PrecacheOther("monster_alien_slave"); // Does not use this model!
-    g_Game.PrecacheOther("monster_gonome"); // Does not use this model!
+    g_Game.PrecacheMonster("monster_zombie", true); // Does not use this model!
+    g_Game.PrecacheMonster("monster_alien_slave", true); // Does not use this model!
+    g_Game.PrecacheMonster("monster_gonome", true); // Does not use this model!
     
     // Xenomancer Minions.
-    g_Game.PrecacheOther("monster_houndeye");
-    g_Game.PrecacheOther("monster_pitdrone");
-    g_Game.PrecacheOther("monster_bullchicken");
-    g_Game.PrecacheOther("monster_shocktrooper");
-    g_Game.PrecacheOther("monster_babygarg");
-    g_Game.PrecacheOther("monster_alien_grunt"); // Currently unused due to hornet owner damage bug.
+    g_Game.PrecacheMonster("monster_houndeye", true);
+    g_Game.PrecacheMonster("monster_pitdrone", true);
+    g_Game.PrecacheMonster("monster_bullchicken", true);
+    g_Game.PrecacheMonster("monster_shocktrooper", true);
+    g_Game.PrecacheMonster("monster_babygarg", true);
+    g_Game.PrecacheMonster("monster_alien_grunt", true); // Currently unused due to hornet owner damage bug.
 
     // Swarmer Snarks.
-    g_Game.PrecacheOther("monster_snark");
+    g_Game.PrecacheMonster("monster_snark", true);
 
     // Misc.
-    g_Game.PrecacheOther("monster_rat");
+    g_Game.PrecacheMonster("monster_rat", true);
 }
 
 void PrecacheAll()
 {
-    string mapname = string(g_Engine.mapname).ToLowercase(); // Get map name.
+    PrecacheModelIndexed("sprites/tinyspit.spr"); // Attempt to fix tinyspit model index error.
 
-    // If map is from AoM series, precache AoM sprites for compatibility.
-    if(mapname.StartsWith("aomdc_") || mapname.StartsWith("aomclassic_") || mapname.StartsWith("aom_"))
-    {
-        // AoM Precache.
-        g_Game.PrecacheModel("svencoop_addon/sprites/aomdc/tinyspit.spr");
-        g_Game.PrecacheModel("svencoop_addon/sprites/aomclassic/tinyspit.spr");
-    }
 
     // CARPG Systems Precache.
         // Sounds.
@@ -258,14 +269,14 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strSkillSpendSound);
 
         // Models/Sprites.
-        //g_Game.PrecacheModel(AMMO_SPRITE_SHEET); // Should already be in global precache.
+        //PrecacheModelIndexed(AMMO_SPRITE_SHEET); // Should already be in global precache.
 
     // Medic Ability Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strHealAuraSprite);
-        g_Game.PrecacheModel(strHealAuraEffectSprite);
-        g_Game.PrecacheModel(strHealAuraAPEffectSprite);
-        g_Game.PrecacheModel(strHealAuraPoisonEffectSprite);
+        PrecacheModelIndexed(strHealAuraSprite);
+        PrecacheModelIndexed(strHealAuraEffectSprite);
+        PrecacheModelIndexed(strHealAuraAPEffectSprite);
+        PrecacheModelIndexed(strHealAuraPoisonEffectSprite);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strHealAuraToggleSound);
@@ -287,7 +298,7 @@ void PrecacheAll()
 
     // Shocktrooper Ability Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strShockLightningSprite);
+        PrecacheModelIndexed(strShockLightningSprite);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strShockrifleEquipSound);
@@ -295,7 +306,7 @@ void PrecacheAll()
 
     // Berserker Ability Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strBloodlustSprite);
+        PrecacheModelIndexed(strBloodlustSprite);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strBloodlustStartSound);
@@ -305,7 +316,7 @@ void PrecacheAll()
 
     // Warden Ability Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strBarrierReflectSprite);
+        PrecacheModelIndexed(strBarrierReflectSprite);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strBarrierToggleSound);
@@ -315,7 +326,7 @@ void PrecacheAll()
 
     // Cloaker Ability Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strCloakNovaSprite);
+        PrecacheModelIndexed(strCloakNovaSprite);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strCloakActivateSound);
@@ -324,8 +335,8 @@ void PrecacheAll()
 
     // Vanquisher Class Precache.
         // Models/Sprites.
-        g_Game.PrecacheModel(strDragonsBreathExplosionSprite);
-        g_Game.PrecacheModel(strDragonsBreathFireSprite);
+        PrecacheModelIndexed(strDragonsBreathExplosionSprite);
+        PrecacheModelIndexed(strDragonsBreathFireSprite);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strDragonsBreathActivateSound);
@@ -335,8 +346,8 @@ void PrecacheAll()
     // Sentry.
 
         // Models/Sprites.
-        g_Game.PrecacheModel(strSentryModel);
-        g_Game.PrecacheModel(strSentryGibs);
+        PrecacheModelIndexed(strSentryModel);
+        PrecacheModelIndexed(strSentryGibs);
         g_Game.PrecacheOther("rpg_rocket");
 
         // Sounds.
@@ -354,15 +365,15 @@ void PrecacheAll()
 
     // Robogrunt.
         // Models/Sprites.
-        g_Game.PrecacheModel(strRobogruntModel);
-        g_Game.PrecacheModel(strRobogruntModelF);
-        g_Game.PrecacheModel(strRobogruntRope);
-        g_Game.PrecacheModel(strRobogruntModelChromegibs);
-        g_Game.PrecacheModel(strRobogruntModelComputergibs);
-        g_Game.PrecacheModel(strRobogruntModelShell);
-        g_Game.PrecacheModel(strRobogruntModelShotgunShell);
-        g_Game.PrecacheModel(strRobogruntModelClassicShell);
-        g_Game.PrecacheModel(strRobogruntModelClassicShotgunShell);
+        PrecacheModelIndexed(strRobogruntModel);
+        PrecacheModelIndexed(strRobogruntModelF);
+        PrecacheModelIndexed(strRobogruntRope);
+        PrecacheModelIndexed(strRobogruntModelChromegibs);
+        PrecacheModelIndexed(strRobogruntModelComputergibs);
+        PrecacheModelIndexed(strRobogruntModelShell);
+        PrecacheModelIndexed(strRobogruntModelShotgunShell);
+        PrecacheModelIndexed(strRobogruntModelClassicShell);
+        PrecacheModelIndexed(strRobogruntModelClassicShotgunShell);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strRobogruntSoundDeath);
@@ -379,8 +390,8 @@ void PrecacheAll()
 
     // Zombie.
         // Models/Sprites.
-        g_Game.PrecacheModel(strZombieModel);
-        g_Game.PrecacheModel(strZombieModelGibs);
+        PrecacheModelIndexed(strZombieModel);
+        PrecacheModelIndexed(strZombieModelGibs);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strZombieSoundClawMiss1);
@@ -402,7 +413,7 @@ void PrecacheAll()
 
     // Skeleton (Vortigaunt).
         // Models/Sprites.
-        g_Game.PrecacheModel(strSkeletonModel);
+        PrecacheModelIndexed(strSkeletonModel);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strSkeletonSoundShoot1);
@@ -421,8 +432,8 @@ void PrecacheAll()
 
     // Gonome.
         // Models/Sprites.
-        g_Game.PrecacheModel(strGonomeModel);
-        g_Game.PrecacheModel(strGonomeSpriteSpit);
+        PrecacheModelIndexed(strGonomeModel);
+        PrecacheModelIndexed(strGonomeSpriteSpit);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strGonomeSoundSpit1);
@@ -443,8 +454,8 @@ void PrecacheAll()
 
     // Houndeye.
         // Models/Sprites.
-        g_Game.PrecacheModel(strHoundeyeModel);
-        g_Game.PrecacheModel(strHoundeyeSpriteShockwave);
+        PrecacheModelIndexed(strHoundeyeModel);
+        PrecacheModelIndexed(strHoundeyeSpriteShockwave);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strHoundeyeSoundAlert1);
@@ -475,10 +486,10 @@ void PrecacheAll()
 
     // Pitdrone.
         // Models/Sprites.
-        g_Game.PrecacheModel(strPitdroneModel);
-        g_Game.PrecacheModel(strPitdroneModelGibs);
-        g_Game.PrecacheModel(strPitdroneModelSpike);
-        g_Game.PrecacheModel(strPitdroneSpikeTrail);
+        PrecacheModelIndexed(strPitdroneModel);
+        PrecacheModelIndexed(strPitdroneModelGibs);
+        PrecacheModelIndexed(strPitdroneModelSpike);
+        PrecacheModelIndexed(strPitdroneSpikeTrail);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strPitdroneSoundAttackSpike1);
@@ -502,9 +513,9 @@ void PrecacheAll()
 
     // Bullsquid.
         // Models/Sprites.
-        g_Game.PrecacheModel(strBullsquidModel);
-        g_Game.PrecacheModel(strBullsquidSpriteTinyspit);
-        g_Game.PrecacheModel(strBullsquidSpriteBigspit);
+        PrecacheModelIndexed(strBullsquidModel);
+        PrecacheModelIndexed(strBullsquidSpriteTinyspit);
+        PrecacheModelIndexed(strBullsquidSpriteBigspit);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strBullsquidAcid1);
@@ -536,9 +547,9 @@ void PrecacheAll()
 
     // Shocktrooper.
         // Models/Sprites.
-        g_Game.PrecacheModel(strShocktrooperModel);
-        g_Game.PrecacheModel(strShocktrooperModelGibs);
-        g_Game.PrecacheModel(strShocktrooperSpriteMuzzleshock);
+        PrecacheModelIndexed(strShocktrooperModel);
+        PrecacheModelIndexed(strShocktrooperModelGibs);
+        PrecacheModelIndexed(strShocktrooperSpriteMuzzleshock);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strShocktrooperBlis);
@@ -572,10 +583,10 @@ void PrecacheAll()
 
     // Baby Gargantua.
         //Models/Sprites.
-        g_Game.PrecacheModel(strBabyGargModel);
-        g_Game.PrecacheModel(strBabyGargModelGibs);
-        g_Game.PrecacheModel(strBabyGargSpriteEye);
-        g_Game.PrecacheModel(strBabyGargSpriteBeam);
+        PrecacheModelIndexed(strBabyGargModel);
+        PrecacheModelIndexed(strBabyGargModelGibs);
+        PrecacheModelIndexed(strBabyGargSpriteEye);
+        PrecacheModelIndexed(strBabyGargSpriteBeam);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strBabyGargSoundAlert1);
@@ -606,9 +617,9 @@ void PrecacheAll()
 
     // Snark.
         // Models/Sprites.
-        g_Game.PrecacheModel(strSnarkModel);
-        g_Game.PrecacheModel(strSnarkRatModel);
-        g_Game.PrecacheModel(strSnarkSpriteTinySpit);
+        PrecacheModelIndexed(strSnarkModel);
+        PrecacheModelIndexed(strSnarkRatModel);
+        PrecacheModelIndexed(strSnarkSpriteTinySpit);
 
 /*  Had to disable Alien Grunt for now as the hornets it fires aren't owned by it, 
     so you gain no XP from score transfer as it doesn't gain any score.
@@ -616,9 +627,9 @@ void PrecacheAll()
 
     // Alien Grunt.
         // Models/Sprites.
-        g_Game.PrecacheModel(strAlienGruntModel);
-        g_Game.PrecacheModel(strAlienGruntModelGibs);
-        g_Game.PrecacheModel(strAlienGruntMuzzleFlash);
+        PrecacheModelIndexed(strAlienGruntModel);
+        PrecacheModelIndexed(strAlienGruntModelGibs);
+        PrecacheModelIndexed(strAlienGruntMuzzleFlash);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strAlienGruntSoundIdle1);
@@ -651,10 +662,10 @@ void PrecacheAll()
     //g_SoundSystem.PrecacheSound(strMortarStrikeImpactSound);
 
         // Models/Sprites.
-    //g_Game.PrecacheModel(strMortarStrikeTargetSprite);
-    //g_Game.PrecacheModel(strMortarStrikeImpactSprite);
-    //g_Game.PrecacheModel(strMortarStrikeSmokeSprite);
-    //g_Game.PrecacheModel(strMortarStrikeGlowSprite);
+    //PrecacheModelIndexed(strMortarStrikeTargetSprite);
+    //PrecacheModelIndexed(strMortarStrikeImpactSprite);
+    //PrecacheModelIndexed(strMortarStrikeSmokeSprite);
+    //PrecacheModelIndexed(strMortarStrikeGlowSprite);
     */
 }
 

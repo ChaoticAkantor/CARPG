@@ -178,7 +178,7 @@ class BarrierData
                 absorbmsg.WriteCoord(maxs.y);
                 absorbmsg.WriteCoord(maxs.z);
                 absorbmsg.WriteCoord(80.0f); // Height of the bubble effect.
-                absorbmsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite)); // Borrow sprite from heal aura.
+                absorbmsg.WriteShort(GetModelIndex(strHealAuraEffectSprite)); // Borrow sprite from heal aura.
                 absorbmsg.WriteByte(12); // Count.
                 absorbmsg.WriteCoord(6.0f); // Speed.
                 absorbmsg.End();
@@ -334,7 +334,7 @@ class BarrierData
             breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
             breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
             breakMsg.WriteByte(25); // Gib random speed and direction.
-            breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+            breakMsg.WriteShort(GetModelIndex(strRobogruntModelChromegibs));
             breakMsg.WriteByte(15); // Count.
             breakMsg.WriteByte(10); // Lifetime.
             breakMsg.WriteByte(1); // Sound Flags.
@@ -359,7 +359,7 @@ class BarrierData
             breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
             breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
             breakMsg.WriteByte(20); // Gib random speed and direction.
-            breakMsg.WriteShort(g_EngineFuncs.ModelIndex(strRobogruntModelChromegibs));
+            breakMsg.WriteShort(GetModelIndex(strRobogruntModelChromegibs));
             breakMsg.WriteByte(2); // Count.
             breakMsg.WriteByte(10); // Lifetime.
             breakMsg.WriteByte(1); // Sound Flags.
@@ -402,7 +402,7 @@ class BarrierData
             snowmsg.WriteCoord(centerPos.x);
             snowmsg.WriteCoord(centerPos.y);
             snowmsg.WriteCoord(centerPos.z);
-            snowmsg.WriteShort(g_EngineFuncs.ModelIndex(strBarrierReflectSprite));
+            snowmsg.WriteShort(GetModelIndex(strBarrierReflectSprite));
             snowmsg.WriteByte(3);   // Count.
             snowmsg.WriteByte(1);   // Life in 0.1's.
             snowmsg.WriteByte(2);   // Scale in 0.1's.

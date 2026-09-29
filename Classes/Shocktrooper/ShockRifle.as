@@ -201,7 +201,7 @@ class ShockRifleData
 
             Vector hitPos    = pVictim.pev.origin;
             float  strikeDmg = flDealtDamage * GetScaledLightningDamage(); // Scale lightning damage based on skill level.
-            int    sprIdx    = g_EngineFuncs.ModelIndex(strShockLightningSprite);
+            int    sprIdx    = GetModelIndex(strShockLightningSprite);
             Vector skyPos    = Vector(hitPos.x, hitPos.y, hitPos.z + 2048);
 
             // Lightning bolt from the sky down to the target.

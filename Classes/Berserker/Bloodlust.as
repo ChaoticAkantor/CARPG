@@ -339,7 +339,7 @@ class BloodlustData
             bubbleMsg.WriteCoord(maxs.y);
             bubbleMsg.WriteCoord(maxs.z);
             bubbleMsg.WriteCoord(112.0f);
-            bubbleMsg.WriteShort(g_EngineFuncs.ModelIndex(strBloodlustSprite));
+            bubbleMsg.WriteShort(GetModelIndex(strBloodlustSprite));
             bubbleMsg.WriteByte(2); // Count.
             bubbleMsg.WriteCoord(2.0f); // Lifetime.
         bubbleMsg.End();

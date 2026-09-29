@@ -325,7 +325,7 @@ class CloakData
             beamMsg.WriteCoord(playerOrigin.x);
             beamMsg.WriteCoord(playerOrigin.y);
             beamMsg.WriteCoord(playerOrigin.z + m_flNovaRadius); // Height equals radius.
-            beamMsg.WriteShort(g_EngineFuncs.ModelIndex(strCloakNovaSprite));
+            beamMsg.WriteShort(GetModelIndex(strCloakNovaSprite));
             beamMsg.WriteByte(0); // Start frame.
             beamMsg.WriteByte(0); // Frame rate (no effect).
             beamMsg.WriteByte(5); // Life * 0.1s (0.5s to reach max).

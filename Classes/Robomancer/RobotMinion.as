@@ -665,7 +665,7 @@ class MinionData
             healeffect.WriteCoord(maxs.y);
             healeffect.WriteCoord(maxs.z);
             healeffect.WriteCoord(112.0f);
-            healeffect.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            healeffect.WriteShort(GetModelIndex(strHealAuraEffectSprite));
             healeffect.WriteByte(3);
             healeffect.WriteCoord(2.0f);
             healeffect.End();

@@ -224,7 +224,7 @@ class SnarkNestData
             msg.WriteCoord(endPoint.x);
             msg.WriteCoord(endPoint.y);
             msg.WriteCoord(endPoint.z);
-            msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraPoisonEffectSprite));
+            msg.WriteShort(GetModelIndex("sprites/tinyspit.spr"));
             msg.WriteByte(1);   // Count.
             msg.WriteByte(1);   // Life in 0.1's.
             msg.WriteByte(5);   // Scale in 0.1's.

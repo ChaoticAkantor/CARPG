@@ -544,7 +544,7 @@ class SentryData
             aura2msg.WriteCoord(maxs.y);
             aura2msg.WriteCoord(maxs.z);
             aura2msg.WriteCoord(80.0f); // Height of the bubble effect.
-            aura2msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            aura2msg.WriteShort(GetModelIndex(strHealAuraEffectSprite));
             aura2msg.WriteByte(18); // Count.
             aura2msg.WriteCoord(6.0f); // Speed.
             aura2msg.End();
@@ -584,7 +584,7 @@ class SentryData
             auramsg.WriteCoord(pos.x);
             auramsg.WriteCoord(pos.y);
             auramsg.WriteCoord(pos.z + m_flHealRadius); // Height.
-            auramsg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraSprite));
+            auramsg.WriteShort(GetModelIndex(strHealAuraSprite));
             auramsg.WriteByte(0); // Starting frame.
             auramsg.WriteByte(0); // Frame rate (no effect).
             auramsg.WriteByte(uint8(m_flHealInterval * 10)); // Life * 0.1s (make life match duration).
@@ -607,7 +607,7 @@ class SentryData
             aura2msg.WriteCoord(maxs.y);
             aura2msg.WriteCoord(maxs.z);
             aura2msg.WriteCoord(80.0f); // Height of the bubble effect.
-            aura2msg.WriteShort(g_EngineFuncs.ModelIndex(strHealAuraEffectSprite));
+            aura2msg.WriteShort(GetModelIndex(strHealAuraEffectSprite));
             aura2msg.WriteByte(18); // Count.
             aura2msg.WriteCoord(6.0f); // Speed.
             aura2msg.End();

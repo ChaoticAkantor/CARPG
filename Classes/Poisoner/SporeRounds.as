@@ -242,7 +242,7 @@ class ExplosiveRoundsData
                 msgExp.WriteCoord(impactPoint.x);
                 msgExp.WriteCoord(impactPoint.y);
                 msgExp.WriteCoord(impactPoint.z);
-                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+                msgExp.WriteShort(GetModelIndex(strExplosiveRoundsExplosionSprite));
                 msgExp.WriteByte(6); // Smaller scale for shotgun
                 msgExp.WriteByte(180); // Brightness
                 msgExp.End();
@@ -253,7 +253,7 @@ class ExplosiveRoundsData
                 msgCore.WriteCoord(impactPoint.x);
                 msgCore.WriteCoord(impactPoint.y);
                 msgCore.WriteCoord(impactPoint.z);
-                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+                msgCore.WriteShort(GetModelIndex(strExplosiveRoundsExplosionCoreSprite));
                 msgCore.WriteByte(4); // Smaller scale for shotgun
                 msgCore.WriteByte(180); // Brightness
                 msgCore.End();
@@ -264,7 +264,7 @@ class ExplosiveRoundsData
                 msgGlow.WriteCoord(impactPoint.x);
                 msgGlow.WriteCoord(impactPoint.y);
                 msgGlow.WriteCoord(impactPoint.z);
-                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+                msgGlow.WriteShort(GetModelIndex(strExplosiveRoundsGlowSprite));
                 msgGlow.WriteByte(2); // Life
                 msgGlow.WriteByte(1); // Scale
                 msgGlow.WriteByte(180); // Brightness
@@ -289,7 +289,7 @@ class ExplosiveRoundsData
                 msgTrail.WriteCoord(endPoint.x);
                 msgTrail.WriteCoord(endPoint.y);
                 msgTrail.WriteCoord(endPoint.z);
-                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+                msgTrail.WriteShort(GetModelIndex(strExplosiveRoundsSplatterSprite));
                 msgTrail.WriteByte(8);  // Count - fewer sprites for smaller effect
                 msgTrail.WriteByte(2);  // Life in 0.1's
                 msgTrail.WriteByte(1);  // Scale in 0.1's
@@ -350,7 +350,7 @@ class ExplosiveRoundsData
                 msgExp.WriteCoord(impactPoint.x);
                 msgExp.WriteCoord(impactPoint.y);
                 msgExp.WriteCoord(impactPoint.z);
-                msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+                msgExp.WriteShort(GetModelIndex(strExplosiveRoundsExplosionSprite));
                 msgExp.WriteByte(4); // Smaller scale for burst fire
                 msgExp.WriteByte(160); // Brightness
                 msgExp.End();
@@ -361,7 +361,7 @@ class ExplosiveRoundsData
                 msgCore.WriteCoord(impactPoint.x);
                 msgCore.WriteCoord(impactPoint.y);
                 msgCore.WriteCoord(impactPoint.z);
-                msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+                msgCore.WriteShort(GetModelIndex(strExplosiveRoundsExplosionCoreSprite));
                 msgCore.WriteByte(3); // Smaller scale for burst fire
                 msgCore.WriteByte(160); // Brightness
                 msgCore.End();
@@ -372,7 +372,7 @@ class ExplosiveRoundsData
                 msgGlow.WriteCoord(impactPoint.x);
                 msgGlow.WriteCoord(impactPoint.y);
                 msgGlow.WriteCoord(impactPoint.z);
-                msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+                msgGlow.WriteShort(GetModelIndex(strExplosiveRoundsGlowSprite));
                 msgGlow.WriteByte(1); // Life
                 msgGlow.WriteByte(1); // Scale
                 msgGlow.WriteByte(160); // Brightness
@@ -397,7 +397,7 @@ class ExplosiveRoundsData
                 msgTrail.WriteCoord(endPoint.x);
                 msgTrail.WriteCoord(endPoint.y);
                 msgTrail.WriteCoord(endPoint.z);
-                msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+                msgTrail.WriteShort(GetModelIndex(strExplosiveRoundsSplatterSprite));
                 msgTrail.WriteByte(3);  // Count
                 msgTrail.WriteByte(1);  // Life in 0.1's
                 msgTrail.WriteByte(1);  // Scale in 0.1's
@@ -447,7 +447,7 @@ class ExplosiveRoundsData
             msgExp.WriteCoord(impactPoint.x);
             msgExp.WriteCoord(impactPoint.y);
             msgExp.WriteCoord(impactPoint.z);
-            msgExp.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionSprite));
+            msgExp.WriteShort(GetModelIndex(strExplosiveRoundsExplosionSprite));
             msgExp.WriteByte(10); // Scale
             msgExp.WriteByte(200); // Brightness
             msgExp.End();
@@ -458,7 +458,7 @@ class ExplosiveRoundsData
             msgCore.WriteCoord(impactPoint.x);
             msgCore.WriteCoord(impactPoint.y);
             msgCore.WriteCoord(impactPoint.z);
-            msgCore.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsExplosionCoreSprite));
+            msgCore.WriteShort(GetModelIndex(strExplosiveRoundsExplosionCoreSprite));
             msgCore.WriteByte(8); // Scale
             msgCore.WriteByte(200); // Brightness
             msgCore.End();
@@ -469,7 +469,7 @@ class ExplosiveRoundsData
             msgGlow.WriteCoord(impactPoint.x);
             msgGlow.WriteCoord(impactPoint.y);
             msgGlow.WriteCoord(impactPoint.z);
-            msgGlow.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsGlowSprite));
+            msgGlow.WriteShort(GetModelIndex(strExplosiveRoundsGlowSprite));
             msgGlow.WriteByte(3); // Life
             msgGlow.WriteByte(2); // Scale
             msgGlow.WriteByte(200); // Brightness
@@ -494,7 +494,7 @@ class ExplosiveRoundsData
             msgTrail.WriteCoord(endPoint.x);
             msgTrail.WriteCoord(endPoint.y);
             msgTrail.WriteCoord(endPoint.z);
-            msgTrail.WriteShort(g_EngineFuncs.ModelIndex(strExplosiveRoundsSplatterSprite));
+            msgTrail.WriteShort(GetModelIndex(strExplosiveRoundsSplatterSprite));
             msgTrail.WriteByte(16);  // Count - more sprites for a denser burst
             msgTrail.WriteByte(3);   // Life in 0.1's
             msgTrail.WriteByte(3);   // Scale in 0.1's

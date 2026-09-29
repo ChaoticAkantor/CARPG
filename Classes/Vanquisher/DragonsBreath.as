@@ -467,7 +467,7 @@ class DragonsBreathData
             msgExp.WriteCoord(impactPoint.x);
             msgExp.WriteCoord(impactPoint.y);
             msgExp.WriteCoord(impactPoint.z);
-            msgExp.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionSprite));
+            msgExp.WriteShort(GetModelIndex(strDragonsBreathExplosionSprite));
             msgExp.WriteByte(scale);
             msgExp.WriteByte(180);
         msgExp.End();
@@ -556,7 +556,7 @@ void ShowDragonsBreathBurn(CBaseEntity@ pTarget)
         bubbles.WriteCoord(targetMaxs.y);
         bubbles.WriteCoord(targetMaxs.z);
         bubbles.WriteCoord(80.0f); // Height of bubble effect.
-        bubbles.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
+        bubbles.WriteShort(GetModelIndex(strDragonsBreathFireSprite));
         bubbles.WriteByte(10); // Count.
         bubbles.WriteCoord(6.0f); // Speed.
     bubbles.End();
@@ -636,7 +636,7 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint, float flDirectDamag
         msgFireArea.WriteCoord(impactPoint.x);
         msgFireArea.WriteCoord(impactPoint.y);
         msgFireArea.WriteCoord(impactPoint.z);
-        msgFireArea.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathFireSprite));
+        msgFireArea.WriteShort(GetModelIndex(strDragonsBreathFireSprite));
         msgFireArea.WriteByte(2);
         msgFireArea.WriteByte(1);
         msgFireArea.WriteByte(5);
