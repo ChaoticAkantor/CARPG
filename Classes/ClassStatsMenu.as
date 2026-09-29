@@ -174,8 +174,8 @@ namespace Menu
                     if(DragonsBreath !is null)
                     {
                         string VanquisherStatsText = "=== Dragon's Breath Ammo (Current Weapon): ===" + "\n";
-                            VanquisherStatsText += "Explosive Damage: " + DragonsBreath.GetScaledExplosionDamage() + "\n";
-                            VanquisherStatsText += "Fire Damage: " + DragonsBreath.GetScaledFireDamage() + "/s\n";
+                            VanquisherStatsText += "Explosive Damage: " + formatFloat(DragonsBreath.GetScaledExplosionDamagePercent() * 100.0f, "f", 0, 1) + "% of weapon damage.\n";
+                            VanquisherStatsText += "Fire Damage: " + formatFloat(DragonsBreath.GetScaledFireDamagePercent() * 100.0f, "f", 0, 2) + "% per tick\n";
                             VanquisherStatsText += "Fire Duration: " + DragonsBreath.GetFireDuration() + "s\n";
                             VanquisherStatsText += "Fire Radius: " + DragonsBreath.GetRadius() / 16 + "ft\n";
                         
