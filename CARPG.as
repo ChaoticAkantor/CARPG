@@ -68,7 +68,8 @@ void PluginInit()
 
 void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
 {
-    PrecacheAll(); // Precache everything needed for plugin.
+    PrecacheNPC(); // Precache everything attached to spawnable NPC's first, incase anything is model swapped.
+    PrecacheAll(); // Precache everything else needed for plugin.
 }
 
 void MapActivate() // Like MapInit, only called after all mapper placed entities have been activated and the sound list has been written.
@@ -210,6 +211,34 @@ void SetupTimers()
     g_Scheduler.SetInterval("CheckSnarks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking snarks.
 }
 
+void PrecacheNPC()
+{
+    // Engineer Sentry.
+    g_Game.PrecacheOther("monster_sentry");
+
+    // Robomancer Minions.
+    g_Game.PrecacheOther("monster_robogrunt");
+
+    // Necromancer Minions.
+    g_Game.PrecacheOther("monster_zombie"); // Does not use this model!
+    g_Game.PrecacheOther("monster_alien_slave"); // Does not use this model!
+    g_Game.PrecacheOther("monster_gonome"); // Does not use this model!
+    
+    // Xenomancer Minions.
+    g_Game.PrecacheOther("monster_houndeye");
+    g_Game.PrecacheOther("monster_pitdrone");
+    g_Game.PrecacheOther("monster_bullchicken");
+    g_Game.PrecacheOther("monster_shocktrooper");
+    g_Game.PrecacheOther("monster_babygarg");
+    g_Game.PrecacheOther("monster_alien_grunt"); // Currently unused due to hornet owner damage bug.
+
+    // Swarmer Snarks.
+    g_Game.PrecacheOther("monster_snark");
+
+    // Misc.
+    g_Game.PrecacheOther("monster_rat");
+}
+
 void PrecacheAll()
 {
     string mapname = string(g_Engine.mapname).ToLowercase(); // Get map name.
@@ -278,7 +307,6 @@ void PrecacheAll()
         // Models/Sprites.
         g_Game.PrecacheModel(strBarrierReflectSprite);
 
-        
         // Sounds.
         g_SoundSystem.PrecacheSound(strBarrierToggleSound);
         g_SoundSystem.PrecacheSound(strBarrierHitSound);
@@ -305,6 +333,7 @@ void PrecacheAll()
 
     // Precache for all spawnable NPC's.
     // Sentry.
+
         // Models/Sprites.
         g_Game.PrecacheModel(strSentryModel);
         g_Game.PrecacheModel(strSentryGibs);
