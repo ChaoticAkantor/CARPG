@@ -554,6 +554,7 @@ class NecroMinionData
         keys["scale"] = "2";
         keys["model"] = strSnarkRatModel;
         keys["spawnflags"] = "32";
+        keys["body"] = string(Math.RandomLong(0, 1)); // Random rat body.
         keys["is_player_ally"] = "1";
         
         CBaseEntity@ pRat = g_EntityFuncs.CreateEntity("monster_snark", keys, true);
@@ -609,7 +610,7 @@ class NecroMinionData
             }
 
             pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
-            pMonster.m_fCanFearCreatures = true; // Can cause fear to creatures?
+            //pMonster.m_fCanFearCreatures = true; // Can cause fear to creatures?
             //pMonster.m_iEffectInvisible = 1; // is invisible (render + no-target).
             //pMonster.m_flEffectDamage = 2.0; // Damage (%)?
             //pMonster.m_flEffectSpeed = 1.0; // Movement speed (%)?
