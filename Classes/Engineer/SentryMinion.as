@@ -1,6 +1,5 @@
 string strSentryCreate = "weapons/mine_deploy.wav";
 string strSentryRecall = "turret/tu_die.wav";
-string strSentryExplosive = "weapons/explode3.wav";
 
 // Sentry Models.
 string strSentryModel = "models/sentry.mdl";
@@ -19,6 +18,15 @@ string strSentryAlert = "turret/tu_alert.wav";
 
 const Vector ELEMENT_COLOR = Vector(130, 200, 255); // R G B.
 
+string FormatSentrySecondsForHud(float t)
+{
+    t = Math.max(0.0f, t);
+    int tenthsTotal = int(t * 10.0f + 0.5f);
+    int whole = tenthsTotal / 10;
+    int frac = tenthsTotal % 10;
+    return "" + whole + "." + frac + "s";
+}
+
 dictionary g_PlayerSentries;
 
 class SentryData
@@ -31,11 +39,12 @@ class SentryData
     private float m_flBaseHealth = 10000.0; // Base health of the sentry. Must be very high for it to be able to survive most encounters. Is now fixed and no longer scales.
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
     private float m_flHealRadius = 50.0f * 16.0f; // Sentry heal radius (ft converted to units).
-    private float m_flExplosiveRadius = 30.0f * 16.0f; // Radius of the extra explosive damage.
-
     private float m_flAbilityDrain = 1.0f; // Ability drain per interval.
     private float m_flDrainInterval = 0.1f; // Ability drain interval in seconds.
     private float m_flRecallEnergyCost = 0.25f; // Ability percentage cost to recall.
+
+    // Rocket Ability Skill.
+    private float m_flBaseRocketInterval = 40.0f; // Base interval between rocket shots. Reduced by skill.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
@@ -46,7 +55,7 @@ class SentryData
     private float m_flHealInterval = 1.0f; // Interval between each heal tick.
     private float m_flNextVisualUpdate = 0.0f;
     private float m_flVisualUpdateInterval = 1.0f; // Time between visual updates. Same as heal rate.
-    private bool m_bExplosiveActive = false; // Recursion guard for explosive damage.
+    private float m_flCurrentRocketCooldown = 0.0f;
     private Vector m_vAuraColor = Vector(0, 255, 0); // Green color for healing.
 
     private ClassStats@ m_pStats = null;
@@ -135,16 +144,34 @@ class SentryData
         return modifier;
     }
 
-    float GetScaledExplosiveDamage()
+    float GetRocketInterval()
     {
         if(m_pStats is null)
-            return 1.0f; // Normal damage if no stats.
-            
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO);
-        float skillPower = SKILL_ENGINEER_EXPLOSIVEAMMO; // Bonus damage based on skill level.
-        float modifier = skillPower * skillLevel; // Total damage multiplier.
+            return m_flBaseRocketInterval;
 
-        return modifier;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_ROCKETS);
+        float interval = m_flBaseRocketInterval * (1.0f - (SKILL_ENGINEER_ROCKETS * skillLevel));
+
+        return Math.max(m_flBaseRocketInterval * 0.05f, interval);
+    }
+
+    string GetRocketCooldownDisplay()
+    {
+        if(m_flCurrentRocketCooldown > 0.0f)
+            return "[Rockets: " + FormatSentrySecondsForHud(m_flCurrentRocketCooldown) + "]";
+
+        return "[Rockets: Ready]";
+    }
+
+    void RocketTimerTick()
+    {
+        if(m_flCurrentRocketCooldown <= 0.0f)
+            return;
+
+        m_flCurrentRocketCooldown -= flSchedulerInterval;
+
+        if(m_flCurrentRocketCooldown < 0.0f)
+            m_flCurrentRocketCooldown = 0.0f;
     }
 
     CBaseEntity@ GetSentryEntity()
@@ -359,54 +386,43 @@ class SentryData
             m_flAbilityCharge = GetScaledSentryDuration();
     }
 
-    void ApplyExplosiveDamage(CBaseEntity@ pAttacker, CBaseEntity@ pVictim, float flDealtDamage)
+    void FireRockets(CBaseEntity@ pSentry)
     {
-        if(pAttacker is null || pVictim is null || flDealtDamage <= 0.0f)
+        if(pSentry is null || m_pStats is null)
             return;
 
-        if(m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_EXPLOSIVEAMMO) <= 0)
+        if(m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_ROCKETS) <= 0)
             return;
 
-        if(m_bExplosiveActive)
+        if(m_flCurrentRocketCooldown > 0.0f)
             return;
 
-        Vector hitPos    = pVictim.pev.origin;
-        float  attackDmg = flDealtDamage * GetScaledExplosiveDamage(); // Scale explosive damage based on skill level.
-        Vector center = hitPos + (pVictim.pev.mins + pVictim.pev.maxs) * 0.5f;
+        CBaseMonster@ pMonster = cast<CBaseMonster@>(pSentry);
+        if(pMonster is null || !pMonster.m_hEnemy.IsValid())
+            return;
 
-        // Apply dynamic light for flash effect.
-        NetworkMessage explAreaMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, center);
-            explAreaMsg.WriteByte(TE_DLIGHT);
-            explAreaMsg.WriteCoord(center.x);
-            explAreaMsg.WriteCoord(center.y);
-            explAreaMsg.WriteCoord(center.z);
-            explAreaMsg.WriteByte(30); // Radius units * 10.
-            explAreaMsg.WriteByte(255); // Red.
-            explAreaMsg.WriteByte(255); // Green.
-            explAreaMsg.WriteByte(50); // Blue.
-            explAreaMsg.WriteByte(uint8(1)); // Life * 0.1s.
-            explAreaMsg.WriteByte(uint8(1)); // Fade speed * 1s.
-            explAreaMsg.End();
+        CBaseEntity@ pTarget = pMonster.m_hEnemy.GetEntity();
+        if(pTarget is null || !pTarget.IsAlive())
+            return;
 
-        NetworkMessage msgExp(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, center);
-            msgExp.WriteByte(TE_SPRITE);
-            msgExp.WriteCoord(center.x);
-            msgExp.WriteCoord(center.y);
-            msgExp.WriteCoord(center.z);
-            msgExp.WriteShort(g_EngineFuncs.ModelIndex(strDragonsBreathExplosionSprite));
-            msgExp.WriteByte(10);
-            msgExp.WriteByte(180);
-        msgExp.End();
+        Vector vecSrc = pSentry.pev.origin + Vector(0, 0, 32);
+        Vector vecTarget = pTarget.Center();
+        Vector vecDirection = (vecTarget - vecSrc).Normalize();
+        Vector vecAngles = Math.VecToAngles(vecDirection);
 
-        m_bExplosiveActive = true; // Enable recursion guard.
+        dictionary keys;
+        keys["origin"] = vecSrc.ToString();
+        keys["angles"] = vecAngles.ToString();
 
-        // Radius damage.
-        g_WeaponFuncs.RadiusDamage(hitPos, pAttacker.pev, pAttacker.pev, attackDmg, m_flExplosiveRadius, CLASS_PLAYER, DMG_GENERIC);
-        
-        // Play explosion sound.
-        g_SoundSystem.PlaySound(pVictim.edict(), CHAN_ITEM, strSentryExplosive, 0.6f, ATTN_NORM, 0, PITCH_NORM + Math.RandomLong(-5, 5));
+        CBaseEntity@ pRocket = g_EntityFuncs.CreateEntity("rpg_rocket", keys, true);
+        if(pRocket is null)
+            return;
 
-        m_bExplosiveActive = false; // Disable recursion guard.
+        @pRocket.pev.owner = pSentry.edict();
+        g_EntityFuncs.DispatchSpawn(pRocket.edict());
+        pRocket.pev.velocity = vecDirection * 1000.0f;
+        pRocket.pev.angles = vecAngles;
+        m_flCurrentRocketCooldown = GetRocketInterval();
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -431,6 +447,7 @@ class SentryData
 
         float currentTime = g_Engine.time;
 
+        FireRockets(pSentry);
         SentryHeal(pSentry);
         UpdateVisualEffect(pPlayer);
 
@@ -635,6 +652,8 @@ void CheckSentries()
             SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
             if(sentry !is null)
             {
+                sentry.RocketTimerTick();
+
                 // Check for invalid entity references first.
                 if(sentry.IsActive())
                 {
