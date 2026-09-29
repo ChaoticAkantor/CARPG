@@ -179,9 +179,13 @@ class NecroMinionData
     private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
-    private int m_iRatSpawnCount = 2; // Number of rats to spawn with the rat ability, per active minion.
+
+    // Rats Ability Skill.
+    private int m_iRatSpawnCount = 3 ; // Number of rats to spawn with the rat ability, per active minion.
     private float m_flRatSpawnCooldown = 30.0f; // Base cooldown for spawning rats.
     private float m_flRatLaunchForce = 500.0f; // Velocity that rats are thrown outward.
+
+    // Minion Team Lifesteal Self-heal modifier.
     private float m_flSelfHealMult = 0.25f; // Multiplier for self-healing from minion lifesteal.
 
     // Timers and trackers.
@@ -344,9 +348,9 @@ class NecroMinionData
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS);
         float skillPower = SKILL_NECROMANCER_RATS;
-        float modifier = skillLevel * skillPower; // Regen is zero with no skill points spent.
+        float modifier = skillLevel * skillPower;
 
-        return defaultCooldown - modifier;
+        return defaultCooldown * Math.max(0.05f, 1.0f - modifier);
     }
 
     void RatTimerTick()
