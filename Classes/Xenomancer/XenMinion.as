@@ -283,6 +283,8 @@ class XenMinionData
     private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
+
+    // Minion Team Lifesteal Self-heal modifier.
     private float m_flSelfHealMult = 0.25f; // Multiplier for self-healing from minion lifesteal.
 
     // Timers and trackers.
