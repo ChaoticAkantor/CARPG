@@ -100,6 +100,8 @@ class MinionData
     private float m_flBaseHealth = 180.0; // Base health of Robogrunts.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
+
+    // Minion Team Lifesteal Self-heal modifier.
     private float m_flSelfHealMult = 0.10f; // Multiplier for self-healing from minion lifesteal.
 
     // Timers and trackers.
