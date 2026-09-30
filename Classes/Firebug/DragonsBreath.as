@@ -134,10 +134,10 @@ class DragonsBreathData
     float GetScaledAbilityRecharge()
     {
         if (m_pStats is null)
-            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+            return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
-        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
     }
