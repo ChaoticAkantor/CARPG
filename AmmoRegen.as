@@ -200,7 +200,7 @@ void AmmoTimerTick()
             {
                 PlayerData@ rpgData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(rpgData !is null)
-                    skillBonus = rpgData.GetSkillLevel(SkillID::SKILL_AMMOREGEN);
+                    skillBonus = rpgData.GetSkillLevel(SkillID::SKILL_BASIC_AMMOREGEN);
             }
             
             if(skillBonus < 1)
@@ -267,7 +267,7 @@ void UpdateAmmoRegenHUD(CBasePlayer@ pPlayer)
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     if(steamID.IsEmpty() || !g_PlayerRPGData.exists(steamID)) return;
     PlayerData@ rpgData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-    if(rpgData is null || rpgData.GetSkillLevel(SkillID::SKILL_AMMOREGEN) < 1) return;
+    if(rpgData is null || rpgData.GetSkillLevel(SkillID::SKILL_BASIC_AMMOREGEN) < 1) return;
 
     string ammoName = GetAmmoTypeNameForActiveWeapon(pPlayer);
     if(ammoName.IsEmpty()) return;
