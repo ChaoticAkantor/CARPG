@@ -88,7 +88,7 @@
 
 
 # Vampire
-  - Bloodlust doubles all lifesteal and Ability related HP bonuses whilst active.
+  - Bloodlust doubles all lifesteal bonuses whilst active.
 
   - Can restore health by dealing damage.
 
@@ -96,7 +96,7 @@
 # Engineer
   - Summon a friendly Sentry Turret for a duration.
 
-  - Has a lot of HP.
+  - Sentry cannot be killed.
 
   - Can be recalled for a cost.
 
