@@ -102,9 +102,9 @@ void RegenTickHP() // Regen HP.
                 PlayerData@ rpgData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if (rpgData !is null)
                 {
-                    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_REGENHP);
+                    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_BASIC_REGENHP);
                     if (skillLevel > 0)
-                        skillBonusHP = SKILL_REGENHP * flRegenTickHP * float(skillLevel);
+                        skillBonusHP = SKILL_BASIC_REGENHP * flRegenTickHP * float(skillLevel);
                 }
 
                 float flCalcPercHP = (pPlayer.pev.max_health * skillBonusHP) * g_CurrentRecoveryMapMultiplier;
@@ -141,9 +141,9 @@ void RegenTickAP() // Regen AP.
                 PlayerData@ rpgData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if (rpgData !is null)
                 {
-                    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_REGENAP);
+                    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_BASIC_REGENAP);
                     if (skillLevel > 0)
-                        skillBonusAP = SKILL_REGENAP * flRegenTickAP * float(skillLevel);
+                        skillBonusAP = SKILL_BASIC_REGENAP * flRegenTickAP * float(skillLevel);
                 }
 
                 float flCalcPercAP = (pPlayer.pev.armortype * skillBonusAP) * g_CurrentRecoveryMapMultiplier;
@@ -216,7 +216,7 @@ void ApplyLifestealEffectBasic(CBasePlayer@ pPlayer)
             return;
  
         PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-        if(data is null || data.GetSkillLevel(SkillID::SKILL_LIFESTEAL) <= 0)
+        if(data is null || data.GetSkillLevel(SkillID::SKILL_BASIC_LIFESTEAL) <= 0)
             return;
 
         Vector pos = pPlayer.pev.origin;
@@ -257,8 +257,8 @@ float GetScaledBasicLifesteal(PlayerData@ data)
     if(data is null)
         return 0.0f; // No lifesteal if no stats.
 
-    int skillLevel = data.GetSkillLevel(SkillID::SKILL_LIFESTEAL);
-    float skillPower = SKILL_LIFESTEAL;
+    int skillLevel = data.GetSkillLevel(SkillID::SKILL_BASIC_LIFESTEAL);
+    float skillPower = SKILL_BASIC_LIFESTEAL;
     float modifier = skillPower * skillLevel; // Scaled from lifesteal skill.
 
     return modifier;
@@ -269,8 +269,8 @@ float GetScaledBasicArmorsteal(PlayerData@ data)
     if(data is null)
         return 0.0f; // No armorsteal if no stats.
 
-    int skillLevel = data.GetSkillLevel(SkillID::SKILL_ARMORSTEAL);
-    float skillPower = SKILL_ARMORSTEAL;
+    int skillLevel = data.GetSkillLevel(SkillID::SKILL_BASIC_ARMORSTEAL);
+    float skillPower = SKILL_BASIC_ARMORSTEAL;
     float modifier = skillPower * skillLevel; // Scaled from armorsteal skill.
 
     return modifier;

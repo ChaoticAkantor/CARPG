@@ -131,8 +131,8 @@ class MinionData
         if(m_pStats is null)
             return 0; // No increase if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONPOINT);
-        return int(SKILL_MINIONPOINT * skillLevel); // Bonus minion points from skill.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
+        return int(SKILL_MINION_POINT * skillLevel); // Bonus minion points from skill.
     }
 
     int GetAbilityMax()
@@ -149,8 +149,8 @@ class MinionData
         if (m_pStats is null)
             return 1.0f; // Use the base recharge rate if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
-        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
     }
@@ -198,8 +198,8 @@ class MinionData
 
         float minionScaledHealth = m_flBaseHealth; // Start with base health.
 
-        float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONHP);
-        float skillPower = SKILL_MINIONHP;
+        float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_HP);
+        float skillPower = SKILL_MINION_HP;
 
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
@@ -213,8 +213,8 @@ class MinionData
         if(m_pStats is null)
             return ROBO_DMG_MODIFIERS[minionType]; // Return type modifier only if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONDAMAGE);
-        float skillPower = SKILL_MINIONDAMAGE;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_DAMAGE);
+        float skillPower = SKILL_MINION_DAMAGE;
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
         return modifier * ROBO_DMG_MODIFIERS[minionType];
@@ -225,8 +225,8 @@ class MinionData
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONREGEN);
-        float skillPower = SKILL_MINIONREGEN;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_REGEN);
+        float skillPower = SKILL_MINION_REGEN;
         float modifier = skillLevel * skillPower; // Regen is zero with no skill points spent.
 
         return modifier;
@@ -237,8 +237,8 @@ class MinionData
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINIONLIFESTEAL);
-        float skillPower = SKILL_MINIONLIFESTEAL;
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_LIFESTEAL);
+        float skillPower = SKILL_MINION_LIFESTEAL;
         float modifier = skillLevel * skillPower; // Scale from skill.
 
         return modifier;

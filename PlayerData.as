@@ -803,17 +803,17 @@ class PlayerData
         {
             ClassDefinition@ def = cast<ClassDefinition@>(g_ClassDefinitions[m_CurrentClass]);
 
-            // Base HP/AP + SKILL_MAXHP / SKILL_MAXAP bonuses.
-            float maxHealth = def.baseHP * (1.0f + SKILL_MAXHP * stats.GetSkillLevel(SkillID::SKILL_MAXHP));
-            float maxArmor = def.baseAP * (1.0f + SKILL_MAXAP * stats.GetSkillLevel(SkillID::SKILL_MAXAP));
+            // Base HP/AP + SKILL_BASIC_MAXHP / SKILL_BASIC_MAXAP bonuses.
+            float maxHealth = def.baseHP * (1.0f + SKILL_BASIC_MAXHP * stats.GetSkillLevel(SkillID::SKILL_BASIC_MAXHP));
+            float maxArmor = def.baseAP * (1.0f + SKILL_BASIC_MAXAP * stats.GetSkillLevel(SkillID::SKILL_BASIC_MAXAP));
 
             // Set Max HP/AP based on class bonuses.
             pPlayer.pev.max_health = maxHealth;
             pPlayer.pev.armortype = maxArmor;
 
             // HP Conversion Skill.
-            int conversionSkillLevel = stats.GetSkillLevel(SkillID::SKILL_HPCONVERSION);
-            float skillPower = SKILL_HPCONVERSION;
+            int conversionSkillLevel = stats.GetSkillLevel(SkillID::SKILL_BASIC_HPCONVERSION);
+            float skillPower = SKILL_BASIC_HPCONVERSION;
             float hpConversionBonus = skillPower * conversionSkillLevel; // HP conversion percent scaled from skill.
 
             float hpToConvert = maxHealth * hpConversionBonus; // HP amount that would be converted to AP.
