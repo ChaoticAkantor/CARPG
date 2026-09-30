@@ -167,8 +167,8 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_SHOCKTROOPER:
             return
                 "{Super Shockrifle}.\n\n"
-                "Equips an improved version of the Shockrifle.\n"
-                "Activating the ability whilst holding a Shockrifle will refund half of the ammo as Ability Charge.\n"
+                "Equips a supercharged version of the Shockrifle.\n"
+                "Picking up any Shockroach will convert it to a Super Shockroach.\n"
                 "Alt-fire will restore AP for allies hit by the beams.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";
 

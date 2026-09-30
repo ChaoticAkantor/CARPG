@@ -158,11 +158,11 @@
 
 
 # Shocktrooper
-  - Equips an improved Shockrifle.
+  - Equips a Super Shockrifle.
 
   - Will not recharge whilst holding any Shockrifle.
 
-  - Can activate whilst holding any Shockrifle to convert a portion of remaining ammo to Ability Charge.
+  - Any Shockrifle you pickup will become a Super Shockroach.
 
 
 # Cloaker
