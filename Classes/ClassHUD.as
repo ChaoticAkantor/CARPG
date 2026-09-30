@@ -294,6 +294,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                     {
                         current = shockData.GetAbilityCharge();
                         maximum = shockData.GetAbilityMax();
+
                         bool hasShockRifleEquipped = false;
                         CBasePlayerItem@ currentItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
 
@@ -306,8 +307,11 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                             resourceInfo += "[Shockrifle DMG: " + formatFloat(shockData.GetScaledDamage() * 100, "f", 0, 2) + "%]\n";
                         
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_SHOCK_LIGHTNING) > 0)
-                            resourceInfo += "[Lightning DMG: " + formatFloat(shockData.GetScaledLightningDamage() * 100, "f", 0, 2) + "%]\n";
+                            resourceInfo += "[Lightning Strike DMG: " + formatFloat(shockData.GetScaledLightningDamage() * 100, "f", 0, 2) + "%]\n";
+                        
 
+                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_SHOCK_DISPLACER) > 0)
+                            resourceInfo += shockData.GetDisplacerCooldownDisplay() + "\n";
                         }
                     }
                 }

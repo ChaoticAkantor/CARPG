@@ -4,33 +4,33 @@ Skills definition file.
 */
 
 // Standard/Basic skills, available to all classes.
-const float SKILL_MAXHP = 0.10f;  // Max HP per level.
-const float SKILL_MAXAP = 0.05f;  // Max AP per level.
-const float SKILL_REGENHP = 0.002f;  // HP regen scale (% of max HP) per level.
-const float SKILL_REGENAP = 0.0005f;  // AP regen scale (% of max AP) per level.
-const float SKILL_ABILITYRECHARGE = 0.05f; // Percent increase to ability recharge speed per level.
-const int SKILL_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
-const float SKILL_LIFESTEAL = 0.01f; // Percent of damage dealt as lifesteal per level.
-const float SKILL_ARMORSTEAL = 0.0030f; // Percent of damage dealt as armorsteal per level.
-const float SKILL_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
+const float SKILL_BASIC_MAXHP = 0.10f;  // Max HP per level.
+const float SKILL_BASIC_MAXAP = 0.05f;  // Max AP per level.
+const float SKILL_BASIC_REGENHP = 0.002f;  // HP regen scale (% of max HP) per level.
+const float SKILL_BASIC_REGENAP = 0.0005f;  // AP regen scale (% of max AP) per level.
+const float SKILL_BASIC_ABILITYRECHARGE = 0.05f; // Percent increase to ability recharge speed per level.
+const int SKILL_BASIC_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
+const float SKILL_BASIC_LIFESTEAL = 0.01f; // Percent of damage dealt as lifesteal per level.
+const float SKILL_BASIC_ARMORSTEAL = 0.0030f; // Percent of damage dealt as armorsteal per level.
+const float SKILL_BASIC_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
 
 // Class/Ability specific skills.
-// Minion Class exclusive (excluding Engineer).
-const int SKILL_MINIONPOINT = 1; // +1 minion point per level.
-const float SKILL_MINIONHP = 0.80f; // HP percent increase for minions per level.
-const float SKILL_MINIONREGEN = 0.001f; // Max HP regen percent for minions per level.
-const float SKILL_MINIONDAMAGE = 0.20f; // Damage percent increase for minions per level.
-const float SKILL_MINIONLIFESTEAL = 0.02f; // Minion lifesteal percent to players (team) per level.
+// Minion Class ('mancers) exclusive.
+const int SKILL_MINION_POINT = 1; // +1 minion point per level.
+const float SKILL_MINION_HP = 0.80f; // HP percent increase for minions per level.
+const float SKILL_MINION_REGEN = 0.001f; // Max HP regen percent for minions per level.
+const float SKILL_MINION_DAMAGE = 0.20f; // Damage percent increase for minions per level.
+const float SKILL_MINION_LIFESTEAL = 0.02f; // Minion lifesteal percent to players (team) per level.
 
 // Medic.
-const float SKILL_MEDIC_HEALPERCENT = 3.00f; // Increase max health percent healed per level (divided by 100).
+const float SKILL_MEDIC_HEALPERCENT = 0.20f; // Percent increase to max health healed per level.
 const float SKILL_MEDIC_HEALREGEN = 0.20f; // Max health percent healed per interval after initial heal, per level (divided by 100).
 const float SKILL_MEDIC_POISON = 5.00f; // Flat poison damage per level.
 const float SKILL_MEDIC_REVIVE = 3.00f; // Reduce revive cooldown in seconds per level.
 const float SKILL_MEDIC_HEALAP = 1.50f; // Percent of max AP to heal per level (divided by 100).
 
 // Vampire.
-const float SKILL_VAMPIRE_LIFESTEAL = 0.05f; // Flat increase to lifesteal per level.
+const float SKILL_VAMPIRE_LIFESTEAL = 0.06f; // Percent increase to ALL lifesteal per level.
 const float SKILL_VAMPIRE_DAMAGEABILITYCHARGE = 0.005f; // Percent of damage dealt converted to ability charge per level.
 const float SKILL_VAMPIRE_DAMAGEREDUCTION = 0.05f; // Damage reduction per level.
 const float SKILL_VAMPIRE_OVERHEAL = 0.10f; // Percent of max HP to overheal from lifesteal per level.
@@ -65,6 +65,7 @@ const float SKILL_CLOAKER_SPEED = 0.20f; // Percent speed increase while cloaked
 const float SKILL_SHOCK_CAPACITY = 0.20f; // Shockrifle capacity per level.
 const float SKILL_SHOCK_DAMAGE = 0.10f; // Shockrifle damage per level.
 const float SKILL_SHOCK_LIGHTNING = 0.03f; // Shockrifle damage % as area lightning damage per level.
+const float SKILL_SHOCK_DISPLACER = 0.04f; // Displacer Orb cooldown reduction per level.
 
 // Firebug.
 const float SKILL_FIREBUG_AMMOPOOL = 0.40f; // Ammo pool increase per level.
@@ -92,22 +93,22 @@ string FormatSkillPerLevelPercentText(float perLevelFraction)
 enum SkillID
 {
     // Standard (all classes).
-    SKILL_MAXHP = 0,
-    SKILL_MAXAP,
-    SKILL_REGENHP,
-    SKILL_REGENAP,
-    SKILL_ABILITYRECHARGE,
-    SKILL_AMMOREGEN,
-    SKILL_LIFESTEAL,
-    SKILL_ARMORSTEAL,
-    SKILL_HPCONVERSION,
+    SKILL_BASIC_MAXHP = 0,
+    SKILL_BASIC_MAXAP,
+    SKILL_BASIC_REGENHP,
+    SKILL_BASIC_REGENAP,
+    SKILL_BASIC_ABILITYRECHARGE,
+    SKILL_BASIC_AMMOREGEN,
+    SKILL_BASIC_LIFESTEAL,
+    SKILL_BASIC_ARMORSTEAL,
+    SKILL_BASIC_HPCONVERSION,
 
     //Minion Classes.
-    SKILL_MINIONPOINT,
-    SKILL_MINIONHP,
-    SKILL_MINIONREGEN,
-    SKILL_MINIONDAMAGE,
-    SKILL_MINIONLIFESTEAL,
+    SKILL_MINION_POINT,
+    SKILL_MINION_HP,
+    SKILL_MINION_REGEN,
+    SKILL_MINION_DAMAGE,
+    SKILL_MINION_LIFESTEAL,
 
     // Medic.
     SKILL_MEDIC_HEALPERCENT,
@@ -148,6 +149,7 @@ enum SkillID
     SKILL_SHOCK_CAPACITY,
     SKILL_SHOCK_DAMAGE,
     SKILL_SHOCK_LIGHTNING,
+    SKILL_SHOCK_DISPLACER,
 
     // Cloaker.
     SKILL_CLOAKER_CLOAKDAMAGE,
@@ -203,32 +205,32 @@ void InitializeSkillDefinitions()
     g_SkillDefs.resize(int(SkillID::SKILL_MAX_COUNT));
 
     // Standard/Basic skills (last value is for rank bonus multiplier).
-    @g_SkillDefs[int(SkillID::SKILL_MAXHP)] = SkillDefinition("Max Health", "+" + int(SKILL_MAXHP * 100) + "% Max HP.", 10, int(SKILL_MAXHP * 100.0f), "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_MAXAP)] = SkillDefinition("Max Armor", "+" + int(SKILL_MAXAP * 100) + "% Max AP.", 10, int(SKILL_MAXAP * 100.0f), "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_REGENHP)] = SkillDefinition("Health Regen", "+" + formatFloat(SKILL_REGENHP * 100.0f, "f", 0, 2) + "% HP/s.", 10, SKILL_REGENHP * 100.0f, "% HP/s", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_REGENAP)] = SkillDefinition("Armor Regen", "+" + formatFloat(SKILL_REGENAP * 100.0f, "f", 0, 2) + "% AP/s.", 10, SKILL_REGENAP * 100.0f, "% AP/s", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_ABILITYRECHARGE)] = SkillDefinition("Ability Recharge", "+" + formatFloat(SKILL_ABILITYRECHARGE * 100, "f", 0, 2) + "% ability recharge speed.", 10, SKILL_ABILITYRECHARGE * 100.0f, "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_AMMOREGEN)] = SkillDefinition("Ammo Regen", "+" + int(SKILL_AMMOREGEN) + " ammo gain per interval.", 5, int(SKILL_AMMOREGEN), " Ammo", 0.0f);
-    @g_SkillDefs[int(SkillID::SKILL_LIFESTEAL)] = SkillDefinition("Lifesteal", "+" + formatFloat(SKILL_LIFESTEAL * 100.0f, "f", 0, 2) + "% lifesteal.", 10, SKILL_LIFESTEAL * 100.0f, "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_ARMORSTEAL)] = SkillDefinition("Armorsteal", "+" + formatFloat(SKILL_ARMORSTEAL * 100.0f, "f", 0, 2) + "% armorsteal.", 10, SKILL_ARMORSTEAL * 100.0f, "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+" + formatFloat(SKILL_HPCONVERSION * 100.0f, "f", 0, 2) + "% of Max HP converted to AP.", 10, SKILL_HPCONVERSION * 100.0f, "%", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_MAXHP)] = SkillDefinition("Max Health", "+" + int(SKILL_BASIC_MAXHP * 100) + "% Max HP.", 10, int(SKILL_BASIC_MAXHP * 100.0f), "%", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_MAXAP)] = SkillDefinition("Max Armor", "+" + int(SKILL_BASIC_MAXAP * 100) + "% Max AP.", 10, int(SKILL_BASIC_MAXAP * 100.0f), "%", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENHP)] = SkillDefinition("Health Regen", "+" + formatFloat(SKILL_BASIC_REGENHP * 100.0f, "f", 0, 2) + "% HP/s.", 10, SKILL_BASIC_REGENHP * 100.0f, "% HP/s", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENAP)] = SkillDefinition("Armor Regen", "+" + formatFloat(SKILL_BASIC_REGENAP * 100.0f, "f", 0, 2) + "% AP/s.", 10, SKILL_BASIC_REGENAP * 100.0f, "% AP/s", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_ABILITYRECHARGE)] = SkillDefinition("Ability Recharge", "+" + formatFloat(SKILL_BASIC_ABILITYRECHARGE * 100, "f", 0, 2) + "% ability recharge speed.", 10, SKILL_BASIC_ABILITYRECHARGE * 100.0f, "%", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_AMMOREGEN)] = SkillDefinition("Ammo Regen", "+" + int(SKILL_BASIC_AMMOREGEN) + " ammo gain per interval.", 5, int(SKILL_BASIC_AMMOREGEN), " Ammo", 0.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_LIFESTEAL)] = SkillDefinition("Lifesteal", "+" + formatFloat(SKILL_BASIC_LIFESTEAL * 100.0f, "f", 0, 2) + "% lifesteal.", 10, SKILL_BASIC_LIFESTEAL * 100.0f, "%", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_ARMORSTEAL)] = SkillDefinition("Armorsteal", "+" + formatFloat(SKILL_BASIC_ARMORSTEAL * 100.0f, "f", 0, 2) + "% armorsteal.", 10, SKILL_BASIC_ARMORSTEAL * 100.0f, "%", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+" + formatFloat(SKILL_BASIC_HPCONVERSION * 100.0f, "f", 0, 2) + "% of Max HP converted to AP.", 10, SKILL_BASIC_HPCONVERSION * 100.0f, "%", 1.0f);
 
     // Minion Class exclusive.
-    @g_SkillDefs[int(SkillID::SKILL_MINIONPOINT)] = SkillDefinition("Minions: Minion Point", "+" + SKILL_MINIONPOINT + " minion point.", 3, SKILL_MINIONPOINT, " Point", 0.0f);
-    @g_SkillDefs[int(SkillID::SKILL_MINIONHP)] = SkillDefinition("Minions: Max HP", "+" + int(SKILL_MINIONHP * 100) + "% minion HP.", 5, int(SKILL_MINIONHP * 100.0f), "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MINIONREGEN)] = SkillDefinition("Minions: HP Regen", "+" + formatFloat(SKILL_MINIONREGEN * 100.0f, "f", 0, 2) + "% minion HP/s.", 5, SKILL_MINIONREGEN * 100.0f, "% HP/s", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MINIONDAMAGE)] = SkillDefinition("Minions: Damage", "+" + formatFloat(SKILL_MINIONDAMAGE * 100.0f, "f", 0, 2) + "% minion damage.", 5, SKILL_MINIONDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MINIONLIFESTEAL)] = SkillDefinition("Minions: Lifesteal", "+" + formatFloat(SKILL_MINIONLIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal to team.", 5, SKILL_MINIONLIFESTEAL * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_POINT)] = SkillDefinition("Minions: Minion Point", "+" + SKILL_MINION_POINT + " minion point.", 3, SKILL_MINION_POINT, " Point", 0.0f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_HP)] = SkillDefinition("Minions: Max HP", "+" + int(SKILL_MINION_HP * 100) + "% minion HP.", 5, int(SKILL_MINION_HP * 100.0f), "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_REGEN)] = SkillDefinition("Minions: HP Regen", "+" + formatFloat(SKILL_MINION_REGEN * 100.0f, "f", 0, 2) + "% minion HP/s.", 5, SKILL_MINION_REGEN * 100.0f, "% HP/s", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_DAMAGE)] = SkillDefinition("Minions: Damage", "+" + formatFloat(SKILL_MINION_DAMAGE * 100.0f, "f", 0, 2) + "% minion damage.", 5, SKILL_MINION_DAMAGE * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_LIFESTEAL)] = SkillDefinition("Minions: Lifesteal", "+" + formatFloat(SKILL_MINION_LIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal to team.", 5, SKILL_MINION_LIFESTEAL * 100.0f, "%", 0.5f);
 
     // Medic.
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Ability: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT, "f", 0, 2) + "% HP.", 5, SKILL_MEDIC_HEALPERCENT, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALREGEN)] = SkillDefinition("Ability: Regeneration", "+" + formatFloat(SKILL_MEDIC_HEALREGEN, "f", 0, 2) + "% HP/s for 8s", 5, SKILL_MEDIC_HEALREGEN, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Ability: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT * 100.0f, "f", 0, 2) + "% Healed.", 5, SKILL_MEDIC_HEALPERCENT * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALREGEN)] = SkillDefinition("Ability: Regeneration", "+" + formatFloat(SKILL_MEDIC_HEALREGEN, "f", 0, 2) + "% HP/s for 10s.", 5, SKILL_MEDIC_HEALREGEN, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Ability: Acid", "+" + formatFloat(SKILL_MEDIC_POISON, "f", 0, 2) + " acid damage.", 5, SKILL_MEDIC_POISON, "", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Ability: Revive", "-" + formatFloat(SKILL_MEDIC_REVIVE, "f", 0, 2) + "s revive cooldown.", 5, SKILL_MEDIC_REVIVE, "s", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Ability: AP Restore", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heal to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Ability: AP Restore", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heals to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.5f);
 
     // Vampire.
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_LIFESTEAL)] = SkillDefinition("Ability: Lifesteal", "+" + formatFloat(SKILL_VAMPIRE_LIFESTEAL * 100.0f, "f", 0, 2) + "% lifesteal.", 5, SKILL_VAMPIRE_LIFESTEAL * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_LIFESTEAL)] = SkillDefinition("Ability: Lifesteal", "+" + formatFloat(SKILL_VAMPIRE_LIFESTEAL * 100.0f, "f", 0, 2) + "% all lifesteal.", 5, SKILL_VAMPIRE_LIFESTEAL * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE)] = SkillDefinition("Ability: Damage Charge", "+" + formatFloat(SKILL_VAMPIRE_DAMAGEABILITYCHARGE * 100.0f, "f", 0, 2) + "% of damage charge.", 5, SKILL_VAMPIRE_DAMAGEABILITYCHARGE * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION)] = SkillDefinition("Ability: Damage Reduction", "+" + formatFloat(SKILL_VAMPIRE_DAMAGEREDUCTION * 100.0f, "f", 0, 2) + "% damage reduction.", 5, SKILL_VAMPIRE_DAMAGEREDUCTION * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_OVERHEAL)] = SkillDefinition("Ability: Overheal", "+" + formatFloat(SKILL_VAMPIRE_OVERHEAL * 100.0f, "f", 0, 2) + "% Overheal per level.", 5, SKILL_VAMPIRE_OVERHEAL * 100.0f, "%", 0.5f);
@@ -257,7 +259,8 @@ void InitializeSkillDefinitions()
     // Shocktrooper.
     @g_SkillDefs[int(SkillID::SKILL_SHOCK_CAPACITY)] = SkillDefinition("Ability: Shock Capacity", "+" + formatFloat(SKILL_SHOCK_CAPACITY * 100.0f, "f", 0, 2) + "% shockrifle capacity.", 5, SKILL_SHOCK_CAPACITY * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_SHOCK_DAMAGE)] = SkillDefinition("Ability: Shock Damage", "+" + formatFloat(SKILL_SHOCK_DAMAGE * 100.0f, "f", 0, 2) + "% shockrifle damage.", 5, SKILL_SHOCK_DAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_SHOCK_LIGHTNING)] = SkillDefinition("Ability: Lightning Damage", "+" + formatFloat(SKILL_SHOCK_LIGHTNING * 100.0f, "f", 0, 2) + "% shockrifle damage as lightning damage.", 5, SKILL_SHOCK_LIGHTNING * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_LIGHTNING)] = SkillDefinition("Ability: Lightning Strike", "+" + formatFloat(SKILL_SHOCK_LIGHTNING * 100.0f, "f", 0, 2) + "% lightning strike damage.", 5, SKILL_SHOCK_LIGHTNING * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_DISPLACER)] = SkillDefinition("Ability: Displacer Orb", "-" + formatFloat(SKILL_SHOCK_DISPLACER * 100.0f, "f", 0, 2) + "% orb cooldown.", 5, SKILL_SHOCK_DISPLACER * 100.0f, "%", 0.5f);
 
     // Cloaker.
     @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Ability: Damage Bonus", "+" + formatFloat(SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "f", 0, 2) + "% damage bonus.", 5, SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "%", 0.5f);
@@ -281,15 +284,15 @@ void InitializeSkillDefinitions()
 array<SkillID> GetStandardSkillIDs()
 {
     array<SkillID> result;
-    result.insertLast(SkillID::SKILL_MAXHP);
-    result.insertLast(SkillID::SKILL_MAXAP);
-    result.insertLast(SkillID::SKILL_REGENHP);
-    result.insertLast(SkillID::SKILL_REGENAP);
-    result.insertLast(SkillID::SKILL_ABILITYRECHARGE);
-    result.insertLast(SkillID::SKILL_AMMOREGEN);
-    result.insertLast(SkillID::SKILL_LIFESTEAL);
-    result.insertLast(SkillID::SKILL_ARMORSTEAL);
-    result.insertLast(SkillID::SKILL_HPCONVERSION);
+    result.insertLast(SkillID::SKILL_BASIC_MAXHP);
+    result.insertLast(SkillID::SKILL_BASIC_MAXAP);
+    result.insertLast(SkillID::SKILL_BASIC_REGENHP);
+    result.insertLast(SkillID::SKILL_BASIC_REGENAP);
+    result.insertLast(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+    result.insertLast(SkillID::SKILL_BASIC_AMMOREGEN);
+    result.insertLast(SkillID::SKILL_BASIC_LIFESTEAL);
+    result.insertLast(SkillID::SKILL_BASIC_ARMORSTEAL);
+    result.insertLast(SkillID::SKILL_BASIC_HPCONVERSION);
     return result;
 }
 
@@ -325,27 +328,27 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             break;
 
         case PlayerClass::CLASS_ROBOMANCER:
-            result.insertLast(SkillID::SKILL_MINIONPOINT);
-            result.insertLast(SkillID::SKILL_MINIONHP);
-            result.insertLast(SkillID::SKILL_MINIONREGEN);
-            result.insertLast(SkillID::SKILL_MINIONDAMAGE);
-            result.insertLast(SkillID::SKILL_MINIONLIFESTEAL);
+            result.insertLast(SkillID::SKILL_MINION_POINT);
+            result.insertLast(SkillID::SKILL_MINION_HP);
+            result.insertLast(SkillID::SKILL_MINION_REGEN);
+            result.insertLast(SkillID::SKILL_MINION_DAMAGE);
+            result.insertLast(SkillID::SKILL_MINION_LIFESTEAL);
             break;
 
         case PlayerClass::CLASS_XENOMANCER:
-            result.insertLast(SkillID::SKILL_MINIONPOINT);
-            result.insertLast(SkillID::SKILL_MINIONHP);
-            result.insertLast(SkillID::SKILL_MINIONREGEN);
-            result.insertLast(SkillID::SKILL_MINIONDAMAGE);
-            result.insertLast(SkillID::SKILL_MINIONLIFESTEAL);
+            result.insertLast(SkillID::SKILL_MINION_POINT);
+            result.insertLast(SkillID::SKILL_MINION_HP);
+            result.insertLast(SkillID::SKILL_MINION_REGEN);
+            result.insertLast(SkillID::SKILL_MINION_DAMAGE);
+            result.insertLast(SkillID::SKILL_MINION_LIFESTEAL);
             break;
 
         case PlayerClass::CLASS_NECROMANCER:
-            result.insertLast(SkillID::SKILL_MINIONPOINT);
-            result.insertLast(SkillID::SKILL_MINIONHP);
-            result.insertLast(SkillID::SKILL_MINIONREGEN);
-            result.insertLast(SkillID::SKILL_MINIONDAMAGE);
-            result.insertLast(SkillID::SKILL_MINIONLIFESTEAL);
+            result.insertLast(SkillID::SKILL_MINION_POINT);
+            result.insertLast(SkillID::SKILL_MINION_HP);
+            result.insertLast(SkillID::SKILL_MINION_REGEN);
+            result.insertLast(SkillID::SKILL_MINION_DAMAGE);
+            result.insertLast(SkillID::SKILL_MINION_LIFESTEAL);
             result.insertLast(SkillID::SKILL_NECROMANCER_RATS);
             break;
 
@@ -360,6 +363,7 @@ array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_SHOCK_CAPACITY);
             result.insertLast(SkillID::SKILL_SHOCK_DAMAGE);
             result.insertLast(SkillID::SKILL_SHOCK_LIGHTNING);
+            result.insertLast(SkillID::SKILL_SHOCK_DISPLACER);
             break;
 
         case PlayerClass::CLASS_CLOAKER:

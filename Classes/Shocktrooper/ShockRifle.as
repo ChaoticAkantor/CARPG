@@ -1,6 +1,16 @@
 string strShockrifleEquipSound = "weapons/shock_draw.wav";
 string strShockLightningSound = "tor/tor-staff-discharge.wav";
 string strShockLightningSprite = "sprites/lgtning.spr"; // Chain lightning bolt visual.
+string strShockDisplacerSound = "weapons/displacer_fire.wav";
+
+string FormatDisplacerSecondsForHud(float t)
+{
+    t = Math.max(0.0f, t);
+    int tenthsTotal = int(t * 10.0f + 0.5f);
+    int whole = tenthsTotal / 10;
+    int frac = tenthsTotal % 10;
+    return "" + whole + "." + frac + "s";
+}
 
 dictionary g_ShockRifleData;
 
@@ -9,6 +19,13 @@ class ShockRifleData
     // Shocktrooper ability scaling values.
     private float m_flAbilityMax = 100.0f; // Ability max charge.
     private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge ability.
+
+    // Displacer Skill.
+    private float m_flDisplacerDamage = 100.0f; // Damage dealt by the displacer portal.
+    private float m_flDisplacerRadius = 600.0f; // Radius of the displacer portal damage.
+    private float m_flDisplacerCooldown = 30.0f; // Base cooldown between displacer portals.
+
+    // Lightning Strike Skill.
     private float m_flLightningStrikeRadius = 150.0f * 16.0f; // Radius of the area strike in units.
     private bool m_bLightningActive = false; // Re-entrancy guard: prevents RadiusDamage from triggering another strike on nearby enemies.
 
@@ -16,6 +33,7 @@ class ShockRifleData
     private float m_flAbilityCharge = 0.0f; // Used to store current ability charge.
     private float m_flCooldown = 10.0f; // To account for ingame delay before being allowed to collect another shockroach.
     private float m_flLastUseTime = 0.0f; // Stores last use time.
+    private float m_flCurrentDisplacerCooldown = 0.0f;
 
     private ClassStats@ m_pStats = null;
 
@@ -28,10 +46,10 @@ class ShockRifleData
     float GetScaledAbilityRecharge()
     {
         if (m_pStats is null)
-            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+            return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
-        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
     }
@@ -51,6 +69,8 @@ class ShockRifleData
     {
         if(pPlayer is null || !pPlayer.IsConnected())
             return;
+
+        DisplacerTimerTick();
 
         // Only recharge when shock rifle is NOT equipped.
         CBasePlayerItem@ pItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
@@ -103,6 +123,70 @@ class ShockRifleData
         return modifier;
     }
 
+    float GetScaledDisplacerCooldown()
+    {
+        float cooldown = m_flDisplacerCooldown;
+
+        if(m_pStats !is null)
+        {
+            int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_DISPLACER);
+            cooldown *= Math.max(0.05f, 1.0f - (SKILL_SHOCK_DISPLACER * skillLevel));
+        }
+
+        return cooldown;
+    }
+
+    float GetDisplacerCooldownRemaining() { return m_flCurrentDisplacerCooldown; }
+
+    string GetDisplacerCooldownDisplay()
+    {
+        if(m_flCurrentDisplacerCooldown > 0.0f)
+            return "[Displacer Orb: " + FormatDisplacerSecondsForHud(m_flCurrentDisplacerCooldown) + "]";
+
+        return "[Displacer Orb: Ready - Press Ability]";
+    }
+
+    void DisplacerTimerTick()
+    {
+        if(m_flCurrentDisplacerCooldown <= 0.0f)
+            return;
+
+        m_flCurrentDisplacerCooldown -= flSchedulerInterval;
+
+        if(m_flCurrentDisplacerCooldown < 0.0f)
+            m_flCurrentDisplacerCooldown = 0.0f;
+    }
+
+    void FireDisplacerPortal(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null || m_pStats is null)
+            return;
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_DISPLACER);
+        if(skillLevel <= 0)
+            return;
+
+        if(m_flCurrentDisplacerCooldown > 0.0f)
+            return;
+
+        Vector vecSrc = pPlayer.GetGunPosition();
+        Vector vecForward, vecRight, vecUp;
+        g_EngineFuncs.AngleVectors(pPlayer.pev.v_angle, vecForward, vecRight, vecUp);
+        vecSrc = vecSrc + (vecForward * 16.0f);
+
+        CBaseEntity@ pPortal = g_EntityFuncs.CreateDisplacerPortal(
+            vecSrc,
+            vecForward * 1000.0f,
+            pPlayer.edict(),
+            m_flDisplacerDamage,
+            m_flDisplacerRadius);
+        if(pPortal is null)
+            return;
+
+        m_flCurrentDisplacerCooldown = GetScaledDisplacerCooldown();
+        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strShockDisplacerSound, 1.0f, ATTN_NORM);
+    }
+
 
     void EquipShockRifle(CBasePlayer@ pPlayer)
     {
@@ -123,6 +207,12 @@ class ShockRifleData
         // If player has shock rifle and is holding it, handle dropping it as a shockroach.
         if(pWeapon !is null && pPlayer.m_hActiveItem.GetEntity() is pWeapon)
         {
+            if(m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_DISPLACER) > 0)
+            {
+                FireDisplacerPortal(pPlayer);
+                return;
+            }
+
             int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges"); // Get ammo index.
             int currentAmmo = pPlayer.m_rgAmmo(ammoIndex); // Get current ammo from ammo index.
             float flcurrentAmmo = float(currentAmmo); // Store current, convert to float.
