@@ -44,10 +44,10 @@ class BloodlustData
     float GetScaledAbilityRecharge()
     {
         if (m_pStats is null)
-            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+            return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
-        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
     }
@@ -64,7 +64,7 @@ class BloodlustData
         return modifier * m_flAbilityMax; // Total duration is modified base duration.
     }
 
-    float GetScaledLifesteal()
+    float GetLifestealAmount()
     {
         if(m_pStats is null)
             return 0.0f; // No lifesteal if no stats.
@@ -74,21 +74,26 @@ class BloodlustData
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_LIFESTEAL);
         float skillPower = SKILL_VAMPIRE_LIFESTEAL;
-        float modifierVampire = baseLifesteal + (skillPower * skillLevel); // Scaled from lifesteal skill.
+        float modifierVampire = baseLifesteal * (1.0f + skillPower * skillLevel); // Increase lifesteal by a percentage, from vampire's lifesteal skill.
 
 
         // Then scale from the basic lifesteal skill.
         float baseLifestealBasic = 0.0f; // Base lifesteal from the basic lifesteal skill.
 
-        int skillLevelBasic = m_pStats.GetSkillLevel(SkillID::SKILL_LIFESTEAL);
-        float skillPowerBasic = SKILL_LIFESTEAL;
+        int skillLevelBasic = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_LIFESTEAL);
+        float skillPowerBasic = SKILL_BASIC_LIFESTEAL;
         float modifierBasic = baseLifestealBasic + (skillPowerBasic * skillLevelBasic); // Add any lifesteal from the basic lifesteal skill.
+        modifierBasic *= (1.0f + skillPower * skillLevel); // Increase lifesteal by a percentage, from vampire's lifesteal skill.
 
-        // Add them together and if bloodlust is active, double the lifesteal.
-        if(!m_bActive)
-            return modifierVampire + modifierBasic;
-        else
-            return modifierVampire + modifierBasic * 2.0f;
+        return modifierVampire + modifierBasic;
+    }
+
+    float GetScaledLifesteal()
+    {
+        float lifestealAmount = GetLifestealAmount();
+
+        // Bloodlust doubles the combined passive and basic lifesteal.
+        return m_bActive ? lifestealAmount * 2.0f : lifestealAmount;
     }
 
     float GetScaledDamageAbilityCharge()
@@ -130,10 +135,10 @@ class BloodlustData
         float skillPower = SKILL_VAMPIRE_OVERHEAL;
         float overhealBonus = skillPower * skillLevel; // Overheal percent scaled from skill.
             
-        if(m_bActive)
-            return (1.0f + overhealBonus) * 2.0f; // Double if active.
-        else
-            return 1.0f + overhealBonus; // Passive overheal.
+        //if(m_bActive)
+            //return (1.0f + overhealBonus) * 2.0f; // Double if active.
+        //else
+            return 1.0f + overhealBonus; // Passive overheal. No longer doubles when active.
     }
 
     void ConvertAPToHP(CBasePlayer@ pPlayer) 
