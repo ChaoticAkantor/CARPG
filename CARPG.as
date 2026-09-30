@@ -303,6 +303,7 @@ void PrecacheAll()
         // Sounds.
         g_SoundSystem.PrecacheSound(strShockrifleEquipSound);
         g_SoundSystem.PrecacheSound(strShockLightningSound);
+        g_SoundSystem.PrecacheSound(strShockDisplacerSound);
 
     // Vampire Ability Precache.
         // Models/Sprites.
