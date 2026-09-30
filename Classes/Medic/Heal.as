@@ -29,6 +29,7 @@ class RegenData // Regen tracking.
     int ticksLeft;
     float nextTickTime;
     float amountPerTick;
+    float armorPerTick;
 }
 
 string FormatHealAuraSecondsForHud(float t)
@@ -120,10 +121,10 @@ class HealingAura
     float GetScaledAbilityRecharge()
     {
         if (m_pStats is null)
-            return SKILL_ABILITYRECHARGE; // Return base if no stats.
+            return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ABILITYRECHARGE);
-        float rechargeBonus = SKILL_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
     }
@@ -174,7 +175,7 @@ class HealingAura
         float skillPower = SKILL_MEDIC_HEALPERCENT;
         float modifier = skillPower * skillLevel; // Heal amount scales from skill level.
 
-        return modifier + healAmount;
+        return healAmount * (1.0f + modifier); // Increase healing by a percent of the base.
     }
 
     float GetScaledRegenAmount()
@@ -329,6 +330,12 @@ class HealingAura
                 data.target.pev.health = Math.min(newHealth, data.target.pev.max_health);
                 ApplyHealEffect(data.target);
                 g_SoundSystem.EmitSoundDyn(data.target.edict(), CHAN_ITEM, strHealSound, 0.6f, ATTN_NORM, SND_FORCE_SINGLE, PITCH_NORM);
+
+                if (data.armorPerTick > 0.0f && data.target.IsPlayer() && data.target.pev.armorvalue < data.target.pev.armortype)
+                {
+                    data.target.pev.armorvalue = Math.min(data.target.pev.armorvalue + data.armorPerTick, data.target.pev.armortype);
+                    ApplyHealAPEffect(data.target);
+                }
 
                 data.ticksLeft--;
                 if (data.ticksLeft <= 0)
@@ -643,6 +650,7 @@ class HealingAura
                             @data.target = pEntity;
                             data.ticksLeft = ticks;
                             data.amountPerTick = amount;
+                            data.armorPerTick = pEntity.IsPlayer() ? GetScaledHealAP() * pEntity.pev.armortype / 100.0f : 0.0f;
                             data.nextTickTime = g_Engine.time + m_flHealRegenInterval;
                             m_RegenEffects[key] = data;
                         }
