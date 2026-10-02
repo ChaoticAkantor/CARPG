@@ -158,7 +158,7 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_FROSTGUARD:
             return
                 "{Ice Shield}.\n\n"
-                "Ice Shield will absorb all damage until it shatters, HP depends on skill.\n"
+                "Ice Shield will absorb all damage until it shatters and has it's own HP.\n"
                 "Can be deactivated for a cost.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
@@ -184,9 +184,9 @@ string GetClassDescription(PlayerClass pClass)
         case PlayerClass::CLASS_FIREBUG:
             return
                 "{Dragon's Breath Ammo}.\n\n"
-                "Dragon's Breath rounds, which grant added explosive damage to non-throwable weapons.\n"
+                "Dragon's Breath rounds, which grant added explosive damage and a damage over time effect to non-throwable weapons.\n"
                 "Activating the ability will consume all charge and add more rounds to the ammo pool.\n"
-                "Shots consume a number of rounds and multiply damage based on the ammo type used.\n"
+                "Shots consume a number of rounds based on the ammo type used.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";

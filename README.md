@@ -152,7 +152,7 @@
 
   - Any damage taken will be completely negated whilst the shield has at least 1HP.
 
-  - Will not recharge when active, unless affected by skills.
+  - Will not recharge when active by default.
  
   - Can be deactivated for a cost.
 
@@ -168,19 +168,20 @@
 # Cloaker
   - Cloaking device that will render you completely undetectable to NPC's.
 
-  - Has faster Ability Charge than most skills.
+  - Has faster Ability Charge than most skills, but requires full charge to activate.
 
-  - Requires 100% Ability Charge to activate.
 
 
 # Firebug
   - Loads Dragon's Breath rounds into a seperate ammo pool.
 
-  - If you have rounds in the ammo pool, all shots will cause an explosion of fire damage where you shoot.
+  - If you have rounds in the ammo pool, all shots will cause an explosion of fire damage, dealing extra damage.
 
-  - Explosive damage and ammo pool cost varies by ammo type.
+  - Will also set enemies on fire. Explosive and fire damage is a percent of weapon damage dealt.
 
-  - Area of effects from skills can stack indefinetely.
+  - Hitting an enemy already on fire will refresh the effect.
+
+  - Ammo pool cost varies by ammo type.
 
 
 # Swarmer
