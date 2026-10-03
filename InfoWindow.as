@@ -120,7 +120,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_ROBOMANCER:
             return
-                "{Robogrunts}.\n\n"
+                "{Robogrunt Minions}.\n\n"
                 "Can summon friendly Robogrunts and choose their weapon type, HP varies by type.\n"
                 "Robogrunts have 80% resistance to damage except for explosion, shock, frost, acid and energy types.\n"
                 "Minion movement and attack speed is increased.\n"
@@ -133,7 +133,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_XENOMANCER:
             return
-                "{Xen Creatures}.\n\n"
+                "{Xen Minions}.\n\n"
                 "Can summon different friendly Xen Creatures, HP varies by type.\n"
                 "Minion movement and attack speed is increased, varies by type.\n"
                 "Minion limit depends on minion type and points reserved.\n"
@@ -144,7 +144,7 @@ string GetClassDescription(PlayerClass pClass)
 
         case PlayerClass::CLASS_NECROMANCER:
             return
-                "{Undead Menu}.\n\n"
+                "{Undead Minions}.\n\n"
                 "Can summon different friendly Undead Creatures, HP and damage varies by type.\n"
                 "Undead Creatures have higher health than other minion types.\n"
                 "Minion movement and attack speed is increased, varies by type.\n"

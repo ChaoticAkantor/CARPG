@@ -7,12 +7,10 @@ bool g_bAmmoGive = false; // Toggle whether to give ammo directly (notification 
 // WARNING: Currently giving explosives directly causes an M16 to be given to the player when AR grenades are given.
 // Explosives need to be given silently to avoid this.
 
-dictionary g_AmmoMapMultipliers;
-
 float g_CurrentAmmoMapMultiplier = 1.0f;
 
 // How often AmmoTimerTick runs.
-float g_flAmmoRegenTickInterval = 0.1f;
+float g_flAmmoRegenTickInterval = 1.0f;
 
 // Define an AmmoType class to store all properties for each ammo type.
 class AmmoType 
@@ -105,30 +103,13 @@ void InitializeAmmoRegen()
     // Clear existing ammo types first.
     g_AmmoTypes.resize(0);
 
-    g_AmmoMapMultipliers["th_"] = 10.0f;    // They Hunger.
-    g_AmmoMapMultipliers["aom_"] = 10.0f;   // Afraid of Monsters Classic.
-    g_AmmoMapMultipliers["aomdc_"] = 10.0f; // Afraid of Monsters Directors-Cut.
-    g_AmmoMapMultipliers["hl_"] = 2.0f;    // Half-Life Campaign.
-    g_AmmoMapMultipliers["of_"] = 2.0f;    // Opposing-Force Campaign.
-    g_AmmoMapMultipliers["bs_"] = 2.0f;    // Blue-Shift Campaign.
-
-    string mapName = string(g_Engine.mapname).ToLowercase(); // Update map multiplier before creating ammo types.
-    g_CurrentAmmoMapMultiplier = 1.0f; // Default.
+    g_CurrentAmmoMapMultiplier = g_iCARPGCurrentMapMode == CARPG_MAP_BALANCED ? g_flCARPGAmmoMultiplier : 1.0f;
     g_AmmoPrefixMessage = ""; // Reset message to default.
-    
-    dictionary@ prefixes = g_AmmoMapMultipliers;
-    array<string>@ prefixKeys = prefixes.getKeys();
-    
-    for(uint i = 0; i < prefixKeys.length(); i++)
+    if(g_iCARPGCurrentMapMode == CARPG_MAP_BALANCED)
     {
-        string prefix = prefixKeys[i].ToLowercase();
-        if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix)
-        {
-            g_CurrentAmmoMapMultiplier = float(prefixes[prefixKeys[i]]);
-            g_AmmoPrefixMessage = "\n=== CARPG Ammo Regen: ===\nMap prefix '" + prefixKeys[i] + "' detected.\nAmmo Regen: " + g_CurrentAmmoMapMultiplier + "x slower | Throwables regen DISABLED";
-            g_Game.AlertMessage(at_console, g_AmmoPrefixMessage + "\n\n");
-            break;
-        }
+        g_AmmoPrefixMessage = "=== CARPG Ammo Regen: ===\nMap rule '" + g_szCARPGMatchedMapPattern
+            + "' detected.\nAmmo Regen: " + g_CurrentAmmoMapMultiplier + "x slower | Throwables regen DISABLED";
+        g_Game.AlertMessage(at_console, g_AmmoPrefixMessage + "\n\n");
     }
     
     // Amount given, max ammo, use threshold?, threshold, willgiveweapon(doesnt seem to work), timer.
@@ -166,6 +147,9 @@ void InitializeAmmoRegen()
 
 void AmmoTimerTick()
 {
+    if(IsCARPGDisabledOnCurrentMap())
+        return;
+
     const int iMaxPlayers = g_Engine.maxClients;
     
     for(uint ammoIndex = 0; ammoIndex < g_AmmoTypes.length(); ammoIndex++)
@@ -261,7 +245,7 @@ string GetAmmoTypeNameForActiveWeapon(CBasePlayer@ pPlayer)
 // Displays the ammo regen countdown for the player's active weapon.
 void UpdateAmmoRegenHUD(CBasePlayer@ pPlayer)
 {
-    if(pPlayer is null || !pPlayer.IsAlive()) return;
+    if(IsCARPGDisabledOnCurrentMap() || pPlayer is null || !pPlayer.IsAlive()) return;
 
     // Only show for players with the ammo regen skill invested.
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -283,22 +267,25 @@ void UpdateAmmoRegenHUD(CBasePlayer@ pPlayer)
 
     HUDNumDisplayParams params;
     params.channel     = 6;
-    params.flags       = HUD_NUM_RIGHT_ALIGN | HUD_TIME_SECONDS | HUD_TIME_MILLISECONDS;
+    params.flags       = HUD_NUM_RIGHT_ALIGN | HUD_TIME_SECONDS;
     params.spritename  = AMMO_SPRITE_SHEET;
     params.left        = spr.left;
     params.top         = spr.top;
     params.width       = spr.width;
     params.height      = spr.height;
-    params.x           = 1.0;
-    params.y           = 0.92;
+    int ammoHUDPosition = rpgData.GetHUDPositionIndex(CARPG_HUD_AMMO);
+    params.x           = GetCARPGHUDPositionX(CARPG_HUD_AMMO, ammoHUDPosition);
+    params.y           = GetCARPGHUDPositionY(CARPG_HUD_AMMO, ammoHUDPosition);
     params.fadeinTime  = 0.0;
     params.fadeoutTime = 0.0;
-    params.holdTime    = 0.2;
-    params.fxTime     = 0.0;
+    params.holdTime    = g_flAmmoRegenTickInterval * 1.5f; // Hold for two ticks to avoid flicker.
+    params.effect      = HUD_EFFECT_RAMP_DOWN;
+    params.fxTime     = 1.0;
     params.defdigits  = 1;
     params.maxdigits  = 3;
     params.value      = at.regenTimer;
-    params.color1     = RGBA(0, 255, 255, 255);
+    Vector ammoHUDColor = GetCARPGHUDColorValue(rpgData.GetHUDColorIndex(CARPG_HUD_AMMO));
+    params.color1     = RGBA(uint8(ammoHUDColor.x), uint8(ammoHUDColor.y), uint8(ammoHUDColor.z), 255);
     params.color2     = RGBA(255, 255, 255, 255);
     g_PlayerFuncs.HudTimeDisplay(pPlayer, params);
 }
@@ -306,7 +293,7 @@ void UpdateAmmoRegenHUD(CBasePlayer@ pPlayer)
 // Give ammo to player using selected method (silent or with pickup notification).
 void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType, int skillBonus = 0)
 {
-    if(pPlayer is null || ammoType is null)
+    if(IsCARPGDisabledOnCurrentMap() || pPlayer is null || ammoType is null)
         return;
     
     int bonus = ammoType.isExplosive ? (skillBonus / 2) : skillBonus;
@@ -406,6 +393,9 @@ AmmoType@ GetAmmoTypeByName(string name)
 // Called on a scheduler interval; updates the ammo regen HUD for all connected players.
 void UpdateAllAmmoRegenHUDs()
 {
+    if(IsCARPGDisabledOnCurrentMap())
+        return;
+
     const int iMaxPlayers = g_Engine.maxClients;
     for(int i = 1; i <= iMaxPlayers; ++i)
     {

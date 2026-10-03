@@ -8,6 +8,12 @@ DamageScaling g_DamageScaling;
 
 void ApplyDamageScaling()
 {
+	if(IsCARPGDisabledOnCurrentMap())
+	{
+		g_DamageScaling.ResetDamageScaling();
+		return;
+	}
+
     g_DamageScaling.ApplyDamageScaling();
 }
 
@@ -172,5 +178,17 @@ final class DamageScaling
 		}
 
 		g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG - Damage Scaling: Bonus Player Damage " + "(" + iCurrentPlayers + "/" + iMaxPlayers + " Players) +" + formatFloat(flBonusPercentage, "", 0, 1) + "%%" + "]\n");
+	}
+
+	void ResetDamageScaling()
+	{
+		for(uint i = 0; i < weapon_damage_values.length(); ++i)
+			g_EngineFuncs.ServerCommand(weapon_damage_strings[i] + " " + weapon_damage_values[i] + "\n");
+
+		for(uint i = 0; i < player_location_values.length(); ++i)
+			g_EngineFuncs.ServerCommand(player_location_strings[i] + " " + player_location_values[i] + "\n");
+
+		for(uint i = 0; i < monster_location_values.length(); ++i)
+			g_EngineFuncs.ServerCommand(monster_location_strings[i] + " " + monster_location_values[i] + "\n");
 	}
 }

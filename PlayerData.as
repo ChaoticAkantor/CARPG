@@ -4,6 +4,83 @@ string strSaveFileLocation = "scripts/plugins/store/"; // Default is scripts/plu
 
 dictionary g_PlayerRPGData;
 
+enum CARPGHUDType
+{
+    CARPG_HUD_RPG = 0,
+    CARPG_HUD_RESOURCE,
+    CARPG_HUD_AMMO
+}
+
+enum CARPGHUDPosition
+{
+    CARPG_HUD_TOP_LEFT = 0,
+    CARPG_HUD_BOTTOM_LEFT,
+    CARPG_HUD_TOP_RIGHT,
+    CARPG_HUD_BOTTOM_RIGHT,
+    CARPG_HUD_BOTTOM_MIDDLE
+}
+
+const array<string> g_CARPGHUDColorNames =
+{
+    "Cyan", "White", "Red", "Green", "Lime", "Blue", "Light Blue", "Yellow",
+    "Orange", "Gold", "Magenta", "Pink", "Purple", "Teal", "Aqua", "Coral",
+    "Silver", "Gray", "Navy", "Mint", "Rose", "Amber", "Sky Blue", "Olive"
+};
+
+const array<Vector> g_CARPGHUDColorValues =
+{
+    Vector(0, 255, 255), Vector(255, 255, 255), Vector(255, 64, 64), Vector(0, 200, 80),
+    Vector(128, 255, 0), Vector(64, 96, 255), Vector(96, 192, 255), Vector(255, 240, 0),
+    Vector(255, 128, 0), Vector(255, 192, 0), Vector(255, 0, 255), Vector(255, 128, 192),
+    Vector(160, 64, 255), Vector(0, 160, 160), Vector(0, 255, 160), Vector(255, 112, 80),
+    Vector(192, 192, 192), Vector(128, 128, 128), Vector(32, 48, 128), Vector(128, 255, 192),
+    Vector(220, 64, 96), Vector(224, 160, 32), Vector(64, 160, 255), Vector(160, 176, 48)
+};
+
+string GetCARPGHUDColorName(int colorIndex)
+{
+    if(colorIndex < 0 || uint(colorIndex) >= g_CARPGHUDColorNames.length())
+        colorIndex = 0;
+    return g_CARPGHUDColorNames[colorIndex];
+}
+
+Vector GetCARPGHUDColorValue(int colorIndex)
+{
+    if(colorIndex < 0 || uint(colorIndex) >= g_CARPGHUDColorValues.length())
+        colorIndex = 0;
+    return g_CARPGHUDColorValues[colorIndex];
+}
+
+string GetCARPGHUDPositionName(int hudType, int position)
+{
+    switch(position)
+    {
+        case CARPG_HUD_TOP_LEFT: return "Top-left";
+        case CARPG_HUD_BOTTOM_LEFT: return "Bottom-left";
+        case CARPG_HUD_TOP_RIGHT: return "Top-right";
+        case CARPG_HUD_BOTTOM_RIGHT: return "Bottom-right";
+        case CARPG_HUD_BOTTOM_MIDDLE:
+            return hudType == CARPG_HUD_RESOURCE ? "Bottom-middle" : "Top-right";
+    }
+    return "Top-right";
+}
+
+float GetCARPGHUDPositionX(int hudType, int position)
+{
+    if(hudType == CARPG_HUD_RESOURCE && position == CARPG_HUD_BOTTOM_MIDDLE)
+        return -1.0f;
+    if(position == CARPG_HUD_TOP_LEFT || position == CARPG_HUD_BOTTOM_LEFT)
+        return hudType == CARPG_HUD_AMMO ? 0.0f : 0.02f;
+    return 1.0f;
+}
+
+float GetCARPGHUDPositionY(int hudType, int position)
+{
+    if(position == CARPG_HUD_TOP_LEFT || position == CARPG_HUD_TOP_RIGHT)
+        return 0.1f;
+    return hudType == CARPG_HUD_AMMO ? 0.92f : 0.9f;
+}
+
 // Max level and XP multiplier.
 int g_iMaxLevel = 60; // Max player level, skill points are given per level, increasing this will increase skill points available.
 int g_iScoreToXP = 1; // Amount of XP each score point is worth, 1 = 1 score is 1 XP.
@@ -11,6 +88,7 @@ int g_iScorePerRebirthRank = 1; // Amount of extra XP per score awarded for each
 int g_iMaxRebirthRank = 10; // Max rebirth rank.
 float g_iAbilitySkillBonus = 0.5f; // Max skill level limit increase for Ability Skills per rank.
 float g_iBasicSkillBonus = 1.0f; // Max skill level limit increase for Basic Skills per rank.
+float g_flPlayerHUDInterval = 0.2f; // How often the player HUD updates.
 
 dictionary g_ClassNames = 
 {
@@ -325,6 +403,56 @@ class PlayerData
     private float m_fXPNeededMultRebirth = 2.0f;
     private int m_iScorePerRebirthRank = g_iScorePerRebirthRank; // Extra XP per score for each rank.
     private int m_iMaxRebirthRank = g_iMaxRebirthRank;
+
+    private int m_iRPGHUDColor = 0;
+    private int m_iRPGHUDPosition = CARPG_HUD_TOP_RIGHT;
+    private int m_iResourceHUDColor = 0;
+    private int m_iResourceHUDPosition = CARPG_HUD_BOTTOM_MIDDLE;
+    private int m_iAmmoHUDColor = 0;
+    private int m_iAmmoHUDPosition = CARPG_HUD_BOTTOM_RIGHT;
+
+    int GetHUDColorIndex(int hudType)
+    {
+        if(hudType == CARPG_HUD_RESOURCE) return m_iResourceHUDColor;
+        if(hudType == CARPG_HUD_AMMO) return m_iAmmoHUDColor;
+        return m_iRPGHUDColor;
+    }
+
+    int GetHUDPositionIndex(int hudType)
+    {
+        if(hudType == CARPG_HUD_RESOURCE) return m_iResourceHUDPosition;
+        if(hudType == CARPG_HUD_AMMO) return m_iAmmoHUDPosition;
+        return m_iRPGHUDPosition;
+    }
+
+    void SetHUDColorIndex(int hudType, int colorIndex)
+    {
+        if(colorIndex < 0 || uint(colorIndex) >= g_CARPGHUDColorNames.length())
+            return;
+
+        if(hudType == CARPG_HUD_RESOURCE)
+            m_iResourceHUDColor = colorIndex;
+        else if(hudType == CARPG_HUD_AMMO)
+            m_iAmmoHUDColor = colorIndex;
+        else
+            m_iRPGHUDColor = colorIndex;
+        SaveToFile();
+    }
+
+    void SetHUDPositionIndex(int hudType, int positionIndex)
+    {
+        int positionCount = hudType == CARPG_HUD_RESOURCE ? 5 : 4;
+        if(positionIndex < 0 || positionIndex >= positionCount)
+            return;
+
+        if(hudType == CARPG_HUD_RESOURCE)
+            m_iResourceHUDPosition = positionIndex;
+        else if(hudType == CARPG_HUD_AMMO)
+            m_iAmmoHUDPosition = positionIndex;
+        else
+            m_iRPGHUDPosition = positionIndex;
+        SaveToFile();
+    }
 
     private Menu::ClassMenu@ m_ClassMenu = null;
     private Menu::SkillsMenu@ m_SkillsMenu = null;
@@ -687,7 +815,21 @@ class PlayerData
 
     void CalculateStats(CBasePlayer@ pPlayer)
     {
-        if(pPlayer is null || m_CurrentClass == PlayerClass::CLASS_NONE)
+        if(pPlayer is null)
+            return;
+
+        if(IsCARPGDisabledOnCurrentMap())
+        {
+            pPlayer.pev.max_health = 100.0f;
+            pPlayer.pev.armortype = 100.0f;
+            if(pPlayer.pev.health > pPlayer.pev.max_health)
+                pPlayer.pev.health = pPlayer.pev.max_health;
+            if(pPlayer.pev.armorvalue > pPlayer.pev.armortype)
+                pPlayer.pev.armorvalue = pPlayer.pev.armortype;
+            return;
+        }
+
+        if(m_CurrentClass == PlayerClass::CLASS_NONE)
             return;
             
         string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -936,8 +1078,8 @@ class PlayerData
         File@ file = g_FileSystem.OpenFile(filePath, OpenFile::WRITE);
         if(file !is null && file.IsOpen())
         {
-            // Write version v6 (includes rebirth data)
-            file.Write("v6\n");
+            // Write version v7 (includes rebirth and HUD settings).
+            file.Write("v7\n");
             file.Write(string(int(m_CurrentClass)) + "\n");
 
             // One line per class, keyed by class ID so order and additions don't matter.
@@ -960,6 +1102,11 @@ class PlayerData
             file.Write("REBIRTH\n");
             file.Write(string(m_iRebirthRank) + " " + string(m_iCurrentRebirthRankXP) + "\n");
 
+            file.Write("HUD\n");
+            file.Write(string(m_iRPGHUDColor) + " " + string(m_iRPGHUDPosition) + " "
+                + string(m_iResourceHUDColor) + " " + string(m_iResourceHUDPosition) + " "
+                + string(m_iAmmoHUDColor) + " " + string(m_iAmmoHUDPosition) + "\n");
+
             file.Close();
         }
         else
@@ -978,7 +1125,8 @@ class PlayerData
             file.ReadLine(line);
 
             // Check version.
-            if(line != "v5" && line != "v6")
+            string saveVersion = line;
+            if(saveVersion != "v5" && saveVersion != "v6" && saveVersion != "v7")
             {
                 file.Close();
                 g_Game.AlertMessage(at_console, "CARPG: Incompatible save version '" + line + "', starting fresh.\n");
@@ -992,7 +1140,7 @@ class PlayerData
             g_Game.AlertMessage(at_console, "CARPG: Loaded class: " + GetClassName(m_CurrentClass) + "\n");
 
             // Load each class line, keyed by class ID.
-            bool bNeedsResave = false;
+            bool bNeedsResave = saveVersion != "v7";
             while(!file.EOFReached())
             {
                 line = "";
@@ -1046,6 +1194,34 @@ class PlayerData
                     m_iCurrentRebirthRankXP = atoi(parts[1]);
                     g_Game.AlertMessage(at_console, "CARPG: Loaded rebirth rank " + m_iRebirthRank + " with XP " + m_iCurrentRebirthRankXP + "\n");
                 }
+
+                if(saveVersion == "v7")
+                {
+                    string hudMarker;
+                    file.ReadLine(hudMarker);
+                    if(hudMarker == "HUD")
+                    {
+                        string hudSettingsLine;
+                        file.ReadLine(hudSettingsLine);
+                        array<string>@ hudParts = hudSettingsLine.Split(" ");
+                        if(hudParts.length() >= 6)
+                        {
+                            int savedRPGColor = atoi(hudParts[0]);
+                            int savedRPGPosition = atoi(hudParts[1]);
+                            int savedResourceColor = atoi(hudParts[2]);
+                            int savedResourcePosition = atoi(hudParts[3]);
+                            int savedAmmoColor = atoi(hudParts[4]);
+                            int savedAmmoPosition = atoi(hudParts[5]);
+
+                            if(savedRPGColor >= 0 && uint(savedRPGColor) < g_CARPGHUDColorNames.length()) m_iRPGHUDColor = savedRPGColor;
+                            if(savedRPGPosition >= 0 && savedRPGPosition < 4) m_iRPGHUDPosition = savedRPGPosition;
+                            if(savedResourceColor >= 0 && uint(savedResourceColor) < g_CARPGHUDColorNames.length()) m_iResourceHUDColor = savedResourceColor;
+                            if(savedResourcePosition >= 0 && savedResourcePosition < 5) m_iResourceHUDPosition = savedResourcePosition;
+                            if(savedAmmoColor >= 0 && uint(savedAmmoColor) < g_CARPGHUDColorNames.length()) m_iAmmoHUDColor = savedAmmoColor;
+                            if(savedAmmoPosition >= 0 && savedAmmoPosition < 4) m_iAmmoHUDPosition = savedAmmoPosition;
+                        }
+                    }
+                }
             }
             else
             {
@@ -1077,16 +1253,17 @@ class PlayerData
         
         HUDTextParams RPGHudParams;
         RPGHudParams.channel = 7;
-        RPGHudParams.x = 1;
-        RPGHudParams.y = 0.1;
+        RPGHudParams.x = GetCARPGHUDPositionX(CARPG_HUD_RPG, m_iRPGHUDPosition);
+        RPGHudParams.y = GetCARPGHUDPositionY(CARPG_HUD_RPG, m_iRPGHUDPosition);
         RPGHudParams.effect = 0;
-        RPGHudParams.r1 = 0;
-        RPGHudParams.g1 = 255;
-        RPGHudParams.b1 = 255;
+        Vector hudColor = GetCARPGHUDColorValue(m_iRPGHUDColor);
+        RPGHudParams.r1 = int(hudColor.x);
+        RPGHudParams.g1 = int(hudColor.y);
+        RPGHudParams.b1 = int(hudColor.z);
         RPGHudParams.a1 = 255;
         RPGHudParams.fadeinTime = 0;
         RPGHudParams.fadeoutTime = 0;
-        RPGHudParams.holdTime = 0.2;
+        RPGHudParams.holdTime = g_flPlayerHUDInterval * 1.5f;
         
         string RPGHudText = "";
         RPGHudText += "" + GetClassName(m_CurrentClass) + "\n"; // Class.
@@ -1097,7 +1274,7 @@ class PlayerData
         RPGHudText += "XP: " + (IsMaxRebirthRank() ? "(--/--)" : "(" + m_iCurrentRebirthRankXP + "/" + GetNeededRebirthXP() + ")") + "\n"; // Rank XP.
 
         if(m_iRebirthRank > 0)
-            RPGHudText += "XP Bonus: " + "(+" + GetCurrentXPMultiplier() + ")" + "\n"; // XP per score bonus.
+            RPGHudText += "XP Bonus: " + "(+" + (GetCurrentXPMultiplier() - 1) + ")" + "\n"; // XP per score bonus.
 
         if(m_iRebirthRank > 0)
             RPGHudText += "Ability Skill Limit: " + "(+" + floor(GetAbilitySkillBonus()) + ")" + "\n"; // Ability skill bonus.

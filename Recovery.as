@@ -19,9 +19,10 @@ const bool bAllowAPRegen = true;
 const string strHurtDelaySprite = "tfchud06.spr";
 
 dictionary g_PlayerRecoveryData; // Dictionary for recovery data.
-dictionary g_RecoveryMapMultipliers; // Dictionary for map-specific multipliers.
 
 float g_CurrentRecoveryMapMultiplier = 1.0f; // Global map multiplier for recovery systems.
+float g_CurrentAPRecoveryMapMultiplier = 1.0f;
+float g_CurrentHurtDelayMapMultiplier = 1.0f;
 bool g_bShowRecoveryPrefixMessage = true; // Toggle for displaying prefix message in chat.
 string g_RecoveryPrefixMessage = ""; // Store prefix message to display to connecting players.
 
@@ -32,56 +33,27 @@ class RecoveryData
     float lastHurtTime = 0.0f;
 }
 
-class RecoveryMapMultipliers
-{
-    float hpRegenTickMultiplier;
-    float apRegenTickMultiplier;
-    float hurtDelayMultiplier;
-    
-    RecoveryMapMultipliers(float hpMult = 1.0f, float apMult = 1.0f, float hurtMult = 1.0f)
-    {
-        hpRegenTickMultiplier = hpMult;
-        apRegenTickMultiplier = apMult;
-        hurtDelayMultiplier = hurtMult;
-    }
-}
-
 void InitializeRecovery() // Called in PluginInit().
 {
-// Balance recovery separately for different map series by multiplying the regen timers and hurt delay.
-    @g_RecoveryMapMultipliers["th_"] = RecoveryMapMultipliers(2.0f, 2.0f, 3.0f);    // They Hunger.
-    @g_RecoveryMapMultipliers["aom_"] = RecoveryMapMultipliers(2.0f, 2.0f, 3.0f);   // Afraid of Monsters Classic.
-    @g_RecoveryMapMultipliers["aomdc_"] = RecoveryMapMultipliers(2.0f, 2.0f, 3.0f); // Afraid of Monsters Directors-Cut.
-    @g_RecoveryMapMultipliers["hl_"] = RecoveryMapMultipliers(1.2f, 1.2f, 1.0f);    // Half-Life Campaign.
-    @g_RecoveryMapMultipliers["of_"] = RecoveryMapMultipliers(1.2f, 1.2f, 1.0f);    // Opposing-Force Campaign.
-    @g_RecoveryMapMultipliers["bs_"] = RecoveryMapMultipliers(1.2f, 1.2f, 1.0f);    // Blue-Shift Campaign.
-
-    string mapName = string(g_Engine.mapname).ToLowercase(); // Update map multiplier first.
-    g_CurrentRecoveryMapMultiplier = 1.0f; // Default multiplier.
+    g_CurrentRecoveryMapMultiplier = g_iCARPGCurrentMapMode == CARPG_MAP_BALANCED ? g_flCARPGHPRecoveryMultiplier : 1.0f;
+    g_CurrentAPRecoveryMapMultiplier = g_iCARPGCurrentMapMode == CARPG_MAP_BALANCED ? g_flCARPGAPRecoveryMultiplier : 1.0f;
+    g_CurrentHurtDelayMapMultiplier = g_iCARPGCurrentMapMode == CARPG_MAP_BALANCED ? g_flCARPGHurtDelayMultiplier : 1.0f;
     g_RecoveryPrefixMessage = ""; // Reset message to default.
-    
-    dictionary@ prefixes = g_RecoveryMapMultipliers;
-    array<string>@ prefixKeys = prefixes.getKeys();
-    
-    for(uint i = 0; i < prefixKeys.length(); i++)
+
+    if(g_iCARPGCurrentMapMode == CARPG_MAP_BALANCED)
     {
-        string prefix = prefixKeys[i].ToLowercase();
-        if(mapName.Length() >= prefix.Length() && mapName.SubString(0, prefix.Length()) == prefix)
-        {
-            RecoveryMapMultipliers@ multipliers = cast<RecoveryMapMultipliers@>(prefixes[prefixKeys[i]]);
-            if(multipliers !is null)
-            {
-                g_CurrentRecoveryMapMultiplier = multipliers.hpRegenTickMultiplier;
-                g_RecoveryPrefixMessage = "=== CARPG Recovery Balancing: ===\nMap prefix'" + prefixKeys[i] + "' detected.\nHP Regen: " + multipliers.hpRegenTickMultiplier + "x slower | AP Regen: " + multipliers.apRegenTickMultiplier + "x slower | Hurt Delay: " + multipliers.hurtDelayMultiplier + "x slower";
-                g_Game.AlertMessage(at_console, g_RecoveryPrefixMessage + "\n\n");
-            }
-            break;
-        }
+        g_RecoveryPrefixMessage = "=== CARPG Recovery Balancing: ===\nMap rule '" + g_szCARPGMatchedMapPattern
+            + "' detected.\nHP Regen: " + g_CurrentRecoveryMapMultiplier + "x slower | AP Regen: "
+            + g_CurrentAPRecoveryMapMultiplier + "x slower | Hurt Delay: " + g_CurrentHurtDelayMapMultiplier + "x slower";
+        g_Game.AlertMessage(at_console, g_RecoveryPrefixMessage + "\n\n");
     }
 }
 
 void RegenTickHP() // Regen HP.
 {   
+    if(IsCARPGDisabledOnCurrentMap())
+        return;
+
     const int iMaxPlayers = g_Engine.maxClients;
     for (int i = 1; i <= iMaxPlayers; ++i)
     {   
@@ -121,6 +93,9 @@ void RegenTickHP() // Regen HP.
 
 void RegenTickAP() // Regen AP.
 {   
+    if(IsCARPGDisabledOnCurrentMap())
+        return;
+
     const int iMaxPlayers = g_Engine.maxClients;
     for (int i = 1; i <= iMaxPlayers; ++i)
     {   
@@ -146,7 +121,7 @@ void RegenTickAP() // Regen AP.
                         skillBonusAP = SKILL_BASIC_REGENAP * flRegenTickAP * float(skillLevel);
                 }
 
-                float flCalcPercAP = (pPlayer.pev.armortype * skillBonusAP) * g_CurrentRecoveryMapMultiplier;
+                float flCalcPercAP = (pPlayer.pev.armortype * skillBonusAP) * g_CurrentAPRecoveryMapMultiplier;
                 float flRegenAP = flCalcPercAP;
                 //Math.max(flCalcPercAP, 1.0f);
 
@@ -161,6 +136,9 @@ void RegenTickAP() // Regen AP.
 
 void HurtDelayTick() // Think.
 {
+    if(IsCARPGDisabledOnCurrentMap())
+        return;
+
     const int iMaxPlayers = g_Engine.maxClients;
     for (int i = 1; i <= iMaxPlayers; ++i)
     {
@@ -177,7 +155,7 @@ void HurtDelayTick() // Think.
                 data.hurtDelayCounter -= flHurtDelayTick;
                 if(data.hurtDelayCounter <= 0)
                 {
-                    data.hurtDelayCounter = flHurtDelay * g_CurrentRecoveryMapMultiplier;
+                    data.hurtDelayCounter = flHurtDelay * g_CurrentHurtDelayMapMultiplier;
                     data.isRegenerating = true;
                 }
             }
@@ -187,7 +165,7 @@ void HurtDelayTick() // Think.
 
 void StopPlayerRegen(CBasePlayer@ pPlayer) // Stop Player Regen when hurt, called in OnTakeDamage Hook.
 {
-    if(pPlayer is null)
+    if(IsCARPGDisabledOnCurrentMap() || pPlayer is null)
         return;
         
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
@@ -201,7 +179,7 @@ void StopPlayerRegen(CBasePlayer@ pPlayer) // Stop Player Regen when hurt, calle
     if(data !is null)
     {
         data.isRegenerating = false;
-        data.hurtDelayCounter = flHurtDelay * g_CurrentRecoveryMapMultiplier;
+        data.hurtDelayCounter = flHurtDelay * g_CurrentHurtDelayMapMultiplier;
         data.lastHurtTime = g_Engine.time;
     }
 }

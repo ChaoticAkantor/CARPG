@@ -11,26 +11,9 @@ This is our core file.
 // Includes now all in one file.
 #include "Includes"
 
-// Add near the top with other globals.
-array<string> g_AdminList = 
-{
-    "STEAM_0:1:21530096" // Unlike file structure, must use actual STEAM ID format.
-};
-
 Menu::DebugMenu g_DebugMenu;
 
 const float flSchedulerInterval = 0.1f;
-
-// Check Admin list.
-bool IsAdmin(const string& in steamID)
-{
-    for(uint i = 0; i < g_AdminList.length(); i++)
-    {
-        if(steamID == g_AdminList[i])
-            return true;
-    }
-    return false;
-}
 
 bool IsFriendlyDamage(CBaseEntity@ pAttacker, CBaseEntity@ pVictim)
 {
@@ -85,6 +68,9 @@ void PluginInit()
 
 void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
 {
+    RefreshCurrentCARPGMapSettings();
+    InitializeAmmoRegen();
+    InitializeRecovery();
     g_ModelIndexCache.deleteAll(); // Indices are only valid for the map they were precached on.
     PrecacheMonster(); // Precache monsters first, incase anything is model swapped.
     PrecacheAll(); // Precache everything else needed for plugin.
@@ -97,9 +83,18 @@ void MapActivate() // Like MapInit, only called after all mapper placed entities
 
 void MapStart(CBasePlayer@ pPlayer) // Called after 0.1 seconds of game activity, this is used to simplify the triggering on map start.
 {
-    g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n"); // Confirmation text in console.
-    g_EngineFuncs.ServerCommand("mp_friendlyfire 0\n"); // Disable friendly fire to ensure certain abilities don't hurt ally monsters.
-    g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
+    if(IsCARPGDisabledOnCurrentMap())
+    {
+        g_Game.AlertMessage(at_console, "=== CARPG Disabled on " + g_szCARPGMapName + " ===\n");
+        if(pPlayer !is null)
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "CARPG is disabled on this map. Admins can change this with /mapsettings.\n");
+    }
+    else
+    {
+        g_Game.AlertMessage(at_console, "=== CARPG Enabled! ===\n"); // Confirmation text in console.
+        g_EngineFuncs.ServerCommand("mp_friendlyfire 0\n"); // Disable friendly fire to ensure certain abilities don't hurt ally monsters.
+        g_Scheduler.SetTimeout("ShowHints", 5.0f); // Show hints X seconds after map load.
+    }
 
     ClearMinions(); // Clear all minion data.
     ResetTimers(); // Reset timers.
@@ -119,6 +114,8 @@ void MapStart(CBasePlayer@ pPlayer) // Called after 0.1 seconds of game activity
 void PluginReset() // Used to force a full reload.
 {
     //RemoveHooks(); // Remove Hooks.
+    LoadCARPGMapSettings();
+    LoadAdminList();
     ClearMinions(); // Clear all minion data.
     ResetData(); // Clear all dictionaries.
     RegisterHooks(); // Re-register Hooks.
@@ -180,6 +177,9 @@ void SetupTimers()
 {
     g_Scheduler.ClearTimerList(); // Always clear timers first before setting them up again.
 
+    if(IsCARPGDisabledOnCurrentMap())
+        return;
+
     // Ammo Recovery System.
     g_Scheduler.SetInterval("AmmoTimerTick", g_flAmmoRegenTickInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Ammo recovery (interval in AmmoRegen.as).
 
@@ -189,11 +189,11 @@ void SetupTimers()
     g_Scheduler.SetInterval("HurtDelayTick", flHurtDelayTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for hurt delay.
 
     // Resource System.
-    g_Scheduler.SetInterval("UpdateClassResource", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for class resource display.
+    g_Scheduler.SetInterval("UpdateClassResource", g_flClassResourceHUDInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for class resource display.
 
     // RPG/Class System.
-    g_Scheduler.SetInterval("UpdatePlayerHUDs", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating RPG HUD.
-    g_Scheduler.SetInterval("UpdateAllAmmoRegenHUDs", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating ammo regen HUD.
+    g_Scheduler.SetInterval("UpdatePlayerHUDs", g_flPlayerHUDInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating RPG HUD.
+    g_Scheduler.SetInterval("UpdateAllAmmoRegenHUDs", g_flAmmoRegenTickInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating ammo regen HUD.
     g_Scheduler.SetInterval("CheckAllPlayerScores", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
 
     // Medic.
@@ -238,6 +238,7 @@ void PrecacheMonster()
     g_Game.PrecacheMonster("monster_robogrunt", true);
 
     // Necromancer Minions.
+    g_Game.PrecacheMonster("monster_headcrab", true);
     g_Game.PrecacheMonster("monster_zombie", true); // Does not use this model!
     g_Game.PrecacheMonster("monster_alien_slave", true); // Does not use this model!
     g_Game.PrecacheMonster("monster_gonome", true); // Does not use this model!
@@ -318,6 +319,7 @@ void PrecacheAll()
     // Frostguard Ability Precache.
         // Models/Sprites.
         PrecacheModelIndexed(strBarrierReflectSprite);
+        PrecacheModelIndexed(strBarrierLinkSprite);
 
         // Sounds.
         g_SoundSystem.PrecacheSound(strBarrierToggleSound);
@@ -388,6 +390,11 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strRobogruntSoundMP5);
         g_SoundSystem.PrecacheSound(strRobogruntSoundM16);
         g_SoundSystem.PrecacheSound(strRobogruntSoundReload);
+
+    // Headcrab
+        // Models/Sprites.
+        PrecacheModelIndexed(strHeadcrabSpiderModel);
+        PrecacheModelIndexed(strHeadcrabHandModel);
 
     // Zombie.
         // Models/Sprites.
@@ -678,6 +685,9 @@ void PrecacheAll()
 
 HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion damage scaling is done here.
 {
+    if(IsCARPGDisabledOnCurrentMap())
+        return HOOK_CONTINUE;
+
     if(info is null || info.pVictim is null || info.pAttacker is null)
         return HOOK_CONTINUE;
 
@@ -758,7 +768,18 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
             return HOOK_CONTINUE;
             
         // Apply the damage multiplier.
-        float damageXenMultiplier = xenMinion.GetScaledDamage();
+        int minionType = 0;
+        array<XenMinionInfo>@ minions = xenMinion.GetMinions();
+        for(uint i = 0; i < minions.length(); ++i)
+        {
+            if(minions[i].hMinion.GetEntity() is attacker)
+            {
+                minionType = minions[i].type;
+                break;
+            }
+        }
+
+        float damageXenMultiplier = xenMinion.GetScaledDamage(minionType);
         info.flDamage *= damageXenMultiplier;
 
         // Process extra damage effects.
@@ -965,6 +986,9 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
 
 HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
 {
+    if(IsCARPGDisabledOnCurrentMap())
+        return HOOK_CONTINUE;
+
     if(pDamageInfo is null || pDamageInfo.pVictim is null) 
         return HOOK_CONTINUE;
 
@@ -974,6 +998,43 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
 
     // Get attacker before any damage calculations.
     CBaseEntity@ attacker = pDamageInfo.pAttacker;
+
+    BarrierData@ linkedBarrier = null;
+    CBasePlayer@ linkedOwner = null;
+    float nearestBarrierDistance = BARRIER_LINK_RANGE;
+    for(int i = 1; i <= g_Engine.maxClients; ++i)
+    {
+        CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pOwner is null || !pOwner.IsConnected() || !pOwner.IsAlive() || pOwner is pPlayer)
+            continue;
+
+        string ownerSteamID = g_EngineFuncs.GetPlayerAuthId(pOwner.edict());
+        if(!g_PlayerBarriers.exists(ownerSteamID) || !g_PlayerRPGData.exists(ownerSteamID))
+            continue;
+
+        PlayerData@ ownerData = cast<PlayerData@>(g_PlayerRPGData[ownerSteamID]);
+        if(ownerData is null || ownerData.GetCurrentClass() != PlayerClass::CLASS_FROSTGUARD)
+            continue;
+
+        BarrierData@ candidateBarrier = cast<BarrierData@>(g_PlayerBarriers[ownerSteamID]);
+        if(candidateBarrier is null || !candidateBarrier.IsActive() || !candidateBarrier.IsLinkedPlayer(pPlayer))
+            continue;
+
+        float distance = (pPlayer.pev.origin - pOwner.pev.origin).Length();
+        if(distance < nearestBarrierDistance)
+        {
+            nearestBarrierDistance = distance;
+            @linkedBarrier = candidateBarrier;
+            @linkedOwner = pOwner;
+        }
+    }
+
+    if(linkedBarrier !is null && linkedOwner !is null)
+    {
+        CBaseEntity@ barrierAttacker = (attacker !is null) ? attacker : cast<CBaseEntity@>(pPlayer);
+        linkedBarrier.HandleBarrier(linkedOwner, barrierAttacker, pDamageInfo.flDamage, pDamageInfo.flDamage, pPlayer, linkedBarrier.GetLinkedDamageReduction());
+        return HOOK_CONTINUE;
+    }
 
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     
@@ -1012,7 +1073,7 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
                     {
                         string attackerClass = attacker.GetClassname();
                         bool isTurret = (attackerClass == "monster_turret" || attackerClass == "monster_miniturret");
-                        if(!isTurret)
+                        if(!isTurret && barrier.GetScaledDamageReflection() > 0.0f)
                         {
                             barrier.ApplyReflectDamage(attacker.pev.origin, attacker);
                         }
@@ -1065,11 +1126,12 @@ HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer)
     {
         data.CalculateStats(pPlayer); // Calculate stats on join. Calculate also initializes them!
         ResetPlayer(pPlayer); //  Defaults abilities if they rejoined.
-        RefillHealthArmor(pPlayer); // Refill health and armor to full.
+        if(!IsCARPGDisabledOnCurrentMap())
+            RefillHealthArmor(pPlayer); // Refill health and armor to full.
     }
     
     // Show class menu if no class selected.
-    if(data.GetCurrentClass() == PlayerClass::CLASS_NONE)
+    if(!IsCARPGDisabledOnCurrentMap() && data.GetCurrentClass() == PlayerClass::CLASS_NONE)
     {
         g_Scheduler.SetTimeout("ShowClassMenuDelayed", 0.1f, @pPlayer);
     }
@@ -1081,6 +1143,9 @@ HookReturnCode ClientPutInServer(CBasePlayer@ pPlayer)
 
 HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
 {
+    if(pPlayer is null)
+        return HOOK_CONTINUE;
+
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     if(g_PlayerRPGData.exists(steamID))
     {
@@ -1089,10 +1154,11 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
         {
             data.CalculateStats(pPlayer); // Re-calculate stats if we respawn.
             ResetPlayer(pPlayer); // We respawned, so default abilities.
-            RefillHealthArmor(pPlayer); // Refill health and armor to full.
+            if(!IsCARPGDisabledOnCurrentMap())
+                RefillHealthArmor(pPlayer); // Refill health and armor to full.
 
             // Show class menu if no class selected.
-            if(data.GetCurrentClass() == PlayerClass::CLASS_NONE)
+            if(!IsCARPGDisabledOnCurrentMap() && data.GetCurrentClass() == PlayerClass::CLASS_NONE)
             {
                 g_Scheduler.SetTimeout("ShowClassMenuDelayed", 0.1f, @pPlayer);
             }
@@ -1162,6 +1228,7 @@ HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
     return HOOK_CONTINUE;
 }
 
+// Chat command handling.
 HookReturnCode ClientSay(SayParameters@ pParams)
 {
     CBasePlayer@ pPlayer = pParams.GetPlayer();
@@ -1170,6 +1237,28 @@ HookReturnCode ClientSay(SayParameters@ pParams)
     if(args.ArgC() > 0)
     {
         string command = args.Arg(0).ToLowercase();
+
+        if(IsCARPGDisabledOnCurrentMap() && IsCARPGFeatureChatCommand(command))
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK,
+                "CARPG is disabled on this map. Admins can change this with /mapsettings.\n");
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
+
+        if(command == "/adminlist" && args.ArgC() == 1)
+        {
+            Menu::ShowAdminListMenu(pPlayer);
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
+
+        if((command == "/mapsettings" || command == "/map") && args.ArgC() == 1)
+        {
+            Menu::ShowMapSettingsMenu(pPlayer);
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
         
         // CLASS command (no arguments).
         if(command == "class" && args.ArgC() == 1)
@@ -1187,7 +1276,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
             }
         }
         // SKILLS command (no arguments).
-        else if(command == "skills" || command == "skillmenu" || command == "spendskills" && args.ArgC() == 1)
+        else if(command == "/skills" || command == "/skillmenu" || command == "/selectskills" || command == "/spendskills" && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerRPGData.exists(steamID))
@@ -1372,28 +1461,41 @@ HookReturnCode ClientSay(SayParameters@ pParams)
             }
         }
         // INFO command (no arguments).
-        else if(command == "info" && args.ArgC() == 1)
+        else if(command == "/info" && args.ArgC() == 1)
         {
             ShowInfo(pPlayer);
             pParams.ShouldHide = true;
             return HOOK_HANDLED;
         }
         // DIFFICULTY / SCALING command (no arguments).
-        else if((command == "difficulty" || command == "scaling") && args.ArgC() == 1)
+        else if((command == "/difficulty" || command == "/scaling") && args.ArgC() == 1)
         {
             ApplyDamageScaling();
             pParams.ShouldHide = true;
             return HOOK_HANDLED;
         }
-        // HELP command (no arguments).
-        else if(command == "hints" || command == "/help" && args.ArgC() == 1)
+        // HUD settings command.
+        else if((command == "/hudsettings" || command == "/hudoptions" || command == "/hud") && args.ArgC() == 1)
         {
-            ShowHints();
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null)
+                    Menu::ShowHUDSettingsMenu(data, pPlayer);
+            }
+            pParams.ShouldHide = true;
+            return HOOK_HANDLED;
+        }
+        // HELP command (no arguments).
+        else if(command == "/hints" || command == "/help" && args.ArgC() == 1)
+        {
+            PrintHints(pPlayer);
             pParams.ShouldHide = true;
             return HOOK_HANDLED;
         }
         // DEBUG command (no arguments, admin only).
-        else if(command == "debug" && args.ArgC() == 1)
+        else if(command == "/debug" && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(IsAdmin(steamID))
@@ -1597,6 +1699,49 @@ void ResetPlayer(CBasePlayer@ pPlayer) // Reset Abilities, HP/AP and Energy.
     }
 }
 
+void ApplyCARPGMapModeRuntime(int previousMode, int newMode)
+{
+    if(previousMode == newMode)
+        return;
+
+    InitializeAmmoRegen();
+    InitializeRecovery();
+
+    for(int i = 1; i <= g_Engine.maxClients; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer is null || !pPlayer.IsConnected())
+            continue;
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(g_PlayerRPGData.exists(steamID))
+        {
+            PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+            if(data !is null)
+            {
+                data.CalculateStats(pPlayer);
+                if(newMode == CARPG_MAP_DISABLED)
+                    ResetPlayer(pPlayer);
+            }
+        }
+        else if(newMode == CARPG_MAP_DISABLED)
+        {
+            pPlayer.pev.max_health = 100.0f;
+            pPlayer.pev.armortype = 100.0f;
+            if(pPlayer.pev.health > pPlayer.pev.max_health)
+                pPlayer.pev.health = pPlayer.pev.max_health;
+            if(pPlayer.pev.armorvalue > pPlayer.pev.armortype)
+                pPlayer.pev.armorvalue = pPlayer.pev.armortype;
+        }
+    }
+
+    ApplyDamageScaling();
+    SetupTimers();
+
+    string status = newMode == CARPG_MAP_DISABLED ? "disabled" : "enabled";
+    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "CARPG is now " + status + " for this map.\n");
+}
+
 void ShowClassMenuDelayed(CBasePlayer@ pPlayer)
 {
     if(pPlayer is null || !pPlayer.IsConnected())
@@ -1735,13 +1880,38 @@ void AdjustAmmoForClass(CBasePlayer@ pPlayer)
     AdjustAmmoForPlayerClass(pPlayer);
 }
 
+bool IsCARPGFeatureChatCommand(const string& in command)
+{
+    return command == "class" || command == "useability"
+        || command == "/skills" || command == "/skillmenu" || command == "/selectskills" || command == "/spendskills"
+        || command == "/info" || command == "/difficulty" || command == "/scaling"
+        || command == "/hudsettings" || command == "/hud"
+        || command == "/hints" || command == "/help" || command == "/debug";
+}
+
 void ShowHints()
 {
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Commands: Type 'Class' to select your class. Bind mouse3 \"say UseAbility\" to a button to use your Class Ability.\n");
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Skills' to spend your skillpoints.\n");
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Info' to see a summary of your class.\n");
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Difficulty' or 'Scaling' to see current player damage scaling.\n");
-    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "Type 'Hints' or '/help' to display this again.\n");
+    PrintHints(null);
+}
+
+void PrintHintLine(CBasePlayer@ pPlayer, const string& in text)
+{
+    if(pPlayer is null)
+        g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, text + "\n");
+    else
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, text + "\n");
+}
+
+void PrintHints(CBasePlayer@ pPlayer)
+{
+    PrintHintLine(pPlayer, "Commands: Type 'Class' to select your class. Bind mouse3 \"say UseAbility\" to use your class ability.");
+    PrintHintLine(pPlayer, "Type '/skills' to spend skillpoints.");
+    PrintHintLine(pPlayer, "Type '/info' to see a summary of your class.");
+    PrintHintLine(pPlayer, "Type '/difficulty' or '/scaling' to see player damage scaling.");
+    PrintHintLine(pPlayer, "Type '/hudsettings' to customize HUD colors and positions.");
+    PrintHintLine(pPlayer, "Type '/hints' or '/help' to display this again.");
+    PrintHintLine(pPlayer, "Admins: type '/mapsettings' to configure this map's CARPG mode.");
+    PrintHintLine(pPlayer, "Admins: type '/adminlist' to manage CARPG admins.");
 }
 
 void RefillHealthArmor(CBasePlayer@ pPlayer)

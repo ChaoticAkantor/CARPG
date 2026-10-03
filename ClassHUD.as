@@ -2,6 +2,8 @@
 This file handles class HUD display.
 */
 
+float g_flClassResourceHUDInterval = 0.2f; // How often the class resource HUD updates.
+
 string GetResourceBar(float current, float maximum, int barLength = 20)
 { 
     float ratio = current / maximum;
@@ -45,18 +47,20 @@ void UpdateClassResource() // Update the class resource HUD display for all play
 
         HUDTextParams params;
         params.channel = 5;
-        params.x = -1; // Center horizontally.
-        params.y = 0.9; // Position near bottom.
+        int resourcePosition = data.GetHUDPositionIndex(CARPG_HUD_RESOURCE);
+        params.x = GetCARPGHUDPositionX(CARPG_HUD_RESOURCE, resourcePosition);
+        params.y = GetCARPGHUDPositionY(CARPG_HUD_RESOURCE, resourcePosition);
         params.effect = 0; // 0: Fade in/out, 1: Credits, 2: Scan Out.
         params.fadeinTime = 0;
         params.fadeoutTime = 0;
-        params.holdTime = 0.2; // How long message displays.
+        params.holdTime = g_flClassResourceHUDInterval * 1.5f; // How long message displays.
         params.fxTime = 0.0; // Effect time (scan effect only).
 
         // Primary Colour.
-        params.r1 = 0;
-        params.g1 = 255;
-        params.b1 = 255;
+        Vector resourceColor = GetCARPGHUDColorValue(data.GetHUDColorIndex(CARPG_HUD_RESOURCE));
+        params.r1 = int(resourceColor.x);
+        params.g1 = int(resourceColor.y);
+        params.b1 = int(resourceColor.z);
 
         // Effect Colour.
         params.r2 = 0;
@@ -272,6 +276,9 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                             
                         if(barrier.IsActive())
                         {
+                            if(stats !is null && stats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_TEAMLINK) > 0)
+                                resourceInfo += "[Linked: " + barrier.GetLinkedPlayerCount() + "] [Link DR: " + formatFloat(barrier.GetLinkedDamageReduction() * 100, "f", 0, 2) + "%] ";
+
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_DAMAGEREFLECT) > 0)
                                 resourceInfo += "[DMG Reflect: " + formatFloat(barrier.GetScaledDamageReflection() * 100, "f", 0, 2) + "%] ";
 
@@ -329,7 +336,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         if(cloak.IsActive())
                         {
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE) > 0)
-                                resourceInfo += "[Cloaked DMG: +" + formatFloat(cloak.GetDamageMultiplier(pPlayer) * 100, "f", 0, 2) + "%]\n";
+                                resourceInfo += "[Cloaked DMG: " + formatFloat(cloak.GetDamageMultiplier(pPlayer) * 100, "f", 0, 2) + "%]\n";
 
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE) > 0)
                                 resourceInfo += "[Nova DMG: " + formatFloat(cloak.GetNovaDamage(), "f", 0, 2) + "]";
