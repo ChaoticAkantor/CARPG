@@ -145,6 +145,7 @@ enum SkillID
     SKILL_FROSTGUARD_DAMAGEREFLECT,
     SKILL_FROSTGUARD_ACTIVERECHARGE,
     SKILL_FROSTGUARD_HPABSORB,
+    SKILL_FROSTGUARD_TEAMLINK,
 
     // Shocktrooper.
     SKILL_SHOCK_CAPACITY,
@@ -169,8 +170,6 @@ enum SkillID
     SKILL_SWARMER_SNARKDAMAGE,
     SKILL_SWARMER_SNARKCOUNT,
 
-    // Additional Frostguard skill, appended to preserve existing saved IDs.
-    SKILL_FROSTGUARD_TEAMLINK,
 
     // Total.
     SKILL_MAX_COUNT
@@ -259,7 +258,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_DAMAGEREFLECT)] = SkillDefinition("Ability: Damage Reflect", "+" + formatFloat(SKILL_FROSTGUARD_DAMAGEREFLECT * 100.0f, "f", 0, 2) + "% shield damage reflect.", 5, SKILL_FROSTGUARD_DAMAGEREFLECT * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_ACTIVERECHARGE)] = SkillDefinition("Ability: Active Recharge", "+" + formatFloat(SKILL_FROSTGUARD_ACTIVERECHARGE * 100.0f, "f", 0, 2) + "% shield recharge.", 5, SKILL_FROSTGUARD_ACTIVERECHARGE * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_HPABSORB)] = SkillDefinition("Ability: HP Absorb", "+" + formatFloat(SKILL_FROSTGUARD_HPABSORB * 100.0f, "f", 0, 2) + "% shield HP absorb.", 5, SKILL_FROSTGUARD_HPABSORB * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_TEAMLINK)] = SkillDefinition("Ability: Team Shield", "+" + formatFloat(SKILL_FROSTGUARD_TEAMLINK * 100.0f, "f", 0, 2) + "% DR per protected player.", 5, SKILL_FROSTGUARD_TEAMLINK * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_TEAMLINK)] = SkillDefinition("Ability: Share Shield", "+" + formatFloat(SKILL_FROSTGUARD_TEAMLINK * 100.0f, "f", 0, 2) + "% DR per protected player.", 5, SKILL_FROSTGUARD_TEAMLINK * 100.0f, "%", 0.5f);
 
     // Shocktrooper.
     @g_SkillDefs[int(SkillID::SKILL_SHOCK_CAPACITY)] = SkillDefinition("Ability: Shock Capacity", "+" + formatFloat(SKILL_SHOCK_CAPACITY * 100.0f, "f", 0, 2) + "% shockrifle capacity.", 5, SKILL_SHOCK_CAPACITY * 100.0f, "%", 0.5f);
