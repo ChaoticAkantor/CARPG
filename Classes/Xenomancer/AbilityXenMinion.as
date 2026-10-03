@@ -1,189 +1,308 @@
-string strNecroMinionSoundCreate = "debris/beamstart7.wav";
+string strXenMinionSoundCreate = "debris/beamstart7.wav";
 
 // Precache strings for monsters. (Yawn)
 
-// Snark (Rat).
+// Houndeye.
     // Models/Sprites.
-    string strSnarkRatModel = "models/hunger/zombierat.mdl";
+    string strHoundeyeModel = "models/houndeye.mdl";
+    string strHoundeyeSpriteShockwave = "sprites/shockwave.spr";
+    string strHoundeyeSoundAlert1 = "houndeye/he_alert1.wav";
+    string strHoundeyeSoundAlert2 = "houndeye/he_alert2.wav";
+    string strHoundeyeSoundAlert3 = "houndeye/he_alert3.wav";
+    string strHoundeyeSoundAttack1 = "houndeye/he_attack1.wav";
+    string strHoundeyeSoundAttack2 = "houndeye/he_attack2.wav";
+    string strHoundeyeSoundAttack3 = "houndeye/he_attack3.wav";
+    string strHoundeyeSoundBlast1 = "houndeye/he_blast1.wav";
+    string strHoundeyeSoundBlast2 = "houndeye/he_blast2.wav";
+    string strHoundeyeSoundBlast3 = "houndeye/he_blast3.wav";
+    string strHoundeyeSoundDie1 = "houndeye/he_die1.wav";
+    string strHoundeyeSoundDie2 = "houndeye/he_die2.wav";
+    string strHoundeyeSoundDie3 = "houndeye/he_die3.wav";
+    string strHoundeyeSoundHunt1 = "houndeye/he_hunt1.wav";
+    string strHoundeyeSoundHunt2 = "houndeye/he_hunt2.wav";
+    string strHoundeyeSoundHunt3 = "houndeye/he_hunt3.wav";
+    string strHoundeyeSoundHunt4 = "houndeye/he_hunt4.wav";
+    string strHoundeyeSoundIdle1 = "houndeye/he_idle1.wav";
+    string strHoundeyeSoundIdle2 = "houndeye/he_idle2.wav";
+    string strHoundeyeSoundIdle3 = "houndeye/he_idle3.wav";
+    string strHoundeyeSoundIdle4 = "houndeye/he_idle4.wav";
+    string strHoundeyeSoundPain1 = "houndeye/he_pain1.wav";
+    string strHoundeyeSoundPain2 = "houndeye/he_pain2.wav";
+    string strHoundeyeSoundPain3 = "houndeye/he_pain3.wav";
+    string strHoundeyeSoundPain4 = "houndeye/he_pain4.wav";
+    string strHoundeyeSoundPain5 = "houndeye/he_pain5.wav";
 
-    // Don't need sounds as they are already precached inside Swarmer.
-
-// Zombie.
+// Pitdrone.
     // Models/Sprites.
-    string strZombieModel = "models/hunger/hungerzombie.mdl";
-    string strZombieModelGibs = "models/zombiegibs1.mdl";
+    string strPitdroneModel = "models/pit_drone.mdl";
+    string strPitdroneModelGibs = "models/pit_drone_gibs.mdl";
+    string strPitdroneModelSpike = "models/pit_drone_spike.mdl";
 
     // Sounds.
-    string strZombieSoundClawMiss1 = "zombie/claw_miss1.wav";
-    string strZombieSoundClawMiss2 = "zombie/claw_miss2.wav";
-    string strZombieSoundClawStrike1 = "zombie/claw_strike1.wav";
-    string strZombieSoundClawStrike2 = "zombie/claw_strike2.wav";
-    string strZombieSoundClawStrike3 = "zombie/claw_strike3.wav";
-    string strZombieSoundAlert10 = "zombie/zo_alert10.wav";
-    string strZombieSoundAlert20 = "zombie/zo_alert20.wav";
-    string strZombieSoundAlert30 = "zombie/zo_alert30.wav";
-    string strZombieSoundAttack1 = "zombie/zo_attack1.wav";
-    string strZombieSoundAttack2 = "zombie/zo_attack2.wav";
-    string strZombieSoundIdle1 = "zombie/zo_idle1.wav";
-    string strZombieSoundIdle2 = "zombie/zo_idle2.wav";
-    string strZombieSoundIdle3 = "zombie/zo_idle3.wav";
-    string strZombieSoundIdle4 = "zombie/zo_idle4.wav";
-    string strZombieSoundPain1 = "zombie/zo_pain1.wav";
-    string strZombieSoundPain2 = "zombie/zo_pain2.wav";
+    string strPitdroneSpikeTrail = "sprites/spike_trail.spr";
+    string strPitdroneSoundAttackSpike1 = "pitdrone/pit_drone_attack_spike1.wav";
+    string strPitdroneSoundAlert1 = "pitdrone/pit_drone_alert1.wav";
+    string strPitdroneSoundAlert2 = "pitdrone/pit_drone_alert2.wav"; 
+    string strPitdroneSoundAlert3 = "pitdrone/pit_drone_alert3.wav"; 
+    string strPitdroneSoundIdle1 = "pitdrone/pit_drone_idle1.wav";
+    string strPitdroneSoundIdle2 = "pitdrone/pit_drone_idle2.wav";
+    string strPitdroneSoundIdle3 = "pitdrone/pit_drone_idle3.wav";
+    string strPitdroneSoundDie1 = "pitdrone/pit_drone_die1.wav";
+    string strPitdroneSoundDie2 = "pitdrone/pit_drone_die2.wav";
+    string strPitdroneSoundDie3 = "pitdrone/pit_drone_die3.wav";
+    string strPitdroneSoundBite2 = "bullchicken/bc_bite2.wav";
+    string strPitdroneSoundPain1 = "pitdrone/pit_drone_pain1.wav";
+    string strPitdroneSoundPain2 = "pitdrone/pit_drone_pain2.wav";
+    string strPitdroneSoundPain3 = "pitdrone/pit_drone_pain3.wav";
+    string strPitdroneSoundPain4 = "pitdrone/pit_drone_pain4.wav";
+    string strPitdroneSoundMelee1 = "pitdrone/pit_drone_melee_attack1.wav";
+    string strPitdroneSoundMelee2 = "pitdrone/pit_drone_melee_attack2.wav";
+    string strPitdroneSoundEat = "pitdrone/pit_drone_eat.wav";
 
-// Skeleton (Vortigaunt).
+// Bullsquid
     // Models/Sprites.
-    string strSkeletonModel = "models/hunger/hungerslave.mdl";
+    string strBullsquidModel = "models/bullsquid.mdl";
+    string strBullsquidSpriteTinyspit = "sprites/tinyspit.spr";
+    string strBullsquidSpriteBigspit = "sprites/bigspit.spr";
 
     // Sounds.
-    string strSkeletonSoundShoot1 = "hassault/hw_shoot1.wav";
-    string strSkeletonSoundBite = "headcrab/hc_headbite.wav";
-    string strSkeletonSoundWord3 = "aslave/slv_word3.wav";
-    string strSkeletonSoundWord4 = "aslave/slv_word4.wav";
-    string strSkeletonSoundWord5 = "aslave/slv_word5.wav";
-    string strSkeletonSoundWord7 = "aslave/slv_word7.wav";
-    string strSkeletonSoundPain1 = "aslave/slv_pain1.wav";
-    string strSkeletonSoundPain2 = "aslave/slv_pain2.wav";
-    string strSkeletonSoundDie1 = "aslave/slv_die1.wav";
-    string strSkeletonSoundDie2 = "aslave/slv_die2.wav";
-    string strSkeletonSoundZap1 = "debris/zap1.wav";
-    string strSkeletonSoundZap4 = "debris/zap4.wav";
+    string strBullsquidAcid1 = "bullchicken/bc_acid1.wav";
+    string strBullsquidAcid2 = "bullchicken/bc_acid2.wav";
+    string strBullsquidAttack1 = "bullchicken/bc_attack1.wav";
+    string strBullsquidAttack2 = "bullchicken/bc_attack2.wav";
+    string strBullsquidAttack3 = "bullchicken/bc_attack3.wav";
+    string strBullsquidAttackGrowl = "bullchicken/bc_attackgrowl.wav";
+    string strBullsquidAttackGrowl2 = "bullchicken/bc_attackgrowl2.wav";
+    string strBullsquidAttackGrowl3 = "bullchicken/bc_attackgrowl3.wav";
+    string strBullsquidBite1 = "bullchicken/bc_bite1.wav";
+    string strBullsquidBite2 = "bullchicken/bc_bite2.wav";
+    string strBullsquidBite3 = "bullchicken/bc_bite3.wav";
+    string strBullsquidDie1 = "bullchicken/bc_die1.wav";
+    string strBullsquidDie2 = "bullchicken/bc_die2.wav";
+    string strBullsquidDie3 = "bullchicken/bc_die3.wav";
+    string strBullsquidIdle1 = "bullchicken/bc_idle1.wav";
+    string strBullsquidIdle2 = "bullchicken/bc_idle2.wav";
+    string strBullsquidIdle3 = "bullchicken/bc_idle3.wav";
+    string strBullsquidIdle4 = "bullchicken/bc_idle4.wav";
+    string strBullsquidIdle5 = "bullchicken/bc_idle5.wav";
+    string strBullsquidSoundPain1 = "bullchicken/bc_pain1.wav";
+    string strBullsquidSoundPain2 = "bullchicken/bc_pain2.wav";
+    string strBullsquidSoundPain3 = "bullchicken/bc_pain3.wav";
+    string strBullsquidSoundPain4 = "bullchicken/bc_pain4.wav";
+    string strBullsquidSpithit1 = "bullchicken/bc_spithit1.wav";
+    string strBullsquidSpithit2 = "bullchicken/bc_spithit2.wav";
+    string strBullsquidSpithit3 = "bullchicken/bc_spithit3.wav";
 
-// Gonome.
+// Shocktrooper.
     // Models/Sprites.
-    string strGonomeModel = "models/cards/big_skeleton.mdl";
-    //string strGonomeModel = "models/hunger/hungergonome.mdl";
-    string strGonomeSpriteSpit = "sprites/blood_chnk.spr";
+    string strShocktrooperModel = "models/strooper.mdl";
+    string strShocktrooperModelGibs = "models/strooper_gibs.mdl";
+    string strShocktrooperSpriteMuzzleshock = "sprites/muzzle_shock.spr";
 
     // Sounds.
-    string strGonomeSoundSpit1 = "bullchicken/bc_spithit1.wav";
-    string strGonomeSoundDeath2 = "gonome/gonome_death2.wav";
-    string strGonomeSoundDeath3 = "gonome/gonome_death3.wav";
-    string strGonomeSoundDeath4 = "gonome/gonome_death4.wav";
-    string strGonomeSoundIdle1 = "gonome/gonome_idle1.wav";
-    string strGonomeSoundIdle2 = "gonome/gonome_idle2.wav";
-    string strGonomeSoundIdle3 = "gonome/gonome_idle3.wav";
-    string strGonomeSoundPain1 = "gonome/gonome_pain1.wav";
-    string strGonomeSoundPain2 = "gonome/gonome_pain2.wav";
-    string strGonomeSoundPain3 = "gonome/gonome_pain3.wav";
-    string strGonomeSoundPain4 = "gonome/gonome_pain4.wav";
-    string strGonomeSoundMelee1 = "gonome/gonome_melee1.wav";
-    string strGonomeSoundMelee2 = "gonome/gonome_melee2.wav";
-    string strGonomeSoundRun = "gonome/gonome_run.wav";
-    string strGonomeSoundEat = "gonome/gonome_eat.wav";
+    string strShocktrooperBlis = "shocktrooper/blis.wav";
+    string strShocktrooperDit = "shocktrooper/dit.wav";
+    string strShocktrooperDup = "shocktrooper/dup.wav";
+    string strShocktrooperGa = "shocktrooper/ga.wav";
+    string strShocktrooperHyu = "shocktrooper/hyu.wav";
+    string strShocktrooperKa = "shocktrooper/ka.wav";
+    string strShocktrooperKiml = "shocktrooper/kiml.wav";
+    string strShocktrooperKss = "shocktrooper/kss.wav";
+    string strShocktrooperKu = "shocktrooper/ku.wav";
+    string strShocktrooperKur = "shocktrooper/kur.wav";
+    string strShocktrooperKyur = "shocktrooper/kyur.wav";
+    string strShocktrooperMub = "shocktrooper/mub.wav";
+    string strShocktrooperPuh = "shocktrooper/puh.wav";
+    string strShocktrooperPur = "shocktrooper/pur.wav";
+    string strShocktrooperRas = "shocktrooper/ras.wav";
+    string strShocktrooperThirv = "shocktrooper/thirv.wav";
+    string strShocktrooperWirt = "shocktrooper/wirt.wav";
+    string strShocktrooperFire = "shocktrooper/shock_fire.wav";
+    string strShocktrooperAttack = "shocktrooper/shock_trooper_die1.wav";
+    string strShocktrooperDie1 = "shocktrooper/shock_trooper_die1.wav";
+    string strShocktrooperDie2 = "shocktrooper/shock_trooper_die2.wav";
+    string strShocktrooperDie3 = "shocktrooper/shock_trooper_die3.wav";
+    string strShocktrooperDie4 = "shocktrooper/shock_trooper_die4.wav";
+    string strShocktrooperPain1 = "shocktrooper/shock_trooper_pain1.wav";
+    string strShocktrooperPain2 = "shocktrooper/shock_trooper_pain2.wav";
+    string strShocktrooperPain3 = "shocktrooper/shock_trooper_pain3.wav";
+    string strShocktrooperPain4 = "shocktrooper/shock_trooper_pain4.wav";
+    string strShocktrooperPain5 = "shocktrooper/shock_trooper_pain5.wav";
 
-string FormatRatSecondsForHud(float t)
-{
-    t = Math.max(0.0f, t);
-    int tenthsTotal = int(t * 10.0f + 0.5f);
-    int whole = tenthsTotal / 10;
-    int frac = tenthsTotal % 10;
-    return "" + whole + "." + frac + "s";
-}
+/*
+// Alien Grunt (Friendly). DISABLED FOR NOW.
+    // Models/Sprites.
+    string strAlienGruntModel = "models/agruntf.mdl";
+    string strAlienGruntModelGibs = "models/fleshgibs.mdl";
+    string strAlienGruntMuzzleFlash = "sprites/muz4.spr";
 
-dictionary g_NecromancerMinions;
+    // Sounds.
+    string strAlienGruntSoundIdle1 = "agrunt/ag_idle1.wav";
+    string strAlienGruntSoundIdle2 = "agrunt/ag_idle2.wav";
+    string strAlienGruntSoundIdle3 = "agrunt/ag_idle3.wav";
+    string strAlienGruntSoundIdle4 = "agrunt/ag_idle4.wav";
+    string strAlienGruntSoundDie1 = "agrunt/ag_die1.wav";
+    string strAlienGruntSoundDie4 = "agrunt/ag_die4.wav";
+    string strAlienGruntSoundDie5 = "agrunt/ag_die5.wav";
+    string strAlienGruntSoundPain1 = "agrunt/ag_pain1.wav";
+    string strAlienGruntSoundPain2 = "agrunt/ag_pain2.wav";
+    string strAlienGruntSoundPain3 = "agrunt/ag_pain3.wav";
+    string strAlienGruntSoundPain4 = "agrunt/ag_pain4.wav";
+    string strAlienGruntSoundPain5 = "agrunt/ag_pain5.wav";
+    string strAlienGruntSoundAttack1 = "agrunt/ag_attack1.wav";
+    string strAlienGruntSoundAttack2 = "agrunt/ag_attack2.wav";
+    string strAlienGruntSoundAttack3 = "agrunt/ag_attack3.wav";
+    string strAlienGruntSoundAlert1 = "agrunt/ag_alert1.wav";
+    string strAlienGruntSoundAlert3 = "agrunt/ag_alert3.wav";
+    string strAlienGruntSoundAlert4 = "agrunt/ag_alert4.wav";
+    string strAlienGruntSoundAlert5 = "agrunt/ag_alert5.wav";
+*/
 
-enum ZombieType
+    // Baby Gargantua. Adult one is way too strong :P.
+    // Models/Sprites.
+    string strBabyGargModel = "models/babygarg.mdl";
+    string strBabyGargModelGibs = "models/metalplategibs.mdl";
+    string strBabyGargSpriteEye = "sprites/gargeye1.spr";
+    string strBabyGargSpriteBeam = "sprites/xbeam3.spr";
+
+
+    // Sounds.
+    string strBabyGargSoundAlert1 = "babygarg/gar_alert1.wav";
+    string strBabyGargSoundAlert2 = "babygarg/gar_alert2.wav";
+    string strBabyGargSoundAlert3 = "babygarg/gar_alert3.wav";
+    string strBabyGargSoundAttack1 = "babygarg/gar_attack1.wav";
+    string strBabyGargSoundAttack2 = "babygarg/gar_attack2.wav";
+    string strBabyGargSoundAttack3 = "babygarg/gar_attack3.wav";
+    string strBabyGargSoundBreathe1 = "babygarg/gar_breathe1.wav";
+    string strBabyGargSoundBreathe2 = "babygarg/gar_breathe2.wav";
+    string strBabyGargSoundBreathe3 = "babygarg/gar_breathe3.wav";
+    string strBabyGargSoundDie1 = "babygarg/gar_die1.wav";
+    string strBabyGargSoundDie2 = "babygarg/gar_die2.wav";
+    string strBabyGargSoundFlameoff1 = "babygarg/gar_flameoff1.wav";
+    string strBabyGargSoundFlameon1 = "babygarg/gar_flameon1.wav";
+    string strBabyGargSoundFlamerun1 = "babygarg/gar_flamerun1.wav";
+    string strBabyGargSoundIdle1 = "babygarg/gar_idle1.wav";
+    string strBabyGargSoundIdle2 = "babygarg/gar_idle2.wav";
+    string strBabyGargSoundIdle3 = "babygarg/gar_idle3.wav";
+    string strBabyGargSoundIdle4 = "babygarg/gar_idle4.wav";
+    string strBabyGargSoundIdle5 = "babygarg/gar_idle5.wav";
+    string strBabyGargSoundPain1 = "babygarg/gar_pain1.wav";
+    string strBabyGargSoundPain2 = "babygarg/gar_pain2.wav";
+    string strBabyGargSoundPain3 = "babygarg/gar_pain3.wav";
+    string strBabyGargSoundStep1 = "babygarg/gar_step1.wav";
+    string strBabyGargSoundStep2 = "babygarg/gar_step2.wav";
+    string strBabyGargSoundStomp1 = "babygarg/gar_stomp1.wav";
+
+dictionary g_XenologistMinions;
+
+enum XenType
 {   
-    NECRO_ZOMBIE = 1,
-    NECRO_SKELETON = 2,
-    NECRO_ABOMINATION = 3
+    XEN_HOUNDEYE = 0,
+    XEN_PITDRONE = 1,
+    XEN_BULLSQUID = 2,
+    XEN_SHOCKTROOPER = 3,
+    XEN_BABYGARG = 4
 }
 
-// Used to swap bodygroups for Zombies.
-const array<int> ZOMBIE_BODYGROUPS = 
+const array<float> XEN_HP_BASE = 
 {
-    1,  // Male burnt.
-    2,  // Male burnt headless.
-    3,  // Male suit.
-    4,  // Male suit headless.
-    5,  // Male police.
-    6,  // Female.
-    7,  // Male Hazmat.
-    8,  // Male Army dress.
-    9,  // Male scientist burnt.
-    10, // Male scientist.
-    11  // Male patient.
+    200.0f,  // Houndeye.
+    200.0f,  // Pit Drone.
+    250.0f,  // Bullsquid.
+    250.0f,  // Shocktrooper.
+    500.0f   // Baby Gargantua.
 };
 
-const array<float> NECRO_HP_BASE = 
+const array<float> XEN_HP_MODIFIERS = 
 {
-    150.0f,  // Zombie (soldier type).
-    80.0f,  // Skeleton.
-    200.0f  // Abomination (Gonome).
+    1.00,  // Houndeye.
+    1.00,  // Pit Drone.
+    1.00,  // Bullsquid.
+    1.00,  // Shocktrooper.
+    1.00   // Baby Gargantua.
 };
 
-const array<float> NECRO_HP_MODIFIERS = 
+const array<float> XEN_DAMAGE_MODIFIERS =
 {
-    1.00,  // Zombie.
-    1.00,  // Skeleton.
-    1.00   // Abomination (Gonome).
+    1.00,  // Houndeye.
+    1.00,  // Pit Drone.
+    1.00,  // Bullsquid.
+    1.00,  // Shocktrooper.
+    1.30   // Baby Gargantua.
 };
 
-const array<float> NECRO_ANIMATION_SPEEDS = 
+const array<float> XEN_ANIMATION_SPEEDS = 
 {
-    2.50,  // Zombie.
-    1.30,  // Skeleton.
-    1.25   // Abomination (Gonome).
+    1.50,  // Houndeye.
+    1.50,  // Pit Drone.
+    1.50,  // Bullsquid.
+    1.50,  // Shocktrooper.
+    1.25   // Baby Gargantua.
 };
 
-// Used to change monster name in UI.
-const array<string> NECRO_NAMES = 
+const array<int> XEN_COSTS = // Pool cost per summon of each type.
 {
-    "Zombie",
-    "Skeleton",
-    "Abomination"
+    2, // Houndeye.
+    2, // Pit Drone.
+    3, // Bullsquid.
+    3, // Shocktrooper.
+    4  // Baby Garg.
 };
 
-// Used to swap monster type.
-const array<string> NECRO_ENTITIES = 
+// Per-type collision bounds relative to each minion's origin; adjust these for testing.
+// Multiplier for each native minion hull; 0.0 preserves the current zero-sized hull.
+const array<float> XEN_MINION_HULL_MODIFIERS =
 {
-    "monster_zombie",
-    "monster_alien_slave",
-    "monster_gonome"    
+    0.5f, // Houndeye.
+    0.5f, // Pit Drone.
+    0.5f, // Bullsquid.
+    0.5f, // Shocktrooper.
+    0.5f  // Baby Gargantua.
 };
 
-// Used to swap models.
-const array<string> NECRO_MODELS = 
+const array<string> XEN_NAMES = 
 {
-    strZombieModel,
-    strSkeletonModel,
-    strGonomeModel
+    "Houndeye",
+    "Pit Drone",
+    "Bullsquid",
+    "Shocktrooper",
+    "Baby Gargantua"
+    //"Alien Grunt"
+    
 };
 
-const array<int> NECRO_COSTS = // Pool cost per summon of each type.
+const array<string> XEN_ENTITIES = 
 {
-    1, // Zombie.
-    1, // Skeleton (Vortigaunt).
-    2 // Abomination (Gonome).
+    "monster_houndeye",
+    "monster_pitdrone",
+    "monster_bullchicken",
+    "monster_shocktrooper",
+    "monster_babygarg"
+    //"monster_alien_grunt"
+    
 };
 
-// Structure to track minion type.
-class NecroMinionInfo
+// Structure to track minion type
+class XenMinionInfo
 {
     EHandle hMinion;
     int type;
     
-    NecroMinionInfo() { type = 0; }
-    NecroMinionInfo(EHandle h, int t) { hMinion = h; type = t; }
+    XenMinionInfo() { type = 0; }
+    XenMinionInfo(EHandle h, int t) { hMinion = h; type = t; }
 }
 
-class NecroMinionData
+class XenMinionData
 {
-    private NecroMinionMenu@ m_pMenu;
-    private array<NecroMinionInfo> m_hMinions;
+    private XenMinionMenu@ m_pMenu;
+    private array<XenMinionInfo> m_hMinions;
     private bool m_bActive = false;
 
-    // Monster variables.
-    private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
+    // Ability variables.
+    private int m_iMinionPointMax = 1; // Max pool for minions, can be increased with skill.
     private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
-
-    // Rats Ability Skill.
-    private int m_iRatSpawnCount = 3 ; // Number of rats to spawn with the rat ability, per active minion.
-    private float m_flRatSpawnCooldown = 30.0f; // Base cooldown for spawning rats.
-    private float m_flRatLaunchForce = 500.0f; // Velocity that rats are thrown outward.
 
     // Minion Team Lifesteal Self-heal modifier.
     private float m_flSelfHealMult = 0.25f; // Multiplier for self-healing from minion lifesteal.
@@ -195,7 +314,6 @@ class NecroMinionData
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
-    private float m_flCurrentRatCooldown = 0.0f; // Tracks cooldown for rat spawning.
     private float m_flToggleCooldown = 1.0f;
     private bool m_bInitialized = false;
     private ClassStats@ m_pStats = null;
@@ -211,33 +329,14 @@ class NecroMinionData
     void SetReservePoolZero() { m_iReservePool = 0; }
     bool HasStats() { return m_pStats !is null; }
 
-    int GetMinionPointIncrease()
-    {
-        if(m_pStats is null)
-            return 0; // No increase if no stats.
-
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
-        return int(SKILL_MINION_POINT * skillLevel); // Bonus minion points from skill.
-    }
-
     int GetAbilityMax()
     {
-        int maxPoints = m_iMinionPointMax + GetMinionPointIncrease();
+        int maxPoints = m_iMinionPointMax + int(GetMinionPointIncrease());
         return maxPoints < 1 ? 1 : maxPoints;
     }
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
     void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
-
-    float GetRatCooldownRemaining() { return m_flCurrentRatCooldown; }
-
-    string GetRatCooldownDisplay()
-    {
-        float maxCd = GetRatCooldownRemaining();
-        if(m_flCurrentRatCooldown > 0.0f)
-            return "[Rats: " + FormatRatSecondsForHud(m_flCurrentRatCooldown) + "]";
-        return "[Rats: Ready]";
-    }
 
     float GetScaledAbilityRecharge()
     {
@@ -260,6 +359,15 @@ class NecroMinionData
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
+    }
+
+    float GetMinionPointIncrease()
+    {
+        if(m_pStats is null)
+            return 0.0f; // No increase if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
+        return float(int(SKILL_MINION_POINT * skillLevel)); // Bonus minion points from skill.
     }
 
     bool IsActive() 
@@ -289,41 +397,52 @@ class NecroMinionData
     float GetScaledHealth(int minionType = 0)
     {
         if(m_pStats is null)
-            return NECRO_HP_BASE[minionType] * NECRO_HP_MODIFIERS[minionType]; // Return base health with type modifier if no stats.
+            return XEN_HP_BASE[minionType] * XEN_HP_MODIFIERS[minionType]; // Return base health with type modifier if no stats.
 
-        float minionScaledHealth = NECRO_HP_BASE[minionType]; // Start with base health based on type.
+        float minionScaledHealth = XEN_HP_BASE[minionType]; // Start with base health for each type.
 
         float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_HP);
         float skillPower = SKILL_MINION_HP;
-
+        
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        minionScaledHealth *= modifier * NECRO_HP_MODIFIERS[minionType]; // Apply skill and type modifier after scaling.
+        minionScaledHealth *= modifier * XEN_HP_MODIFIERS[minionType]; // Apply skill and type modifier after scaling.
 
         return minionScaledHealth;
     }
 
-    float GetScaledDamage() // Damage scaling is applied through MonsterTakeDamage.
+    float GetScaledDamage(int minionType = 0) // Damage scaling is applied through MonsterTakeDamage.
     {
         if(m_pStats is null)
-            return 1.0f; // Restore to default, but is always null when we have no minions.
+            return XEN_DAMAGE_MODIFIERS[minionType]; // Return type modifier only if no stats.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_DAMAGE);
         float skillPower = SKILL_MINION_DAMAGE;
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        return modifier;
+        return modifier * XEN_DAMAGE_MODIFIERS[minionType];
+    }
+
+    void SetMinionBounds(CBaseMonster@ pMonster, int minionType)
+    {
+        if(pMonster is null || minionType < 0 || uint(minionType) >= XEN_MINION_HULL_MODIFIERS.length())
+            return;
+
+        float hullModifier = XEN_MINION_HULL_MODIFIERS[minionType];
+        Vector scaledMins = pMonster.pev.mins * hullModifier;
+        Vector scaledMaxs = pMonster.pev.maxs * hullModifier;
+        g_EntityFuncs.SetSize(pMonster.pev, scaledMins, scaledMaxs);
     }
     
-    float GetMinionRegen() // Get minion regen based on skill level.
+    float GetMinionRegen() // Get minion regen based on level.
     { 
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_REGEN);
         float skillPower = SKILL_MINION_REGEN;
-        float modifier = skillLevel * skillPower; // Regen is zero with no skill points spent.
-
+        float modifier = skillLevel * skillPower; // Scale from skill.
+        
         return modifier;
     }
 
@@ -338,33 +457,8 @@ class NecroMinionData
 
         return modifier;
     }
-
-    float GetScaledRatCooldown()
-    {
-        if(m_pStats is null)
-            return 0.0f; // Default if no stats.
-
-        float defaultCooldown = m_flRatSpawnCooldown;
-
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS);
-        float skillPower = SKILL_NECROMANCER_RATS;
-        float modifier = skillLevel * skillPower;
-
-        return defaultCooldown * Math.max(0.05f, 1.0f - modifier);
-    }
-
-    void RatTimerTick()
-    {
-        if(m_flCurrentRatCooldown <= 0.0f)
-            return;
-
-        m_flCurrentRatCooldown -= flSchedulerInterval;
-
-        if(m_flCurrentRatCooldown < 0.0f)
-            m_flCurrentRatCooldown = 0.0f;
-    }
     
-    array<NecroMinionInfo>@ GetMinions() { return m_hMinions; }
+    array<XenMinionInfo>@ GetMinions() { return m_hMinions; }
     
     CBaseEntity@ GetMinionEntity(uint index)
     {
@@ -384,12 +478,12 @@ class NecroMinionData
         return pMinion;
     }
 
-    NecroMinionData() 
+    XenMinionData() 
     {
-        @m_pMenu = NecroMinionMenu(this);
+        @m_pMenu = XenMinionMenu(this);
     }
 
-    void SpawnNecroMinion(CBasePlayer@ pPlayer)
+    void SpawnXenMinion(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
@@ -400,7 +494,7 @@ class NecroMinionData
 
         m_flLastToggleTime = 0.0f;
 
-        m_pMenu.ShowNecroMinionMenu(pPlayer); // Show menu.
+        m_pMenu.ShowXenMinionMenu(pPlayer); // Show menu.
     }
 
     void SpawnSpecificMinion(CBasePlayer@ pPlayer, int minionType)
@@ -415,15 +509,15 @@ class NecroMinionData
         PruneMinions();
 
         // Check resources for spawning new minion.
-        if(m_iReservePool + NECRO_COSTS[minionType] > maxPool)
+        if(m_iReservePool + XEN_COSTS[minionType] > maxPool)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + NECRO_NAMES[minionType] + "!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + XEN_NAMES[minionType] + "!\n");
             return;
         }
 
-        if(m_flAbilityCharge < float(NECRO_COSTS[minionType]))
+        if(m_flAbilityCharge < float(XEN_COSTS[minionType]))
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, NECRO_NAMES[minionType] + " is recharging!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + XEN_NAMES[minionType] + "!\n");
             return;
         }
 
@@ -434,7 +528,7 @@ class NecroMinionData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_NECROMANCER)
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER)
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }
@@ -449,139 +543,54 @@ class NecroMinionData
         vecSrc.z -= 32;
 
         float scaledHealth = GetScaledHealth(minionType);
-        float scaledDamage = GetScaledDamage();
-
+        float scaledDamage = GetScaledDamage(minionType);
+        
         dictionary keys;
-        keys["model"] = NECRO_MODELS[minionType];
         keys["origin"] = vecSrc.ToString();
         keys["angles"] = Vector(0, pPlayer.pev.v_angle.y, 0).ToString();
-        keys["targetname"] = "_necrominion_" + pPlayer.entindex();
-        keys["displayname"] = string(pPlayer.pev.netname) + "'s " + NECRO_NAMES[minionType];
+        keys["targetname"] = "_xenminion_" + pPlayer.entindex();
+        keys["displayname"] = string(pPlayer.pev.netname) + "'s " + XEN_NAMES[minionType];
         keys["health"] = string(scaledHealth);
         keys["scale"] = "1";
         keys["friendly"] = "1";
-        keys["spawnflags"] = "8388608"; // Was 16384
+        keys["spawnflags"] = "8388608";
         keys["is_player_ally"] = "1";
-        keys["body"] = string(Math.RandomLong(1, 11)); // Random bodygroup for zombies.
-        //keys["skin"] = string(randomBody); // Random skin for zombies.
+        keys["is_not_revivable"] = "1";
 
-        CBaseEntity@ pNecroMinion = g_EntityFuncs.CreateEntity(NECRO_ENTITIES[minionType], keys, true);
-        if(pNecroMinion !is null)
+        CBaseEntity@ pXenMinion = g_EntityFuncs.CreateEntity(XEN_ENTITIES[minionType], keys, true);
+        if(pXenMinion !is null)
         {
             // Apply glow effect before dispatch.
-            ApplyMinionGlow(pNecroMinion);
+            ApplyMinionGlow(pXenMinion);
 
-            CBaseMonster@ pMonster = cast<CBaseMonster@>(pNecroMinion);
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pXenMinion);
             if(pMonster !is null)
                 pMonster.m_hGuardEnt = EHandle(pPlayer); // Guard the player, turn down follow requests.
 
-            //@pNecroMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
-            
-            g_EntityFuncs.DispatchSpawn(pNecroMinion.edict()); // Dispatch the entity.
+            //@pXenMinion.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
 
-            // Set its bounding box to zero.
-            pMonster.pev.mins = Vector(0, 0, 0);
-            pMonster.pev.maxs = Vector(0, 0, 0);
+            g_EntityFuncs.DispatchSpawn(pXenMinion.edict()); // Dispatch the entity.
+
+            SetMinionBounds(pMonster, minionType);
 
             // Refresh entity origin.
             g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
 
-            // Store both the minion handle and its type.
-            NecroMinionInfo info;
-            info.hMinion = EHandle(pNecroMinion);
+            // Store both the minion handle and its type
+            XenMinionInfo info;
+            info.hMinion = EHandle(pXenMinion);
             info.type = minionType;
             m_hMinions.insertLast(info);
             
-            m_iReservePool += NECRO_COSTS[minionType]; // Add to reserve pool when minion is created.
-            m_flAbilityCharge -= float(NECRO_COSTS[minionType]); // Deduct from ability charge.
+            m_iReservePool += XEN_COSTS[minionType]; // Add to reserve pool when minion is created.
+            m_flAbilityCharge -= float(XEN_COSTS[minionType]); // Deduct from ability charge.
 
-            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strNecroMinionSoundCreate, 1.0f, ATTN_NORM);
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, NECRO_NAMES[minionType] + " summoned!\n");
+            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, XEN_NAMES[minionType] + " summoned!\n");
         }
     }
 
-    void SpawnRat(CBasePlayer@ pPlayer, CBaseEntity@ pMinion)
-    {
-        if(pPlayer is null || !pPlayer.IsConnected() || pMinion is null || !pMinion.IsAlive())
-            return;
-
-        // Get minion's position.
-        Vector minionOrigin = pMinion.pev.origin;
-        
-        // Calculate velocity direction: outward from minion (random horizontal spread).
-        float horizontalAngle = Math.RandomFloat(0, 360);
-        float radians = horizontalAngle * (3.14159 / 180.0);
-        
-        Vector outwardDir = Vector(cos(radians), sin(radians), 0); // Horizontal only for direction
-        outwardDir = outwardDir.Normalize();
-        
-        // Spawn far enough away to avoid collision with minion (80 units out, 32 up).
-        Vector spawnPos = minionOrigin + (outwardDir * 80.0f) + Vector(0, 0, 32);
-        
-        // Calculate velocity: outward direction at launch force, with upward component.
-        Vector velocity = outwardDir * m_flRatLaunchForce;
-        velocity.z += Math.RandomFloat(20.0f, 50.0f); // Add upward arc to the throw.
-        
-        // Calculate end point for sprite trail (from minion along the velocity direction).
-        Vector trailEndPoint = minionOrigin + (outwardDir * 100.0f);
-        
-        // Create sprite trail effect from minion outward.
-        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, minionOrigin);
-            msg.WriteByte(TE_SPRITETRAIL);
-            msg.WriteCoord(minionOrigin.x);
-            msg.WriteCoord(minionOrigin.y);
-            msg.WriteCoord(minionOrigin.z);
-            msg.WriteCoord(trailEndPoint.x);
-            msg.WriteCoord(trailEndPoint.y);
-            msg.WriteCoord(trailEndPoint.z);
-            msg.WriteShort(GetModelIndex("sprites/tinyspit.spr"));
-            msg.WriteByte(1);   // Count.
-            msg.WriteByte(1);   // Life in 0.1's.
-            msg.WriteByte(5);   // Scale in 0.1's.
-            msg.WriteByte(25);  // Velocity along vector in 10's.
-            msg.WriteByte(10);  // Random velocity in 10's.
-        msg.End();
-
-        float scaledHealth = GetScaledHealth();
-        
-        // Create the rat (snark).
-        dictionary keys;
-        keys["origin"] = spawnPos.ToString();
-        keys["angles"] = pMinion.pev.v_angle.ToString();
-        keys["targetname"] = "_necrominion_rat_" + pPlayer.entindex();
-        keys["displayname"] = string(pPlayer.pev.netname) + "'s Rat";
-        keys["health"] = string(scaledHealth);
-        keys["scale"] = "2";
-        keys["model"] = strSnarkRatModel;
-        keys["spawnflags"] = "32";
-        keys["body"] = string(Math.RandomLong(0, 1)); // Random rat body.
-        keys["is_player_ally"] = "1";
-        
-        CBaseEntity@ pRat = g_EntityFuncs.CreateEntity("monster_snark", keys, true);
-        if(pRat !is null)
-        {
-            // Dispatch the entity first.
-            g_EntityFuncs.DispatchSpawn(pRat.edict());
-
-            // Set owner to player so frags transfer properly.
-            @pRat.pev.owner = @pPlayer.edict();
-
-            // Set health.
-            pRat.pev.max_health = scaledHealth;
-            pRat.pev.health = scaledHealth;
-
-            // Apply velocity to launch the rat outward.
-            pRat.pev.velocity = velocity;
-            
-            // Make the rat glow to show it's friendly (different color from minions).
-            pRat.pev.renderfx = kRenderFxGlowShell;
-            pRat.pev.rendermode = kRenderNormal;
-            pRat.pev.renderamt = 1;
-            pRat.pev.rendercolor = Vector(255, 195, 205); // Peach.
-        }
-    }
-
-    void NecroUpdate(CBasePlayer@ pPlayer)
+    void XenUpdate(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null)
             return;
@@ -604,19 +613,12 @@ class NecroMinionData
 
             // Set some values after casting incase they override.
             int minionType = m_hMinions[i].type;
-            if(minionType >= 0 && uint(minionType) < NECRO_ANIMATION_SPEEDS.length())
+            if(minionType >= 0 && uint(minionType) < XEN_ANIMATION_SPEEDS.length())
             {
-                pMonster.pev.framerate = NECRO_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
+                pMonster.pev.framerate = XEN_ANIMATION_SPEEDS[minionType]; // Different speeds per minion type.
             }
 
-            pMonster.m_flFieldOfView = -1.0; // Max their field of view so they become more effective.
-            //pMonster.m_fCanFearCreatures = true; // Can cause fear to creatures?
-            //pMonster.m_iEffectInvisible = 1; // is invisible (render + no-target).
-            //pMonster.m_flEffectDamage = 2.0; // Damage (%)?
-            //pMonster.m_flEffectSpeed = 1.0; // Movement speed (%)?
-            //pMonster.m_flEffectRespiration = 120.0; // Breathing time underwater in seconds.
-            //pMonster.m_flDistLook = 2048; // Look distance (2048 default).
-            //pMonster.m_flHungryTime = 120.0; // Time based damage inflictor?
+            pMonster.m_flFieldOfView = -1.0; // Max their field of view.
             
             // Enhanced death check - check multiple conditions.
             bool isDead = false;
@@ -645,39 +647,14 @@ class NecroMinionData
                 pExistingMinion.pev.frags = 0;
             }
             
-            // Ensure max_health is properly set and updated dynamically (e.g. when skills change).
+            /// Ensure max_health is properly set and updated dynamically (e.g. when skills change).
             pExistingMinion.pev.max_health = GetScaledHealth(m_hMinions[i].type);
-
+            
             if(pExistingMinion.pev.health > pExistingMinion.pev.max_health)
                 pExistingMinion.pev.health = pExistingMinion.pev.max_health;
-
-            // Ensure glow effect is not overridden.
+            
+            // Ensure glow effect is maintained.
             ApplyMinionGlow(pExistingMinion);
-        }
-
-        // Rat spawning: Check if enough time has passed to spawn new rats on active minions.
-        if (m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS) > 0)
-        {
-            if(m_flCurrentRatCooldown <= 0.0f && m_hMinions.length() > 0)
-            {
-
-                // Spawn rats on each active minion.
-                for(uint i = 0; i < m_hMinions.length(); i++)
-                {
-                    CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
-                    if(pMinion !is null && pMinion.IsAlive())
-                    {
-                        // Spawn multiple rats per minion based on config.
-                        for(int j = 0; j < m_iRatSpawnCount; j++)
-                        {
-                            SpawnRat(pPlayer, pMinion);
-                        }
-                    }
-                }
-                
-                // Reset cooldown after rats have spawned.
-                m_flCurrentRatCooldown = GetScaledRatCooldown();
-            }
         }
 
         // Always recalculate the reserve pool to ensure it's accurate.
@@ -690,7 +667,7 @@ class NecroMinionData
             if(g_PlayerRPGData.exists(steamID))
             {
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_NECROMANCER)
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_XENOMANCER)
                 {
                     @m_pStats = data.GetCurrentClassStats();
                 }
@@ -719,7 +696,8 @@ class NecroMinionData
                 pExistingMinion.Killed(pPlayer.pev, GIB_ALWAYS); // Ensure gibbing, incase they are in dying state and revivable.
                 anyDestroyed = true;
             }
-            // Always remove from array, even if entity pointer is null
+
+            // Always remove from array, even if entity pointer is null.
             m_hMinions.removeAt(i);
         }
 
@@ -728,36 +706,35 @@ class NecroMinionData
         m_iReservePool = 0;
         
         if(anyDestroyed)
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Undead killed!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "All Creatures killed!\n");
         else
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Undead cleared!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creatures cleared!\n");
     }
     
     // Reset function to clean up all active minions.
     void Reset()
     {
-        // Find the player if possible by iterating through all players
+        // Find the player if possible by iterating through all players.
         CBasePlayer@ pPlayer = null;
         string playerSteamID = "";
         
-        // Use direct player iteration instead of g_PlayerRPGData.getKeys()
         if(m_pStats !is null)
         {
-            // Loop through all possible player slots
+            // Loop through all possible player slots.
             for (int i = 1; i <= g_Engine.maxClients; i++)
             {
                 CBasePlayer@ tempPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
                 if (tempPlayer !is null && tempPlayer.IsConnected())
                 {
-                    // Get the player's SteamID
+                    // Get the player's SteamID.
                     string steamID = g_EngineFuncs.GetPlayerAuthId(tempPlayer.edict());
                     
-                    // Check if this player has RPG data
+                    // Check if this player has RPG data.
                     if(g_PlayerRPGData.exists(steamID))
                     {
                         PlayerData@ playerData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                         
-                        // Check if this player owns these stats
+                        // Check if this player owns these stats.
                         if(playerData !is null && playerData.GetCurrentClassStats() is m_pStats)
                         {
                             playerSteamID = steamID;
@@ -775,7 +752,7 @@ class NecroMinionData
         }
         else
         {   
-            // Just in case, try to remove any that might exist.
+            // Just in case, try to remove any that might exist
             for(int i = m_hMinions.length() - 1; i >= 0; i--)
             {
                 CBaseEntity@ pExistingMinion = m_hMinions[i].hMinion.GetEntity();
@@ -785,7 +762,7 @@ class NecroMinionData
                 }
             }
             
-            // Clear the array and reset pool.
+            // Clear the array and reset pool
             m_hMinions.resize(0);
             m_iReservePool = 0;
             m_flAbilityCharge = 1.0f;
@@ -840,7 +817,7 @@ class NecroMinionData
         pMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
         pMinion.pev.rendermode = kRenderNormal; // Render mode.
         pMinion.pev.renderamt = 1; // Shell thickness.
-        pMinion.pev.rendercolor = Vector(255, 195, 205); // Peach.
+        pMinion.pev.rendercolor = Vector(100, 250, 150); // Lime.
     }
     
     void PruneMinions()
@@ -856,8 +833,8 @@ class NecroMinionData
             }
 
             int minionType = m_hMinions[i].type;
-            if(minionType >= 0 && uint(minionType) < NECRO_COSTS.length())
-                newReservePool += NECRO_COSTS[minionType];
+            if(minionType >= 0 && uint(minionType) < XEN_COSTS.length())
+                newReservePool += XEN_COSTS[minionType];
         }
 
         m_iReservePool = newReservePool;
@@ -929,7 +906,7 @@ class NecroMinionData
 
         if(m_hMinions.length() == 0)
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Zombies to teleport!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "No Creatures to teleport!\n");
             return;
         }
 
@@ -951,33 +928,33 @@ class NecroMinionData
             }
         }
 
-        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strNecroMinionSoundCreate, 1.0f, ATTN_NORM);
-        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Zombies teleported!\n");
+        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
+        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Creatures teleported!\n");
     }
 }
 
-class NecroMinionMenu 
+class XenMinionMenu 
 {
     private CTextMenu@ m_pMenu;
-    private NecroMinionData@ m_pOwner;
+    private XenMinionData@ m_pOwner;
     
-    NecroMinionMenu(NecroMinionData@ owner) 
+    XenMinionMenu(XenMinionData@ owner) 
     {
         @m_pOwner = owner;
     }
     
-    void ShowNecroMinionMenu(CBasePlayer@ pPlayer) 
+    void ShowXenMinionMenu(CBasePlayer@ pPlayer) 
     {
         if(pPlayer is null) return;
         
         @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
-        m_pMenu.SetTitle("[Zombies Control Menu]\n");
+        m_pMenu.SetTitle("[Xen Creatures Control Menu]\n");
         
-        for(uint i = 0; i < NECRO_NAMES.length(); i++) 
+        for(uint i = 0; i < XEN_NAMES.length(); i++) 
         {
             string menuText = "";
-            menuText += "Summon " + NECRO_NAMES[i] + " (Cost: " + NECRO_COSTS[i] + ")";
-            
+            menuText += "Summon " + XEN_NAMES[i] + " (Cost: " + XEN_COSTS[i] + ")";
+
             m_pMenu.AddItem(menuText + "\n", any(i));
         }
         
@@ -1008,8 +985,8 @@ class NecroMinionMenu
                 // Teleport existing minions.
                 m_pOwner.TeleportMinions(pPlayer);
             }
-            else if(choice >= 0 && uint(choice) < NECRO_NAMES.length())
-            {
+            else if(choice >= 0 && uint(choice) < XEN_NAMES.length())
+            {  
                 // Spawn new minion.
                 m_pOwner.SpawnSpecificMinion(pPlayer, choice);
             }
@@ -1017,7 +994,7 @@ class NecroMinionMenu
     }
 }
 
-void CheckNecromancerMinions()
+void CheckXenologistMinions()
 {   
     // Iterate directly through all player slots instead of using g_PlayerRPGData.getKeys()
     for (int i = 1; i <= g_Engine.maxClients; i++)
@@ -1034,21 +1011,21 @@ void CheckNecromancerMinions()
             continue;
             
         // Initialize MinionData if it doesn't exist.
-        if(!g_NecromancerMinions.exists(steamID))
+        if(!g_XenologistMinions.exists(steamID))
         {
-            NecroMinionData data;
-            @g_NecromancerMinions[steamID] = data;
+            XenMinionData data;
+            @g_XenologistMinions[steamID] = data;
         }
 
-        NecroMinionData@ NecroMinion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
-        if(NecroMinion !is null)
+        XenMinionData@ xenMinion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+        if(xenMinion !is null)
         {
             // Reset stale minions once on map load or plugin reload.
-            if(!NecroMinion.IsInitialized())
+            if(!xenMinion.IsInitialized())
             {
-                //g_Game.AlertMessage(at_console, "CARPG: Resetting Necromancer minions for player " + steamID + " on map load\n");
-                NecroMinion.Reset();
-                NecroMinion.SetInitialized();
+                //g_Game.AlertMessage(at_console, "CARPG: Resetting Xenomancer minions for player " + steamID + " on map load\n");
+                xenMinion.Reset();
+                xenMinion.SetInitialized();
             }
             
             // Check if player switched class.
@@ -1057,40 +1034,41 @@ void CheckNecromancerMinions()
                 PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
                 if(data !is null)
                 {
-                    if(data.GetCurrentClass() != PlayerClass::CLASS_NECROMANCER)
+                    if(data.GetCurrentClass() != PlayerClass::CLASS_XENOMANCER)
                     {
                         // Player is no longer this class, destroy active minions.
-                        if(NecroMinion.GetMinionCount() > 0 || NecroMinion.GetReservePool() > 0)
+                        if(xenMinion.GetMinionCount() > 0 || xenMinion.GetReservePool() > 0)
                         {
-                            NecroMinion.DestroyAllMinions(pPlayer);
+                            xenMinion.DestroyAllMinions(pPlayer);
                             continue;  // Skip rest of updates.
                         }
                     }
-                    else if(!NecroMinion.HasStats())
+                    else if(!xenMinion.HasStats())
                     {
                         // Update stats.
-                        NecroMinion.Initialize(data.GetCurrentClassStats());
+                        xenMinion.Initialize(data.GetCurrentClassStats());
                     }
                 }
             }
             
-                // Make sure resource limits are enforced
-                NecroMinion.PruneMinions();
-                int necroMax = NecroMinion.GetAbilityMax();
-                if(necroMax > 0 && NecroMinion.GetReservePool() > necroMax)
+                // Make sure resource limits are enforced.
+                xenMinion.PruneMinions();
+                int xenMax = xenMinion.GetAbilityMax();
+                if(xenMax > 0 && xenMinion.GetReservePool() > xenMax)
                 {
                     // Over the limit, destroy minions until we're within limits.
-                    NecroMinion.DestroyAllMinions(pPlayer);
-                }            NecroMinion.MinionRegen(); // Minion Regeneration.
-            NecroMinion.RechargeAbility(); // Recharge minion points.
+                    xenMinion.DestroyAllMinions(pPlayer);
+                }
+
+            xenMinion.MinionRegen(); // Minion Regeneration.
+            xenMinion.RechargeAbility(); // Recharge minion points.
 
             // Always update scaling values for stats menu.
-            NecroMinion.GetScaledHealth();
-            NecroMinion.GetScaledDamage();
+            xenMinion.GetScaledHealth();
+            xenMinion.GetScaledDamage();
 
-            // Always run Update for proper minion tracking
-            NecroMinion.NecroUpdate(pPlayer);
-            NecroMinion.RatTimerTick();
+            // Always run XenUpdate for proper minion tracking
+            xenMinion.XenUpdate(pPlayer);
         }
     }
 }

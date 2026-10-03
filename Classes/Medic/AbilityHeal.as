@@ -219,7 +219,10 @@ class HealingAura
 
     void ActivateHeal(CBasePlayer@ pPlayer)
     {
-        if (pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+        if (pPlayer is null || !pPlayer.IsConnected())
+            return;
+
+        if (!pPlayer.IsAlive() && m_flCurrentReviveCooldown > 0.0f)
             return;
 
         float currentTime = g_Engine.time;

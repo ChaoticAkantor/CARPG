@@ -34,7 +34,7 @@ class SentryData
     // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flAbilityMax = 100.0f; // Base max duration.
+    private float m_flAbilityMax = 120.0f; // Base max duration.
     private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
     private float m_flBaseHealth = 10000.0; // Base health of the sentry. Must be very high for it to be able to survive most encounters. Is now fixed and no longer scales.
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.

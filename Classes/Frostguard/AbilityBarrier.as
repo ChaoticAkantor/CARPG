@@ -3,9 +3,11 @@ string strBarrierHitSound = "debris/glass1.wav";
 string strBarrierBreakSound = "debris/bustglass2.wav";
 string strBarrierActiveSound = "ambience/alien_powernode.wav";
 string strBarrierReflectSprite = "sprites/blueflare2.spr";
+string strBarrierLinkSprite = "sprites/zbeam6.spr";
 
 const Vector BARRIER_COLOR = Vector(130, 200, 255); // R G B.
-const float BARRIER_PROTECTION_RANGE = 2400.0f; // Range in units for the barrier protection to work.
+const float BARRIER_PROTECTION_RANGE = 50 * 16.0f; // Range in units for the barrier protection to work.
+const float BARRIER_LINK_RANGE = 50.0f * 16.0f; // Range in units for the barrier to play link effects.
 
 dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
 
@@ -18,6 +20,9 @@ class BarrierData
     private float m_flBarrierDurabilityMultiplier = 1.0f; // Shield damage reduction multiplier, used to make shield tougher or weaker overall.
     private float m_flBarrierDeactivateCost = 0.30f; // Energy cost percentage when manually deactivating barrier.
     private float m_flToggleCooldown = 0.5f; // Cooldown between toggles.
+
+    // Link skill.
+    private float m_flLinkedDamageReductionMax = 0.75f; // Maximum reduction to shield charge damage from linked players.
     
 
     // Timers.
@@ -25,6 +30,8 @@ class BarrierData
     private float m_flLastDrainTime = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flGlowUpdateInterval = 0.1f;
+    private array<int> m_LinkedPlayerIndexes;
+    private array<string> m_LinkedPlayerAuthIDs;
 
     private ClassStats@ m_pStats = null;
 
@@ -98,6 +105,30 @@ class BarrierData
 
     float GetAbilityRechargeRate() { return GetScaledShieldMaxHP() / m_flAbilityRechargeTime * GetScaledAbilityRecharge(); } // Shield HP recharged per second.
     float GetActiveRechargeRate() { return GetScaledActiveRecharge(); } // Get active recharge rate.
+    int GetLinkedPlayerCount() { return int(m_LinkedPlayerIndexes.length()); }
+    float GetLinkedDamageReduction()
+    {
+        if(m_pStats is null)
+            return 0.0f;
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_TEAMLINK);
+        return Math.min(float(skillLevel) * SKILL_FROSTGUARD_TEAMLINK * float(GetLinkedPlayerCount()), m_flLinkedDamageReductionMax);
+    }
+
+    bool IsLinkedPlayer(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null)
+            return false;
+
+        string playerAuthID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        for(uint i = 0; i < m_LinkedPlayerIndexes.length(); ++i)
+        {
+            if(m_LinkedPlayerIndexes[i] == pPlayer.entindex() && m_LinkedPlayerAuthIDs[i] == playerAuthID)
+                return true;
+        }
+
+        return false;
+    }
 
     void RechargeAbility()
     {
@@ -112,10 +143,13 @@ class BarrierData
             m_flAbilityCharge = scaledMax;
     }
 
-    void HandleBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker, float incomingDamage, float& out modifiedDamage)
+    void HandleBarrier(CBasePlayer@ pPlayer, CBaseEntity@ attacker, float incomingDamage, float& out modifiedDamage, CBasePlayer@ pProtectedPlayer = null, float flChargeDamageReduction = 0.0f)
     {
-        if(pPlayer is null || attacker is null)
+        if(pPlayer is null || incomingDamage <= 0.0f)
             return;
+
+        if(pProtectedPlayer is null)
+            @pProtectedPlayer = pPlayer;
             
         // Calculate damage reduction.
         float reduction = GetDamageReduction();
@@ -133,7 +167,7 @@ class BarrierData
         }
         
         // Only apply damage reflection if it's not self and the attacker is a valid monster.
-        if(!skipReflection)
+        if(!skipReflection && attacker !is null)
         {
             CBaseMonster@ pMonster = cast<CBaseMonster@>(attacker);
             if(pMonster !is null)
@@ -147,41 +181,43 @@ class BarrierData
                 {
                     // Apply damage reflection as a specific damage type and proc the debuff.
                     float reflectDamage = incomingDamage * GetScaledDamageReflection();
-                    attacker.TakeDamage(pPlayer.pev, attacker.pev, reflectDamage, DMG_FREEZE | DMG_NEVERGIB); // Inflictor is player (shield), attacker is monster itself.
+                    if(reflectDamage > 0.0f)
+                        attacker.TakeDamage(pPlayer.pev, attacker.pev, reflectDamage, DMG_FREEZE | DMG_NEVERGIB); // Inflictor is player (shield), attacker is monster itself.
                 }
             }
         }
 
         // Play barrier damage chunks effect on player.
-        EffectBarrierDamage(pPlayer.pev.origin, pPlayer);
+        EffectBarrierDamage(pProtectedPlayer.pev.origin, pProtectedPlayer);
         
         // Drain barrier health (energy).
-        DrainEnergy(pPlayer, blockedDamage);
+        float shieldDamage = blockedDamage * (1.0f - Math.min(Math.max(flChargeDamageReduction, 0.0f), 1.0f));
+        DrainEnergy(pPlayer, shieldDamage);
 
         // Absorb a portion of the damage as health.
-        if(pPlayer.pev.health < pPlayer.pev.max_health) // Only absorb if not at full health.
+        if(pProtectedPlayer.pev.health < pProtectedPlayer.pev.max_health) // Only absorb if not at full health.
         {
             float healthAbsorb = incomingDamage * GetScaledHealthAbsorb();
-            pPlayer.pev.health += healthAbsorb; // Add the modified absorbed damage to health.
+            pProtectedPlayer.pev.health += healthAbsorb; // Add the modified absorbed damage to health.
 
-            Vector pos = pPlayer.pev.origin;
+            Vector pos = pProtectedPlayer.pev.origin;
             Vector mins = pos - Vector(16, 16, 0);
             Vector maxs = pos + Vector(16, 16, 64);
 
             // Heal Bubbles Effect.
-            NetworkMessage absorbmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
-                absorbmsg.WriteByte(TE_BUBBLES);
-                absorbmsg.WriteCoord(mins.x);
-                absorbmsg.WriteCoord(mins.y);
-                absorbmsg.WriteCoord(mins.z);
-                absorbmsg.WriteCoord(maxs.x);
-                absorbmsg.WriteCoord(maxs.y);
-                absorbmsg.WriteCoord(maxs.z);
-                absorbmsg.WriteCoord(80.0f); // Height of the bubble effect.
-                absorbmsg.WriteShort(GetModelIndex(strHealAuraEffectSprite)); // Borrow sprite from heal aura.
-                absorbmsg.WriteByte(12); // Count.
-                absorbmsg.WriteCoord(6.0f); // Speed.
-                absorbmsg.End();
+            NetworkMessage absorbmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos); // Send to clients in the effect origin's PVS.
+                absorbmsg.WriteByte(TE_BUBBLES); // Spawn bubbles in a bounding box.
+                absorbmsg.WriteCoord(mins.x); // Bounding-box minimum X.
+                absorbmsg.WriteCoord(mins.y); // Bounding-box minimum Y.
+                absorbmsg.WriteCoord(mins.z); // Bounding-box minimum Z.
+                absorbmsg.WriteCoord(maxs.x); // Bounding-box maximum X.
+                absorbmsg.WriteCoord(maxs.y); // Bounding-box maximum Y.
+                absorbmsg.WriteCoord(maxs.z); // Bounding-box maximum Z.
+                absorbmsg.WriteCoord(80.0f); // Bubble column height.
+                absorbmsg.WriteShort(GetModelIndex(strHealAuraEffectSprite)); // Bubble sprite model index.
+                absorbmsg.WriteByte(12); // Number of bubbles.
+                absorbmsg.WriteCoord(6.0f); // Bubble rise speed.
+                absorbmsg.End(); // Finish the bubble temp-entity message.
         }
     }
 
@@ -253,7 +289,11 @@ class BarrierData
         }
 
         if(!m_bActive || pPlayer is null)
+        {
+            m_LinkedPlayerIndexes.resize(0);
+            m_LinkedPlayerAuthIDs.resize(0);
             return;
+        }
 
         ToggleGlow(pPlayer); // Handle glow state.
 
@@ -261,7 +301,66 @@ class BarrierData
         {
             DeactivateBarrier(pPlayer);
             ToggleGlow(pPlayer);
+            m_LinkedPlayerIndexes.resize(0);
+            m_LinkedPlayerAuthIDs.resize(0);
             return;
+        }
+
+        UpdateLinkedPlayers(pPlayer);
+        DrawLinkedPlayerBeams(pPlayer);
+    }
+
+    private void UpdateLinkedPlayers(CBasePlayer@ pOwner)
+    {
+        m_LinkedPlayerIndexes.resize(0);
+        m_LinkedPlayerAuthIDs.resize(0);
+        if(m_pStats is null || m_pStats.GetSkillLevel(SkillID::SKILL_FROSTGUARD_TEAMLINK) <= 0)
+            return;
+
+        for(int i = 1; i <= g_Engine.maxClients; ++i)
+        {
+            if(i == pOwner.entindex())
+                continue;
+
+            CBasePlayer@ pCandidate = g_PlayerFuncs.FindPlayerByIndex(i);
+            if(pCandidate is null || !pCandidate.IsConnected() || !pCandidate.IsAlive())
+                continue;
+
+            if((pCandidate.pev.origin - pOwner.pev.origin).Length() > BARRIER_LINK_RANGE)
+                continue;
+
+            m_LinkedPlayerIndexes.insertLast(i);
+            m_LinkedPlayerAuthIDs.insertLast(g_EngineFuncs.GetPlayerAuthId(pCandidate.edict()));
+        }
+    }
+
+    private void DrawLinkedPlayerBeams(CBasePlayer@ pOwner)
+    {
+        for(uint i = 0; i < m_LinkedPlayerIndexes.length(); ++i)
+        {
+            CBasePlayer@ pLinkedPlayer = g_PlayerFuncs.FindPlayerByIndex(m_LinkedPlayerIndexes[i]);
+            if(pLinkedPlayer is null || !pLinkedPlayer.IsConnected() || !pLinkedPlayer.IsAlive() || g_EngineFuncs.GetPlayerAuthId(pLinkedPlayer.edict()) != m_LinkedPlayerAuthIDs[i])
+                continue;
+
+            Vector end = pLinkedPlayer.pev.origin + (pLinkedPlayer.pev.mins + pLinkedPlayer.pev.maxs) * 0.5f;
+            NetworkMessage beamMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pOwner.pev.origin); // Send to clients in the beam start's PVS.
+                beamMsg.WriteByte(TE_BEAMENTPOINT); // Draw a beam from an entity to a fixed point.
+                beamMsg.WriteShort(pOwner.entindex()); // Entity attached to the beam start.
+                beamMsg.WriteCoord(end.x); // Beam endpoint X (linked player's midpoint).
+                beamMsg.WriteCoord(end.y); // Beam endpoint Y.
+                beamMsg.WriteCoord(end.z); // Beam endpoint Z.
+                beamMsg.WriteShort(GetModelIndex(strBarrierLinkSprite)); // Beam sprite model index.
+                beamMsg.WriteByte(0); // Starting frame.
+                beamMsg.WriteByte(0); // Frame rate.
+                beamMsg.WriteByte(2); // Beam lifetime in tenths of a second.
+                beamMsg.WriteByte(12); // Beam width.
+                beamMsg.WriteByte(0); // Beam noise amplitude.
+                beamMsg.WriteByte(uint8(BARRIER_COLOR.x)); // Beam red component.
+                beamMsg.WriteByte(uint8(BARRIER_COLOR.y)); // Beam green component.
+                beamMsg.WriteByte(uint8(BARRIER_COLOR.z)); // Beam blue component.
+                beamMsg.WriteByte(200); // Beam brightness.
+                beamMsg.WriteByte(0); // Texture scroll speed.
+                beamMsg.End(); // Finish the beam temp-entity message.
         }
     }
     
@@ -322,23 +421,23 @@ class BarrierData
     private void EffectBarrierShatter(Vector origin)
     {
         // Add effect to shatter barrier.
-        NetworkMessage breakMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-            breakMsg.WriteByte(TE_BREAKMODEL);
-            breakMsg.WriteCoord(origin.x);
-            breakMsg.WriteCoord(origin.y);
-            breakMsg.WriteCoord(origin.z);
-            breakMsg.WriteCoord(5); // Size.
-            breakMsg.WriteCoord(5); // Size.
-            breakMsg.WriteCoord(5); // Size.
-            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
-            breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
-            breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
-            breakMsg.WriteByte(25); // Gib random speed and direction.
-            breakMsg.WriteShort(GetModelIndex(strRobogruntModelChromegibs));
-            breakMsg.WriteByte(15); // Count.
-            breakMsg.WriteByte(10); // Lifetime.
-            breakMsg.WriteByte(1); // Sound Flags.
-            breakMsg.End();
+        NetworkMessage breakMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin); // Send to clients near the shatter origin.
+            breakMsg.WriteByte(TE_BREAKMODEL); // Break model into flying pieces.
+            breakMsg.WriteCoord(origin.x); // Break origin X.
+            breakMsg.WriteCoord(origin.y); // Break origin Y.
+            breakMsg.WriteCoord(origin.z); // Break origin Z.
+            breakMsg.WriteCoord(5); // Piece bounding-box size X.
+            breakMsg.WriteCoord(5); // Piece bounding-box size Y.
+            breakMsg.WriteCoord(5); // Piece bounding-box size Z.
+            breakMsg.WriteCoord(0); // Base piece velocity X.
+            breakMsg.WriteCoord(0); // Base piece velocity Y.
+            breakMsg.WriteCoord(5); // Base piece velocity Z.
+            breakMsg.WriteByte(25); // Random velocity added to pieces.
+            breakMsg.WriteShort(GetModelIndex(strRobogruntModelChromegibs)); // Piece model index.
+            breakMsg.WriteByte(15); // Number of pieces.
+            breakMsg.WriteByte(10); // Piece lifetime in tenths of a second.
+            breakMsg.WriteByte(1); // Break sound/render flags.
+            breakMsg.End(); // Finish the shatter temp-entity message.
     }
 
     void EffectBarrierDamage(Vector origin, CBaseEntity@ entity)
@@ -347,23 +446,23 @@ class BarrierData
             return;
 
         // Add effect to chip off chunks as barrier takes damage.
-        NetworkMessage breakMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-            breakMsg.WriteByte(TE_BREAKMODEL);
-            breakMsg.WriteCoord(origin.x);
-            breakMsg.WriteCoord(origin.y);
-            breakMsg.WriteCoord(origin.z);
-            breakMsg.WriteCoord(3); // Size.
-            breakMsg.WriteCoord(3); // Size.
-            breakMsg.WriteCoord(3); // Size.
-            breakMsg.WriteCoord(0); // Gib vel pos Forward/Back.
-            breakMsg.WriteCoord(0); // Gib vel pos Left/Right.
-            breakMsg.WriteCoord(5); // Gib vel pos Up/Down.
-            breakMsg.WriteByte(20); // Gib random speed and direction.
-            breakMsg.WriteShort(GetModelIndex(strRobogruntModelChromegibs));
-            breakMsg.WriteByte(2); // Count.
-            breakMsg.WriteByte(10); // Lifetime.
-            breakMsg.WriteByte(1); // Sound Flags.
-            breakMsg.End();
+        NetworkMessage breakMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin); // Send to clients near the impact origin.
+            breakMsg.WriteByte(TE_BREAKMODEL); // Break model into flying pieces.
+            breakMsg.WriteCoord(origin.x); // Break origin X.
+            breakMsg.WriteCoord(origin.y); // Break origin Y.
+            breakMsg.WriteCoord(origin.z); // Break origin Z.
+            breakMsg.WriteCoord(3); // Piece bounding-box size X.
+            breakMsg.WriteCoord(3); // Piece bounding-box size Y.
+            breakMsg.WriteCoord(3); // Piece bounding-box size Z.
+            breakMsg.WriteCoord(0); // Base piece velocity X.
+            breakMsg.WriteCoord(0); // Base piece velocity Y.
+            breakMsg.WriteCoord(5); // Base piece velocity Z.
+            breakMsg.WriteByte(20); // Random velocity added to pieces.
+            breakMsg.WriteShort(GetModelIndex(strRobogruntModelChromegibs)); // Piece model index.
+            breakMsg.WriteByte(2); // Number of pieces.
+            breakMsg.WriteByte(10); // Piece lifetime in tenths of a second.
+            breakMsg.WriteByte(1); // Break sound/render flags.
+            breakMsg.End(); // Finish the impact temp-entity message.
 
         // Play hit sound with random pitch.
         int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
@@ -378,36 +477,36 @@ class BarrierData
             return;
 
         // Also add dynamic light effect to entity.
-        NetworkMessage glowreflectMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-            glowreflectMsg.WriteByte(TE_DLIGHT);
-            glowreflectMsg.WriteCoord(origin.x);
-            glowreflectMsg.WriteCoord(origin.y);
-            glowreflectMsg.WriteCoord(origin.z);
-            glowreflectMsg.WriteByte(16); // Radius in 0.1 units.
-            glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.x)); // Red.
-            glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.y)); // Green.
-            glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.z)); // Blue.
-            glowreflectMsg.WriteByte(2); // Life in 0.1s.
-            glowreflectMsg.WriteByte(2); // Fade speed.
-            glowreflectMsg.End();
+        NetworkMessage glowreflectMsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin); // Send to clients near the reflection origin.
+            glowreflectMsg.WriteByte(TE_DLIGHT); // Create a dynamic light.
+            glowreflectMsg.WriteCoord(origin.x); // Light origin X.
+            glowreflectMsg.WriteCoord(origin.y); // Light origin Y.
+            glowreflectMsg.WriteCoord(origin.z); // Light origin Z.
+            glowreflectMsg.WriteByte(16); // Light radius parameter, scaled by 10 in the engine.
+            glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.x)); // Light red component.
+            glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.y)); // Light green component.
+            glowreflectMsg.WriteByte(uint8(BARRIER_COLOR.z)); // Light blue component.
+            glowreflectMsg.WriteByte(2); // Light lifetime in tenths of a second.
+            glowreflectMsg.WriteByte(2); // Light radius decay rate.
+            glowreflectMsg.End(); // Finish the dynamic-light temp-entity message.
 
         Vector centerPos = target.pev.origin + (target.pev.mins + target.pev.maxs) * 0.5f;
 
         // Create sprite trail effect for snow/ice particles.
-        NetworkMessage snowmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
-            snowmsg.WriteByte(TE_SPRITETRAIL);
-            snowmsg.WriteCoord(centerPos.x);
-            snowmsg.WriteCoord(centerPos.y);
-            snowmsg.WriteCoord(centerPos.z);
-            snowmsg.WriteCoord(centerPos.x);
-            snowmsg.WriteCoord(centerPos.y);
-            snowmsg.WriteCoord(centerPos.z);
-            snowmsg.WriteShort(GetModelIndex(strBarrierReflectSprite));
-            snowmsg.WriteByte(3);   // Count.
-            snowmsg.WriteByte(1);   // Life in 0.1's.
-            snowmsg.WriteByte(2);   // Scale in 0.1's.
-            snowmsg.WriteByte(25);  // Velocity along vector in 10's.
-            snowmsg.WriteByte(15);  // Random velocity in 10's.
-            snowmsg.End();
+        NetworkMessage snowmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin); // Send to clients near the reflection origin.
+            snowmsg.WriteByte(TE_SPRITETRAIL); // Emit a trail of sprites.
+            snowmsg.WriteCoord(centerPos.x); // Trail start X.
+            snowmsg.WriteCoord(centerPos.y); // Trail start Y.
+            snowmsg.WriteCoord(centerPos.z); // Trail start Z.
+            snowmsg.WriteCoord(centerPos.x); // Trail end X.
+            snowmsg.WriteCoord(centerPos.y); // Trail end Y.
+            snowmsg.WriteCoord(centerPos.z); // Trail end Z.
+            snowmsg.WriteShort(GetModelIndex(strBarrierReflectSprite)); // Trail sprite model index.
+            snowmsg.WriteByte(3); // Number of sprites.
+            snowmsg.WriteByte(1); // Sprite lifetime in tenths of a second.
+            snowmsg.WriteByte(2); // Sprite scale in tenths of a unit.
+            snowmsg.WriteByte(25); // Forward velocity in tens of units.
+            snowmsg.WriteByte(15); // Random velocity in tens of units.
+            snowmsg.End(); // Finish the sprite-trail temp-entity message.
     }
 }

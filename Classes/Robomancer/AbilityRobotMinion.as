@@ -45,8 +45,8 @@ enum MinionType // Minion gun type. Not all are supported.
 
 const array<float> ROBO_HP_MODIFIERS =
 {
-    0.25,  // Shotgun.
-    0.50,  // MP5.
+    0.30,  // Shotgun.
+    0.60,  // MP5.
     1.00   // M16.
 };
 
@@ -57,6 +57,13 @@ const array<float> ROBO_DMG_MODIFIERS =
     1.00   // M16.
 };
 
+const array<int> MINION_COSTS = 
+{
+    1,  // Shotgun.
+    2,  // MP5.
+    4   // M16.
+};
+
 const array<Vector> ROBO_GLOW_COLORS =
 {
     Vector(125, 75 , 255),   // Shotgun Orchid.
@@ -64,18 +71,20 @@ const array<Vector> ROBO_GLOW_COLORS =
     Vector(125, 0, 255)    // M16 Purple.
 };
 
+// Per-type collision bounds relative to each minion's origin; adjust these for testing.
+// Multiplier for each native minion hull; 0.0 preserves the current zero-sized hull.
+const array<float> ROBO_MINION_BOUNDS_MODIFIERS =
+{
+    0.5f, // Shotgun.
+    0.5f, // MP5.
+    0.5f  // M16.
+};
+
 const array<string> MINION_NAMES = 
 {
     "Robogrunt: SPAS-12 + Frags",
     "Robogrunt: MP5 + Frags",
     "Robogrunt: M16A1/M203"
-};
-
-const array<int> MINION_COSTS = 
-{
-    1,  // Shotgun.
-    2,  // MP5.
-    4   // M16.
 };
 
 // Structure to track minion type.
@@ -97,7 +106,7 @@ class MinionData
     // Monster variables.
     private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
     private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
-    private float m_flBaseHealth = 180.0; // Base health of Robogrunts.
+    private float m_flBaseHealth = 200.0; // Base health of Robogrunts.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
 
@@ -218,6 +227,18 @@ class MinionData
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
         return modifier * ROBO_DMG_MODIFIERS[minionType];
+    }
+
+    void SetMinionBounds(CBaseMonster@ pMonster, int minionType)
+    {
+        if(pMonster is null || minionType < 0 || uint(minionType) >= ROBO_MINION_BOUNDS_MODIFIERS.length())
+            return;
+
+        float boundsScale = 0.5f * ROBO_MINION_BOUNDS_MODIFIERS[minionType];
+        Vector scaledMins = pMonster.pev.mins * boundsScale;
+        Vector scaledMaxs = pMonster.pev.maxs * boundsScale;
+
+        g_EntityFuncs.SetSize(pMonster.pev, scaledMins, scaledMaxs);
     }
 
     float GetMinionRegen() // Get minion regen based on skill level.
@@ -360,13 +381,7 @@ class MinionData
 
             g_EntityFuncs.DispatchSpawn(pRoboMinion.edict()); // Dispatch the entity.
 
-
-            //Some strange behaviour with bounding boxes for monster_robogrunt, 
-            //so instead just reduce bounding boxes to acceptable limit, so shots can still connect. :(
-            Vector reducedMins = pMonster.pev.mins * 0.5f;
-            Vector reducedMaxs = pMonster.pev.maxs * 0.5f;
-
-            g_EntityFuncs.SetSize(pMonster.pev, reducedMins, reducedMaxs);
+            SetMinionBounds(pMonster, minionType);
             g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
 
             // Set its bounding box to zero.

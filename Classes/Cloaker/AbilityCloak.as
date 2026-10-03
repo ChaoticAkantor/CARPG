@@ -15,10 +15,13 @@ class CloakData
     private float m_flAbilityMax = 100.0f; // Base max duration.
     private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
     private float m_flCloakBaseDrainRate = 1.0f; // Base drain rate.
-    private float m_flBaseCloakCostPerShot = 10.0f; // Base duration drained per damage instance, drain scales with amount of damage dealt.
-    private float m_flCloakCostCap = 50.0f; // Max duration drained per damage instance. Will never drain more than this value.
+    private float m_flBaseCloakCostMinimum = 5.0f; // Minimum charge drained per damage instance, drain scales with amount of damage dealt. Will always drain this value by default.
+    private float m_flCloakCostCap = 33.3f; // Max charge drained per damage instance. Will never drain more than this value.
     private float m_flCloakDrainInterval = 0.1f; // Drain interval.
     private float m_flCloakToggleCooldown = 0.5f; // Cooldown between toggles.
+
+    // Damage Multiplier skill.
+    private float m_flCloakDamageMultiplier = 1.0f; // Default starting cloak damage multiplier.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
@@ -74,12 +77,9 @@ class CloakData
                 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
         float skillPower = SKILL_CLOAKER_CLOAKDAMAGE;
-        float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
+        float modifier = m_flCloakDamageMultiplier * (1.0f + skillLevel * skillPower); // Calculate modifier based on skill level.
 
-        float totalPossibleBonus = modifier; // Total possible bonus.
-        
-        float powerScale = Math.min(1.0f, m_flLastEnergyConsumed / GetAbilityMax()); // Scale bonus based on remaining charge.
-        return totalPossibleBonus * powerScale;
+        return modifier; // Total calculated damage output during cloak.
     }
 
     float GetScaledCloakDuration() // Calculate scaled cloak duration.
@@ -285,7 +285,7 @@ class CloakData
         m_flLastEnergyConsumed = m_flAbilityCharge;
         
         // Scale battery drain based on damage dealt.
-        float drainAmount = m_flBaseCloakCostPerShot;
+        float drainAmount = m_flBaseCloakCostMinimum;
         
         if(damage > 0.0f)
         {
