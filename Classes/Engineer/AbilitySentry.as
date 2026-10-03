@@ -34,7 +34,7 @@ class SentryData
     // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flAbilityMax = 120.0f; // Base max duration.
+    private float m_flAbilityMax = 150.0f; // Base max duration.
     private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
     private float m_flBaseHealth = 10000.0; // Base health of the sentry. Must be very high for it to be able to survive most encounters. Is now fixed and no longer scales.
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
@@ -140,6 +140,18 @@ class SentryData
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA);
         float skillPower = SKILL_ENGINEER_MINIHEALAURA;
         float modifier = skillPower * skillLevel;
+
+        return modifier;
+    }
+
+    float GetScaledAnimationSpeed()
+    {
+        if(m_pStats is null)
+            return 1.0f; // Return default if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_SENTRYSPEED);
+        float skillPower = SKILL_ENGINEER_SENTRYSPEED;
+        float modifier = 1.0f + (skillPower * skillLevel);
 
         return modifier;
     }
@@ -430,6 +442,8 @@ class SentryData
         if(pPlayer is null)
             return;
 
+        CBaseEntity@ pExistingSentry = m_hSentry.GetEntity();
+
         if(!m_bActive)
         {
             // Recharge whilst sentry is not deployed.
@@ -474,6 +488,15 @@ class SentryData
                 // Transfer frags to player.
                 pPlayer.pev.frags += pSentry.pev.frags;
                 pSentry.pev.frags = 0;
+            }
+
+            // Cast monster and check monster is not null.
+            CBaseMonster@ pMonster = cast<CBaseMonster@>(pExistingSentry);
+            if(pMonster !is null)
+            {
+                // Set some values after casting incase they override.
+                pMonster.pev.framerate = GetScaledAnimationSpeed(); // Animation speed modifier, make them far more useful.
+                pMonster.m_flFieldOfView = -1.0; // Max their field of view.
             }
         }
     }
