@@ -1,193 +1,310 @@
-/*
-This is our Debug Menu file, for easy debugging of plugin features and cheats.
-*/
+/* Admin debug menu with explicit player targeting. */
 namespace Menu
 {
+    dictionary g_DebugMenuInstances;
+
     final class DebugMenu
     {
-        private CTextMenu@ m_pMenu;
-        
-        void ShowDebugMenu(CBasePlayer@ pPlayer) 
+        private CTextMenu@ m_pMenuA;
+        private CTextMenu@ m_pMenuB;
+        private bool m_bNextIsA = true;
+        private int m_iTargetPlayerIndex = 0;
+        private string m_szTargetSteamID;
+
+        void ShowPlayerPicker(CBasePlayer@ pAdmin)
         {
-            if(pPlayer is null) return;
-            
-            @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
-            m_pMenu.SetTitle("Debug Menu\n");
-            
-            m_pMenu.AddItem("Add 1000 XP\n", any(0));
-            m_pMenu.AddItem("Set Max Level\n", any(1));
-            m_pMenu.AddItem("Set Max Rank\n", any(2));
-            m_pMenu.AddItem("Reset Level\n", any(3));
-            m_pMenu.AddItem("Reset Rank\n", any(4));
-            m_pMenu.AddItem("Fill Class Resource\n", any(5));
-            m_pMenu.AddItem("Toggle God Mode\n", any(6));
-            
-            m_pMenu.Register();
-            m_pMenu.Open(0, 0, pPlayer);
-        }
-        
-        private void MenuCallback(CTextMenu@ menu, CBasePlayer@ pPlayer, int page, const CTextMenuItem@ item) 
-        {
-            if(item !is null && pPlayer !is null) 
+            if(!IsAuthorizedAdmin(pAdmin))
+                return;
+
+            CTextMenu@ newMenu = CreatePlayerMenu();
+            newMenu.SetTitle("=== Debug: Select Player ===\n");
+            for(int i = 1; i <= g_Engine.maxClients; ++i)
             {
-                int choice;
-                item.m_pUserData.retrieve(choice);
-                string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+                CBasePlayer@ candidate = g_PlayerFuncs.FindPlayerByIndex(i);
+                if(candidate is null || !candidate.IsConnected())
+                    continue;
 
-                if(!IsAdmin(steamID))
-                    return;
+                string steamID = g_EngineFuncs.GetPlayerAuthId(candidate.edict());
+                if(steamID.IsEmpty())
+                    continue;
 
-                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null)
-                {
-                    ClassStats@ stats = data.GetClassStats(data.GetCurrentClass());
-                    
-                    if(choice == 0 && stats !is null)
+                newMenu.AddItem(string(candidate.pev.netname) + " (" + steamID + ")", any(i));
+            }
+
+            newMenu.Register();
+            newMenu.Open(0, 0, pAdmin);
+        }
+
+        private CTextMenu@ CreatePlayerMenu()
+        {
+            CTextMenu@ newMenu = CTextMenu(TextMenuPlayerSlotCallback(this.PlayerPickerCallback));
+            RetainMenu(newMenu);
+            return newMenu;
+        }
+
+        private CTextMenu@ CreateActionMenu()
+        {
+            CTextMenu@ newMenu = CTextMenu(TextMenuPlayerSlotCallback(this.ActionMenuCallback));
+            RetainMenu(newMenu);
+            return newMenu;
+        }
+
+        private void RetainMenu(CTextMenu@ menu)
+        {
+            if(m_bNextIsA)
+                @m_pMenuA = menu;
+            else
+                @m_pMenuB = menu;
+            m_bNextIsA = !m_bNextIsA;
+        }
+
+        private bool IsAuthorizedAdmin(CBasePlayer@ pAdmin)
+        {
+            return pAdmin !is null && pAdmin.IsConnected()
+                && IsAdmin(g_EngineFuncs.GetPlayerAuthId(pAdmin.edict()));
+        }
+
+        private void PlayerPickerCallback(CTextMenu@ menu, CBasePlayer@ pAdmin, int page, const CTextMenuItem@ item)
+        {
+            if(item is null || !IsAuthorizedAdmin(pAdmin))
+                return;
+
+            int targetIndex;
+            item.m_pUserData.retrieve(targetIndex);
+            CBasePlayer@ target = g_PlayerFuncs.FindPlayerByIndex(targetIndex);
+            if(target is null || !target.IsConnected())
+            {
+                g_PlayerFuncs.ClientPrint(pAdmin, HUD_PRINTTALK, "Debug: That player is no longer connected.\n");
+                ShowPlayerPicker(pAdmin);
+                return;
+            }
+
+            m_iTargetPlayerIndex = targetIndex;
+            m_szTargetSteamID = g_EngineFuncs.GetPlayerAuthId(target.edict());
+            ShowActions(pAdmin, target);
+        }
+
+        private void ShowActions(CBasePlayer@ pAdmin, CBasePlayer@ target)
+        {
+            if(!IsAuthorizedAdmin(pAdmin) || target is null || !target.IsConnected())
+                return;
+
+            CTextMenu@ newMenu = CreateActionMenu();
+            newMenu.SetTitle("=== Debug: " + string(target.pev.netname) + " ===\n");
+            newMenu.AddItem("Add 1000 XP", any(0));
+            newMenu.AddItem("Set Max Level", any(1));
+            newMenu.AddItem("Set Max Rank", any(2));
+            newMenu.AddItem("Reset Level", any(3));
+            newMenu.AddItem("Reset Rank", any(4));
+            newMenu.AddItem("Fill Class Resource", any(5));
+            newMenu.AddItem("Toggle God Mode", any(6));
+            newMenu.AddItem("Choose Another Player", any(7));
+            newMenu.Register();
+            newMenu.Open(0, 0, pAdmin);
+        }
+
+        private CBasePlayer@ ResolveTarget()
+        {
+            CBasePlayer@ target = g_PlayerFuncs.FindPlayerByIndex(m_iTargetPlayerIndex);
+            if(target is null || !target.IsConnected())
+                return null;
+            if(g_EngineFuncs.GetPlayerAuthId(target.edict()) != m_szTargetSteamID)
+                return null;
+            return target;
+        }
+
+        private void ActionMenuCallback(CTextMenu@ menu, CBasePlayer@ pAdmin, int page, const CTextMenuItem@ item)
+        {
+            if(item is null || !IsAuthorizedAdmin(pAdmin))
+                return;
+
+            int choice;
+            item.m_pUserData.retrieve(choice);
+            if(choice == 7)
+            {
+                ShowPlayerPicker(pAdmin);
+                return;
+            }
+
+            CBasePlayer@ target = ResolveTarget();
+            if(target is null)
+            {
+                g_PlayerFuncs.ClientPrint(pAdmin, HUD_PRINTTALK, "Debug: Target disconnected or slot was reused. Choose a player again.\n");
+                ShowPlayerPicker(pAdmin);
+                return;
+            }
+
+            ApplyAction(pAdmin, target, choice);
+            ShowPlayerPicker(pAdmin);
+        }
+
+        private void ApplyAction(CBasePlayer@ pAdmin, CBasePlayer@ target, int choice)
+        {
+            string targetSteamID = g_EngineFuncs.GetPlayerAuthId(target.edict());
+            PlayerData@ data = g_PlayerRPGData.exists(targetSteamID)
+                ? cast<PlayerData@>(g_PlayerRPGData[targetSteamID]) : null;
+            ClassStats@ stats = data is null ? null : data.GetClassStats(data.GetCurrentClass());
+            string result = "";
+
+            if(choice == 6)
+            {
+                target.pev.flags = target.pev.flags ^ FL_GODMODE;
+                result = "Godmode " + ((target.pev.flags & FL_GODMODE) != 0 ? "enabled" : "disabled");
+            }
+            else if(data is null)
+            {
+                result = "No RPG data is loaded for that player.";
+            }
+            else if(choice == 0 && stats !is null)
+            {
+                stats.AddXP(1000, target, data);
+                result = "Added 1000 XP.";
+            }
+            else if(choice == 1 && stats !is null)
+            {
+                stats.SetLevel(g_iMaxLevel);
+                data.CalculateStats(target);
+                data.SaveToFile();
+                result = "Set current class to maximum level.";
+            }
+            else if(choice == 2)
+            {
+                data.SetRebirthRank(g_iMaxRebirthRank);
+                data.CalculateStats(target);
+                data.SaveToFile();
+                result = "Set rank to maximum.";
+            }
+            else if(choice == 3 && stats !is null)
+            {
+                stats.SetLevel(1);
+                data.CalculateStats(target);
+                data.SaveToFile();
+                result = "Reset current class to level 1.";
+            }
+            else if(choice == 4)
+            {
+                data.SetRebirthRank(0);
+                data.CalculateStats(target);
+                data.SaveToFile();
+                result = "Reset rank to 0.";
+            }
+            else if(choice == 5)
+            {
+                FillClassResource(targetSteamID, data.GetCurrentClass());
+                result = "Filled class resource.";
+            }
+            else
+            {
+                result = "The selected action is unavailable for that player's class.";
+            }
+
+            g_PlayerFuncs.ClientPrint(pAdmin, HUD_PRINTTALK,
+                "Debug: " + result + " for " + string(target.pev.netname) + " (" + targetSteamID + ").\n");
+        }
+
+        private void FillClassResource(const string& in steamID, PlayerClass playerClass)
+        {
+            switch(playerClass)
+            {
+                case PlayerClass::CLASS_MEDIC:
+                    if(g_HealingAuras.exists(steamID))
                     {
-                        stats.AddXP(1000, pPlayer, data);
-                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Added 1000 XP to current class.\n");
+                        HealingAura@ aura = cast<HealingAura@>(g_HealingAuras[steamID]);
+                        if(aura !is null) aura.FillAbilityCharge();
                     }
-                    else if(choice == 1 && stats !is null)
+                    break;
+                case PlayerClass::CLASS_VAMPIRE:
+                    if(g_PlayerBloodlusts.exists(steamID))
                     {
-                        stats.SetLevel(g_iMaxLevel);
-                        data.CalculateStats(pPlayer);
-                        data.SaveToFile();
-                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Set current class to maximum level.\n");
+                        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                        if(bloodlust !is null) bloodlust.FillAbilityCharge();
                     }
-                    else if(choice == 2 && stats !is null)
+                    break;
+                case PlayerClass::CLASS_ROBOMANCER:
+                    if(g_PlayerMinions.exists(steamID))
                     {
-                        data.SetRebirthRank(g_iMaxRebirthRank); // Set rank to maximum.
-                        data.CalculateStats(pPlayer);
-                        data.SaveToFile();                        
-                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Rank has been set to maximum.\n");
+                        MinionData@ minion = cast<MinionData@>(g_PlayerMinions[steamID]);
+                        if(minion !is null) minion.FillAbilityCharge();
                     }
-                    else if(choice == 3 && stats !is null)
+                    break;
+                case PlayerClass::CLASS_XENOMANCER:
+                    if(g_XenologistMinions.exists(steamID))
                     {
-                        stats.SetLevel(1);
-                        data.CalculateStats(pPlayer);
-                        data.SaveToFile();
-                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Current class has been reset to level 1.\n");
+                        XenMinionData@ minion = cast<XenMinionData@>(g_XenologistMinions[steamID]);
+                        if(minion !is null) minion.FillAbilityCharge();
                     }
-                    else if(choice == 4 && stats !is null)
+                    break;
+                case PlayerClass::CLASS_NECROMANCER:
+                    if(g_NecromancerMinions.exists(steamID))
                     {
-                        data.SetRebirthRank(0); // Reset rank to 0.
-                        data.CalculateStats(pPlayer);
-                        data.SaveToFile();                        
-                            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Rank has been reset to 0.\n");
+                        NecroMinionData@ minion = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
+                        if(minion !is null) minion.FillAbilityCharge();
                     }
-                    else if(choice == 5)
+                    break;
+                case PlayerClass::CLASS_ENGINEER:
+                    if(g_PlayerSentries.exists(steamID))
                     {
-                        switch(data.GetCurrentClass())
-                        {
-                            case PlayerClass::CLASS_MEDIC:
-                            {
-                                if(g_HealingAuras.exists(steamID))
-                                {
-                                    HealingAura@ a = cast<HealingAura@>(g_HealingAuras[steamID]);
-                                    if(a !is null) a.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_VAMPIRE:
-                            {
-                                if(g_PlayerBloodlusts.exists(steamID))
-                                {
-                                    BloodlustData@ b = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
-                                    if(b !is null) b.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_ROBOMANCER:
-                            {
-                                if(g_PlayerMinions.exists(steamID))
-                                {
-                                    MinionData@ m = cast<MinionData@>(g_PlayerMinions[steamID]);
-                                    if(m !is null) m.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_XENOMANCER:
-                            {
-                                if(g_XenologistMinions.exists(steamID))
-                                {
-                                    XenMinionData@ m = cast<XenMinionData@>(g_XenologistMinions[steamID]);
-                                    if(m !is null) m.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_NECROMANCER:
-                            {
-                                if(g_NecromancerMinions.exists(steamID))
-                                {
-                                    NecroMinionData@ m = cast<NecroMinionData@>(g_NecromancerMinions[steamID]);
-                                    if(m !is null) m.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_ENGINEER:
-                            {
-                                if(g_PlayerSentries.exists(steamID))
-                                {
-                                    SentryData@ s = cast<SentryData@>(g_PlayerSentries[steamID]);
-                                    if(s !is null) s.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_FROSTGUARD:
-                            {
-                                if(g_PlayerBarriers.exists(steamID))
-                                {
-                                    BarrierData@ b = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                                    if(b !is null) b.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_SHOCKTROOPER:
-                            {
-                                if(g_ShockRifleData.exists(steamID))
-                                {
-                                    ShockRifleData@ s = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
-                                    if(s !is null) s.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_CLOAKER:
-                            {
-                                if(g_PlayerCloaks.exists(steamID))
-                                {
-                                    CloakData@ c = cast<CloakData@>(g_PlayerCloaks[steamID]);
-                                    if(c !is null) c.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_FIREBUG:
-                            {
-                                if(g_PlayerDragonsBreath.exists(steamID))
-                                {
-                                    DragonsBreathData@ d = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
-                                    if(d !is null) d.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                            case PlayerClass::CLASS_SWARMER:
-                            {
-                                if(g_PlayerSnarkNests.exists(steamID))
-                                {
-                                    SnarkNestData@ s = cast<SnarkNestData@>(g_PlayerSnarkNests[steamID]);
-                                    if(s !is null) s.FillAbilityCharge();
-                                }
-                                break;
-                            }
-                        }
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Class resource filled.\n");
+                        SentryData@ sentry = cast<SentryData@>(g_PlayerSentries[steamID]);
+                        if(sentry !is null) sentry.FillAbilityCharge();
                     }
-                    else if(choice == 6)
+                    break;
+                case PlayerClass::CLASS_FROSTGUARD:
+                    if(g_PlayerBarriers.exists(steamID))
                     {
-                        pPlayer.pev.flags = pPlayer.pev.flags ^ FL_GODMODE;
-                        g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Godmode " + ((pPlayer.pev.flags & FL_GODMODE) != 0 ? "enabled" : "disabled") + "\n");
+                        BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                        if(barrier !is null) barrier.FillAbilityCharge();
                     }
-                }
+                    break;
+                case PlayerClass::CLASS_SHOCKTROOPER:
+                    if(g_ShockRifleData.exists(steamID))
+                    {
+                        ShockRifleData@ shockRifle = cast<ShockRifleData@>(g_ShockRifleData[steamID]);
+                        if(shockRifle !is null) shockRifle.FillAbilityCharge();
+                    }
+                    break;
+                case PlayerClass::CLASS_CLOAKER:
+                    if(g_PlayerCloaks.exists(steamID))
+                    {
+                        CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+                        if(cloak !is null) cloak.FillAbilityCharge();
+                    }
+                    break;
+                case PlayerClass::CLASS_FIREBUG:
+                    if(g_PlayerDragonsBreath.exists(steamID))
+                    {
+                        DragonsBreathData@ dragonsBreath = cast<DragonsBreathData@>(g_PlayerDragonsBreath[steamID]);
+                        if(dragonsBreath !is null) dragonsBreath.FillAbilityCharge();
+                    }
+                    break;
+                case PlayerClass::CLASS_SWARMER:
+                    if(g_PlayerSnarkNests.exists(steamID))
+                    {
+                        SnarkNestData@ snarkNest = cast<SnarkNestData@>(g_PlayerSnarkNests[steamID]);
+                        if(snarkNest !is null) snarkNest.FillAbilityCharge();
+                    }
+                    break;
             }
         }
+    }
+
+    void ShowDebugMenu(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null)
+            return;
+
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(!IsAdmin(steamID))
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "Only admins can access the debug menu.\n");
+            return;
+        }
+
+        DebugMenu@ menu = cast<DebugMenu@>(g_DebugMenuInstances[steamID]);
+        if(menu is null)
+        {
+            @menu = DebugMenu();
+            @g_DebugMenuInstances[steamID] = @menu;
+        }
+        menu.ShowPlayerPicker(pPlayer);
     }
 }

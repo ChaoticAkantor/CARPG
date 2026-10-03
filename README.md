@@ -16,17 +16,23 @@
 # Chat commands
  - All commands should be typed without quotes!
 
-   - Type "Class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
+   - Type "/class" without quotes in chat to bring up the class menu in order to switch classes, can be done on the fly!
 
-   - Type "Skills" to display the skills menu, to view and purchase skills with skillpoints from leveling.
+   - Type "/skills" or "/skillmenu" or "/selectskills" to display the skills menu, to view and purchase skills with skillpoints from leveling.
 
    - Type "useability" to use your class ability. It's advised to bind this to a button. Help command will explain how.
 
-   - Type "Info" to display a window with brief information on current selected class.
+   - Type "/info" to display a window with brief information on current selected class.
 
-   - Type "Hints" or "/help" to display all commands and explain how to activate abilities.
+   - Type "/hints" or "/help" to display all commands and explain how to activate abilities.
 
-   - Type "scaling" or "difficulty" to show current player damage bonus based on number of players.
+   - Type "/scaling" or "/difficulty" to show current player damage bonus based on number of players.
+
+   - Type "/hud" or "/hudoptions" to show HUD customisation menu, to change locations or colours of HUD elements (CARPG HUD ELEMENTS ONLY).
+
+   - Type "/adminlist" to show Admin/Debug menu list to add or remove players to the list.
+
+   - Type "/debug" to show the Debug menu, used for testing.
 
 
 # Leveling
@@ -68,7 +74,7 @@
 # Difficulty
  - Player Weapon damage is automatically adjusted for low-player count to make solo play more viable.
 
-   - By default +50% damage at 1 player and will reduce per player that joins, giving 0 at 4 players by default.
+   - By default +50% damage bonus at 1 player and will reduce per player that joins, giving 0% bonus at 4 players by default.
 
    - Does not alter mp_pcbalancefactor server setting.
 

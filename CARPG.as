@@ -11,8 +11,6 @@ This is our core file.
 // Includes now all in one file.
 #include "Includes"
 
-Menu::DebugMenu g_DebugMenu;
-
 const float flSchedulerInterval = 0.1f;
 
 bool IsFriendlyDamage(CBaseEntity@ pAttacker, CBaseEntity@ pVictim)
@@ -1500,7 +1498,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(IsAdmin(steamID))
             {
-                g_DebugMenu.ShowDebugMenu(pPlayer);
+                Menu::ShowDebugMenu(pPlayer);
                 pParams.ShouldHide = true;
                 return HOOK_HANDLED;
             }
