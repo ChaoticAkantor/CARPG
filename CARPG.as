@@ -1259,7 +1259,7 @@ HookReturnCode ClientSay(SayParameters@ pParams)
         }
         
         // CLASS command (no arguments).
-        if(command == "class" && args.ArgC() == 1)
+        if(command == "/class" || command == "/classmenu" || command == "/selectclass" && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerRPGData.exists(steamID))
