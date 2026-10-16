@@ -74,9 +74,9 @@ class DragonsBreathData
     private float m_flAbilityMax = 100.0f; // Max activation charges.
     private float m_flAbilityCostPerActivation = 100.0f; // Amount of charge to use per activation (Filling rounds). Should match max for single activation only.
     private float m_flAbilityRechargeTime = 100.0f; // Seconds to fully recharge ability.
-    private float m_flDragonsBreathExplosionDamageBase = 0.10f; // Radius damage as a percentage of weapon damage.
-    private float m_flDragonsBreathFireDamageBase = 0.30f; // Fire damage per tick as a percentage of weapon damage.
-    private int m_iDragonsBreathFireTicks = 6; // Duration of fire damage DoT for Dragons Breath.
+    private float m_flDragonsBreathExplosionDamageBase = 0.10f; // Percentage of weapon damage as added Radius damage.
+    private float m_flDragonsBreathFireDamageBase = 0.20f; // Percentage of weapon damage as Fire damage per tick damage.
+    private int m_iDragonsBreathFireTicks = 4; // Duration of fire damage DoT for Dragons Breath.
     private float m_flDragonsBreathFireInterval = 1.00f; // Interval in seconds between DoT ticks.
     private float m_flDragonsBreathRadius = 25.0f * 16; // Radius of fire damage DoT for Dragons Breath.
 
