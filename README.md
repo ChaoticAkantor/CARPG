@@ -42,7 +42,7 @@
 
    - Each class has it's own max level and skills saved individually.
 
-   - Gain +1 Skillpoint per level by default. Can be spent on Basic or Ability skills (dependent on Class).
+   - Gain +1 Skillpoint per level by default. Can be spent on Basic or Class skills (dependent on Class).
 
    - Default Max Level is 60.
    
@@ -62,11 +62,11 @@
 # Skills
  - Skills can be purchased and increased with Skillpoints via a menu.
 
-   - There are two types of skills, Basic Skills and Ability Skills. 
+   - There are two types of skills, Basic Skills and Class Skills.
 
    - Basic Skills are available to every class, are passive and always enabled.
 
-   - Ability Skills only affect your Class Ability and are only available to the chosen class.
+   - Class Skills only affect your Class Ability and are only available to the chosen class.
 
    - Type "skills" to see skills menu and spend skillpoints.
 
@@ -86,7 +86,7 @@
 
 
 # Classes
-  - Classes have a unique ability that can be modified with Ability Skills, duration, charge time and activation/deactivation costs vary.
+  - Classes have a unique ability that can be modified with Class Skills, duration, charge time and activation/deactivation costs vary.
 
 
 # Medic
