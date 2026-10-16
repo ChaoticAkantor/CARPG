@@ -76,7 +76,7 @@ void ShowInfo(CBasePlayer@ pPlayer)
         string szDesc = "[XP]\n"
         + "Gain score to earn XP and increase your Class Level, awarding you with Skillpoints and also contributing towards your Rank.\n\n"
         + "[Rank]\n"
-        + "Rank increases maximum level of all skills, but less for Ability Skills.\n\n"
+        + "Rank increases maximum level of all skills, but less for Class Skills.\n\n"
         + "[Skills]\n"
         + "Type 'skills' to view your current skills and spend skillpoints.\n\n"
         + "[Class Ability]\n";
