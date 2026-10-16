@@ -11,6 +11,7 @@ float g_CurrentAmmoMapMultiplier = 1.0f;
 
 // How often AmmoTimerTick runs.
 float g_flAmmoRegenTickInterval = 1.0f;
+
 // Base interval between resupplies, scaled by the active map rule.
 float g_flAmmoResupplyInterval = 30.0f;
 float g_flAmmoResupplyTimer = 30.0f;
