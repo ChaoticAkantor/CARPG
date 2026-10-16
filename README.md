@@ -58,6 +58,10 @@
 
    - Default Max Rank is 10.
 
+   - Ammo Regen resupplies every 30 seconds by default, restoring 2% of each ammo pool's base maximum per Ammo Regen skill level. The interval is configurable in `AmmoRegen.as`; map balance rules can adjust it.
+
+   - Custom ammo pools from the INS2 weapons pack are supported when registered; indexes are looked up by ammo name at runtime.
+
 
 # Skills
  - Skills can be purchased and increased with Skillpoints via a menu.

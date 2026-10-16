@@ -1163,7 +1163,6 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
         }
     }
 
-    AdjustAmmoForClass(pPlayer); // Unused.
     return HOOK_CONTINUE;
 }
 
@@ -1871,11 +1870,6 @@ void ClearMinions()
         if(fallbackPlayer !is null)
             break;
     }
-}
-
-void AdjustAmmoForClass(CBasePlayer@ pPlayer)
-{
-    AdjustAmmoForPlayerClass(pPlayer);
 }
 
 bool IsCARPGFeatureChatCommand(const string& in command)
