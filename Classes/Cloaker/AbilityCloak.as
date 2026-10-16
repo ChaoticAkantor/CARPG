@@ -31,7 +31,7 @@ class CloakData
 
     //Nova.
     private float m_flNovaRadius = 50.0f * 16.0f; // Radius of the nova. Ft to units.
-    private float m_flNovaDamageModifier = 0.33f; // Nova damage is scaled by remaining charge * this value.
+    private float m_flNovaDamageModifier = 0.25f; // Nova damage is scaled by remaining charge * this value.
     // If it's not modified to be lower, it will be incredibly high, especially if duration skill is taken.
 
     private ClassStats@ m_pStats = null;
