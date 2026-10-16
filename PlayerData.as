@@ -86,7 +86,7 @@ int g_iMaxLevel = 60; // Max player level, skill points are given per level, inc
 int g_iScoreToXP = 1; // Amount of XP each score point is worth, 1 = 1 score is 1 XP.
 int g_iScorePerRebirthRank = 1; // Amount of extra XP per score awarded for each rank gained.
 int g_iMaxRebirthRank = 10; // Max rebirth rank.
-float g_iAbilitySkillBonus = 0.5f; // Max skill level limit increase for Ability Skills per rank.
+float g_iClassSkillBonus = 0.5f; // Max skill level limit increase for Class Skills per rank.
 float g_iBasicSkillBonus = 1.0f; // Max skill level limit increase for Basic Skills per rank.
 float g_flPlayerHUDInterval = 0.2f; // How often the player HUD updates.
 
@@ -467,7 +467,7 @@ class PlayerData
     int GetCurrentXPMultiplier() { return g_iScoreToXP + (m_iRebirthRank * m_iScorePerRebirthRank); }
     int GetCurrentRebirthRankXP() { return m_iCurrentRebirthRankXP; }
     int GetNeededRebirthXP() { return GetXPForRank(m_iRebirthRank); }
-    float GetAbilitySkillBonus() { return g_iAbilitySkillBonus * m_iRebirthRank; }
+    float GetClassSkillBonus() { return g_iClassSkillBonus * m_iRebirthRank; }
     float GetBasicSkillBonus() { return g_iBasicSkillBonus * m_iRebirthRank; }
 
     private int GetXPForRank(int rank) { return int(m_iXPNeededBaseRebirth * (rank + 1) * m_fXPNeededMultRebirth); }
@@ -964,8 +964,9 @@ class PlayerData
             pPlayer.pev.armortype = maxArmor + hpToConvert; // Increase AP by converted HP.
             pPlayer.pev.max_health = newMaxHP; // Set new max HP after conversion.
 
-            if (pPlayer.pev.max_health > newMaxHP)
-                pPlayer.pev.max_health = newMaxHP; // Reduce current HP if it exceeds new max to remove any overheal.
+            // Ensure max health doesn't ever drop below 1, otherwise it will render the player dead!
+            if (pPlayer.pev.max_health < 1.0f)
+                pPlayer.pev.max_health = 1.0f;
 
             // Special case for Vampire conversion bonuses.
             if (PlayerClass::CLASS_VAMPIRE == m_CurrentClass)
@@ -981,13 +982,12 @@ class PlayerData
                 }
             }
 
-            // Clamp current HP/AP down if they exceed the new max.
-            // Never boost current values here — free refill is only granted on RefillHealthArmor.
-            if(pPlayer.pev.health > maxHealth)
-                pPlayer.pev.health = maxHealth;
+            // Clamp current HP/AP to the final converted max.
+            if(pPlayer.pev.health > pPlayer.pev.max_health)
+                pPlayer.pev.health = pPlayer.pev.max_health;
 
-            if(pPlayer.pev.armorvalue > maxArmor)
-                pPlayer.pev.armorvalue = maxArmor;
+            if(pPlayer.pev.armorvalue > pPlayer.pev.armortype)
+                pPlayer.pev.armorvalue = pPlayer.pev.armortype;
             
             // Class-specific weapon loadouts and other non-basic scaling bonuses like ammo and capacity.
             switch(m_CurrentClass)
@@ -1277,7 +1277,7 @@ class PlayerData
             RPGHudText += "XP Bonus: " + "(+" + (GetCurrentXPMultiplier() - 1) + ")" + "\n"; // XP per score bonus.
 
         if(m_iRebirthRank > 0)
-            RPGHudText += "Ability Skill Limit: " + "(+" + floor(GetAbilitySkillBonus()) + ")" + "\n"; // Ability skill bonus.
+            RPGHudText += "Class Skill Limit: " + "(+" + floor(GetClassSkillBonus()) + ")" + "\n"; // Class skill bonus.
 
         if(m_iRebirthRank > 0)
             RPGHudText += "Basic Skill Limit: " + "(+" + GetBasicSkillBonus() + ")" + "\n"; // Basic skill bonus.
