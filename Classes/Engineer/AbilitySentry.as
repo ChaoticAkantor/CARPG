@@ -43,7 +43,7 @@ class SentryData
     private float m_flDrainInterval = 0.1f; // Ability drain interval in seconds.
     private float m_flRecallEnergyCost = 0.25f; // Ability percentage cost to recall.
 
-    // Rocket Ability Skill.
+    // Rocket Class Skill.
     private float m_flBaseRocketInterval = 40.0f; // Base interval between rocket shots. Reduced by skill.
 
     // Timers.
