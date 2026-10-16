@@ -9,23 +9,23 @@ const float SKILL_BASIC_MAXAP = 0.05f;  // Max AP per level.
 const float SKILL_BASIC_REGENHP = 0.002f;  // HP regen scale (% of max HP) per level.
 const float SKILL_BASIC_REGENAP = 0.0005f;  // AP regen scale (% of max AP) per level.
 const float SKILL_BASIC_ABILITYRECHARGE = 0.05f; // Percent increase to ability recharge speed per level.
-const int SKILL_BASIC_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
+const int   SKILL_BASIC_AMMOREGEN = 1; // +1 bullet per regen interval, per level.
 const float SKILL_BASIC_LIFESTEAL = 0.01f; // Percent of damage dealt as lifesteal per level.
 const float SKILL_BASIC_ARMORSTEAL = 0.0030f; // Percent of damage dealt as armorsteal per level.
 const float SKILL_BASIC_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
 
-// Class/Ability specific skills.
+// Class-specific skills.
 // Minion Class ('mancers) exclusive.
 const int SKILL_MINION_POINT = 1; // +1 minion point per level.
 const float SKILL_MINION_HP = 0.80f; // HP percent increase for minions per level.
 const float SKILL_MINION_REGEN = 0.001f; // Max HP regen percent for minions per level.
-const float SKILL_MINION_DAMAGE = 0.20f; // Damage percent increase for minions per level.
+const float SKILL_MINION_DAMAGE = 0.10f; // Damage percent increase for minions per level.
 const float SKILL_MINION_LIFESTEAL = 0.03f; // Minion lifesteal percent to players (team) per level.
 
 // Medic.
 const float SKILL_MEDIC_HEALPERCENT = 0.20f; // Percent increase to max health healed per level.
 const float SKILL_MEDIC_HEALREGEN = 0.20f; // Max health percent healed per interval after initial heal, per level (divided by 100).
-const float SKILL_MEDIC_POISON = 5.00f; // Flat poison damage per level.
+const float SKILL_MEDIC_POISON = 3.00f; // Flat poison damage per level.
 const float SKILL_MEDIC_REVIVE = 3.00f; // Reduce revive cooldown in seconds per level.
 const float SKILL_MEDIC_HEALAP = 1.50f; // Percent of max AP to heal per level (divided by 100).
 
@@ -39,15 +39,15 @@ const float SKILL_VAMPIRE_DURATION = 0.20f; // Percent increase to Bloodlust dur
 
 // Engineer.
 const float SKILL_ENGINEER_SENTRYDAMAGE = 0.10f; // Sentry damage per level.
-const float SKILL_ENGINEER_SENTRYSPEED = 0.10f; // Sentry attack speed per level.
+const float SKILL_ENGINEER_SENTRYSPEED = 0.08f; // Sentry attack speed per level.
 const float SKILL_ENGINEER_MINIHEALAURA = 0.80f; // Mini-heal Aura % max HP heal per level (divided by 100).
-const float SKILL_ENGINEER_ROCKETS = 0.06f; // Rocket % cooldown reduction per level.
+const float SKILL_ENGINEER_ROCKETS = 0.05f; // Rocket % cooldown reduction per level.
 const float SKILL_ENGINEER_SENTRYDURATION = 0.50f; // Sentry duration increase per level.
 
 // Xenomancer.
 
 // Necromancer.
-const float SKILL_NECROMANCER_RATS = 0.06f; // Rat % cooldown reduction per level.
+const float SKILL_NECROMANCER_RATS = 0.05f; // Rat % cooldown reduction per level.
 
 // Frostguard.
 const float SKILL_FROSTGUARD_SHIELDHP = 0.20f; // Ice shield HP percent increase per level.
@@ -57,8 +57,8 @@ const float SKILL_FROSTGUARD_HPABSORB = 0.05f; // HP absorb from damage reflecte
 const float SKILL_FROSTGUARD_TEAMLINK = 0.05f; // Shield charge damage reduction per linked player per level.
 
 // Cloaker.
-const float SKILL_CLOAKER_CLOAKDAMAGE = 0.20f; // Cloak damage multiplier increase per level.
-const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.20f; // Cloak nova damage increase per level.
+const float SKILL_CLOAKER_CLOAKDAMAGE = 0.10f; // Cloak damage multiplier increase per level.
+const float SKILL_CLOAKER_CLOAKNOVADAMAGE = 0.10f; // Cloak nova damage increase per level.
 const float SKILL_CLOAKER_CLOAKDURATION = 0.20f; // Cloak duration increase per level.
 const float SKILL_CLOAKER_DRAINREDUCTION = 0.05f; // Percent drain reduction.
 const float SKILL_CLOAKER_SPEED = 0.10f; // Percent speed increase while cloaked.
@@ -66,17 +66,17 @@ const float SKILL_CLOAKER_SPEED = 0.10f; // Percent speed increase while cloaked
 // Shocktrooper.
 const float SKILL_SHOCK_CAPACITY = 0.20f; // Shockrifle capacity per level.
 const float SKILL_SHOCK_DAMAGE = 0.10f; // Shockrifle damage per level.
-const float SKILL_SHOCK_LIGHTNING = 0.03f; // Shockrifle damage % as area lightning damage per level.
-const float SKILL_SHOCK_DISPLACER = 0.04f; // Displacer Orb cooldown reduction per level.
+const float SKILL_SHOCK_LIGHTNING = 0.02f; // Shockrifle damage % as area lightning damage per level.
+const float SKILL_SHOCK_DISPLACER = 0.06f; // Displacer Orb cooldown reduction per level.
 
 // Firebug.
 const float SKILL_FIREBUG_AMMOPOOL = 0.40f; // Ammo pool increase per level.
-const float SKILL_FIREBUG_EXPLOSIVEDAMAGE = 0.10f; // Increase % of weapon damage dealt as radius damage per level.
-const float SKILL_FIREBUG_FIREDAMAGE = 0.20f; // Increase % of weapon damage dealt as fire per tick per level.
+const float SKILL_FIREBUG_EXPLOSIVEDAMAGE = 0.05f; // Increase % of weapon damage dealt as radius damage per level.
+const float SKILL_FIREBUG_FIREDAMAGE = 0.10f; // Increase % of weapon damage dealt as fire per tick per level.
 const float SKILL_FIREBUG_FIREDURATION = 0.20f; // Fire duration increase per level.
 
 // Swarmer.
-const float SKILL_SWARMER_SNARKDAMAGE = 1.00f; // Snark damage per level.
+const float SKILL_SWARMER_SNARKDAMAGE = 0.60f; // Snark damage per level.
 const float SKILL_SWARMER_SNARKCOUNT = 0.20f; // Percent of extra snarks per level.
 
 // formatFloat is for display strings only, strength (4th ctor arg) must stay a raw float for math.
@@ -91,7 +91,7 @@ string FormatSkillPerLevelPercentText(float perLevelFraction)
 }
 
 // --- Skill IDs ---
-// Standard skills are available to all classes; Ability skills are class-specific.
+// Standard skills are available to all classes; class skills are class-specific.
 enum SkillID
 {
     // Standard (all classes).
@@ -303,8 +303,8 @@ array<SkillID> GetStandardSkillIDs()
     return result;
 }
 
-// Returns the ability skill IDs for a given class.
-array<SkillID> GetAbilitySkillIDs(PlayerClass pClass)
+// Returns the class skill IDs for a given class.
+array<SkillID> GetClassSkillIDs(PlayerClass pClass)
 {
     array<SkillID> result;
     switch(pClass)
