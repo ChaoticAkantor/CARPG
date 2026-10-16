@@ -213,7 +213,7 @@ class NecroMinionData
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
 
-    // Rats Ability Skill.
+    // Rats Class Skill.
     private int m_iRatSpawnCount = 3 ; // Number of rats to spawn with the rat ability, per active minion.
     private float m_flRatSpawnCooldown = 30.0f; // Base cooldown for spawning rats.
     private float m_flRatLaunchForce = 500.0f; // Velocity that rats are thrown outward.
