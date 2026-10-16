@@ -23,7 +23,7 @@ class ShockRifleData
     // Displacer Skill.
     private float m_flDisplacerDamage = 100.0f; // Damage dealt by the displacer portal.
     private float m_flDisplacerRadius = 600.0f; // Radius of the displacer portal damage.
-    private float m_flDisplacerCooldown = 30.0f; // Base cooldown between displacer portals.
+    private float m_flDisplacerCooldown = 60.0f; // Base cooldown between displacer portals.
 
     // Lightning Strike Skill.
     private float m_flLightningStrikeRadius = 150.0f * 16.0f; // Radius of the area strike in units.
