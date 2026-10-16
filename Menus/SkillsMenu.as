@@ -1,7 +1,7 @@
 /*
 This file handles the Skills menu.
 
-All standard and class ability skills are shown in one flat list.
+All standard and class skills are shown in one flat list.
 Selecting a skill spends one point and reopens the menu.
 The last item resets (refunds) all skills for the current class.
 
@@ -49,10 +49,10 @@ namespace Menu
             for(uint i = 0; i < stdSkills.length(); i++)
                 AddSkillItem(newMenu, stdSkills[i], stats);
 
-            // Ability skills for the current class.
-            array<SkillID> abilitySkills = GetAbilitySkillIDs(curClass);
-            for(uint i = 0; i < abilitySkills.length(); i++)
-                AddSkillItem(newMenu, abilitySkills[i], stats);
+            // Class skills for the current class.
+            array<SkillID> classSkills = GetClassSkillIDs(curClass);
+            for(uint i = 0; i < classSkills.length(); i++)
+                AddSkillItem(newMenu, classSkills[i], stats);
 
             newMenu.AddItem("Refund Skillpoints", any(int(SKILL_MENU_RESET)));
             newMenu.Register();
