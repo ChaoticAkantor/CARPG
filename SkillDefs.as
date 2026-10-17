@@ -245,7 +245,7 @@ void InitializeSkillDefinitions()
     // Engineer.
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+" + formatFloat(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "f", 0, 2) + "% damage.", 5, SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYSPEED)] = SkillDefinition("Sentry: Speed", "+" + formatFloat(SKILL_ENGINEER_SENTRYSPEED * 100.0f, "f", 0, 2) + "% attack speed.", 5, SKILL_ENGINEER_SENTRYSPEED * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Sentry: Heal Aura", "+" + formatFloat(SKILL_ENGINEER_MINIHEALAURA * 100.0f, "f", 0, 2) + "% HP/s.", 5, SKILL_ENGINEER_MINIHEALAURA, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Sentry: Heal Aura", "+" + formatFloat(SKILL_ENGINEER_MINIHEALAURA, "f", 0, 2) + "% HP/s.", 5, SKILL_ENGINEER_MINIHEALAURA, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_ROCKETS)] = SkillDefinition("Sentry: Rockets", "-" + formatFloat(SKILL_ENGINEER_ROCKETS * 100.0f, "f", 0, 2) + "% rocket cooldown.", 5, SKILL_ENGINEER_ROCKETS * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDURATION)] = SkillDefinition("Sentry: Duration", "+" + formatFloat(SKILL_ENGINEER_SENTRYDURATION * 100.0f, "f", 0, 2) + "% sentry duration.", 5, SKILL_ENGINEER_SENTRYDURATION * 100.0f, "%", 0.5f);
 
