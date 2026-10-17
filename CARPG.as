@@ -191,7 +191,7 @@ void SetupTimers()
 
     // RPG/Class System.
     g_Scheduler.SetInterval("UpdatePlayerHUDs", g_flPlayerHUDInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating RPG HUD.
-    g_Scheduler.SetInterval("UpdateAllAmmoRegenHUDs", g_flAmmoRegenTickInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating ammo regen HUD.
+    g_Scheduler.SetInterval("UpdateAllAmmoRegenHUDs", g_flAmmoRegenHUDUpdateInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating ammo regen HUD.
     g_Scheduler.SetInterval("CheckAllPlayerScores", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
 
     // Medic.
