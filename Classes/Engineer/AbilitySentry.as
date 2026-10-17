@@ -67,6 +67,8 @@ class SentryData
     float GetAbilityMax() { return GetScaledSentryDuration(); }
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
+    float GetDeactivateCost() { return m_flRecallEnergyCost * GetScaledSentryDuration(); }
+
     bool IsActive() 
     { 
         // First check if we think we're active.
@@ -207,9 +209,9 @@ class SentryData
         }
 
         // Check ability charge requirements for deployment.
-        if(m_flAbilityCharge <= 0.0f)
+        if(m_flAbilityCharge < GetDeactivateCost())
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry out of battery!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Need " + formatFloat(GetDeactivateCost() * 100, "f", 0, 2) + "%% Charge!");
             return;
         }
 
