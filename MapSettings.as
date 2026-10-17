@@ -45,12 +45,12 @@ void WriteDefaultCARPGMapSettings(File@ file)
     file.Write("# CARPG Map Rules: ammoMultiplier, hpRecoveryMultiplier, apRecoveryMultiplier, hurtDelayMultiplier\n");
     file.Write("# Modes: 0 = No change, 1 = Applies balance settings, 2 = Disable CARPG on map.\n");
     file.Write("# Prefix rules end in _. Exact map overrides start with =, e.g. =hl_c00a.\n");
-    file.Write("th_ 1 10 2 2 3\n");
-    file.Write("aom_ 1 10 2 2 3\n");
-    file.Write("aomdc_ 1 10 2 2 3\n");
-    file.Write("hl_ 1 2 1.2 1.2 1\n");
-    file.Write("of_ 1 2 1.2 1.2 1\n");
-    file.Write("bs_ 1 2 1.2 1.2 1\n");
+    file.Write("th_ 1 3 2 2 3\n");
+    file.Write("aom_ 1 3 2 2 3\n");
+    file.Write("aomdc_ 1 3 2 2 3\n");
+    file.Write("hl_ 1 2 2 1.2 1\n");
+    file.Write("of_ 1 2 2 1.2 1\n");
+    file.Write("bs_ 1 2 2 1.2 1\n");
     file.Close();
 }
 
