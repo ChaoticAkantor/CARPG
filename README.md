@@ -113,10 +113,11 @@
 
 # Robomancer
   - Can permanently summon different types of friendly robogrunts.
+  - Amount that can be summoned and Max HP depends on their weapon type.
+
+  - Can fabricate support items: Health, Battery, and Ammo (bullet type only). Must be used to pick them up.
 
   - Has access to minion only skills.
-
-  - Amount that can be summoned and Max HP depends on their weapon type.
 
   - Uses a summon menu to choose type, teleport or kill them.
 

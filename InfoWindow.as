@@ -122,6 +122,7 @@ string GetClassDescription(PlayerClass pClass)
             return
                 "{Robogrunt Minions}.\n\n"
                 "Can summon friendly Robogrunts and choose their weapon type, HP varies by type.\n"
+                "Can fabricate support items: Health, Battery, and Ammo (bullet type only).\n"
                 "Robogrunts have 80% resistance to damage except for explosion, shock, frost, acid and energy types.\n"
                 "Minion movement and attack speed is increased.\n"
                 "Minion limit depends on minion type and points reserved.\n"
