@@ -822,8 +822,10 @@ class PlayerData
         {
             pPlayer.pev.max_health = 100.0f;
             pPlayer.pev.armortype = 100.0f;
+
             if(pPlayer.pev.health > pPlayer.pev.max_health)
                 pPlayer.pev.health = pPlayer.pev.max_health;
+
             if(pPlayer.pev.armorvalue > pPlayer.pev.armortype)
                 pPlayer.pev.armorvalue = pPlayer.pev.armortype;
             return;
@@ -939,7 +941,8 @@ class PlayerData
         }
 
         ClassStats@ stats = GetCurrentClassStats();
-        if(stats is null) return;
+        if(stats is null)
+            return;
         
         if(g_ClassDefinitions.exists(m_CurrentClass))
         {
@@ -1195,7 +1198,7 @@ class PlayerData
                     g_Game.AlertMessage(at_console, "CARPG: Loaded rebirth rank " + m_iRebirthRank + " with XP " + m_iCurrentRebirthRankXP + "\n");
                 }
 
-                if(saveVersion == "v7")
+                if(saveVersion == "v7" || saveVersion == "v8")
                 {
                     string hudMarker;
                     file.ReadLine(hudMarker);
@@ -1221,6 +1224,7 @@ class PlayerData
                             if(savedAmmoPosition >= 0 && savedAmmoPosition < 4) m_iAmmoHUDPosition = savedAmmoPosition;
                         }
                     }
+
                 }
             }
             else
