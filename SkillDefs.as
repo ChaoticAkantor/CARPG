@@ -16,7 +16,7 @@ const float SKILL_BASIC_HPCONVERSION = 0.06f; // Percent of Max HP to convert to
 
 // Class-specific skills.
 // Minion Class ('mancers) exclusive.
-const int SKILL_MINION_POINT = 1; // +1 minion point per level.
+const float SKILL_MINION_POINT = 0.05f; // Percent increase to minion points per level.
 const float SKILL_MINION_HP = 0.80f; // HP percent increase for minions per level.
 const float SKILL_MINION_REGEN = 0.001f; // Max HP regen percent for minions per level.
 const float SKILL_MINION_DAMAGE = 0.10f; // Damage percent increase for minions per level.
@@ -25,9 +25,10 @@ const float SKILL_MINION_LIFESTEAL = 0.03f; // Minion lifesteal percent to playe
 // Medic.
 const float SKILL_MEDIC_HEALPERCENT = 0.20f; // Percent increase to max health healed per level.
 const float SKILL_MEDIC_HEALREGEN = 0.20f; // Max health percent healed per interval after initial heal, per level (divided by 100).
-const float SKILL_MEDIC_POISON = 3.00f; // Flat poison damage per level.
+const float SKILL_MEDIC_POISON = 5.00f; // Flat poison damage per level.
 const float SKILL_MEDIC_REVIVE = 3.00f; // Reduce revive cooldown in seconds per level.
 const float SKILL_MEDIC_HEALAP = 1.50f; // Percent of max AP to heal per level (divided by 100).
+const float SKILL_MEDIC_MEDKITCAPACITY = 0.30f; // Medkit capacity increase per level.
 
 // Vampire.
 const float SKILL_VAMPIRE_LIFESTEAL = 0.06f; // Percent increase to ALL lifesteal per level.
@@ -42,7 +43,7 @@ const float SKILL_ENGINEER_SENTRYDAMAGE = 0.10f; // Sentry damage per level.
 const float SKILL_ENGINEER_SENTRYSPEED = 0.08f; // Sentry attack speed per level.
 const float SKILL_ENGINEER_MINIHEALAURA = 0.80f; // Mini-heal Aura % max HP heal per level (divided by 100).
 const float SKILL_ENGINEER_ROCKETS = 0.05f; // Rocket % cooldown reduction per level.
-const float SKILL_ENGINEER_SENTRYDURATION = 0.50f; // Sentry duration increase per level.
+const float SKILL_ENGINEER_SENTRYDURATION = 0.20f; // Sentry duration increase per level.
 
 // Xenomancer.
 
@@ -172,6 +173,8 @@ enum SkillID
     SKILL_SWARMER_SNARKDAMAGE,
     SKILL_SWARMER_SNARKCOUNT,
 
+    // Additional class skills. Keep new IDs at the end to preserve saved skill indices.
+    SKILL_MEDIC_MEDKITCAPACITY,
 
     // Total.
     SKILL_MAX_COUNT
@@ -221,7 +224,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_BASIC_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+" + formatFloat(SKILL_BASIC_HPCONVERSION * 100.0f, "f", 0, 2) + "% of Max HP converted to AP.", 10, SKILL_BASIC_HPCONVERSION * 100.0f, "%", 1.0f);
 
     // Minion Class exclusive.
-    @g_SkillDefs[int(SkillID::SKILL_MINION_POINT)] = SkillDefinition("Minion: Minion Point", "+" + SKILL_MINION_POINT + " minion point.", 3, SKILL_MINION_POINT, " Point", 0.0f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_POINT)] = SkillDefinition("Minion: Max Reserve", "+" + SKILL_MINION_POINT * 100.0f + "% max reserve.", 5, SKILL_MINION_POINT * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MINION_HP)] = SkillDefinition("Minion: Max HP", "+" + int(SKILL_MINION_HP * 100) + "% minion HP.", 5, int(SKILL_MINION_HP * 100.0f), "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MINION_REGEN)] = SkillDefinition("Minion: HP Regen", "+" + formatFloat(SKILL_MINION_REGEN * 100.0f, "f", 0, 2) + "% minion HP/s.", 5, SKILL_MINION_REGEN * 100.0f, "% HP/s", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MINION_DAMAGE)] = SkillDefinition("Minion: Damage", "+" + formatFloat(SKILL_MINION_DAMAGE * 100.0f, "f", 0, 2) + "% minion damage.", 5, SKILL_MINION_DAMAGE * 100.0f, "%", 0.5f);
@@ -233,6 +236,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal: Acid", "+" + formatFloat(SKILL_MEDIC_POISON, "f", 0, 2) + " acid damage.", 5, SKILL_MEDIC_POISON, "", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal: Revive", "-" + formatFloat(SKILL_MEDIC_REVIVE, "f", 0, 2) + "s revive cooldown.", 5, SKILL_MEDIC_REVIVE, "s", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal: AP Restore", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heals to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_MEDKITCAPACITY)] = SkillDefinition("Medic: Medkit Capacity", "+" + formatFloat(SKILL_MEDIC_MEDKITCAPACITY * 100.0f, "f", 0, 2) + "% medkit capacity.", 5, SKILL_MEDIC_MEDKITCAPACITY * 100.0f, "%", 0.5f);
 
     // Vampire.
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_LIFESTEAL)] = SkillDefinition("Bloodlust: Lifesteal", "+" + formatFloat(SKILL_VAMPIRE_LIFESTEAL * 100.0f, "f", 0, 2) + "% all lifesteal.", 5, SKILL_VAMPIRE_LIFESTEAL * 100.0f, "%", 0.5f);
@@ -316,6 +320,7 @@ array<SkillID> GetClassSkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MEDIC_POISON);
             result.insertLast(SkillID::SKILL_MEDIC_REVIVE);
             result.insertLast(SkillID::SKILL_MEDIC_HEALAP);
+            result.insertLast(SkillID::SKILL_MEDIC_MEDKITCAPACITY);
             break;
 
         case PlayerClass::CLASS_VAMPIRE:
