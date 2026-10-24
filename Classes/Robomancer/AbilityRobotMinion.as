@@ -988,11 +988,16 @@ class MinionMenu
         @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
         m_pMenu.SetTitle("[Robot Control Menu]\n");
         
-        // Show choices.
+        // Add minion deployment options.
         for(uint i = 0; i < MINION_NAMES.length(); i++) 
         {
             m_pMenu.AddItem("Deploy " + MINION_NAMES[i] + " (Need: " + MINION_COSTS[i] + ")\n", any(i));
         }
+
+        // Add support options. Each has its own menu ID and its own create function.
+        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_MEDKIT] + " (Cost: " + SUPPORT_COSTS[SUPPORT_MEDKIT] + ")\n", any(MENU_CREATE_MEDKIT));
+        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_BATTERY] + " (Cost: " + SUPPORT_COSTS[SUPPORT_BATTERY] + ")\n", any(MENU_CREATE_BATTERY));
+        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_AMMO] + " (Cost: " + SUPPORT_COSTS[SUPPORT_AMMO] + ")\n", any(MENU_CREATE_AMMO));
 
         // Add management options if we have minions.
         if(m_pOwner.GetMinionCount() > 0 || m_pOwner.GetReservePool() > 0) 
@@ -1000,11 +1005,6 @@ class MinionMenu
             m_pMenu.AddItem("Teleport All\n", any(99));
             m_pMenu.AddItem("Destroy All\n", any(98));
         }
-
-        // Add support options. Each has its own menu ID and its own create function.
-        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_MEDKIT] + " (Cost: " + SUPPORT_COSTS[SUPPORT_MEDKIT] + ")\n", any(MENU_CREATE_MEDKIT));
-        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_BATTERY] + " (Cost: " + SUPPORT_COSTS[SUPPORT_BATTERY] + ")\n", any(MENU_CREATE_BATTERY));
-        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_AMMO] + " (Cost: " + SUPPORT_COSTS[SUPPORT_AMMO] + ")\n", any(MENU_CREATE_AMMO));
         
         m_pMenu.Register();
         m_pMenu.Open(0, 0, pPlayer);
