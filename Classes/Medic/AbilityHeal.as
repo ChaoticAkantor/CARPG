@@ -204,6 +204,27 @@ class HealingAura
         return modifier;
     }
 
+    float GetScaledMedkitCapacity()
+    {
+        if (m_pStats is null)
+            return 0.0f; // Return base if no stats.
+
+        float baseCapacity = 100.0f; // Base medkit capacity.
+                    
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_MEDKITCAPACITY);
+        float skillPower = SKILL_MEDIC_MEDKITCAPACITY;
+        float modifier = skillPower * skillLevel; // Heal amount scales from skill level.
+
+        return baseCapacity * (1.0 + modifier);
+    }
+
+    void SetMedkitCapacity(CBasePlayer@ pPlayer)
+    {
+        int medkitCapacity = int(GetScaledMedkitCapacity());
+
+        pPlayer.SetMaxAmmo('health', medkitCapacity);
+    }
+
     void RechargeAbility()
     {
         if (m_flAbilityCharge >= m_flAbilityMax)
@@ -300,6 +321,8 @@ class HealingAura
 
         if(!m_bIsActive)
             RechargeAbility();
+
+        SetMedkitCapacity(pPlayer); // Set medkit capacity based on skill level.
 
         // Process active regen ticks every frame.
         ProcessRegenTicks();
