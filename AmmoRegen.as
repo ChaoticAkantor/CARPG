@@ -19,18 +19,14 @@ float g_flIns2CustomAmmoRegenModifier = 0.6f; // Modifier to global INS2 ammo re
 class AmmoType 
 {
     string name;        // Ammo name like "9mm" or "health".
-    int maxAmount;      // Maximum amount player can carry.
-    int baseMaxAmount;  // Base maximum used to calculate percentage resupply.
     int threshold;      // Threshold for special ammo types.
     bool hasThreshold;  // Whether this ammo uses threshold logic.
     bool isExplosive;   // Whether this ammo is an explosive type (disabled if map modifier is active).
     bool isIns2Custom;  // Whether this is an INS2 custom ammo pool.
     
-    AmmoType(string ammoName, int maxAmmo, bool useThreshold = false, int thresholdValue = 0, bool explosive = false, bool ins2Custom = false)
+    AmmoType(string ammoName, bool useThreshold = false, int thresholdValue = 0, bool explosive = false, bool ins2Custom = false)
     {
         name = ammoName;
-        maxAmount = maxAmmo;
-        baseMaxAmount = maxAmmo;
         hasThreshold = useThreshold;
         threshold = thresholdValue;
         isExplosive = explosive;
@@ -61,54 +57,54 @@ void InitializeAmmoRegen()
         g_Game.AlertMessage(at_console, g_AmmoPrefixMessage + "\n\n");
     }
     
-    // Amount given, max ammo, use threshold?, threshold, willgiveweapon(doesnt seem to work), timer.
-    g_AmmoTypes.insertLast(AmmoType("health", 100, true, 100));
-    g_AmmoTypes.insertLast(AmmoType("9mm", 300));
-    g_AmmoTypes.insertLast(AmmoType("buckshot", 125));
-    g_AmmoTypes.insertLast(AmmoType("357", 36));
-    g_AmmoTypes.insertLast(AmmoType("556", 600));
-    g_AmmoTypes.insertLast(AmmoType("m40a1", 25));
-    g_AmmoTypes.insertLast(AmmoType("bolts", 30));
-    g_AmmoTypes.insertLast(AmmoType("sporeclip", 20));
-    g_AmmoTypes.insertLast(AmmoType("Hornets", 100));
-    g_AmmoTypes.insertLast(AmmoType("shock charges", 100));
-    g_AmmoTypes.insertLast(AmmoType("uranium", 100));
+    // Ammo type, use threshold?, threshold, explosive?, INS2 custom?
+    g_AmmoTypes.insertLast(AmmoType("health"));
+    g_AmmoTypes.insertLast(AmmoType("9mm"));
+    g_AmmoTypes.insertLast(AmmoType("buckshot"));
+    g_AmmoTypes.insertLast(AmmoType("357"));
+    g_AmmoTypes.insertLast(AmmoType("556"));
+    g_AmmoTypes.insertLast(AmmoType("m40a1"));
+    g_AmmoTypes.insertLast(AmmoType("bolts"));
+    g_AmmoTypes.insertLast(AmmoType("sporeclip"));
+    g_AmmoTypes.insertLast(AmmoType("Hornets"));
+    g_AmmoTypes.insertLast(AmmoType("shock charges"));
+    g_AmmoTypes.insertLast(AmmoType("uranium"));
     
-    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("ARgrenades", 10, true, 2, true));
-    g_AmmoTypes.insertLast(AmmoType("Satchel Charge", 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("Trip Mine", 10, true, 1, true));
-    g_AmmoTypes.insertLast(AmmoType("rockets", 10, true, 2, true));
-    g_AmmoTypes.insertLast(AmmoType("Snarks", 15));
+    g_AmmoTypes.insertLast(AmmoType("Hand Grenade", true, 1, true));
+    g_AmmoTypes.insertLast(AmmoType("ARgrenades", true, 2, true));
+    g_AmmoTypes.insertLast(AmmoType("Satchel Charge", true, 1, true));
+    g_AmmoTypes.insertLast(AmmoType("Trip Mine", true, 1, true));
+    g_AmmoTypes.insertLast(AmmoType("rockets", true, 2, true));
+    g_AmmoTypes.insertLast(AmmoType("Snarks"));
 
     // INS2 custom ammo pools.
-    g_AmmoTypes.insertLast(AmmoType("ins2_12x70buckball", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_12x70buckshot", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_303brit", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_357magnum", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_4.6x30mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_40mm_rocket", 1000, false, 0, true, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_40x46mm", 1000, false, 0, true, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_44magnum", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_455brit", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_45acp", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_5.45x39mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_5.56x45mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_50ae", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x25mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x33mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x39mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x51mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x54mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x63mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.63x25mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.92x33mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_7.92x57mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_88mm_rocket", 1000, false, 0, true, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_9x18mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_9x19mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_9x39mm", 1000, false, 0, false, true));
-    g_AmmoTypes.insertLast(AmmoType("ins2_napalm", 1000, false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_12x70buckball", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_12x70buckshot", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_303brit", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_357magnum", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_4.6x30mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_40mm_rocket", false, 0, true, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_40x46mm", false, 0, true, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_44magnum", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_455brit", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_45acp", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_5.45x39mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_5.56x45mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_50ae", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x25mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x33mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x39mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x51mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x54mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.62x63mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.63x25mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.92x33mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_7.92x57mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_88mm_rocket", false, 0, true, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_9x18mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_9x19mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_9x39mm", false, 0, false, true));
+    g_AmmoTypes.insertLast(AmmoType("ins2_napalm", false, 0, false, true));
 
     g_flAmmoResupplyTimer = GetAmmoResupplyInterval();
     g_PlayerAmmoRegenFractions.deleteAll();
@@ -123,16 +119,16 @@ float GetAmmoResupplyInterval()
     return Math.max(g_flAmmoRegenTickInterval, g_flAmmoResupplyInterval * mapMultiplier);
 }
 
-int GetAmmoRegenAmount(AmmoType@ ammoType, int skillLevel, const string& in steamID)
+int GetAmmoRegenAmount(AmmoType@ ammoType, int maxAmmo, int skillLevel, const string& in steamID)
 {
-    if(ammoType is null || skillLevel < 1 || steamID.IsEmpty())
+    if(ammoType is null || maxAmmo <= 0 || skillLevel < 1 || steamID.IsEmpty())
         return 0;
 
     string progressKey = steamID + ":" + ammoType.name;
     float fractionalProgress = 0.0f;
     g_PlayerAmmoRegenFractions.get(progressKey, fractionalProgress);
 
-    float resupplyAmount = float(ammoType.baseMaxAmount) * SKILL_BASIC_AMMOREGEN * float(skillLevel);
+    float resupplyAmount = float(maxAmmo) * SKILL_BASIC_AMMOREGEN * float(skillLevel);
     if(ammoType.isIns2Custom)
         resupplyAmount *= Math.max(0.0f, g_flIns2CustomAmmoRegenModifier);
 
@@ -199,22 +195,28 @@ void AmmoTimerTick()
             if(skillLevel < 1)
                 continue;
 
+            int maxAmmo = pPlayer.GetMaxAmmo(gameAmmoIndex);
+            if(maxAmmo <= 0)
+                continue;
+
             int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
-            if(currentAmmo >= ammoType.maxAmount)
+            if(currentAmmo >= maxAmmo)
                 continue;
 
             if(ammoType.hasThreshold && currentAmmo > ammoType.threshold)
                 continue;
 
-            int resupplyAmount = GetAmmoRegenAmount(ammoType, skillLevel, steamID);
+            int resupplyAmount = GetAmmoRegenAmount(ammoType, maxAmmo, skillLevel, steamID);
             resupplyAmount += GetClassAmmoRegenBonus(rpgData, ammoType);
+
             if(resupplyAmount > 0)
-                GiveAmmoToPlayer(pPlayer, ammoType, resupplyAmount, gameAmmoIndex);
+                GiveAmmoToPlayer(pPlayer, resupplyAmount, gameAmmoIndex, maxAmmo);
         }
     }
 
     float resupplyInterval = GetAmmoResupplyInterval();
     g_flAmmoResupplyTimer += resupplyInterval;
+
     while(g_flAmmoResupplyTimer <= 0.0f)
         g_flAmmoResupplyTimer += resupplyInterval;
 }
@@ -294,13 +296,13 @@ void UpdateAmmoRegenHUD(CBasePlayer@ pPlayer)
 }
 
 // Give ammo to player using selected method (silent or with pickup notification).
-void GiveAmmoToPlayer(CBasePlayer@ pPlayer, AmmoType@ ammoType, int amount, int gameAmmoIndex)
+void GiveAmmoToPlayer(CBasePlayer@ pPlayer, int amount, int gameAmmoIndex, int maxAmmo)
 {
-    if(IsCARPGDisabledOnCurrentMap() || pPlayer is null || ammoType is null || amount <= 0 || gameAmmoIndex < 0)
+    if(IsCARPGDisabledOnCurrentMap() || pPlayer is null || amount <= 0 || gameAmmoIndex < 0 || maxAmmo <= 0)
         return;
     
     int currentAmmo = pPlayer.m_rgAmmo(gameAmmoIndex);
-    int remainingCapacity = ammoType.maxAmount - currentAmmo;
+    int remainingCapacity = maxAmmo - currentAmmo;
     if(remainingCapacity <= 0)
         return;
 
