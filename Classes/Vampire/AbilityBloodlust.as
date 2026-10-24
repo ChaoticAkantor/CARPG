@@ -212,7 +212,7 @@ class BloodlustData
 
     void HandleDamageReduction(CBasePlayer@ pPlayer, float bloodlustDamageTaken, float& out bloodlustReducedDamage)
     {
-        if(pPlayer is null || m_pStats is null)
+        if(pPlayer is null || m_pStats is null || !m_bActive) // No damage reduction if not active or no stats.
         {
             bloodlustReducedDamage = bloodlustDamageTaken; // No change in damage.
             return;
