@@ -242,11 +242,11 @@ const array<float> XEN_ANIMATION_SPEEDS =
 
 const array<int> XEN_COSTS = // Pool cost per summon of each type.
 {
-    2, // Houndeye.
-    2, // Pit Drone.
-    3, // Bullsquid.
-    3, // Shocktrooper.
-    4  // Baby Garg.
+    50,  // Houndeye.
+    50,  // Pit Drone.
+    75,  // Bullsquid.
+    75,  // Shocktrooper.
+    100  // Baby Garg.
 };
 
 // Per-type collision bounds relative to each minion's origin; adjust these for testing.
@@ -299,8 +299,8 @@ class XenMinionData
     private bool m_bActive = false;
 
     // Ability variables.
-    private int m_iMinionPointMax = 1; // Max pool for minions, can be increased with skill.
-    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
+    private float m_flMinionPointMax = 100.0f; // Max pool for minions, can be increased with skill.
+    private float m_flAbilityRechargeTime = 90.0f; // Seconds to fully recharge the entire max pool from empty.
     private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
 
@@ -309,7 +309,7 @@ class XenMinionData
 
     // Timers and trackers.
     private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
-    private int m_iMinionResourceCost = 0; // Cost to summon specific minion default.
+    private float m_flMinionResourceCost = 0.0f; // Cost to summon specific minion default.
     private int m_iReservePool = 0;
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
@@ -329,14 +329,27 @@ class XenMinionData
     void SetReservePoolZero() { m_iReservePool = 0; }
     bool HasStats() { return m_pStats !is null; }
 
-    int GetAbilityMax()
+    float GetMinionPointIncrease()
     {
-        int maxPoints = m_iMinionPointMax + int(GetMinionPointIncrease());
-        return maxPoints < 1 ? 1 : maxPoints;
+        if(m_pStats is null)
+            return m_flMinionPointMax; // Return base if no stats.
+
+        float minionPoints = m_flMinionPointMax;
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
+        float skillPower = SKILL_MINION_POINT;
+
+        return minionPoints * (1.0f + skillPower * skillLevel); // Bonus minion points from skill.
+    }
+
+    float GetAbilityMax()
+    {
+        float maxPoints = m_flMinionPointMax + GetMinionPointIncrease();
+        return maxPoints < 1.0f ? 1.0f : maxPoints;
     }
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
-    void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     float GetScaledAbilityRecharge()
     {
@@ -351,23 +364,14 @@ class XenMinionData
 
     void RechargeAbility()
     {
-        float chargeMax = Math.max(0.0f, float(GetAbilityMax() - m_iReservePool));
+        float chargeMax = Math.max(0.0f, GetAbilityMax() - m_iReservePool);
         if (m_flAbilityCharge >= chargeMax)
             return;
 
-        float rechargeRate = GetScaledAbilityRecharge() / m_flAbilityRechargeTime;
+        float rechargeRate = GetAbilityMax() / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
-    }
-
-    float GetMinionPointIncrease()
-    {
-        if(m_pStats is null)
-            return 0.0f; // No increase if no stats.
-
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
-        return float(int(SKILL_MINION_POINT * skillLevel)); // Bonus minion points from skill.
     }
 
     bool IsActive() 
@@ -502,8 +506,8 @@ class XenMinionData
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
-        int maxPool = GetAbilityMax();
-        if(maxPool <= 0)
+        float maxPool = GetAbilityMax();
+        if(maxPool <= 0.0f)
             return;
 
         PruneMinions();
@@ -515,7 +519,7 @@ class XenMinionData
             return;
         }
 
-        if(m_flAbilityCharge < float(XEN_COSTS[minionType]))
+        if(m_flAbilityCharge < XEN_COSTS[minionType])
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Not enough points for " + XEN_NAMES[minionType] + "!\n");
             return;
@@ -583,7 +587,7 @@ class XenMinionData
             m_hMinions.insertLast(info);
             
             m_iReservePool += XEN_COSTS[minionType]; // Add to reserve pool when minion is created.
-            m_flAbilityCharge -= float(XEN_COSTS[minionType]); // Deduct from ability charge.
+            m_flAbilityCharge -= XEN_COSTS[minionType]; // Deduct from ability charge.
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strXenMinionSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, XEN_NAMES[minionType] + " summoned!\n");
@@ -702,7 +706,7 @@ class XenMinionData
         }
 
         // Return spent points only when the player manually clears their minions.
-        m_flAbilityCharge = Math.min(m_flAbilityCharge + float(m_iReservePool), float(GetAbilityMax()));
+        m_flAbilityCharge = Math.min(m_flAbilityCharge + m_iReservePool, GetAbilityMax());
         m_iReservePool = 0;
         
         if(anyDestroyed)
@@ -1053,8 +1057,8 @@ void CheckXenologistMinions()
             
                 // Make sure resource limits are enforced.
                 xenMinion.PruneMinions();
-                int xenMax = xenMinion.GetAbilityMax();
-                if(xenMax > 0 && xenMinion.GetReservePool() > xenMax)
+                float xenMax = xenMinion.GetAbilityMax();
+                if(xenMax > 0.0f && xenMinion.GetReservePool() > xenMax)
                 {
                     // Over the limit, destroy minions until we're within limits.
                     xenMinion.DestroyAllMinions(pPlayer);

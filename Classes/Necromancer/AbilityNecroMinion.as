@@ -146,10 +146,10 @@ const array<float> NECRO_ANIMATION_SPEEDS =
 
 const array<int> NECRO_COSTS = // Pool cost per summon of each type.
 {
-    1, // Headcrab (Hand).
-    1, // Zombie.
-    2, // Skeleton (Vortigaunt).
-    3 // Abomination (Gonome).
+    25, // Headcrab (Hand).
+    30, // Zombie.
+    50, // Skeleton (Vortigaunt).
+    75  // Abomination (Gonome).
 };
 
 // Per-type collision bounds relative to each minion's origin; adjust these for testing.
@@ -208,9 +208,9 @@ class NecroMinionData
     private bool m_bActive = false;
 
     // Monster variables.
-    private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
-    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
-    private float m_flBaseHealth = 100.0; // Base health of Minions, currently the same for all of them.
+    private float m_flMinionPointMax = 100.0f; // Max ability charge. Can be increased with skill.
+    private float m_flAbilityRechargeTime = 90.0f; // Seconds to fully recharge the entire max pool from empty.
+    private float m_flBaseHealth = 100.0f; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
 
     // Rats Class Skill.
@@ -223,8 +223,8 @@ class NecroMinionData
 
     // Timers and trackers.
     private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
-    private int m_iMinionResourceCost = 0; // Cost to summon specific minion default.
-    private int m_iReservePool = 0;
+    private float m_flMinionResourceCost = 0.0f; // Cost to summon specific minion default.
+    private int m_iReservePool = 0; // Tracks the current reserve pool used for minions.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
     private float m_flLastMessageTime = 0.0f;
@@ -244,23 +244,27 @@ class NecroMinionData
     void SetReservePoolZero() { m_iReservePool = 0; }
     bool HasStats() { return m_pStats !is null; }
 
-    int GetMinionPointIncrease()
+    float GetMinionPointIncrease()
     {
         if(m_pStats is null)
-            return 0; // No increase if no stats.
+            return m_flMinionPointMax; // Return base if no stats.
+
+        float minionPoints = m_flMinionPointMax; // Start with base minion points.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
-        return int(SKILL_MINION_POINT * skillLevel); // Bonus minion points from skill.
+        float skillPower = SKILL_MINION_POINT;
+
+        return minionPoints * (1.0f + skillPower * skillLevel); // Bonus minion points from skill.
     }
 
-    int GetAbilityMax()
+    float GetAbilityMax()
     {
-        int maxPoints = m_iMinionPointMax + GetMinionPointIncrease();
-        return maxPoints < 1 ? 1 : maxPoints;
+        float maxPoints = m_flMinionPointMax + GetMinionPointIncrease();
+        return maxPoints < 1.0f ? 1.0f : maxPoints;
     }
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
-    void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     float GetRatCooldownRemaining() { return m_flCurrentRatCooldown; }
 
@@ -285,11 +289,11 @@ class NecroMinionData
 
     void RechargeAbility()
     {
-        float chargeMax = Math.max(0.0f, float(GetAbilityMax() - m_iReservePool));
+        float chargeMax = Math.max(0.0f, GetAbilityMax() - m_iReservePool);
         if (m_flAbilityCharge >= chargeMax)
             return;
 
-        float rechargeRate = GetScaledAbilityRecharge() / m_flAbilityRechargeTime;
+        float rechargeRate = GetAbilityMax() / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
@@ -407,6 +411,11 @@ class NecroMinionData
         if(m_flCurrentRatCooldown < 0.0f)
             m_flCurrentRatCooldown = 0.0f;
     }
+
+    void CorpseExplosion()
+    {
+        
+    }
     
     array<NecroMinionInfo>@ GetMinions() { return m_hMinions; }
     
@@ -452,8 +461,8 @@ class NecroMinionData
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
-        int maxPool = GetAbilityMax();
-        if(maxPool <= 0)
+        float maxPool = GetAbilityMax();
+        if(maxPool <= 0.0f)
             return;
 
         PruneMinions();
@@ -465,7 +474,7 @@ class NecroMinionData
             return;
         }
 
-        if(m_flAbilityCharge < float(NECRO_COSTS[minionType]))
+        if(m_flAbilityCharge < NECRO_COSTS[minionType])
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, NECRO_NAMES[minionType] + " is recharging!\n");
             return;
@@ -535,7 +544,7 @@ class NecroMinionData
             m_hMinions.insertLast(info);
             
             m_iReservePool += NECRO_COSTS[minionType]; // Add to reserve pool when minion is created.
-            m_flAbilityCharge -= float(NECRO_COSTS[minionType]); // Deduct from ability charge.
+            m_flAbilityCharge -= NECRO_COSTS[minionType]; // Deduct from ability charge.
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strNecroMinionSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, NECRO_NAMES[minionType] + " summoned!\n");
@@ -767,7 +776,7 @@ class NecroMinionData
         }
 
         // Return spent points only when the player manually clears their minions.
-        m_flAbilityCharge = Math.min(m_flAbilityCharge + float(m_iReservePool), float(GetAbilityMax()));
+        m_flAbilityCharge = Math.min(m_flAbilityCharge + m_iReservePool, GetAbilityMax());
         m_iReservePool = 0;
         
         if(anyDestroyed)
@@ -1119,8 +1128,8 @@ void CheckNecromancerMinions()
             
                 // Make sure resource limits are enforced
                 NecroMinion.PruneMinions();
-                int necroMax = NecroMinion.GetAbilityMax();
-                if(necroMax > 0 && NecroMinion.GetReservePool() > necroMax)
+                float necroMax = NecroMinion.GetAbilityMax();
+                if(necroMax > 0.0f && NecroMinion.GetReservePool() > necroMax)
                 {
                     // Over the limit, destroy minions until we're within limits.
                     NecroMinion.DestroyAllMinions(pPlayer);

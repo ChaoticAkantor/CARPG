@@ -59,9 +59,35 @@ const array<float> ROBO_DMG_MODIFIERS =
 
 const array<int> MINION_COSTS = 
 {
-    1,  // Shotgun.
-    2,  // MP5.
-    4   // M16.
+    50,  // Shotgun.
+    50,  // MP5.
+    75   // M16.
+};
+
+enum SupportType // Index into SUPPORT_COSTS / SUPPORT_NAMES.
+{
+    SUPPORT_MEDKIT = 0,
+    SUPPORT_BATTERY = 1,
+    SUPPORT_AMMO = 2
+}
+
+// Menu choice IDs for support options. Kept separate from minion indices (0-2) and management IDs (98/99).
+const int MENU_CREATE_MEDKIT = 10;
+const int MENU_CREATE_BATTERY = 11;
+const int MENU_CREATE_AMMO = 12;
+
+const array<int> SUPPORT_COSTS = 
+{
+    25,  // Medkit.
+    50,  // Battery.
+    25   // Ammo Box.
+};
+
+const array<string> SUPPORT_NAMES = 
+{
+    "Medkit:",
+    "Battery:",
+    "Ammo Box:"
 };
 
 const array<Vector> ROBO_GLOW_COLORS =
@@ -104,18 +130,31 @@ class MinionData
     private bool m_bActive = false;
 
     // Monster variables.
-    private int m_iMinionPointMax = 1; // Max pool for minions. Can be increased with skill.
-    private float m_flAbilityRechargeTime = 30.0f; // Time in seconds to recharge one minion point.
+    private float m_flMinionPointMax = 100.0f; // Max pool for minions. Can be increased with skill.
+    private float m_flAbilityRechargeTime = 90.0f; // Seconds to fully recharge the entire max pool from empty.
     private float m_flBaseHealth = 200.0; // Base health of Robogrunts.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
     private float m_flAnimationSpeed = 1.30; // Animation speed modifier, for ALL types.
+
+    // Support Abilities.
+    private float m_flSupportThrowSpeed = 150.0f; // Forward speed support items are thrown at.
+    private float m_flSupportThrowLift = 250.0f; // Upward speed added to the throw for arc.
+    private float m_flMedkitHealBase = 25.0f; // Base heal value when picking up a created medkit.
+    private float m_flBatteryRestoreBase = 15.0f; // Base restore value when picking up a created battery.
+    private int m_flAmmoRestoreBase9mm = 60; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
+    private int m_flAmmoRestoreBase357 = 6; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
+    private int m_flAmmoRestoreBaseBuckshot = 8; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
+    private int m_flAmmoRestoreBaseBolts = 10; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
+    private int m_flAmmoRestoreBase556 = 30; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
+    private int m_flAmmoRestoreBase762 = 5; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
+    private int m_flAmmoRestoreBaseUranium = 20; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
 
     // Minion Team Lifesteal Self-heal modifier.
     private float m_flSelfHealMult = 0.10f; // Multiplier for self-healing from minion lifesteal.
 
     // Timers and trackers.
-    private float m_flAbilityCharge = 1.0f; // Current available charge (in minion points).
-    private int m_iMinionResourceCost = 0; // Initialisation cost to summon 1 minion default.
+    private float m_flAbilityCharge = 1.0f; // Current available charge.
+    private float m_flMinionResourceCost = 0.0f; // Initialisation cost to summon 1 minion default.
     private int m_iReservePool = 0; // Tracks the current reserve pool used for minions.
     private float m_flLastToggleTime = 0.0f;
     private float m_flLastRegenTime = 0.0f;
@@ -135,23 +174,27 @@ class MinionData
     void SetReservePoolZero() { m_iReservePool = 0; }
     bool HasStats() { return m_pStats !is null; }
 
-    int GetMinionPointIncrease()
+    float GetMinionPointIncrease()
     {
         if(m_pStats is null)
-            return 0; // No increase if no stats.
+            return m_flMinionPointMax; // Return base if no stats.
+
+        float minionPoints = m_flMinionPointMax;
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
-        return int(SKILL_MINION_POINT * skillLevel); // Bonus minion points from skill.
+        float skillPower = SKILL_MINION_POINT;
+
+        return minionPoints * (skillPower * skillLevel); // Bonus minion points from skill.
     }
 
-    int GetAbilityMax()
+    float GetAbilityMax()
     {
-        int maxPoints = m_iMinionPointMax + GetMinionPointIncrease();
-        return maxPoints < 1 ? 1 : maxPoints;
+        float maxPoints = m_flMinionPointMax + GetMinionPointIncrease();
+        return maxPoints < 1.0f ? 1.0f : maxPoints;
     }
 
     float GetAbilityCharge() { return m_flAbilityCharge; }
-    void FillAbilityCharge() { m_flAbilityCharge = float(GetAbilityMax()); }
+    void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
 
     float GetScaledAbilityRecharge()
     {
@@ -166,11 +209,11 @@ class MinionData
 
     void RechargeAbility()
     {
-        float chargeMax = Math.max(0.0f, float(GetAbilityMax() - m_iReservePool));
+        float chargeMax = Math.max(0.0f, GetAbilityMax() - m_iReservePool);
         if (m_flAbilityCharge >= chargeMax)
             return;
 
-        float rechargeRate = GetScaledAbilityRecharge() / m_flAbilityRechargeTime;
+        float rechargeRate = GetAbilityMax() / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
         if (m_flAbilityCharge > chargeMax)
             m_flAbilityCharge = chargeMax;
@@ -264,6 +307,209 @@ class MinionData
 
         return modifier;
     }
+
+    void CreateMedkit(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+            return;
+
+        if(GetAbilityMax() <= 0.0f)
+            return;
+
+        if(m_flAbilityCharge < SUPPORT_COSTS[SUPPORT_MEDKIT])
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, SUPPORT_NAMES[SUPPORT_MEDKIT] + " requires " + SUPPORT_COSTS[SUPPORT_MEDKIT] + " charge!\n");
+            return;
+        }
+
+        // Initialize stats if needed.
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(m_pStats is null)
+        {
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
+                {
+                    @m_pStats = data.GetCurrentClassStats();
+                }
+            }
+        }
+
+        Vector vecSrc = pPlayer.GetGunPosition();
+        Vector spawnForward, spawnRight, spawnUp;
+        g_EngineFuncs.AngleVectors(pPlayer.pev.v_angle, spawnForward, spawnRight, spawnUp);
+        
+        vecSrc = vecSrc + (spawnForward * 32); // Spawn just in front of the player and throw from there.
+
+        float scaledHealth = m_flMedkitHealBase;
+        int spawnFlags = 256 | 1024; // Combine flags.
+        
+        dictionary keys;
+        keys["origin"] = vecSrc.ToString();
+        keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
+        keys["health"] = "" + int(scaledHealth);
+        keys["scale"] = "1"; // Size
+        keys["spawnflags"] = "" + spawnFlags;
+        keys["movetype"] = "0";
+        keys["renderfx"] = "19"; // Glow shell.
+        keys["renderamt"] = "5";
+        keys["rendercolor"] = "0 255 0"; // Green glow.
+
+        CBaseEntity@ pCreatedMedkit = g_EntityFuncs.CreateEntity("item_healthkit", keys, true);
+        if(pCreatedMedkit !is null)
+        {   
+            g_EntityFuncs.DispatchSpawn(pCreatedMedkit.edict()); // Dispatch the entity.
+
+            // Throw it out in the direction the player is looking, keeping the player's own momentum.
+            pCreatedMedkit.pev.velocity = (spawnForward * m_flSupportThrowSpeed) + (spawnUp * m_flSupportThrowLift) + pPlayer.pev.velocity;
+            
+            m_flAbilityCharge -= SUPPORT_COSTS[SUPPORT_MEDKIT]; // Deduct from ability charge.
+
+            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundCreate, 1.0f, ATTN_NORM);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, SUPPORT_NAMES[SUPPORT_MEDKIT] + " created!\n");
+        }
+    }
+
+    void CreateBattery(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+            return;
+
+        if(GetAbilityMax() <= 0.0f)
+            return;
+
+        if(m_flAbilityCharge < SUPPORT_COSTS[SUPPORT_MEDKIT])
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, SUPPORT_NAMES[SUPPORT_MEDKIT] + " requires " + SUPPORT_COSTS[SUPPORT_MEDKIT] + " charge!\n");
+            return;
+        }
+
+        // Initialize stats if needed.
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(m_pStats is null)
+        {
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
+                {
+                    @m_pStats = data.GetCurrentClassStats();
+                }
+            }
+        }
+
+        Vector vecSrc = pPlayer.GetGunPosition();
+        Vector spawnForward, spawnRight, spawnUp;
+        g_EngineFuncs.AngleVectors(pPlayer.pev.v_angle, spawnForward, spawnRight, spawnUp);
+        
+        vecSrc = vecSrc + (spawnForward * 32); // Spawn just in front of the player and throw from there.
+
+        float scaledRestore = m_flBatteryRestoreBase;
+        int spawnFlags = 256 | 1024; // Combine flags.
+        
+        dictionary keys;
+        keys["origin"] = vecSrc.ToString();
+        keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
+        keys["health"] = "" + int(scaledRestore);
+        keys["scale"] = "1"; // Size
+        keys["spawnflags"] = "" + spawnFlags;
+        keys["movetype"] = "0";
+        keys["renderfx"] = "19"; // Glow shell.
+        keys["renderamt"] = "5";
+        keys["rendercolor"] = "0 100 255"; // Light Blue glow.
+
+        CBaseEntity@ pCreatedBattery = g_EntityFuncs.CreateEntity("item_battery", keys, true);
+        if(pCreatedBattery !is null)
+        {   
+            g_EntityFuncs.DispatchSpawn(pCreatedBattery.edict()); // Dispatch the entity.
+
+            // Throw it out in the direction the player is looking, keeping the player's own momentum.
+            pCreatedBattery.pev.velocity = (spawnForward * m_flSupportThrowSpeed) + (spawnUp * m_flSupportThrowLift) + pPlayer.pev.velocity;
+            
+            m_flAbilityCharge -= SUPPORT_COSTS[SUPPORT_BATTERY]; // Deduct from ability charge.
+
+            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundCreate, 1.0f, ATTN_NORM);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, SUPPORT_NAMES[SUPPORT_BATTERY] + " created!\n");
+        }
+    }
+
+    void CreateAmmoBox(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
+            return;
+
+        if(GetAbilityMax() <= 0.0f)
+            return;
+
+        if(m_flAbilityCharge < SUPPORT_COSTS[SUPPORT_AMMO])
+        {
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, SUPPORT_NAMES[SUPPORT_AMMO] + " requires " + SUPPORT_COSTS[SUPPORT_AMMO] + " charge!\n");
+            return;
+        }
+
+        // Initialize stats if needed.
+        string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+        if(m_pStats is null)
+        {
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
+                {
+                    @m_pStats = data.GetCurrentClassStats();
+                }
+            }
+        }
+
+        Vector vecSrc = pPlayer.GetGunPosition();
+        Vector spawnForward, spawnRight, spawnUp;
+        g_EngineFuncs.AngleVectors(pPlayer.pev.v_angle, spawnForward, spawnRight, spawnUp);
+        
+        vecSrc = vecSrc + (spawnForward * 32); // Spawn just in front of the player and throw from there.
+
+        // Get ammo restore values for each type.
+        int restore9mm = m_flAmmoRestoreBase9mm;
+        int restore357 = m_flAmmoRestoreBase357;
+        int restoreBuckshot = m_flAmmoRestoreBaseBuckshot;
+        int restoreBolts = m_flAmmoRestoreBaseBolts;
+        int restore556 = m_flAmmoRestoreBase556;
+        int restore762 = m_flAmmoRestoreBase762;
+        int restoreUranium = m_flAmmoRestoreBaseUranium;
+
+        int spawnFlags = 256 | 1024; // Combine flags.
+        
+        dictionary keys;
+        keys["origin"] = vecSrc.ToString();
+        keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
+        keys["scale"] = "1"; // Size
+        keys["spawnflags"] = "" + spawnFlags;
+        keys["movetype"] = "0";
+        keys["renderfx"] = "19"; // Glow shell.
+        keys["renderamt"] = "5";
+        keys["rendercolor"] = "255 100 0"; // Orange glow.
+        keys["bullet9mm"] = "" + restore9mm;
+        keys["bullet357"] = "" + restore357;
+        keys["buckshot"] = "" + restoreBuckshot;
+        keys["bolts"] = "" + restoreBolts;
+        keys["bullet556"] = "" + restore556;
+        keys["m40a1"] = "" + restore762;
+        keys["uranium"] = "" + restoreUranium;
+
+        CBaseEntity@ pCreatedAmmo = g_EntityFuncs.CreateEntity("weaponbox", keys, true);
+        if(pCreatedAmmo !is null)
+        {   
+            g_EntityFuncs.DispatchSpawn(pCreatedAmmo.edict()); // Dispatch the entity.
+
+            // Throw it out in the direction the player is looking, keeping the player's own momentum.
+            pCreatedAmmo.pev.velocity = (spawnForward * m_flSupportThrowSpeed) + (spawnUp * m_flSupportThrowLift) + pPlayer.pev.velocity;
+            
+            m_flAbilityCharge -= SUPPORT_COSTS[SUPPORT_AMMO]; // Deduct from ability charge.
+
+            g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundCreate, 1.0f, ATTN_NORM);
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, SUPPORT_NAMES[SUPPORT_AMMO] + " created!\n");
+        }
+    }
     
     array<MinionInfo>@ GetMinions() { return m_hMinions; }
 
@@ -309,8 +555,8 @@ class MinionData
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
             return;
 
-        int maxPool = GetAbilityMax();
-        if(maxPool <= 0)
+        float maxPool = GetAbilityMax();
+        if(maxPool <= 0.0f)
             return;
 
         PruneMinions();
@@ -322,7 +568,7 @@ class MinionData
             return;
         }
 
-        if(m_flAbilityCharge < float(MINION_COSTS[minionType]))
+        if(m_flAbilityCharge < MINION_COSTS[minionType])
         {
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, MINION_NAMES[minionType] + " is recharging!\n");
             return;
@@ -398,7 +644,7 @@ class MinionData
             m_hMinions.insertLast(info);
             
             m_iReservePool += MINION_COSTS[minionType]; // Add to reserve pool when minion is created.
-            m_flAbilityCharge -= float(MINION_COSTS[minionType]); // Deduct from ability charge.
+            m_flAbilityCharge -= MINION_COSTS[minionType]; // Deduct from ability charge.
 
             g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_STATIC, strRobogruntSoundCreate, 1.0f, ATTN_NORM);
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, MINION_NAMES[minionType] + " deployed!\n");
@@ -505,7 +751,7 @@ class MinionData
         }
 
         // Return spent points only when the player manually clears their minions.
-        m_flAbilityCharge = Math.min(m_flAbilityCharge + float(m_iReservePool), float(GetAbilityMax()));
+        m_flAbilityCharge = Math.min(m_flAbilityCharge + m_iReservePool, GetAbilityMax());
         m_iReservePool = 0;
         
         if(anyDestroyed)
@@ -742,10 +988,10 @@ class MinionMenu
         @m_pMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
         m_pMenu.SetTitle("[Robot Control Menu]\n");
         
-        // Always show spawn options since limit is now resource-based.
+        // Show choices.
         for(uint i = 0; i < MINION_NAMES.length(); i++) 
         {
-            m_pMenu.AddItem("Deploy " + MINION_NAMES[i] + " (Cost: " + MINION_COSTS[i] + ")\n", any(i));
+            m_pMenu.AddItem("Deploy " + MINION_NAMES[i] + " (Need: " + MINION_COSTS[i] + ")\n", any(i));
         }
 
         // Add management options if we have minions.
@@ -754,6 +1000,11 @@ class MinionMenu
             m_pMenu.AddItem("Teleport All\n", any(99));
             m_pMenu.AddItem("Destroy All\n", any(98));
         }
+
+        // Add support options. Each has its own menu ID and its own create function.
+        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_MEDKIT] + " (Cost: " + SUPPORT_COSTS[SUPPORT_MEDKIT] + ")\n", any(MENU_CREATE_MEDKIT));
+        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_BATTERY] + " (Cost: " + SUPPORT_COSTS[SUPPORT_BATTERY] + ")\n", any(MENU_CREATE_BATTERY));
+        m_pMenu.AddItem("Fabricate " + SUPPORT_NAMES[SUPPORT_AMMO] + " (Cost: " + SUPPORT_COSTS[SUPPORT_AMMO] + ")\n", any(MENU_CREATE_AMMO));
         
         m_pMenu.Register();
         m_pMenu.Open(0, 0, pPlayer);
@@ -780,6 +1031,18 @@ class MinionMenu
             {
                 // Spawn new minion with selected weapon.
                 m_pOwner.SpawnSpecificMinion(pPlayer, choice);
+            }
+            else if(choice == MENU_CREATE_MEDKIT)
+            {
+                m_pOwner.CreateMedkit(pPlayer);
+            }
+            else if(choice == MENU_CREATE_BATTERY) 
+            { 
+                m_pOwner.CreateBattery(pPlayer); 
+            }
+            else if(choice == MENU_CREATE_AMMO) 
+            { 
+                m_pOwner.CreateAmmoBox(pPlayer); 
             }
         }
     }
@@ -838,8 +1101,8 @@ void CheckEngineerMinions()
                 
                 // Make sure resource limits are enforced.
                 Minion.PruneMinions();
-                int roboMax = Minion.GetAbilityMax();
-                if(roboMax > 0 && Minion.GetReservePool() > roboMax)
+                float roboMax = Minion.GetAbilityMax();
+                if(roboMax > 0.0f && Minion.GetReservePool() > roboMax)
                 {
                     // Over the limit, destroy minions until we're within limits.
                     Minion.DestroyAllMinions(pPlayer);
