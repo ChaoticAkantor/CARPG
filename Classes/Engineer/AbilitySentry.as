@@ -34,7 +34,7 @@ class SentryData
     // Sentry.
     private EHandle m_hSentry;
     private bool m_bActive = false;
-    private float m_flAbilityMax = 200.0f; // Base max duration.
+    private float m_flAbilityMax = 250.0f; // Base max duration.
     private float m_flAbilityRechargeTime = 15.0f; // Seconds to fully recharge from empty.
     private float m_flBaseHealth = 10000.0; // Base health of the sentry. Must be very high for it to be able to survive most encounters. Is now fixed and no longer scales.
     private float m_flSelfHealModifier = 2.0f; // Sentry self-healing multiplier.
@@ -269,6 +269,9 @@ class SentryData
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Sentry Deployed!\n");
 
             m_bActive = true;
+            m_flNextDrain = 0.0f;
+            m_flNextHeal = 0.0f;
+            m_flNextVisualUpdate = 0.0f;
         }
     }
 
@@ -468,7 +471,8 @@ class SentryData
         UpdateVisualEffect(pPlayer);
 
         // Handle energy drain.
-        if(currentTime >= m_flNextDrain)
+        // Also catch g_Engine.time going backwards (map restart), which would otherwise stall the drain.
+        if(currentTime >= m_flNextDrain || m_flNextDrain > currentTime + m_flDrainInterval)
         {
             m_flNextDrain = currentTime + m_flDrainInterval;
 
