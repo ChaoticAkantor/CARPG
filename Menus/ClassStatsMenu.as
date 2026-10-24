@@ -50,6 +50,9 @@ namespace Menu
                         MedicStatsText += "Poison Damage: " + healingAura.GetPoisonDamageAmount() + "% HP\n";
                         MedicStatsText += "Radius: " + healingAura.GetHealingRadius() / 16 + "ft\n";
                         MedicStatsText += "Revive Cooldown: " + healingAura.GetReviveCooldown() + "s\n";
+                        int medkitAmmoIndex = g_PlayerFuncs.GetAmmoIndex("health");
+                        if(medkitAmmoIndex >= 0)
+                            MedicStatsText += "Medkit Capacity: " + pPlayer.GetMaxAmmo(medkitAmmoIndex) + "\n";
 
                         m_pMenu.AddItem(MedicStatsText, null);
                     }
