@@ -234,6 +234,7 @@ void PrecacheMonster()
 
     // Robomancer Minions.
     g_Game.PrecacheMonster("monster_robogrunt", true);
+    //g_Game.PrecacheMonster("monster_human_medic_ally", true); // For model swap.
 
     // Necromancer Minions.
     g_Game.PrecacheMonster("monster_headcrab", true);
