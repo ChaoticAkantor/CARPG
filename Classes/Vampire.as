@@ -1,6 +1,5 @@
 string strBloodlustStartSound = "garg/gar_pain1.wav";
 string strBloodlustEndSound = "player/breathe2.wav";
-string strBloodlustHitSound = "player/pl_organic4.wav";
 string strBloodlustActiveSound = "player/heartbeat1.wav";
 string strBloodlustSprite = "sprites/saveme.spr";
 
@@ -320,9 +319,6 @@ class BloodlustData
             pPlayer.pev.health = Math.min(pPlayer.pev.health + healAmount, overhealPercent);
 
             ApplyLifestealEffect(pPlayer); // Visual effect for healing from lifesteal.
-        
-            int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
-                g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
 
             return healAmount;
         }
@@ -364,25 +360,11 @@ class BloodlustData
             bubbleMsg.WriteCoord(maxs.x);
             bubbleMsg.WriteCoord(maxs.y);
             bubbleMsg.WriteCoord(maxs.z);
-            bubbleMsg.WriteCoord(112.0f);
-            bubbleMsg.WriteShort(GetModelIndex(strBloodlustSprite));
+            bubbleMsg.WriteCoord(80.0f);
+            bubbleMsg.WriteShort(GetModelIndex(strHealAuraEffectSprite));
             bubbleMsg.WriteByte(2); // Count.
-            bubbleMsg.WriteCoord(2.0f); // Lifetime.
+            bubbleMsg.WriteCoord(6.0f); // Lifetime.
         bubbleMsg.End();
-
-        // Add dynamic light
-        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pPlayer.pev.origin);
-            msg.WriteByte(TE_DLIGHT);
-            msg.WriteCoord(pPlayer.pev.origin.x);
-            msg.WriteCoord(pPlayer.pev.origin.y);
-            msg.WriteCoord(pPlayer.pev.origin.z);
-            msg.WriteByte(5); // Radius
-            msg.WriteByte(int(BLOODLUST_COLOR.x));
-            msg.WriteByte(int(BLOODLUST_COLOR.y));
-            msg.WriteByte(int(BLOODLUST_COLOR.z));
-            msg.WriteByte(2); // Life in 0.1s
-            msg.WriteByte(1); // Decay rate
-        msg.End();
     }
 
     void DeactivateBloodlust(CBasePlayer@ pPlayer)

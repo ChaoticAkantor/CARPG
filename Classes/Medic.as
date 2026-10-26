@@ -474,7 +474,7 @@ class HealingAura
             aura2msg.WriteCoord(maxs.z);
             aura2msg.WriteCoord(80.0f); // Height of the bubble effect.
             aura2msg.WriteShort(GetModelIndex(strHealAuraEffectSprite));
-            aura2msg.WriteByte(18); // Count.
+            aura2msg.WriteByte(16); // Count.
             aura2msg.WriteCoord(6.0f); // Speed.
             aura2msg.End();
     }

@@ -219,11 +219,7 @@ class BarrierData
         if(pProtectedPlayer.pev.health < pProtectedPlayer.pev.max_health) // Only absorb if not at full health.
         {
             float healthAbsorb = incomingDamage * GetScaledHealthAbsorb();
-            pProtectedPlayer.pev.health += healthAbsorb; // Add the modified absorbed damage to health.
-
-            // Prevent overhealing from absorbed damage.
-            if (pProtectedPlayer.pev.health > pProtectedPlayer.pev.max_health)
-                pProtectedPlayer.pev.health = pProtectedPlayer.pev.max_health;
+            pProtectedPlayer.pev.health = Math.min(pProtectedPlayer.pev.health + healthAbsorb, pProtectedPlayer.pev.max_health); // Add the modified absorbed damage to health, capped at max.
 
             Vector pos = pProtectedPlayer.pev.origin;
             Vector mins = pos - Vector(16, 16, 0);
@@ -240,9 +236,9 @@ class BarrierData
                 absorbmsg.WriteCoord(maxs.z); // Bounding-box maximum Z.
                 absorbmsg.WriteCoord(80.0f); // Bubble column height.
                 absorbmsg.WriteShort(GetModelIndex(strHealAuraEffectSprite)); // Bubble sprite model index.
-                absorbmsg.WriteByte(12); // Number of bubbles.
+                absorbmsg.WriteByte(6); // Number of bubbles.
                 absorbmsg.WriteCoord(6.0f); // Bubble rise speed.
-                absorbmsg.End(); // Finish the bubble temp-entity message.
+            absorbmsg.End();
         }
     }
 
