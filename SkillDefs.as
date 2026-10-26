@@ -13,6 +13,7 @@ const float SKILL_BASIC_AMMOREGEN = 0.03f; // Fraction of base max ammo capacity
 const float SKILL_BASIC_LIFESTEAL = 0.01f; // Percent of damage dealt as lifesteal per level.
 const float SKILL_BASIC_ARMORSTEAL = 0.0030f; // Percent of damage dealt as armorsteal per level.
 const float SKILL_BASIC_HPCONVERSION = 0.06f; // Percent of Max HP to convert to AP per level.
+const float SKILL_BASIC_MEDKITCAPACITY = 0.10f; // Medkit capacity increase per level.
 
 // Class-specific skills.
 // Minion Class ('mancers) exclusive.
@@ -28,7 +29,6 @@ const float SKILL_MEDIC_HEALREGEN = 0.20f; // Max health percent healed per inte
 const float SKILL_MEDIC_POISON = 5.00f; // Flat poison damage per level.
 const float SKILL_MEDIC_REVIVE = 3.00f; // Reduce revive cooldown in seconds per level.
 const float SKILL_MEDIC_HEALAP = 1.50f; // Percent of max AP to heal per level (divided by 100).
-const float SKILL_MEDIC_MEDKITCAPACITY = 0.30f; // Medkit capacity increase per level.
 
 // Vampire.
 const float SKILL_VAMPIRE_LIFESTEAL = 0.06f; // Percent increase to ALL lifesteal per level.
@@ -105,6 +105,7 @@ enum SkillID
     SKILL_BASIC_LIFESTEAL,
     SKILL_BASIC_ARMORSTEAL,
     SKILL_BASIC_HPCONVERSION,
+    SKILL_BASIC_MEDKITCAPACITY,
 
     //Minion Classes.
     SKILL_MINION_POINT,
@@ -173,9 +174,6 @@ enum SkillID
     SKILL_SWARMER_SNARKDAMAGE,
     SKILL_SWARMER_SNARKCOUNT,
 
-    // Additional class skills. Keep new IDs at the end to preserve saved skill indices.
-    SKILL_MEDIC_MEDKITCAPACITY,
-
     // Total.
     SKILL_MAX_COUNT
 }
@@ -222,6 +220,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_BASIC_LIFESTEAL)] = SkillDefinition("Lifesteal", "+" + formatFloat(SKILL_BASIC_LIFESTEAL * 100.0f, "f", 0, 2) + "% lifesteal.", 10, SKILL_BASIC_LIFESTEAL * 100.0f, "%", 1.0f);
     @g_SkillDefs[int(SkillID::SKILL_BASIC_ARMORSTEAL)] = SkillDefinition("Armorsteal", "+" + formatFloat(SKILL_BASIC_ARMORSTEAL * 100.0f, "f", 0, 2) + "% armorsteal.", 10, SKILL_BASIC_ARMORSTEAL * 100.0f, "%", 1.0f);
     @g_SkillDefs[int(SkillID::SKILL_BASIC_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+" + formatFloat(SKILL_BASIC_HPCONVERSION * 100.0f, "f", 0, 2) + "% of Max HP converted to AP.", 10, SKILL_BASIC_HPCONVERSION * 100.0f, "%", 1.0f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_MEDKITCAPACITY)] = SkillDefinition("Medkit Capacity", "+" + formatFloat(SKILL_BASIC_MEDKITCAPACITY * 100.0f, "f", 0, 2) + "% medkit capacity.", 10, SKILL_BASIC_MEDKITCAPACITY * 100.0f, "%", 1.0f);
 
     // Minion Class exclusive.
     @g_SkillDefs[int(SkillID::SKILL_MINION_POINT)] = SkillDefinition("Minion: Max Reserve", "+" + SKILL_MINION_POINT * 100.0f + "% max reserve.", 5, SKILL_MINION_POINT * 100.0f, "%", 0.5f);
@@ -236,7 +235,6 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal: Acid", "+" + formatFloat(SKILL_MEDIC_POISON, "f", 0, 2) + " acid damage.", 5, SKILL_MEDIC_POISON, "", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal: Revive", "-" + formatFloat(SKILL_MEDIC_REVIVE, "f", 0, 2) + "s revive cooldown.", 5, SKILL_MEDIC_REVIVE, "s", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal: AP Restore", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heals to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_MEDKITCAPACITY)] = SkillDefinition("Medic: Medkit Capacity", "+" + formatFloat(SKILL_MEDIC_MEDKITCAPACITY * 100.0f, "f", 0, 2) + "% medkit capacity.", 5, SKILL_MEDIC_MEDKITCAPACITY * 100.0f, "%", 0.5f);
 
     // Vampire.
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_LIFESTEAL)] = SkillDefinition("Bloodlust: Lifesteal", "+" + formatFloat(SKILL_VAMPIRE_LIFESTEAL * 100.0f, "f", 0, 2) + "% all lifesteal.", 5, SKILL_VAMPIRE_LIFESTEAL * 100.0f, "%", 0.5f);
@@ -304,6 +302,7 @@ array<SkillID> GetStandardSkillIDs()
     result.insertLast(SkillID::SKILL_BASIC_LIFESTEAL);
     result.insertLast(SkillID::SKILL_BASIC_ARMORSTEAL);
     result.insertLast(SkillID::SKILL_BASIC_HPCONVERSION);
+    result.insertLast(SkillID::SKILL_BASIC_MEDKITCAPACITY);
     return result;
 }
 
@@ -320,7 +319,6 @@ array<SkillID> GetClassSkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MEDIC_POISON);
             result.insertLast(SkillID::SKILL_MEDIC_REVIVE);
             result.insertLast(SkillID::SKILL_MEDIC_HEALAP);
-            result.insertLast(SkillID::SKILL_MEDIC_MEDKITCAPACITY);
             break;
 
         case PlayerClass::CLASS_VAMPIRE:
