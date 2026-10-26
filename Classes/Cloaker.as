@@ -8,6 +8,27 @@ const Vector CLOAK_COLOR = Vector(50, 50, 50); // R G B
 
 dictionary g_PlayerCloaks;
 
+void UpdateCloakers()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerCloaks.exists(steamID))
+            {
+                CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
+                if(cloak !is null)
+                {
+                    cloak.Update(pPlayer);
+                }
+            }
+        }
+    }
+}
+
 class CloakData
 {
     // Cloak.
