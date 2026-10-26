@@ -1,5 +1,6 @@
 string strSnarkModel = "models/w_squeak.mdl";
 string strSnarkSpriteTinySpit = "sprites/tinyspit.spr"; // Should already be precached by from bullsquid in XenMinion, but still crashes on They Hunger maps!
+string strSnarkReleaseSound = "player/pl_organic4.wav";
 
 dictionary g_PlayerSnarkNests;
 
@@ -146,7 +147,7 @@ class SnarkNestData
         Vector gunPos = pPlayer.GetGunPosition();
         
         // Play sound (Use from bloodlust).
-        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strBloodlustHitSound, 1.0f, ATTN_NORM);
+        g_SoundSystem.EmitSound(pPlayer.edict(), CHAN_WEAPON, strSnarkReleaseSound, 1.0f, ATTN_NORM);
         
         // Spawn snarks from the player's gun.
         int snarkCount = GetSnarkCount();

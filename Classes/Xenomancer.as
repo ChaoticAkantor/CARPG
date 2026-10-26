@@ -888,15 +888,11 @@ class XenMinionData
             healeffect.WriteCoord(maxs.x);
             healeffect.WriteCoord(maxs.y);
             healeffect.WriteCoord(maxs.z);
-            healeffect.WriteCoord(112.0f);
+            healeffect.WriteCoord(80.0f);
             healeffect.WriteShort(GetModelIndex(strHealAuraEffectSprite));
-            healeffect.WriteByte(3);
-            healeffect.WriteCoord(2.0f);
+            healeffect.WriteByte(2);
+            healeffect.WriteCoord(6.0f);
             healeffect.End();
-
-            // Play a sound effect for the lifesteal (on the player).
-            int randomPitch = int(Math.RandomFloat(120.0f, 200.0f));
-            g_SoundSystem.PlaySound(pRecipient.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
         }
     }
 
