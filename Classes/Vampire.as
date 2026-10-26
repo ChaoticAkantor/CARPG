@@ -8,6 +8,27 @@ const Vector BLOODLUST_COLOR = Vector(255, 0, 0); // Red glow.
 
 dictionary g_PlayerBloodlusts;
 
+void UpdateVampires()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerBloodlusts.exists(steamID))
+            {
+                BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+                if(bloodlust !is null)
+                {
+                    bloodlust.Update(pPlayer);
+                }
+            }
+        }
+    }
+}
+
 class BloodlustData
 {
     // Remember to account for bloodlust double bonus when balancing!
