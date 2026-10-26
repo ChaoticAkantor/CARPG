@@ -837,9 +837,6 @@ class MinionData
                     if(pMinion.pev.health < pMinion.pev.max_health)
                     {
                         pMinion.pev.health = Math.min(pMinion.pev.health + flHealAmount, pMinion.pev.max_health); // Add health.
-
-                        if(pMinion.pev.health > pMinion.pev.max_health) 
-                            pMinion.pev.health = pMinion.pev.max_health; // Clamp to max health.
                     }
                 }
             }
