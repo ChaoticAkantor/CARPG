@@ -114,6 +114,10 @@ class DragonsBreathData
         if(pPlayer is null || flDamage <= 0.0f || (bitsDamageType & (DMG_BLAST | DMG_BURN | DMG_SLOWBURN)) != 0)
             return;
 
+        CBasePlayerWeapon@ pActiveWeapon = cast<CBasePlayerWeapon@>(pPlayer.m_hActiveItem.GetEntity());
+        if(pActiveWeapon is null || IsNonFirearmWeapon(pActiveWeapon))
+            return;
+
         UpdateAmmoFromWeapon(pPlayer);
         if(!IsProjectileAmmo(m_strCurrentAmmoName))
             m_flDirectDamage = Math.max(m_flDirectDamage, flDamage);
@@ -161,6 +165,15 @@ class DragonsBreathData
         if(pWeapon is null)
         {
             m_iLastWeaponIndex = -1;
+            return;
+        }
+
+        // Medkit and melee weapons never proc rounds. Reset tracking so switching back re-baselines.
+        if(IsNonFirearmWeapon(pWeapon))
+        {
+            m_iLastWeaponIndex = -1;
+            m_iPendingProcs = 0;
+            m_flDirectDamage = 0.0f;
             return;
         }
 
@@ -643,6 +656,26 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint, float flDirectDamag
         msgFireArea.WriteByte(50);
         msgFireArea.WriteByte(50);
     msgFireArea.End();
+}
+
+// Medkit and melee weapons are not firearms, so Dragon's Breath ignores them.
+bool IsNonFirearmWeapon(CBasePlayerWeapon@ pWeapon)
+{
+    if(pWeapon is null)
+        return true;
+
+    string className = pWeapon.GetClassname();
+    if(className == "weapon_medkit" || className == "weapon_crowbar" || className == "weapon_pipewrench"
+        || className == "weapon_knife" || className == "weapon_grapple")
+        return true;
+
+    int ammoIdx = pWeapon.PrimaryAmmoIndex();
+    if(ammoIdx < 0)
+        return pWeapon.m_iClip < 0; // No ammo at all and no clip - nothing to consume.
+
+    int healthIdx = g_PlayerFuncs.GetAmmoIndex("health");
+    int meleeIdx = g_PlayerFuncs.GetAmmoIndex("melee");
+    return (healthIdx >= 0 && ammoIdx == healthIdx) || (meleeIdx >= 0 && ammoIdx == meleeIdx);
 }
 
 // Helper function to get ammo name from index.
