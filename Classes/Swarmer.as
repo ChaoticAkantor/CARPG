@@ -302,7 +302,7 @@ void ContinueSnarkSpawning(dictionary@ spawnParams)
     snarkNest.ContinueSpawning(spawnParams);
 }
 
-void CheckSnarks()
+void UpdateSwarmers()
 {   
     // Process player data.
     for(int i = 1; i <= g_Engine.maxClients; ++i)
