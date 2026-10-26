@@ -5,7 +5,7 @@
 
 // Timer intervals.
 // HP/AP regen skills are handled in BasicSkills.as. This file keeps the hurt delay that pauses them.
-const float flHurtDelayTick = 0.5f; // Time between hurt delay ticks (in seconds).
+const float flHurtDelayTick = 1.0f; // Time between hurt delay ticks (in seconds).
 const float flHurtDelay = 2.0f; // Total time to stay "hurt" before regen starts again (in seconds).
 
 // Sprite on hud for icon when hurt delay is active.
