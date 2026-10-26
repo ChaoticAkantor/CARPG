@@ -316,7 +316,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strBloodlustStartSound);
         g_SoundSystem.PrecacheSound(strBloodlustEndSound);
         g_SoundSystem.PrecacheSound(strBloodlustActiveSound);
-        g_SoundSystem.PrecacheSound(strBloodlustHitSound);
 
     // Frostguard Ability Precache.
         // Models/Sprites.
@@ -630,6 +629,10 @@ void PrecacheAll()
         PrecacheModelIndexed(strSnarkModel);
         PrecacheModelIndexed(strSnarkRatModel);
         PrecacheModelIndexed(strSnarkSpriteTinySpit);
+
+    // Swarmer.
+        // Sounds.
+        g_SoundSystem.PrecacheSound(strSnarkReleaseSound);
 
 /*  Had to disable Alien Grunt for now as the hornets it fires aren't owned by it, 
     so you gain no XP from score transfer as it doesn't gain any score.
