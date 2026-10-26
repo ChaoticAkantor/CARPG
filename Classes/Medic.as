@@ -3,8 +3,8 @@ string strHealAuraActiveSound = "ambience/alien_beacon.wav"; // Aura active loop
 string strHealSound = "player/heartbeat1.wav"; // Aura heal hit sound.
 string strReviveSound = "items/suitchargeok1.wav"; // Aura revive sound.
 string strHealAuraSprite = "sprites/zbeam6.spr"; // Aura sprite.
-string strHealAuraEffectSprite = "sprites/saveme.spr"; // Aura healing sprite.
-string strHealAuraAPEffectSprite = "sprites/blueflare2.spr"; // Aura healing sprite.
+string strHealAuraEffectSprite = "sprites/saveme.spr"; // Healing sprite.
+string strHealAuraAPEffectSprite = "sprites/blueflare2.spr"; // AP restore sprite.
 string strHealAuraPoisonEffectSprite = "sprites/tinyspit.spr"; // Poison damage sprite for enemies.
 string strPoisonSound = "bullchicken/bc_spithit1.wav"; // Sound played when poison damages an enemy.
 
