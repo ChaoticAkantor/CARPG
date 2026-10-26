@@ -204,7 +204,7 @@ class ShockRifleData
         CBasePlayerItem@ pItem = pPlayer.HasNamedPlayerItem("weapon_shockrifle");
         CBasePlayerWeapon@ pWeapon = cast<CBasePlayerWeapon@>(pItem);
         
-        // If player has shock rifle and is holding it, handle dropping it as a shockroach.
+        // If player has shock rifle and is holding it, attempt to fire displacer portal if skill is available.
         if(pWeapon !is null && pPlayer.m_hActiveItem.GetEntity() is pWeapon)
         {
             if(m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_DISPLACER) > 0)
@@ -212,20 +212,6 @@ class ShockRifleData
                 FireDisplacerPortal(pPlayer);
                 return;
             }
-
-            int ammoIndex = g_PlayerFuncs.GetAmmoIndex("shock charges"); // Get ammo index.
-            int currentAmmo = pPlayer.m_rgAmmo(ammoIndex); // Get current ammo from ammo index.
-            float flcurrentAmmo = float(currentAmmo); // Store current, convert to float.
-            float flMaxAmmo = GetScaledMaxAmmo(); // Get maximum.
-
-            // Refund half of remaining battery into charge.
-            m_flAbilityCharge = Math.min(m_flAbilityCharge + (flcurrentAmmo / 2), m_flAbilityMax);
-            
-            // Force remove the weapon.
-            g_EntityFuncs.Remove(pWeapon);
-            
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "(+" + currentAmmo + ") Battery Recovered\n");
-            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strShockrifleEquipSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
             
             m_flLastUseTime = 0.0f;
             return;
