@@ -658,24 +658,18 @@ void ApplyExplosionDamage(int playerIdx, Vector impactPoint, float flDirectDamag
     msgFireArea.End();
 }
 
-// Medkit and melee weapons are not firearms, so Dragon's Breath ignores them.
+// Melee weapons have no primary ammo index (-1) and the medkit uses health ammo, so Dragon's Breath ignores both.
 bool IsNonFirearmWeapon(CBasePlayerWeapon@ pWeapon)
 {
     if(pWeapon is null)
         return true;
 
-    string className = pWeapon.GetClassname();
-    if(className == "weapon_medkit" || className == "weapon_crowbar" || className == "weapon_pipewrench"
-        || className == "weapon_knife" || className == "weapon_grapple")
-        return true;
-
     int ammoIdx = pWeapon.PrimaryAmmoIndex();
     if(ammoIdx < 0)
-        return pWeapon.m_iClip < 0; // No ammo at all and no clip - nothing to consume.
+        return true;
 
     int healthIdx = g_PlayerFuncs.GetAmmoIndex("health");
-    int meleeIdx = g_PlayerFuncs.GetAmmoIndex("melee");
-    return (healthIdx >= 0 && ammoIdx == healthIdx) || (meleeIdx >= 0 && ammoIdx == meleeIdx);
+    return healthIdx >= 0 && ammoIdx == healthIdx;
 }
 
 // Helper function to get ammo name from index.
