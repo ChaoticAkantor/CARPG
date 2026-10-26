@@ -361,7 +361,7 @@ void CheckWeaponsShockRifle()
     }
 }
 
-void UpdateShockRifles()
+void UpdateShocktroopers()
 {
     const int iMaxPlayers = g_Engine.maxClients;
     for(int i = 1; i <= iMaxPlayers; ++i)
