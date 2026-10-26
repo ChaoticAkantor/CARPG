@@ -11,6 +11,27 @@ const float BARRIER_LINK_RANGE = 50.0f * 16.0f; // Range in units for the barrie
 
 dictionary g_PlayerBarriers; // Dictionary to store player Barrier data.
 
+void UpdateFrostguards()
+{
+    const int iMaxPlayers = g_Engine.maxClients;
+    for(int i = 1; i <= iMaxPlayers; ++i)
+    {
+        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
+        if(pPlayer !is null && pPlayer.IsConnected())
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerBarriers.exists(steamID))
+            {
+                BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
+                if(barrier !is null)
+                {
+                    barrier.Update(pPlayer);
+                }
+            }
+        }
+    }
+}
+
 class BarrierData
 {
     private bool m_bActive = false;
@@ -199,6 +220,10 @@ class BarrierData
         {
             float healthAbsorb = incomingDamage * GetScaledHealthAbsorb();
             pProtectedPlayer.pev.health += healthAbsorb; // Add the modified absorbed damage to health.
+
+            // Prevent overhealing from absorbed damage.
+            if (pProtectedPlayer.pev.health > pProtectedPlayer.pev.max_health)
+                pProtectedPlayer.pev.health = pProtectedPlayer.pev.max_health;
 
             Vector pos = pProtectedPlayer.pev.origin;
             Vector mins = pos - Vector(16, 16, 0);
