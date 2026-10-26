@@ -1069,7 +1069,7 @@ class NecroMinionMenu
     }
 }
 
-void CheckNecromancerMinions()
+void UpdateNecromancers()
 {   
     // Iterate directly through all player slots instead of using g_PlayerRPGData.getKeys()
     for (int i = 1; i <= g_Engine.maxClients; i++)
