@@ -128,23 +128,28 @@ void ApplyArmorstealEffectBasic(CBasePlayer@ pPlayer)
     if(data is null || data.GetSkillLevel(SkillID::SKILL_BASIC_ARMORSTEAL) <= 0)
         return;
 
-    Vector pos = pPlayer.pev.origin;
-    Vector mins = pos - Vector(16, 16, 0);
-    Vector maxs = pos + Vector(16, 16, 64);
+        Vector origin = pPlayer.pev.origin;
+        origin.z += 32; // Offset to center of entity.
+        
+        Vector endPoint = origin;
+        endPoint.z += 10; // Trail moves upward.
 
-    NetworkMessage bubbleMsgAP(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
-        bubbleMsgAP.WriteByte(TE_BUBBLES);
-        bubbleMsgAP.WriteCoord(mins.x);
-        bubbleMsgAP.WriteCoord(mins.y);
-        bubbleMsgAP.WriteCoord(mins.z);
-        bubbleMsgAP.WriteCoord(maxs.x);
-        bubbleMsgAP.WriteCoord(maxs.y);
-        bubbleMsgAP.WriteCoord(maxs.z);
-        bubbleMsgAP.WriteCoord(80.0f); // Height of bubbles effect.
-        bubbleMsgAP.WriteShort(GetModelIndex(strHealAuraAPEffectSprite));
-        bubbleMsgAP.WriteByte(2); // Count.
-        bubbleMsgAP.WriteCoord(6.0f);
-    bubbleMsgAP.End();
+        // Create sprite trail effect.
+        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+            msg.WriteByte(TE_SPRITETRAIL);
+            msg.WriteCoord(origin.x);
+            msg.WriteCoord(origin.y);
+            msg.WriteCoord(origin.z);
+            msg.WriteCoord(endPoint.x);
+            msg.WriteCoord(endPoint.y);
+            msg.WriteCoord(endPoint.z);
+            msg.WriteShort(GetModelIndex(strHealAuraAPEffectSprite));
+            msg.WriteByte(2);  // Count.
+            msg.WriteByte(1);  // Life in 0.1's.
+            msg.WriteByte(2);  // Scale in 0.1's.
+            msg.WriteByte(15); // Velocity along vector in 10's.
+            msg.WriteByte(5);  // Random velocity in 10's.
+        msg.End();
 }
 
 float GetScaledBasicLifesteal(PlayerData@ data)
@@ -202,9 +207,6 @@ float ProcessBasicLifesteal(CBasePlayer@ pPlayer, float damageDealt)
 
         ApplyLifestealEffectBasic(pPlayer); // Visual effect for healing from lifesteal.
 
-        int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
-            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
-
         return healAmount;
     }
 
@@ -240,10 +242,7 @@ float ProcessBasicArmorsteal(CBasePlayer@ pPlayer, float damageDealt)
     {
         pPlayer.pev.armorvalue = Math.min(pPlayer.pev.armorvalue + healAmount, maxArmor);
 
-        ApplyLifestealEffectBasic(pPlayer); // Visual effect for healing from lifesteal. TO CHANGE
-
-        int randomPitch = int(Math.RandomFloat(80.0f, 120.0f));
-            g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strBloodlustHitSound, 0.2f, 0.2f, 0, randomPitch);
+        ApplyArmorstealEffectBasic(pPlayer); // Visual effect for restoration from armorsteal.
 
         return healAmount;
     }
