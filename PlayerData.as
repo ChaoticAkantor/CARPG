@@ -948,30 +948,10 @@ class PlayerData
         {
             ClassDefinition@ def = cast<ClassDefinition@>(g_ClassDefinitions[m_CurrentClass]);
 
-            // Base HP/AP + SKILL_BASIC_MAXHP / SKILL_BASIC_MAXAP bonuses.
-            float maxHealth = def.baseHP * (1.0f + SKILL_BASIC_MAXHP * stats.GetSkillLevel(SkillID::SKILL_BASIC_MAXHP));
-            float maxArmor = def.baseAP * (1.0f + SKILL_BASIC_MAXAP * stats.GetSkillLevel(SkillID::SKILL_BASIC_MAXAP));
+            // Basic Max HP/AP skills and the basic HP -> AP conversion skill.
+            ApplyBasicMaxStats(pPlayer, stats, def);
 
-            // Set Max HP/AP based on class bonuses.
-            pPlayer.pev.max_health = maxHealth;
-            pPlayer.pev.armortype = maxArmor;
-
-            // HP Conversion Skill.
-            int conversionSkillLevel = stats.GetSkillLevel(SkillID::SKILL_BASIC_HPCONVERSION);
-            float skillPower = SKILL_BASIC_HPCONVERSION;
-            float hpConversionBonus = skillPower * conversionSkillLevel; // HP conversion percent scaled from skill.
-
-            float hpToConvert = maxHealth * hpConversionBonus; // HP amount that would be converted to AP.
-            float newMaxHP = maxHealth - hpToConvert; // New HP after conversion.
-
-            pPlayer.pev.armortype = maxArmor + hpToConvert; // Increase AP by converted HP.
-            pPlayer.pev.max_health = newMaxHP; // Set new max HP after conversion.
-
-            // Ensure max health doesn't ever drop below 1, otherwise it will render the player dead!
-            if (pPlayer.pev.max_health < 1.0f)
-                pPlayer.pev.max_health = 1.0f;
-
-            // Special case for Vampire conversion bonuses.
+            // Special case for Vampire's own AP -> HP conversion (separate class skill), applied after the basic stats.
             if (PlayerClass::CLASS_VAMPIRE == m_CurrentClass)
             {
                 // Vampire's Bloodlust grants bonus HP based on missing health, so we need to trigger a recalculation here.
