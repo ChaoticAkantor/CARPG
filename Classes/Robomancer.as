@@ -379,9 +379,9 @@ class MinionData
         if(GetAbilityMax() <= 0.0f)
             return;
 
-        if(m_flAbilityCharge < SUPPORT_COSTS[SUPPORT_MEDKIT])
+        if(m_flAbilityCharge < SUPPORT_COSTS[SUPPORT_BATTERY])
         {
-            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, SUPPORT_NAMES[SUPPORT_MEDKIT] + " requires " + SUPPORT_COSTS[SUPPORT_MEDKIT] + " charge!\n");
+            g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, SUPPORT_NAMES[SUPPORT_BATTERY] + " requires " + SUPPORT_COSTS[SUPPORT_BATTERY] + " charge!\n");
             return;
         }
 
