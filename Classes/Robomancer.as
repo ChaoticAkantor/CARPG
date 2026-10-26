@@ -1048,7 +1048,7 @@ class MinionMenu
     }
 }
 
-void CheckEngineerMinions()
+void UpdateRobomancers()
 {   
     const int iMaxPlayers = g_Engine.maxClients;
     for(int i = 1; i <= iMaxPlayers; ++i)
