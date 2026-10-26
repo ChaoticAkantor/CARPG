@@ -474,7 +474,7 @@ class DragonsBreathData
     }
 }
 
-void UpdateDragonsBreath()
+void UpdateFirebugs()
 {
     UpdateDragonsBreathBurns();
 

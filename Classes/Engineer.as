@@ -663,7 +663,7 @@ class SentryData
     }
 }
 
-void CheckSentries()
+void UpdateEngineers()
 {   
     for(int i = 1; i <= g_Engine.maxClients; ++i)
     {
