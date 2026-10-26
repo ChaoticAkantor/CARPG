@@ -2,7 +2,7 @@
 My personal attempt at writing an RPG mod for Sven Co-op from the ground up.
 Attempts to strike a better balance than other RPG mods.
 Credit to Johnboy, his RPG mod was an inspiration for learning.
-Credit to Namira, Zebigdt and LostHeart (and their friends) for most testing, as well as balancing, class and ability ideas.
+Credit to Namira, Zebigdt, LostHeart, HaikuLambda, Zergem and Dusk Hydra for most testing, as well as balancing, class and ability ideas.
 
 This is our core file.
 */
@@ -194,37 +194,42 @@ void SetupTimers()
     g_Scheduler.SetInterval("UpdateAllAmmoRegenHUDs", g_flAmmoRegenHUDUpdateInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating ammo regen HUD.
     g_Scheduler.SetInterval("CheckAllPlayerScores", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
 
-    // Medic.
-    g_Scheduler.SetInterval("CheckHealAura", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking heal aura.
+    // Basic Skills.
+    g_Scheduler.SetInterval("UpdateBasicSkills", g_flBasicSkillsTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating basic skills.
 
-    // Engineer.
-    g_Scheduler.SetInterval("CheckSentries", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer sentries.
+    // Class timers.
+        // Medic.
+        g_Scheduler.SetInterval("UpdateMedics", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating medics.
 
-    g_Scheduler.SetInterval("CheckEngineerMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking engineer Robogrunts.
+        // Engineer.
+        g_Scheduler.SetInterval("UpdateEngineers", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating engineers.
 
-    // Xenologist.
-    g_Scheduler.SetInterval("CheckXenologistMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Xenologist minions.
+        // Robomancer.
+        g_Scheduler.SetInterval("UpdateRobomancers", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Robomancers.
 
-    // Necromancer.
-    g_Scheduler.SetInterval("CheckNecromancerMinions", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Necromancer minions.
+        // Xenomancer.
+        g_Scheduler.SetInterval("UpdateXenomancers", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Xenomancers.
 
-    // Frostguard.
-    g_Scheduler.SetInterval("CheckBarrier", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking Barrier.
+        // Necromancer.
+        g_Scheduler.SetInterval("UpdateNecromancers", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Necromancers.
 
-    // Vampire.
-    g_Scheduler.SetInterval("UpdateBloodlusts", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating bloodlust.
+        // Frostguard.
+        g_Scheduler.SetInterval("UpdateFrostguards", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Frostguards.
 
-    // Cloaker.
-    g_Scheduler.SetInterval("UpdateCloaks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating cloak.
-    
-    // Shocktrooper.
-    g_Scheduler.SetInterval("UpdateShockRifles", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating shock rifle charge.
+        // Vampire.
+        g_Scheduler.SetInterval("UpdateVampires", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Vampires.
 
-    // Firebug.
-    g_Scheduler.SetInterval("UpdateDragonsBreath", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating dragons breath charge.
+        // Cloaker.
+        g_Scheduler.SetInterval("UpdateCloakers", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Cloakers.
+        
+        // Shocktrooper.
+        g_Scheduler.SetInterval("UpdateShocktroopers", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Shocktroopers.
 
-    // Swarmer.
-    g_Scheduler.SetInterval("CheckSnarks", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for checking snarks.
+        // Firebug.
+        g_Scheduler.SetInterval("UpdateFirebugs", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Firebugs.
+
+        // Swarmer.
+        g_Scheduler.SetInterval("UpdateSwarmers", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating Swarmers.
 }
 
 void PrecacheMonster()
@@ -1752,69 +1757,6 @@ void ShowClassMenuDelayed(CBasePlayer@ pPlayer)
         if(data !is null)
         {
             data.ShowClassMenu(pPlayer);
-        }
-    }
-}
-
-void CheckBarrier()
-{
-    const int iMaxPlayers = g_Engine.maxClients;
-    for(int i = 1; i <= iMaxPlayers; ++i)
-    {
-        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if(pPlayer !is null && pPlayer.IsConnected())
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerBarriers.exists(steamID))
-            {
-                BarrierData@ barrier = cast<BarrierData@>(g_PlayerBarriers[steamID]);
-                if(barrier !is null)
-                {
-                    barrier.Update(pPlayer);
-                }
-            }
-        }
-    }
-}
-
-void UpdateBloodlusts()
-{
-    const int iMaxPlayers = g_Engine.maxClients;
-    for(int i = 1; i <= iMaxPlayers; ++i)
-    {
-        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if(pPlayer !is null && pPlayer.IsConnected())
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerBloodlusts.exists(steamID))
-            {
-                BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
-                if(bloodlust !is null)
-                {
-                    bloodlust.Update(pPlayer);
-                }
-            }
-        }
-    }
-}
-
-void UpdateCloaks()
-{
-    const int iMaxPlayers = g_Engine.maxClients;
-    for(int i = 1; i <= iMaxPlayers; ++i)
-    {
-        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if(pPlayer !is null && pPlayer.IsConnected())
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerCloaks.exists(steamID))
-            {
-                CloakData@ cloak = cast<CloakData@>(g_PlayerCloaks[steamID]);
-                if(cloak !is null)
-                {
-                    cloak.Update(pPlayer);
-                }
-            }
         }
     }
 }
