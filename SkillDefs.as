@@ -17,7 +17,7 @@ const float SKILL_BASIC_MEDKITCAPACITY = 0.10f; // Medkit capacity increase per 
 
 // Class-specific skills.
 // Minion Class ('mancers) exclusive.
-const float SKILL_MINION_POINT = 0.05f; // Percent increase to minion points per level.
+const float SKILL_MINION_POINT = 0.10f; // Percent increase to max reserve per level.
 const float SKILL_MINION_HP = 0.80f; // HP percent increase for minions per level.
 const float SKILL_MINION_REGEN = 0.001f; // Max HP regen percent for minions per level.
 const float SKILL_MINION_DAMAGE = 0.10f; // Damage percent increase for minions per level.
@@ -33,7 +33,7 @@ const float SKILL_MEDIC_HEALAP = 1.50f; // Percent of max AP to heal per level (
 // Vampire.
 const float SKILL_VAMPIRE_LIFESTEAL = 0.06f; // Percent increase to ALL lifesteal per level.
 const float SKILL_VAMPIRE_DAMAGEABILITYCHARGE = 0.005f; // Percent of damage dealt converted to ability charge per level.
-const float SKILL_VAMPIRE_DAMAGEREDUCTION = 0.05f; // Damage reduction per level.
+const float SKILL_VAMPIRE_DAMAGEREDUCTION = 0.06f; // Damage reduction per level.
 const float SKILL_VAMPIRE_OVERHEAL = 0.10f; // Percent of max HP to overheal from lifesteal per level.
 const float SKILL_VAMPIRE_APCONVERSION = 0.15f; // Percent of Max AP converted into Max HP.
 const float SKILL_VAMPIRE_DURATION = 0.20f; // Percent increase to Bloodlust duration per level.
@@ -44,6 +44,10 @@ const float SKILL_ENGINEER_SENTRYSPEED = 0.08f; // Sentry attack speed per level
 const float SKILL_ENGINEER_MINIHEALAURA = 0.80f; // Mini-heal Aura % max HP heal per level (divided by 100).
 const float SKILL_ENGINEER_ROCKETS = 0.05f; // Rocket % cooldown reduction per level.
 const float SKILL_ENGINEER_SENTRYDURATION = 0.20f; // Sentry duration increase per level.
+
+// Robomancer.
+const float SKILL_ROBOMANCER_DAMAGEREDUCTION = 0.03f; // Damage reduction per active robot, per level for robots and self.
+const float SKILL_ROBOMANCER_FABRICATIONSTRENGTH = 0.15f; // Strength of Fabrication items per level.
 
 // Xenomancer.
 
@@ -137,6 +141,8 @@ enum SkillID
     SKILL_ENGINEER_SENTRYSPEED,
 
     // Robomancer.
+    SKILL_ROBOMANCER_DAMAGEREDUCTION,
+    SKILL_ROBOMANCER_FABRICATIONSTRENGTH,
 
     // Xenomancer.
     SKILL_XENOMANCER_LIFESTEAL,
@@ -252,6 +258,8 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDURATION)] = SkillDefinition("Sentry: Duration", "+" + formatFloat(SKILL_ENGINEER_SENTRYDURATION * 100.0f, "f", 0, 2) + "% sentry duration.", 5, SKILL_ENGINEER_SENTRYDURATION * 100.0f, "%", 0.5f);
 
     // Robomancer.
+    @g_SkillDefs[int(SkillID::SKILL_ROBOMANCER_DAMAGEREDUCTION)] = SkillDefinition("Robo: Damage Reduction", "+" + formatFloat(SKILL_ROBOMANCER_DAMAGEREDUCTION * 100.0f, "f", 0, 2) + "% damage reduction per robot for self and minion.", 5, SKILL_ROBOMANCER_DAMAGEREDUCTION * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_ROBOMANCER_FABRICATIONSTRENGTH)] = SkillDefinition("Robo: Fabrication Strength", "+" + formatFloat(SKILL_ROBOMANCER_FABRICATIONSTRENGTH * 100.0f, "f", 0, 2) + "% strength for Fabricated items.", 5, SKILL_ROBOMANCER_FABRICATIONSTRENGTH * 100.0f, "%", 0.5f);
 
     // Xenomancer.
 
@@ -344,6 +352,8 @@ array<SkillID> GetClassSkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MINION_REGEN);
             result.insertLast(SkillID::SKILL_MINION_DAMAGE);
             result.insertLast(SkillID::SKILL_MINION_LIFESTEAL);
+            result.insertLast(SkillID::SKILL_ROBOMANCER_DAMAGEREDUCTION);
+            result.insertLast(SkillID::SKILL_ROBOMANCER_FABRICATIONSTRENGTH);
             break;
 
         case PlayerClass::CLASS_XENOMANCER:

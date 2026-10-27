@@ -139,8 +139,14 @@ class MinionData
     // Support Abilities.
     private float m_flSupportThrowSpeed = 150.0f; // Forward speed support items are thrown at.
     private float m_flSupportThrowLift = 250.0f; // Upward speed added to the throw for arc.
+
+    // Medkit.
     private float m_flMedkitHealBase = 25.0f; // Base heal value when picking up a created medkit.
+
+    // Battery.
     private float m_flBatteryRestoreBase = 15.0f; // Base restore value when picking up a created battery.
+    
+    // Ammo Box.
     private int m_flAmmoRestoreBase9mm = 60; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
     private int m_flAmmoRestoreBase357 = 6; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
     private int m_flAmmoRestoreBaseBuckshot = 8; // Fixed amount of ammo restored of this type when picking up a created ammo box (weaponbox).
@@ -308,6 +314,31 @@ class MinionData
         return modifier;
     }
 
+    // Damage reduction, as a modifier.
+    float GetDamageReduction(CBasePlayer@ pPlayer)
+    {
+        if(m_pStats is null)
+            return 0.0f;
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ROBOMANCER_DAMAGEREDUCTION);
+        float skillPower = SKILL_ROBOMANCER_DAMAGEREDUCTION;
+        float damageReduction = skillPower * skillLevel * GetMinionCount(); // Stacks per active robot, none without robots.
+
+        return Math.clamp(0.0f, 0.9f, damageReduction); // Cap damage reduction at 90%.
+    }
+
+    float GetFabricationStrength() // Get fabrication strength based on skill level.
+    {
+        if(m_pStats is null)
+            return 0.0f;
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ROBOMANCER_FABRICATIONSTRENGTH);
+        float skillPower = SKILL_ROBOMANCER_FABRICATIONSTRENGTH;
+        float modifier = (1.0f + skillLevel * skillPower);
+
+        return modifier;
+    }
+
     void CreateMedkit(CBasePlayer@ pPlayer)
     {
         if(pPlayer is null || !pPlayer.IsConnected() || !pPlayer.IsAlive())
@@ -343,6 +374,8 @@ class MinionData
         vecSrc = vecSrc + (spawnForward * 32); // Spawn just in front of the player and throw from there.
 
         float scaledHealth = m_flMedkitHealBase;
+        scaledHealth *= GetFabricationStrength();
+
         int spawnFlags = 256 | 1024; // Combine flags.
         
         dictionary keys;
@@ -406,6 +439,7 @@ class MinionData
         vecSrc = vecSrc + (spawnForward * 32); // Spawn just in front of the player and throw from there.
 
         float scaledRestore = m_flBatteryRestoreBase;
+        scaledRestore *= GetFabricationStrength();
         int spawnFlags = 256 | 1024; // Combine flags.
         
         dictionary keys;
@@ -476,6 +510,17 @@ class MinionData
         int restore556 = m_flAmmoRestoreBase556;
         int restore762 = m_flAmmoRestoreBase762;
         int restoreUranium = m_flAmmoRestoreBaseUranium;
+        
+        // Apply fabrication strength modifier.
+        float fabricationStrength = GetFabricationStrength();
+
+            restore9mm = int(restore9mm * fabricationStrength);
+            restore357 = int(restore357 * fabricationStrength);
+            restoreBuckshot = int(restoreBuckshot * fabricationStrength);
+            restoreBolts = int(restoreBolts * fabricationStrength);
+            restore556 = int(restore556 * fabricationStrength);
+            restore762 = int(restore762 * fabricationStrength);
+            restoreUranium = int(restoreUranium * fabricationStrength);
 
         int spawnFlags = 256 | 1024; // Combine flags.
         

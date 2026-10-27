@@ -701,6 +701,23 @@ HookReturnCode MonsterTakeDamage(DamageInfo@ info) // Class weapon and minion da
     CBaseEntity@ victim = info.pVictim;
     bool isFriendlyDamage = IsFriendlyDamage(attacker, victim);
 
+    // Robomancer damage reduction for the robots themselves.
+    string victimName = string(victim.pev.targetname);
+    if(victimName.StartsWith("_robominion_"))
+    {
+        CBasePlayer@ pRoboOwner = g_PlayerFuncs.FindPlayerByIndex(atoi(victimName.SubString(12)));
+        if(pRoboOwner !is null && pRoboOwner.IsConnected())
+        {
+            string ownerSteamID = g_EngineFuncs.GetPlayerAuthId(pRoboOwner.edict());
+            if(g_PlayerMinions.exists(ownerSteamID))
+            {
+                MinionData@ ownerMinions = cast<MinionData@>(g_PlayerMinions[ownerSteamID]);
+                if(ownerMinions !is null)
+                    info.flDamage *= (1.0f - ownerMinions.GetDamageReduction(pRoboOwner));
+            }
+        }
+    }
+
     string targetname = string(attacker.pev.targetname);
     Vector targetPos = info.pVictim.pev.origin;
 
@@ -1089,7 +1106,16 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         return HOOK_CONTINUE;
     }
 
-    // Vampire low health damage reduction.
+    // Robomancer damage reduction (scales with active robots).
+    if(g_PlayerRPGData.exists(steamID) && g_PlayerMinions.exists(steamID))
+    {
+        PlayerData@ roboData = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        MinionData@ roboMinions = cast<MinionData@>(g_PlayerMinions[steamID]);
+        if(roboData !is null && roboMinions !is null && roboData.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
+            pDamageInfo.flDamage *= (1.0f - roboMinions.GetDamageReduction(pPlayer));
+    }
+
+    // Vampire damage reduction.
     if(g_PlayerRPGData.exists(steamID))
     {
         BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
