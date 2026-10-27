@@ -140,10 +140,7 @@ class BloodlustData
         float skillPower = SKILL_VAMPIRE_DAMAGEREDUCTION;
         float damageReduction = skillPower * skillLevel;
 
-        //if(m_bActive)
-            //return damageReduction *= 2.0f; // Double whilst bloodlust is active.
-        //else
-            return damageReduction;
+        return Math.clamp(0.0f, 0.9f, damageReduction); // Cap damage reduction at 90%.
     }
 
     float GetScaledOverhealPercent() 
