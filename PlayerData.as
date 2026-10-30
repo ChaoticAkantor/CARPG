@@ -51,6 +51,27 @@ Vector GetCARPGHUDColorValue(int colorIndex)
     return g_CARPGHUDColorValues[colorIndex];
 }
 
+// Returns the player's chosen minion glow colour, or defaultColor if they haven't picked one.
+Vector GetMinionGlowColor(CBasePlayer@ pPlayer, const Vector &in defaultColor)
+{
+    if(pPlayer is null)
+        return defaultColor;
+
+    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+    if(!g_PlayerRPGData.exists(steamID))
+        return defaultColor;
+
+    PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+    if(data is null)
+        return defaultColor;
+
+    int colorIndex = data.GetMinionGlowColorIndex();
+    if(colorIndex < 0 || uint(colorIndex) >= g_CARPGHUDColorValues.length())
+        return defaultColor;
+
+    return g_CARPGHUDColorValues[colorIndex];
+}
+
 string GetCARPGHUDPositionName(int hudType, int position)
 {
     switch(position)
@@ -410,6 +431,22 @@ class PlayerData
     private int m_iResourceHUDPosition = CARPG_HUD_BOTTOM_MIDDLE;
     private int m_iAmmoHUDColor = 0;
     private int m_iAmmoHUDPosition = CARPG_HUD_BOTTOM_RIGHT;
+
+    private int m_iMinionGlowColor = -1; // -1 uses each class's default glow colour.
+
+    int GetMinionGlowColorIndex()
+    {
+        return m_iMinionGlowColor;
+    }
+
+    void SetMinionGlowColorIndex(int colorIndex)
+    {
+        if(colorIndex < -1 || uint(colorIndex) >= g_CARPGHUDColorValues.length())
+            return;
+
+        m_iMinionGlowColor = colorIndex;
+        SaveToFile();
+    }
 
     int GetHUDColorIndex(int hudType)
     {
@@ -1088,7 +1125,8 @@ class PlayerData
             file.Write("HUD\n");
             file.Write(string(m_iRPGHUDColor) + " " + string(m_iRPGHUDPosition) + " "
                 + string(m_iResourceHUDColor) + " " + string(m_iResourceHUDPosition) + " "
-                + string(m_iAmmoHUDColor) + " " + string(m_iAmmoHUDPosition) + "\n");
+                + string(m_iAmmoHUDColor) + " " + string(m_iAmmoHUDPosition) + " "
+                + string(m_iMinionGlowColor) + "\n");
 
             file.Close();
         }
@@ -1202,6 +1240,13 @@ class PlayerData
                             if(savedResourcePosition >= 0 && savedResourcePosition < 5) m_iResourceHUDPosition = savedResourcePosition;
                             if(savedAmmoColor >= 0 && uint(savedAmmoColor) < g_CARPGHUDColorNames.length()) m_iAmmoHUDColor = savedAmmoColor;
                             if(savedAmmoPosition >= 0 && savedAmmoPosition < 4) m_iAmmoHUDPosition = savedAmmoPosition;
+
+                            if(hudParts.length() >= 7)
+                            {
+                                int savedMinionGlow = atoi(hudParts[6]);
+                                if(savedMinionGlow >= -1 && savedMinionGlow < int(g_CARPGHUDColorValues.length()))
+                                    m_iMinionGlowColor = savedMinionGlow;
+                            }
                         }
                     }
 

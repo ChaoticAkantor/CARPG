@@ -28,7 +28,7 @@
 
    - Type "/scaling" or "/difficulty" to show current player damage bonus based on number of players.
 
-   - Type "/hud" or "/hudoptions" to show HUD customisation menu, to change locations or colours of HUD elements (CARPG HUD ELEMENTS ONLY).
+   - Type "/settings" or "/options" to show CARPG Plugin options such as HUD customisation and Minion Glow Color.
 
    - Type "/adminlist" to show Admin/Debug menu list to add or remove players to the list.
 

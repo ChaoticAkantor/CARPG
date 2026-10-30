@@ -28,7 +28,7 @@ This file handles all includes.
 // Menus.
 #include "Menus/ClassMenu" // Class selection and handling.
 #include "Menus/SkillsMenu" // Skill selection and handling.
-#include "Menus/HUDSettingsMenu" // HUD settings menu.
+#include "Menus/CARPGSettingsMenu" // HUD settings menu.
 #include "Menus/MapSettingsMenu" // Admin map policy menu.
 #include "Menus/AdminListMenu" // Admin list manager.
 #include "Menus/DebugMenu" // Debug menu for admins/testers.

@@ -7,6 +7,10 @@ namespace Menu
 	const int HUD_SETTINGS_MAIN_RPG = 1000;
 	const int HUD_SETTINGS_MAIN_RESOURCE = 1001;
 	const int HUD_SETTINGS_MAIN_AMMO = 1002;
+	const int OPTIONS_MAIN_HUD = 6000;
+	const int OPTIONS_MAIN_MINION_GLOW = 6001;
+	const int OPTIONS_MINION_GLOW_COLOR = 7000;
+	const int OPTIONS_MINION_GLOW_BACK = -4;
 	const int HUD_SETTINGS_EDIT_COLOR = 2000;
 	const int HUD_SETTINGS_EDIT_POSITION = 3000;
 	const int HUD_SETTINGS_COLOR = 4000;
@@ -33,10 +37,38 @@ namespace Menu
 				return;
 
 			CTextMenu@ newMenu = CreateMenu();
-			newMenu.SetTitle("=== HUD Settings ===\nChoose a display to customise.\nChanges save automatically.\n");
+			newMenu.SetTitle("=== Options ===\nCARPG Settings.\n");
+			newMenu.AddItem("HUD Customisation", any(OPTIONS_MAIN_HUD));
+			newMenu.AddItem("Minion Glow Color", any(OPTIONS_MAIN_MINION_GLOW));
+			newMenu.Register();
+			newMenu.Open(0, 0, pPlayer);
+		}
+
+		private void ShowMinionGlow(CBasePlayer@ pPlayer)
+		{
+			CTextMenu@ newMenu = CreateMenu();
+			int current = m_pOwner.GetMinionGlowColorIndex();
+			string currentName = current < 0 ? "Class Default" : GetCARPGHUDColorName(current);
+			newMenu.SetTitle("=== Minion Glow Color ===\nCurrent: " + currentName + "\nApplies to minions, sentries and snarks.\n");
+			newMenu.AddItem("Default (class/tier based)", any(OPTIONS_MINION_GLOW_COLOR - 1));
+			for(uint i = 0; i < g_CARPGHUDColorNames.length(); ++i)
+				newMenu.AddItem(g_CARPGHUDColorNames[i], any(OPTIONS_MINION_GLOW_COLOR + int(i)));
+			newMenu.AddItem("Back", any(OPTIONS_MINION_GLOW_BACK));
+			newMenu.Register();
+			newMenu.Open(0, 0, pPlayer);
+		}
+
+		private void ShowHUDMain(CBasePlayer@ pPlayer)
+		{
+			if(pPlayer is null || m_pOwner is null)
+				return;
+
+			CTextMenu@ newMenu = CreateMenu();
+			newMenu.SetTitle("=== HUD Settings ===\nChoose a display to customise.\n");
 			newMenu.AddItem("Class/XP", any(HUD_SETTINGS_MAIN_RPG));
 			newMenu.AddItem("Class Resource", any(HUD_SETTINGS_MAIN_RESOURCE));
 			newMenu.AddItem("Ammo Regen Counter", any(HUD_SETTINGS_MAIN_AMMO));
+			newMenu.AddItem("Back", any(OPTIONS_MINION_GLOW_BACK));
 			newMenu.Register();
 			newMenu.Open(0, 0, pPlayer);
 		}
@@ -106,7 +138,24 @@ namespace Menu
 
 			int choice;
 			item.m_pUserData.retrieve(choice);
-			if(choice >= HUD_SETTINGS_MAIN_RPG && choice <= HUD_SETTINGS_MAIN_AMMO)
+			if(choice == OPTIONS_MAIN_HUD)
+			{
+				ShowHUDMain(pPlayer);
+			}
+			else if(choice == OPTIONS_MAIN_MINION_GLOW)
+			{
+				ShowMinionGlow(pPlayer);
+			}
+			else if(choice >= OPTIONS_MINION_GLOW_COLOR - 1 && choice < OPTIONS_MINION_GLOW_COLOR + int(g_CARPGHUDColorNames.length()))
+			{
+				m_pOwner.SetMinionGlowColorIndex(choice - OPTIONS_MINION_GLOW_COLOR);
+				ShowMinionGlow(pPlayer);
+			}
+			else if(choice == OPTIONS_MINION_GLOW_BACK)
+			{
+				ShowMain(pPlayer);
+			}
+			else if(choice >= HUD_SETTINGS_MAIN_RPG && choice <= HUD_SETTINGS_MAIN_AMMO)
 			{
 				ShowHUD(pPlayer, choice - HUD_SETTINGS_MAIN_RPG);
 			}
@@ -130,7 +179,7 @@ namespace Menu
 			}
 			else if(choice == -1)
 			{
-				ShowMain(pPlayer);
+				ShowHUDMain(pPlayer);
 			}
 			else if(choice == -2 || choice == -3)
 			{

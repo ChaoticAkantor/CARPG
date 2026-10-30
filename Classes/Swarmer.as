@@ -262,7 +262,7 @@ class SnarkNestData
             pSnark.pev.renderfx = kRenderFxGlowShell;
             pSnark.pev.rendermode = kRenderNormal;
             pSnark.pev.renderamt = 1;
-            pSnark.pev.rendercolor = Vector(255, 255, 0); // Yellow glow.
+            pSnark.pev.rendercolor = GetMinionGlowColor(pPlayer, Vector(255, 255, 0)); // Default Yellow glow.
         }
     }
     

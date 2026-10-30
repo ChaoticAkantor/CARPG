@@ -662,7 +662,7 @@ class MinionData
         if(pRoboMinion !is null)
         {   
             // Apply glow effect before dispatch.
-            ApplyMinionGlow(pRoboMinion, minionType);
+            ApplyMinionGlow(pRoboMinion, pPlayer, minionType);
 
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pRoboMinion);
             if(pMonster !is null)
@@ -749,7 +749,7 @@ class MinionData
                 pExistingMinion.pev.health = pExistingMinion.pev.max_health;
             
             // Ensure glow effect is maintained.
-            ApplyMinionGlow(pExistingMinion, m_hMinions[i].type);
+            ApplyMinionGlow(pExistingMinion, pPlayer, m_hMinions[i].type);
         }
 
         // Always recalculate the reserve pool to ensure it's accurate.
@@ -888,7 +888,7 @@ class MinionData
         }
     }
     
-    void ApplyMinionGlow(CBaseEntity@ pMinion, int minionType = 0)
+    void ApplyMinionGlow(CBaseEntity@ pMinion, CBasePlayer@ pPlayer, int minionType = 0)
     {
         if(pMinion is null)
             return;
@@ -897,7 +897,7 @@ class MinionData
         pMinion.pev.renderfx = kRenderFxGlowShell; // Effect.
         pMinion.pev.rendermode = kRenderNormal; // Render mode.
         pMinion.pev.renderamt = 1; // Shell thickness.
-        pMinion.pev.rendercolor = ROBO_GLOW_COLORS[minionType];
+        pMinion.pev.rendercolor = GetMinionGlowColor(pPlayer, ROBO_GLOW_COLORS[minionType]);
     }
     
     void PruneMinions()

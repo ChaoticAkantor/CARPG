@@ -219,7 +219,7 @@ class SentryData
         m_flLastToggleTime = 0.0f;
     }
 
-    void ApplyMinionGlow(CBaseEntity@ pMinion)
+    void ApplyMinionGlow(CBaseEntity@ pMinion, CBasePlayer@ pPlayer)
     {
         if(pMinion is null)
             return;
@@ -228,7 +228,7 @@ class SentryData
         pMinion.pev.renderfx = kRenderFxGlowShell;
         pMinion.pev.rendermode = kRenderNormal;
         pMinion.pev.renderamt = 1;
-        pMinion.pev.rendercolor = Vector(0, 255, 150); // Light Green.
+        pMinion.pev.rendercolor = GetMinionGlowColor(pPlayer, Vector(0, 255, 150)); // Default Light Green.
     }
 
     private void SpawnSentry(CBasePlayer@ pPlayer)
@@ -254,7 +254,7 @@ class SentryData
         CBaseEntity@ pSentry = g_EntityFuncs.CreateEntity("monster_sentry", keys, true);
         if(pSentry !is null)
         {
-            ApplyMinionGlow(pSentry); // Apply glow effect before dispatch.
+            ApplyMinionGlow(pSentry, pPlayer); // Apply glow effect before dispatch.
 
             g_EntityFuncs.DispatchSpawn(pSentry.edict()); // Dispatch the spawn.
 
@@ -595,7 +595,7 @@ class SentryData
         m_flNextVisualUpdate = currentTime + m_flVisualUpdateInterval;
 
         // Ensure glow effect is maintained.
-        ApplyMinionGlow(pSentry);
+        ApplyMinionGlow(pSentry, pPlayer);
 
         Vector pos = pSentry.pev.origin;
         Vector mins = pos - Vector(16, 16, 0);

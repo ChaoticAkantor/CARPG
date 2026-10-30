@@ -1504,8 +1504,8 @@ HookReturnCode ClientSay(SayParameters@ pParams)
             pParams.ShouldHide = true;
             return HOOK_HANDLED;
         }
-        // HUD settings command.
-        else if((command == "/hudsettings" || command == "/hudoptions" || command == "/hud") && args.ArgC() == 1)
+        // SETTINGS command.
+        else if((command == "/settings" || command == "/options" || command == "/hud") && args.ArgC() == 1)
         {
             string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
             if(g_PlayerRPGData.exists(steamID))

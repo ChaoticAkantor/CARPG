@@ -565,7 +565,7 @@ class XenMinionData
         if(pXenMinion !is null)
         {
             // Apply glow effect before dispatch.
-            ApplyMinionGlow(pXenMinion);
+            ApplyMinionGlow(pXenMinion, pPlayer);
 
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pXenMinion);
             if(pMonster !is null)
@@ -658,7 +658,7 @@ class XenMinionData
                 pExistingMinion.pev.health = pExistingMinion.pev.max_health;
             
             // Ensure glow effect is maintained.
-            ApplyMinionGlow(pExistingMinion);
+            ApplyMinionGlow(pExistingMinion, pPlayer);
         }
 
         // Always recalculate the reserve pool to ensure it's accurate.
@@ -809,7 +809,7 @@ class XenMinionData
         }
     }
     
-    void ApplyMinionGlow(CBaseEntity@ pMinion)
+    void ApplyMinionGlow(CBaseEntity@ pMinion, CBasePlayer@ pPlayer)
     {
         if(pMinion is null)
             return;
@@ -818,7 +818,7 @@ class XenMinionData
         pMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
         pMinion.pev.rendermode = kRenderNormal; // Render mode.
         pMinion.pev.renderamt = 1; // Shell thickness.
-        pMinion.pev.rendercolor = Vector(100, 250, 150); // Lime.
+        pMinion.pev.rendercolor = GetMinionGlowColor(pPlayer, Vector(100, 250, 150)); // Default Lime.
     }
     
     void PruneMinions()

@@ -522,7 +522,7 @@ class NecroMinionData
         if(pNecroMinion !is null)
         {
             // Apply glow effect before dispatch.
-            ApplyMinionGlow(pNecroMinion);
+            ApplyMinionGlow(pNecroMinion, pPlayer);
 
             CBaseMonster@ pMonster = cast<CBaseMonster@>(pNecroMinion);
             if(pMonster !is null)
@@ -635,7 +635,7 @@ class NecroMinionData
             pRat.pev.renderfx = kRenderFxGlowShell;
             pRat.pev.rendermode = kRenderNormal;
             pRat.pev.renderamt = 1;
-            pRat.pev.rendercolor = Vector(255, 195, 205); // Peach.
+            pRat.pev.rendercolor = GetMinionGlowColor(pPlayer, Vector(255, 195, 205)); // Default Peach.
         }
     }
 
@@ -704,7 +704,7 @@ class NecroMinionData
                 pExistingMinion.pev.health = pExistingMinion.pev.max_health;
 
             // Ensure glow effect is not overridden.
-            ApplyMinionGlow(pExistingMinion);
+            ApplyMinionGlow(pExistingMinion, pPlayer);
         }
 
         // Rat spawning: Check if enough time has passed to spawn new rats on active minions.
@@ -880,7 +880,7 @@ class NecroMinionData
         }
     }
     
-    void ApplyMinionGlow(CBaseEntity@ pMinion)
+    void ApplyMinionGlow(CBaseEntity@ pMinion, CBasePlayer@ pPlayer)
     {
         if(pMinion is null)
             return;
@@ -889,7 +889,7 @@ class NecroMinionData
         pMinion.pev.renderfx = kRenderFxGlowShell; // Glow shell.
         pMinion.pev.rendermode = kRenderNormal; // Render mode.
         pMinion.pev.renderamt = 1; // Shell thickness.
-        pMinion.pev.rendercolor = Vector(255, 195, 205); // Peach.
+        pMinion.pev.rendercolor = GetMinionGlowColor(pPlayer, Vector(255, 195, 205)); // Default Peach.
     }
     
     void PruneMinions()
