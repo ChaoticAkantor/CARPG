@@ -81,8 +81,10 @@ const float SKILL_FIREBUG_FIREDAMAGE = 0.10f; // Increase % of weapon damage dea
 const float SKILL_FIREBUG_FIREDURATION = 0.20f; // Fire duration increase per level.
 
 // Swarmer.
-const float SKILL_SWARMER_SNARKDAMAGE = 0.60f; // Snark damage per level.
+const float SKILL_SWARMER_SNARKDAMAGE = 0.10f; // Snark damage per level.
 const float SKILL_SWARMER_SNARKCOUNT = 0.20f; // Percent of extra snarks per level.
+const float SKILL_SWARMER_SNARKCHARGES = 1.00f; // Snark charges per level (internally just an ability max increase).
+const float SKILL_SWARMER_SNARKGROWTH = 0.20f; // Increases snark damage & health per level but reduces swarm count by HALF the modifier value.
 
 // formatFloat is for display strings only, strength (4th ctor arg) must stay a raw float for math.
 string FormatSkillPerLevelText(float perLevelValue)
@@ -179,6 +181,8 @@ enum SkillID
     // Swarmer.
     SKILL_SWARMER_SNARKDAMAGE,
     SKILL_SWARMER_SNARKCOUNT,
+    SKILL_SWARMER_SNARKCHARGES,
+    SKILL_SWARMER_SNARKGROWTH,
 
     // Total.
     SKILL_MAX_COUNT
@@ -293,8 +297,10 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_FIREBUG_FIREDURATION)] = SkillDefinition("Dragons Breath: Fire Duration", "+" + formatFloat(SKILL_FIREBUG_FIREDURATION * 100.0f, "f", 0, 2) + "% fire duration.", 5, SKILL_FIREBUG_FIREDURATION * 100.0f, "%", 0.5f);
 
     // Swarmer.
-    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKDAMAGE)] = SkillDefinition("Snarks: Snark Damage", "+" + formatFloat(SKILL_SWARMER_SNARKDAMAGE * 100.0f, "f", 0, 2) + "% snark damage.", 5, SKILL_SWARMER_SNARKDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCOUNT)] = SkillDefinition("Snarks: Snark Count", "+" + int(SKILL_SWARMER_SNARKCOUNT * 100.0f) + "% swarm size.", 5, int(SKILL_SWARMER_SNARKCOUNT * 100.0f), "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKDAMAGE)] = SkillDefinition("Snarks: Damage", "+" + formatFloat(SKILL_SWARMER_SNARKDAMAGE * 100.0f, "f", 0, 2) + "% snark damage.", 5, SKILL_SWARMER_SNARKDAMAGE * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCOUNT)] = SkillDefinition("Snarks: Swarm Size", "+" + formatFloat(SKILL_SWARMER_SNARKCOUNT * 100.0f, "f", 0, 2) + "% swarm size.", 5, SKILL_SWARMER_SNARKCOUNT * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCHARGES)] = SkillDefinition("Snarks: Ability Uses", "+" + formatFloat(SKILL_SWARMER_SNARKCHARGES * 100.0f, "f", 0, 2) + "% max uses.", 3, SKILL_SWARMER_SNARKCHARGES * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKGROWTH)] = SkillDefinition("Snarks: Snark Growth", "+" + formatFloat(SKILL_SWARMER_SNARKGROWTH * 100.0f, "f", 0, 2) + "% DMG & HP -"+ (SKILL_SWARMER_SNARKGROWTH * 100.0f * 0.5f) + "% swarm size.", 5, int(SKILL_SWARMER_SNARKGROWTH * 100.0f), "%", 0.5f);
 }
 
 // Returns the standard skill IDs (shared across all classes).
@@ -406,6 +412,8 @@ array<SkillID> GetClassSkillIDs(PlayerClass pClass)
         case PlayerClass::CLASS_SWARMER:
             result.insertLast(SkillID::SKILL_SWARMER_SNARKDAMAGE);
             result.insertLast(SkillID::SKILL_SWARMER_SNARKCOUNT);
+            result.insertLast(SkillID::SKILL_SWARMER_SNARKCHARGES);
+            result.insertLast(SkillID::SKILL_SWARMER_SNARKGROWTH);
             break;
     }
     return result;

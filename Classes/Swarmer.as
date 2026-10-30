@@ -2,6 +2,9 @@ string strSnarkModel = "models/w_squeak.mdl";
 string strSnarkSpriteTinySpit = "sprites/tinyspit.spr"; // Should already be precached by from bullsquid in XenMinion, but still crashes on They Hunger maps!
 string strSnarkReleaseSound = "player/pl_organic4.wav";
 
+const float SNARK_HULL_MODIFIER = 0.5f; // Snark hull multiplier.
+const float SNARK_SPAWN_DISTANCE = 64.0f; // Distance from player's gun position that snarks spawn.
+
 dictionary g_PlayerSnarkNests;
 
 class SnarkNestData
@@ -9,15 +12,15 @@ class SnarkNestData
     // Snark Swarm ability parameters.
     private float m_flAbilityCost = 1.0f; // Base cost per use (charges).
     private float m_flAbilityMax = 1.0f; // Max charges.
-    private float m_flAbilityRechargeTime = 18.0f; // Seconds to fully recharge from empty.
-    private float m_flBaseHealth = 300.0f; // Base HP of each snark.
-    private int m_iBaseSnarkCount = 5; // Base number of snarks to spawn.
+    private float m_flAbilityRechargeTime = 20.0f; // Seconds to fully recharge from empty.
+    private float m_flBaseHealth = 50.0f; // Base HP of each snark.
+    private int m_iBaseSnarkCount = 6; // Base number of snarks to spawn.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f;
     private float m_flLastToggleTime = 0.0f;
     private float m_flToggleCooldown = 3.0f; // Cooldown between spawns.
-    private float m_flLaunchForce = 1000.0f; // Velocity that snarks are thrown outward.
+    private float m_flLaunchForce = 800.0f; // Velocity that snarks are thrown outward.
 
     // As far as I know, snark lifespan is hardcoded, would be nice to be able to change it.
 
@@ -25,7 +28,7 @@ class SnarkNestData
     bool HasStats() { return m_pStats !is null; }
     ClassStats@ GetStats() { return m_pStats; }
     float GetAbilityCharge() { return m_flAbilityCharge; }
-    float GetAbilityMax() { return m_flAbilityMax; }
+    float GetAbilityMax() { return m_flAbilityMax * GetScaledSnarkCharges(); }
     void FillAbilityCharge() { m_flAbilityCharge = GetAbilityMax(); }
     
     void Initialize(ClassStats@ stats) { @m_pStats = stats; }
@@ -76,8 +79,9 @@ class SnarkNestData
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKCOUNT);
         float skillPower = SKILL_SWARMER_SNARKCOUNT;
         float modifier = 1.0f + (skillPower * skillLevel); // Scale with skill level.
+        float snarkGrowthMult = (GetScaledSnarkGrowth() * 0.5f); // Reduce swarm count by half the snark growth modifier.
 
-        return int(baseCount * modifier); // return as int, can't have part of a snark lol.
+        return int(baseCount * modifier / snarkGrowthMult); // return as int, can't have part of a snark lol.
     }
 
     float GetScaledDamage() // Damage scaling applied through MonsterTakeDamage hook.
@@ -87,6 +91,30 @@ class SnarkNestData
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKDAMAGE);
         float skillPower = SKILL_SWARMER_SNARKDAMAGE;
+        float modifier = 1.0f + (skillPower * skillLevel);
+
+        return modifier * GetScaledSnarkGrowth();
+    }
+
+    float GetScaledSnarkCharges() // Used to increase number of ability uses (ability max).
+    {
+        if(m_pStats is null)
+            return 1.0f; // Default if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKCHARGES);
+        float skillPower = SKILL_SWARMER_SNARKCHARGES;
+        float modifier = 1.0f + (skillPower * skillLevel);
+
+        return modifier;
+    }
+
+    float GetScaledSnarkGrowth() // Used as a multiplier for extra snark damage, HP and size scaling.
+    {
+        if(m_pStats is null)
+            return 1.0f; // Default if no stats.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKGROWTH);
+        float skillPower = SKILL_SWARMER_SNARKGROWTH;
         float modifier = 1.0f + (skillPower * skillLevel);
 
         return modifier;
@@ -105,13 +133,15 @@ class SnarkNestData
 
     void RechargeAbility()
     {
-        if (m_flAbilityCharge >= m_flAbilityMax)
+        float maxCharge = GetAbilityMax(); // Includes bonus charges from skills.
+        if (m_flAbilityCharge >= maxCharge)
             return;
 
+        // Rate is per base charge, so extra max charges take proportionally longer to fill.
         float rechargeRate = m_flAbilityMax / m_flAbilityRechargeTime * GetScaledAbilityRecharge();
         m_flAbilityCharge += rechargeRate * flSchedulerInterval;
-        if (m_flAbilityCharge > m_flAbilityMax)
-            m_flAbilityCharge = m_flAbilityMax;
+        if (m_flAbilityCharge > maxCharge)
+            m_flAbilityCharge = maxCharge;
     }
 
     void Update(CBasePlayer@ pPlayer)
@@ -199,8 +229,14 @@ class SnarkNestData
         finalDir = finalDir + (up * verticalVariation);
         finalDir = finalDir.Normalize();
         
-        // Calculate spawn position with offset to prevent collisions.
-        Vector spawnPos = gunPos + (finalDir * 15.0f);
+        // Spawn well clear of the player since snarks are no longer owned and would collide with them.
+        Vector spawnPos = gunPos + (finalDir * SNARK_SPAWN_DISTANCE);
+
+        // Pull the spawn point back if a wall is in the way.
+        TraceResult trSpawn;
+        g_Utility.TraceLine(gunPos, spawnPos, ignore_monsters, pPlayer.edict(), trSpawn);
+        if(trSpawn.flFraction < 1.0f)
+            spawnPos = trSpawn.vecEndPos - (finalDir * 8.0f);
         
         // Calculate velocity in the aim direction with variation.
         Vector velocity = finalDir * m_flLaunchForce;
@@ -232,6 +268,10 @@ class SnarkNestData
             msg.WriteByte(25);  // Velocity along vector in 10's.
             msg.WriteByte(10);  // Random velocity in 10's - already adds randomness to particles.
         msg.End();
+
+        float snarkGrowthMult = GetScaledSnarkGrowth();
+        float snarkHP = m_flBaseHealth * snarkGrowthMult;
+        float snarkSize = 1.0f + snarkGrowthMult;
         
         // Create the snark.
         dictionary keys;
@@ -239,8 +279,8 @@ class SnarkNestData
         keys["angles"] = pPlayer.pev.v_angle.ToString(); // Use player's view angle
         keys["targetname"] = "_snark_" + playerIndex;
         keys["displayname"] = string(pPlayer.pev.netname) + "'s Snark";
-        keys["health"] = string(m_flBaseHealth); // Base health.
-        keys["scale"] = "4";
+        keys["health"] = string(snarkHP); // Base health.
+        keys["scale"] = string(snarkSize);
         keys["spawnflags"] = "32";
         keys["is_player_ally"] = "1";
         
@@ -249,14 +289,16 @@ class SnarkNestData
         {
             g_EntityFuncs.DispatchSpawn(pSnark.edict());
 
-            @pSnark.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
+            //@pSnark.pev.owner = @pPlayer.edict(); // Set the owner to the spawning player.
 
-            float baseHealth = m_flBaseHealth;
-            pSnark.pev.max_health = baseHealth; // Set max health based on player level
-            pSnark.pev.health = baseHealth;
+            pSnark.pev.max_health = snarkHP; // Set max health based on player level
+            pSnark.pev.health = snarkHP;
 
             // Apply velocity to launch the snark outward.
             pSnark.pev.velocity = velocity;
+
+            g_EntityFuncs.SetSize(pSnark.pev, pSnark.pev.mins * SNARK_HULL_MODIFIER, pSnark.pev.maxs * SNARK_HULL_MODIFIER);
+            g_EntityFuncs.SetOrigin(pSnark, pSnark.pev.origin); // Refresh entity origin.
             
             // Make the snark glow to show it's friendly.
             pSnark.pev.renderfx = kRenderFxGlowShell;
