@@ -675,10 +675,6 @@ class MinionData
             SetMinionBounds(pMonster, minionType);
             g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
 
-            // Set its bounding box to zero.
-            //pMonster.pev.mins = Vector(0, 0, 0);
-            //pMonster.pev.maxs = Vector(0, 0, 0);
-
             // Refresh entity origin.
             //g_EntityFuncs.SetOrigin(pMonster, pMonster.pev.origin);
 
