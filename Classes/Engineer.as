@@ -18,6 +18,8 @@ string strSentryAlert = "turret/tu_alert.wav";
 
 const Vector ELEMENT_COLOR = Vector(130, 200, 255); // R G B.
 
+const float SENTRY_HULL_MODIFIER = 0.5f; // Multiplier for the native sentry hull.
+
 string FormatSentrySecondsForHud(float t)
 {
     t = Math.max(0.0f, t);
@@ -258,7 +260,10 @@ class SentryData
 
             g_EntityFuncs.DispatchSpawn(pSentry.edict()); // Dispatch the spawn.
 
-            @pSentry.pev.owner = @pPlayer.edict(); // Set player as owner.
+            g_EntityFuncs.SetSize(pSentry.pev, pSentry.pev.mins * SENTRY_HULL_MODIFIER, pSentry.pev.maxs * SENTRY_HULL_MODIFIER);
+            g_EntityFuncs.SetOrigin(pSentry, pSentry.pev.origin); // Refresh entity origin.
+
+            //@pSentry.pev.owner = @pPlayer.edict(); // Set player as owner.
 
             // Sentry won't wake unless touched or damaged, regardless of spawnflags. Gently encourage it :P.
             pSentry.TakeDamage(pPlayer.pev, pPlayer.pev, 0.0f, DMG_GENERIC);
