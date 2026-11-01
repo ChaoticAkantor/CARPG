@@ -296,6 +296,9 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strXenMinionSoundCreate);
 
     // Necromancer Ability Precache.
+        // Models/Sprites.
+        PrecacheModelIndexed(strNecroMiasmaSprite);
+
         // Sounds.
         g_SoundSystem.PrecacheSound(strNecroMinionSoundCreate);
 
