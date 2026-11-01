@@ -77,10 +77,15 @@ class HealingAura
     private float m_flBaseHealAmount = 30.0f; // Base health restored, as a percentage of max health.
     private float m_flDrainAmount = 100.0f; // Charge drained per activation.
     private float m_flActivateCooldown = 0.5f; // Cooldown for each activation.
+
+    // Regen Skill.
     private float m_flHealRegenInterval = 1.0f; // Time between heals/damage tick, now used for regen skill.
     private float m_flHealRegenDuration = 10.0f; // Duration of regen effect skill.
 
-    // Revive.
+    // Acid Skill.
+    private float m_flBasePoisonDamage = 10.0f; // Base acid damage dealt to enemies in radius.
+
+    // Revive Skill.
     private float m_flHealAuraReviveHealthPercent = 1.00f; // Health percent to revive at.
     private float m_flHealAuraReviveCooldown = 60.0f; // Default cooldown for revive.
 
@@ -159,9 +164,12 @@ class HealingAura
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON); // Get player skill level for this skill.
         float skillPower = SKILL_MEDIC_POISON;
-        float modifier = skillPower * skillLevel; // Poison damage dependent on skill level.
+        if (skillLevel <= 0)
+            return 0.0f; // No acid damage without the skill.
 
-        return modifier;
+        float modifier = skillPower * skillLevel; // Percent increase dependent on skill level.
+
+        return m_flBasePoisonDamage * (1.0f + modifier);
     }
 
     float GetScaledHealAmount()
@@ -393,7 +401,7 @@ class HealingAura
                 int relationship = pMonster.IRelationship(pPlayer);
                 if (relationship != R_AL) // Only poison them if NOT an ally of the player.
                 {
-                    float poisonDamage = GetPoisonDamageAmount(); // Poison damage is a fixed value based on skill.
+                    float poisonDamage = GetPoisonDamageAmount(); // Poison damage is base damage scaled by skill.
 
                     pMonster.TakeDamage(pPlayer.pev, pPlayer.pev, poisonDamage, DMG_ACID);
                     ApplyPoisonEffect(pMonster);
