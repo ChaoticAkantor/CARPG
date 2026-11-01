@@ -83,16 +83,14 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                     {
                         current = healingAura.GetAbilityCharge();
                         maximum = healingAura.GetAbilityMax();
-
-                        string regenInfo = " + " + healingAura.GetScaledRegenAmount() + "%/s";
                         
-                        resourceInfo += "[Heal: " + formatFloat(healingAura.GetScaledHealAmount(), "f", 0, 2) + "%" + regenInfo + "] ";
+                        resourceInfo += "[Heal: " + formatFloat(healingAura.GetScaledHealAmount(), "f", 0, 2) + "%" + "] ";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALREGEN) > 0)
-
+                            resourceInfo += "[Regen: " + formatFloat(healingAura.GetScaledRegenAmount(), "f", 0, 2) + "%/s]\n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALAP) > 0)
-                            resourceInfo += "[AP Restore: " + formatFloat(healingAura.GetScaledHealAP(), "f", 0, 2) + "%] \n";
+                            resourceInfo += "[AP Restore: " + formatFloat(healingAura.GetScaledHealAP(), "f", 0, 2) + "%]\n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON) > 0)
                             resourceInfo += "[Acid DMG: " + formatFloat(healingAura.GetPoisonDamageAmount(), "f", 0, 2) + " DMG]\n";
@@ -207,6 +205,9 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         {
                             if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS) > 0)
                                 resourceInfo += minionData.GetRatCooldownDisplay() + " ";
+
+                            if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_NECROMANCER_MIASMA) > 0)
+                                resourceInfo += "[Miasma DMG: " + formatFloat(minionData.GetMiasmaDamageAmount(), "f", 0, 2) + "/s]\n";
 
                             array<CBaseEntity@> validMinions;
                             array<int> validTypes;
