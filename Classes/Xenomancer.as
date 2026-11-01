@@ -332,14 +332,14 @@ class XenMinionData
     float GetMinionPointIncrease()
     {
         if(m_pStats is null)
-            return m_flMinionPointMax; // Return base if no stats.
+            return 0.0f; // No bonus if no stats.
 
         float minionPoints = m_flMinionPointMax;
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
         float skillPower = SKILL_MINION_POINT;
 
-        return minionPoints * (1.0f + skillPower * skillLevel); // Bonus minion points from skill.
+        return minionPoints * (skillPower * skillLevel); // Bonus only; the base is added in GetAbilityMax.
     }
 
     float GetAbilityMax()

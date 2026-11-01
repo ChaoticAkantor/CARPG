@@ -183,7 +183,7 @@ class MinionData
     float GetMinionPointIncrease()
     {
         if(m_pStats is null)
-            return m_flMinionPointMax; // Return base if no stats.
+            return 0.0f; // No bonus if no stats.
 
         float minionPoints = m_flMinionPointMax;
 

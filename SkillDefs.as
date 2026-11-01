@@ -26,7 +26,7 @@ const float SKILL_MINION_LIFESTEAL = 0.03f; // Minion lifesteal percent to playe
 // Medic.
 const float SKILL_MEDIC_HEALPERCENT = 0.20f; // Percent increase to max health healed per level.
 const float SKILL_MEDIC_HEALREGEN = 0.20f; // Max health percent healed per interval after initial heal, per level (divided by 100).
-const float SKILL_MEDIC_POISON = 5.00f; // Flat poison damage per level.
+const float SKILL_MEDIC_POISON = 0.20f; // Percent increase to acid damage per level to enemies in heal radius.
 const float SKILL_MEDIC_REVIVE = 3.00f; // Reduce revive cooldown in seconds per level.
 const float SKILL_MEDIC_HEALAP = 1.50f; // Percent of max AP to heal per level (divided by 100).
 
@@ -51,8 +51,10 @@ const float SKILL_ROBOMANCER_FABRICATIONSTRENGTH = 0.15f; // Strength of Fabrica
 
 // Xenomancer.
 
+
 // Necromancer.
 const float SKILL_NECROMANCER_RATS = 0.05f; // Rat % cooldown reduction per level.
+const float SKILL_NECROMANCER_MIASMA = 0.20f; // Percent increase to base miasma damage per level, on each active minion.
 
 // Frostguard.
 const float SKILL_FROSTGUARD_SHIELDHP = 0.20f; // Ice shield HP percent increase per level.
@@ -151,6 +153,7 @@ enum SkillID
 
     // Necromancer.
     SKILL_NECROMANCER_RATS,
+    SKILL_NECROMANCER_MIASMA,
 
     // Frostguard.
     SKILL_FROSTGUARD_SHIELDHP,
@@ -242,7 +245,7 @@ void InitializeSkillDefinitions()
     // Medic.
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT * 100.0f, "f", 0, 2) + "% Healed.", 5, SKILL_MEDIC_HEALPERCENT * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALREGEN)] = SkillDefinition("Heal: Regeneration", "+" + formatFloat(SKILL_MEDIC_HEALREGEN, "f", 0, 2) + "% HP/s for 10s.", 5, SKILL_MEDIC_HEALREGEN, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal: Acid", "+" + formatFloat(SKILL_MEDIC_POISON, "f", 0, 2) + " acid damage.", 5, SKILL_MEDIC_POISON, "", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal: Acid", "+" + formatFloat(SKILL_MEDIC_POISON * 100.0f, "f", 0, 2) + "% acid damage.", 5, SKILL_MEDIC_POISON * 100.0f, "%", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal: Revive", "-" + formatFloat(SKILL_MEDIC_REVIVE, "f", 0, 2) + "s revive cooldown.", 5, SKILL_MEDIC_REVIVE, "s", 0.5f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal: AP Restore", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heals to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.5f);
 
@@ -269,6 +272,7 @@ void InitializeSkillDefinitions()
 
     // Necromancer.
     @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Necro: Zombie Rats", "-" + formatFloat(SKILL_NECROMANCER_RATS * 100.0f, "f", 0, 2) + "% Zombie Rat cooldown.", 5, SKILL_NECROMANCER_RATS * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_MIASMA)] = SkillDefinition("Necro: Miasma", "+" + formatFloat(SKILL_NECROMANCER_MIASMA * 100.0f, "f", 0, 2) + "% miasma damage around minions.", 5, SKILL_NECROMANCER_MIASMA * 100.0f, "%", 0.5f);
 
     // Frostguard.
     @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_SHIELDHP)] = SkillDefinition("Iceshield: Shield HP", "+" + formatFloat(SKILL_FROSTGUARD_SHIELDHP * 100.0f, "f", 0, 2) + "% shield HP.", 5, SKILL_FROSTGUARD_SHIELDHP * 100.0f, "%", 0.5f);
@@ -377,6 +381,7 @@ array<SkillID> GetClassSkillIDs(PlayerClass pClass)
             result.insertLast(SkillID::SKILL_MINION_DAMAGE);
             result.insertLast(SkillID::SKILL_MINION_LIFESTEAL);
             result.insertLast(SkillID::SKILL_NECROMANCER_RATS);
+            result.insertLast(SkillID::SKILL_NECROMANCER_MIASMA);
             break;
 
         case PlayerClass::CLASS_FROSTGUARD:

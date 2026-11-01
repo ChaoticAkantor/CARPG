@@ -1,12 +1,11 @@
 string strNecroMinionSoundCreate = "debris/beamstart7.wav";
+string strNecroMiasmaSprite = "sprites/boss_glow.spr";
 
 // Precache strings for monsters. (Yawn)
 
 // Snark (Rat).
     // Models/Sprites.
     string strSnarkRatModel = "models/hunger/zombierat.mdl";
-
-    // Don't need sounds as they are already precached inside Swarmer.
 
 // Headcrab (Hand).
     // Moodels/Sprites.
@@ -213,10 +212,17 @@ class NecroMinionData
     private float m_flBaseHealth = 100.0f; // Base health of Minions, currently the same for all of them.
     private float m_flHealthRegenInterval = 1.0f; // Interval for regen.
 
-    // Rats Class Skill.
+    // Rats Skill.
     private int m_iRatSpawnCount = 3 ; // Number of rats to spawn with the rat ability, per active minion.
     private float m_flRatSpawnCooldown = 30.0f; // Base cooldown for spawning rats.
     private float m_flRatLaunchForce = 500.0f; // Velocity that rats are thrown outward.
+
+    // Miasma Skill.
+    private float m_flMiasmaInterval = 1.0f; // Seconds between miasma damage ticks.
+    private float m_flMiasmaBaseDamage = 1.0f; // Base damage per tick, on each minion and self.
+    private float m_flMiasmaRadius = 15.0f * 16; // Miasma effect radius for each instance.
+    private Vector m_vMiasmaColor = Vector(100, 0, 100); // Miasma ring colour.
+    private float m_flNextMiasmaTime = 0.0f; // Tracked time for the next miasma tick.
 
     // Minion Team Lifesteal Self-heal modifier.
     private float m_flSelfHealMult = 0.25f; // Multiplier for self-healing from minion lifesteal.
@@ -247,14 +253,15 @@ class NecroMinionData
     float GetMinionPointIncrease()
     {
         if(m_pStats is null)
-            return m_flMinionPointMax; // Return base if no stats.
+            return 0.0f; // No bonus if no stats.
 
         float minionPoints = m_flMinionPointMax; // Start with base minion points.
 
         int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
         float skillPower = SKILL_MINION_POINT;
+        float pointBonus = skillPower * skillLevel;
 
-        return minionPoints * (1.0f + skillPower * skillLevel); // Bonus minion points from skill.
+        return minionPoints * pointBonus; // Bonus only; the base is added in GetAbilityMax.
     }
 
     float GetAbilityMax()
@@ -415,6 +422,134 @@ class NecroMinionData
     void CorpseExplosion()
     {
         
+    }
+
+    float GetMiasmaDamageAmount()
+    {
+        if(m_pStats is null)
+            return 0.0f; // No miasma without the skill.
+
+        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_MIASMA);
+        if(skillLevel <= 0)
+            return 0.0f;
+
+        float skillPower = SKILL_NECROMANCER_MIASMA;
+
+        return m_flMiasmaBaseDamage * (1.0f + skillPower * skillLevel);
+    }
+
+    float GetMiasmaRadius() { return m_flMiasmaRadius; }
+
+    private void ProcessMiasma(CBasePlayer@ pPlayer)
+    {
+        if(pPlayer is null || m_pStats is null || m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_MIASMA) <= 0)
+            return;
+
+        float now = g_Engine.time;
+        if(now < m_flNextMiasmaTime)
+            return;
+
+        m_flNextMiasmaTime = now + m_flMiasmaInterval;
+
+        // Miasma only occurs while the necromancer has active minions.
+        if(m_hMinions.length() == 0)
+            return;
+
+        // Sources are the active minions only.
+        array<Vector> sources;
+
+        for(uint i = 0; i < m_hMinions.length(); i++)
+        {
+            CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
+            if(pMinion !is null && pMinion.IsAlive())
+                sources.insertLast(pMinion.pev.origin);
+        }
+
+        float miasmaDamage = GetMiasmaDamageAmount();
+
+        for(uint s = 0; s < sources.length(); s++)
+        {
+            ApplyMiasmaRadiusEffect(sources[s]);
+            CBaseEntity@ pEntity = null;
+            while((@pEntity = g_EntityFuncs.FindEntityInSphere(pEntity, sources[s], m_flMiasmaRadius, "*", "classname")) !is null)
+            {
+                if(pEntity is pPlayer || pEntity.IsPlayer() || pEntity.pev.health <= 0)
+                    continue;
+
+                // Don't damage player-summoned minions.
+                string targetName = pEntity.pev.targetname;
+                if(targetName.StartsWith("_robominion_") || 
+                    targetName.StartsWith("_necrominion_") ||
+                    targetName.StartsWith("_xenminion_") || 
+                    targetName.StartsWith("_snark_") || 
+                    targetName.StartsWith("_sentry_"))
+                    continue;
+
+                CBaseMonster@ pMonster = cast<CBaseMonster@>(pEntity);
+                if(pMonster is null || !pMonster.IsAlive())
+                    continue;
+
+                if(pMonster.IRelationship(pPlayer) == R_AL)
+                    continue;
+
+                pMonster.TakeDamage(pPlayer.pev, pPlayer.pev, miasmaDamage, DMG_ACID);
+                    g_SoundSystem.EmitSoundDyn(pMonster.edict(), CHAN_ITEM, strPoisonSound, 0.5f, ATTN_NORM, SND_FORCE_SINGLE);
+                        ApplyMiasmaEffect(pMonster);
+            }
+        }
+    }
+
+    private void ApplyMiasmaRadiusEffect(const Vector& in pos)
+    {
+        // Aura Beam Cylinder Effect.
+        NetworkMessage ringmsg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pos);
+            ringmsg.WriteByte(TE_BEAMCYLINDER);
+            ringmsg.WriteCoord(pos.x);
+            ringmsg.WriteCoord(pos.y);
+            ringmsg.WriteCoord(pos.z);
+            ringmsg.WriteCoord(pos.x);
+            ringmsg.WriteCoord(pos.y);
+            ringmsg.WriteCoord(pos.z + m_flMiasmaRadius); // Height.
+            ringmsg.WriteShort(GetModelIndex(strHealAuraSprite));
+            ringmsg.WriteByte(0); // Starting frame.
+            ringmsg.WriteByte(0); // Frame rate (no effect).
+            ringmsg.WriteByte(uint8(m_flMiasmaInterval * 10)); // Life * 0.1s (match interval).
+            ringmsg.WriteByte(10); // Width.
+            ringmsg.WriteByte(0); // Noise (No effect).
+            ringmsg.WriteByte(int(m_vMiasmaColor.x));
+            ringmsg.WriteByte(int(m_vMiasmaColor.y));
+            ringmsg.WriteByte(int(m_vMiasmaColor.z));
+            ringmsg.WriteByte(128); // Brightness.
+            ringmsg.WriteByte(0); // Scroll speed (no effect).
+        ringmsg.End();
+    }
+
+    private void ApplyMiasmaEffect(CBaseEntity@ target)
+    {
+        if(target is null)
+            return;
+
+        Vector origin = target.pev.origin;
+        origin.z += 16; // Offset to center of entity.
+
+        Vector endPoint = origin;
+        endPoint.z += 10; // Trail moves upward.
+
+        NetworkMessage msg(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, origin);
+            msg.WriteByte(TE_SPRITETRAIL);
+            msg.WriteCoord(origin.x);
+            msg.WriteCoord(origin.y);
+            msg.WriteCoord(origin.z);
+            msg.WriteCoord(endPoint.x);
+            msg.WriteCoord(endPoint.y);
+            msg.WriteCoord(endPoint.z);
+            msg.WriteShort(GetModelIndex(strNecroMiasmaSprite));
+            msg.WriteByte(3);   // Count.
+            msg.WriteByte(1);   // Life in 0.1's.
+            msg.WriteByte(2);   // Scale in 0.1's.
+            msg.WriteByte(15);  // Velocity along vector in 10's.
+            msg.WriteByte(10);  // Random velocity in 10's.
+        msg.End();
     }
     
     array<NecroMinionInfo>@ GetMinions() { return m_hMinions; }
@@ -707,7 +842,7 @@ class NecroMinionData
             ApplyMinionGlow(pExistingMinion, pPlayer);
         }
 
-        // Rat spawning: Check if enough time has passed to spawn new rats on active minions.
+        // Check if enough time has passed to spawn new rats on active minions.
         if (m_pStats !is null && m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS) > 0)
         {
             if(m_flCurrentRatCooldown <= 0.0f && m_hMinions.length() > 0)
@@ -719,7 +854,7 @@ class NecroMinionData
                     CBaseEntity@ pMinion = m_hMinions[i].hMinion.GetEntity();
                     if(pMinion !is null && pMinion.IsAlive())
                     {
-                        // Spawn multiple rats per minion based on config.
+                        // Spawn multiple rats per minion.
                         for(int j = 0; j < m_iRatSpawnCount; j++)
                         {
                             SpawnRat(pPlayer, pMinion);
@@ -731,6 +866,8 @@ class NecroMinionData
                 m_flCurrentRatCooldown = GetScaledRatCooldown();
             }
         }
+
+        ProcessMiasma(pPlayer);
 
         // Always recalculate the reserve pool to ensure it's accurate.
         PruneMinions();
