@@ -47,7 +47,7 @@ namespace Menu
                     {
                         string MedicStatsText = "=== Heal Aura: ===" + "\n"; 
                         MedicStatsText += "Healing: " + healingAura.GetScaledHealAmount() + "% HP\n";
-                        MedicStatsText += "Poison Damage: " + healingAura.GetPoisonDamageAmount() + "% HP\n";
+                        MedicStatsText += "Acid Damage: " + formatFloat(healingAura.GetPoisonDamageAmount(), "f", 0, 2) + " DMG\n";
                         MedicStatsText += "Radius: " + healingAura.GetHealingRadius() / 16 + "ft\n";
                         MedicStatsText += "Revive Cooldown: " + healingAura.GetReviveCooldown() + "s\n";
                         int medkitAmmoIndex = g_PlayerFuncs.GetAmmoIndex("health");
@@ -120,6 +120,8 @@ namespace Menu
                         NecromancerStatsText += "Zombie Damage: " + necroMinion.GetScaledDamage() * 100 + "%\n";
                         NecromancerStatsText += "Zombie Health Regen: " + necroMinion.GetMinionRegen() + "%\n";
                         NecromancerStatsText += "Zombie Lifesteal (Minion and Player): " + necroMinion.GetLifestealPercent() * 100 + "%\n";
+                        NecromancerStatsText += "Miasma Damage: " + formatFloat(necroMinion.GetMiasmaDamageAmount(), "f", 0, 2) + " DMG\n";
+                        NecromancerStatsText += "Miasma Radius: " + necroMinion.GetMiasmaRadius() / 16 + "ft\n";
 
                         NecromancerStatsText += "\n";
 
