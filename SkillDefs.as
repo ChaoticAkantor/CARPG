@@ -32,8 +32,8 @@ const float SKILL_MEDIC_HEALAP = 1.50f; // Percent of max AP to heal per level (
 
 // Vampire.
 const float SKILL_VAMPIRE_LIFESTEAL = 0.06f; // Percent increase to ALL lifesteal per level.
-const float SKILL_VAMPIRE_DAMAGEABILITYCHARGE = 0.30f; // Percent increase to base damage-to-charge conversion per level.
-const float SKILL_VAMPIRE_DAMAGEREDUCTION = 0.01f; // Damage reduction per level for each 10 missing HP.
+const float SKILL_VAMPIRE_DAMAGEABILITYCHARGE = 0.40f; // Percent increase to base damage-to-charge conversion per level.
+const float SKILL_VAMPIRE_DAMAGEREDUCTION = 0.005f; // Damage reduction per level for each 10% missing HP.
 const float SKILL_VAMPIRE_OVERHEAL = 0.10f; // Percent of max HP to overheal from lifesteal per level.
 const float SKILL_VAMPIRE_APCONVERSION = 0.15f; // Percent of Max AP converted into Max HP.
 const float SKILL_VAMPIRE_DURATION = 0.20f; // Percent increase to Bloodlust duration per level.
@@ -309,7 +309,7 @@ void InitializeSkillDefinitions()
     // Vampire.
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_LIFESTEAL)] = SkillDefinition("Bloodlust: Lifesteal", "+{amount}% all lifesteal.", 5, SKILL_VAMPIRE_LIFESTEAL * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE)] = SkillDefinition("Bloodlust: Damage Charge", "+{amount}% damage charge.", 5, SKILL_VAMPIRE_DAMAGEABILITYCHARGE * 100.0f, "%", 0.9f);
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION)] = SkillDefinition("Vampire: Damage Reduction", "+{amount}% (max 80%) per missing 10HP.", 5, SKILL_VAMPIRE_DAMAGEREDUCTION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION)] = SkillDefinition("Vampire: Damage Reduction", "+{amount}% (max 80%) per 10% missing HP.", 5, SKILL_VAMPIRE_DAMAGEREDUCTION * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_OVERHEAL)] = SkillDefinition("Bloodlust: Overheal", "+{amount}% Overheal per level.", 5, SKILL_VAMPIRE_OVERHEAL * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_APCONVERSION)] = SkillDefinition("Bloodlust: Convert AP -> HP", "+{amount}% of Max AP -> HP.", 5, SKILL_VAMPIRE_APCONVERSION * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DURATION)] = SkillDefinition("Bloodlust: Duration", "+{amount}% duration.", 5, SKILL_VAMPIRE_DURATION * 100.0f, "%", 0.9f);

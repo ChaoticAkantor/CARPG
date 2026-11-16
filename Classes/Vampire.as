@@ -38,7 +38,7 @@ class BloodlustData
     private float m_flBloodlustAbilityCost = 1.0f; // Ability drain per interval.
     private float m_flBloodlustDrainGrowth = 0.005f; // Compounding drain increase per interval.
     private int m_iBloodlustMaxHeartbeatPitch = 250; // Maximum pitch for heartbeat sound to increase to during bloodlust.
-    private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
+    private float m_flBloodlustAbilityDeactivateCost = 1.00f; // Ability cost percentage when manually deactivating bloodlust.
 
     // Bloodlust.
     private float m_flBaseLifesteal = 0.10f; // Lifesteal % base. Doubles during bloodlust!
@@ -135,13 +135,13 @@ class BloodlustData
     // Damage reduction, as a modifier.
     float GetDamageReduction(CBasePlayer@ pPlayer)
     {
-        if(pPlayer is null || m_pStats is null)
+        if(pPlayer is null || m_pStats is null || pPlayer.pev.max_health <= 0.0f)
             return 0.0f;
 
         float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION);
         float skillPower = SKILL_VAMPIRE_DAMAGEREDUCTION;
-        float missingHealth = Math.max(0.0f, pPlayer.pev.max_health - pPlayer.pev.health);
-        float damageReduction = skillPower * skillLevel * floor(missingHealth / 10.0f);
+        float missingHealth = Math.clamp(0.0f, 1.0f, (pPlayer.pev.max_health - pPlayer.pev.health) / pPlayer.pev.max_health);
+        float damageReduction = skillPower * skillLevel * floor(missingHealth * 10.0f);
 
         return Math.clamp(0.0f, m_flDamageReductionCap, damageReduction); // Cap damage reduction.
     }
