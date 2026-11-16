@@ -109,13 +109,11 @@
 
 
 # Vampire
-  - Bloodlust doubles all lifesteal bonuses whilst active.
+  - Bloodlust doubles all lifesteal whilst active.
 
-  - Bloodlust drain and heartbeat pitch increase while active; their growth and pitch cap can be adjusted in `m_flBloodlustDrainGrowth` and `m_iBloodlustMaxHeartbeatPitch`.
+  - Bloodlust drain increases while active. A heartbeat will indicate the current drain rate.
 
-  - Dealing damage restores health and Bloodlust charge. Damage Charge increases the base conversion rate by a percentage per skill level.
-
-  - Damage Reduction is passive and increases per 10 missing HP, up to 90%.
+  - Dealing damage restores health and Bloodlust charge, even when outside of bloodlust.
 
 
 # Engineer
