@@ -33,19 +33,25 @@ class BloodlustData
     // Remember to account for bloodlust double bonus when balancing!
     private bool m_bActive = false; // Used for active state of ability.
     private float m_flAbilityMax = 100.0f; // Base max duration.
-    private float m_flAbilityRechargeTime = 30.0f; // Seconds to fully recharge from empty.
+    private float m_flAbilityRechargeTime = 60.0f; // Seconds to fully recharge from empty.
     private float m_flBloodlustAbilityDrainInterval = 0.1f; // Interval to remove ability charge.
     private float m_flBloodlustAbilityCost = 1.0f; // Ability drain per interval.
+    private float m_flBloodlustDrainGrowth = 0.005f; // Compounding drain increase per interval.
+    private int m_iBloodlustMaxHeartbeatPitch = 250; // Maximum pitch for heartbeat sound to increase to during bloodlust.
     private float m_flBloodlustAbilityDeactivateCost = 0.15f; // Ability cost percentage when manually deactivating bloodlust.
 
-    // Bloodlust stat scaling values, passively gained but doubled whilst bloodlust is active.
+    // Bloodlust.
     private float m_flBaseLifesteal = 0.10f; // Lifesteal % base. Doubles during bloodlust!
+    private float m_flBaseDamageAbilityCharge = 0.30f; // Fraction of damage dealt converted to charge.
+    private float m_flDamageReductionCap = 0.80f; // Maximum damage reduction cap.
 
     // Timers.
     private float m_flAbilityCharge = 0.0f; // Current charge.
     private float m_flToggleCooldownBloodlust = 0.5f; // Cooldown between toggles.
     private float m_flLastDrainTime = 0.0f; // Stores last drain time.
     private float m_flLastToggleTime = 0.0f; // Stores last toggle time.
+    private float m_flDrainMultiplier = 1.0f;
+    private int m_iHeartbeatPitch = PITCH_NORM;
 
     private ClassStats@ m_pStats = null;
 
@@ -66,7 +72,7 @@ class BloodlustData
         if (m_pStats is null)
             return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
@@ -77,7 +83,7 @@ class BloodlustData
         if(m_pStats is null)
             return m_flAbilityMax; // Return base duration if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DURATION);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_VAMPIRE_DURATION);
         float skillPower = SKILL_VAMPIRE_DURATION;
         float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
 
@@ -92,7 +98,7 @@ class BloodlustData
         // First scale from the vampire lifesteal skill.
         float baseLifesteal = m_flBaseLifesteal; // Base lifesteal percentage.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_LIFESTEAL);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_VAMPIRE_LIFESTEAL);
         float skillPower = SKILL_VAMPIRE_LIFESTEAL;
         float modifierVampire = baseLifesteal * (1.0f + skillPower * skillLevel); // Increase lifesteal by a percentage, from vampire's lifesteal skill.
 
@@ -100,7 +106,7 @@ class BloodlustData
         // Then scale from the basic lifesteal skill.
         float baseLifestealBasic = 0.0f; // Base lifesteal from the basic lifesteal skill.
 
-        int skillLevelBasic = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_LIFESTEAL);
+        float skillLevelBasic = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_LIFESTEAL);
         float skillPowerBasic = SKILL_BASIC_LIFESTEAL;
         float modifierBasic = baseLifestealBasic + (skillPowerBasic * skillLevelBasic); // Add any lifesteal from the basic lifesteal skill.
         modifierBasic *= (1.0f + skillPower * skillLevel); // Increase lifesteal by a percentage, from vampire's lifesteal skill.
@@ -119,28 +125,25 @@ class BloodlustData
     float GetScaledDamageAbilityCharge()
     {
         if(m_pStats is null)
-            return 0.0f; // No damage ability charge if no stats.
+            return m_flBaseDamageAbilityCharge;
 
-        float damageAbilityCharge = 0.0f; // Base.
-
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE);
         float skillPower = SKILL_VAMPIRE_DAMAGEABILITYCHARGE;
-        float modifier = damageAbilityCharge + (skillPower * skillLevel); // Scaled from damage to ability charge skill.
-
-        return modifier;
+        return m_flBaseDamageAbilityCharge * (1.0f + skillPower * skillLevel);
     }
 
     // Damage reduction, as a modifier.
     float GetDamageReduction(CBasePlayer@ pPlayer)
     {
-        if(m_pStats is null)
+        if(pPlayer is null || m_pStats is null)
             return 0.0f;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION);
         float skillPower = SKILL_VAMPIRE_DAMAGEREDUCTION;
-        float damageReduction = skillPower * skillLevel;
+        float missingHealth = Math.max(0.0f, pPlayer.pev.max_health - pPlayer.pev.health);
+        float damageReduction = skillPower * skillLevel * floor(missingHealth / 10.0f);
 
-        return Math.clamp(0.0f, 0.9f, damageReduction); // Cap damage reduction at 90%.
+        return Math.clamp(0.0f, m_flDamageReductionCap, damageReduction); // Cap damage reduction.
     }
 
     float GetScaledOverhealPercent() 
@@ -148,7 +151,7 @@ class BloodlustData
         if(m_pStats is null)
             return 1.0f; // No overheal if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_OVERHEAL);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_VAMPIRE_OVERHEAL);
         float skillPower = SKILL_VAMPIRE_OVERHEAL;
         float overhealBonus = skillPower * skillLevel; // Overheal percent scaled from skill.
             
@@ -163,7 +166,7 @@ class BloodlustData
         if(m_pStats is null)
             return;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_VAMPIRE_APCONVERSION);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_VAMPIRE_APCONVERSION);
         float skillPower = SKILL_VAMPIRE_APCONVERSION;
         float apConversionBonus = skillPower * skillLevel; // AP conversion percent scaled from skill.
 
@@ -208,9 +211,11 @@ class BloodlustData
             
             m_bActive = true; // Set to active.
             m_flLastDrainTime = currentTime; // Reset drain timer on activation.
+            m_flDrainMultiplier = 1.0f;
+            m_iHeartbeatPitch = PITCH_NORM;
 
             g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strBloodlustStartSound, 1.0f, ATTN_NORM, SND_FORCE_SINGLE, 0, PITCH_NORM);
-            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.5f, ATTN_NORM, SND_FORCE_LOOP);
+            g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.8f, ATTN_NORM, SND_FORCE_LOOP, m_iHeartbeatPitch);
 
             g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTCENTER, "Bloodlust Activated!\n");
         }
@@ -229,13 +234,13 @@ class BloodlustData
 
     void HandleDamageReduction(CBasePlayer@ pPlayer, float bloodlustDamageTaken, float& out bloodlustReducedDamage)
     {
-        if(pPlayer is null || m_pStats is null || !m_bActive) // No damage reduction if not active or no stats.
+        if(pPlayer is null || m_pStats is null)
         {
             bloodlustReducedDamage = bloodlustDamageTaken; // No change in damage.
             return;
         }
 
-        float reductionModifier = GetDamageReduction(pPlayer); // 0.0 - 1.0 flat modifier.
+        float reductionModifier = GetDamageReduction(pPlayer);
         bloodlustReducedDamage = bloodlustDamageTaken * (1.0f - reductionModifier); // Apply directly.
     }
 
@@ -285,11 +290,21 @@ class BloodlustData
         float currentTime = g_Engine.time;
         if(currentTime - m_flLastDrainTime >= m_flBloodlustAbilityDrainInterval) // Interval for ability drain.
         {
-            m_flAbilityCharge -= m_flBloodlustAbilityCost;
+            m_flAbilityCharge -= m_flBloodlustAbilityCost * m_flDrainMultiplier;
+            m_flDrainMultiplier *= 1.0f + m_flBloodlustDrainGrowth;
             if(m_flAbilityCharge <= 0.0f)
             {
                 m_flAbilityCharge = 0.0f;
                 DeactivateBloodlust(pPlayer);
+            }
+            else
+            {
+                int pitch = int(Math.min(float(m_iBloodlustMaxHeartbeatPitch), float(PITCH_NORM) * m_flDrainMultiplier));
+                if(pitch != m_iHeartbeatPitch)
+                {
+                    m_iHeartbeatPitch = pitch;
+                    g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strBloodlustActiveSound, 0.8f, ATTN_NORM, SND_CHANGE_PITCH | SND_FORCE_LOOP, pitch);
+                }
             }
 
             m_flLastDrainTime = currentTime;
