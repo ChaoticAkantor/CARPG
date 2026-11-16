@@ -20,6 +20,8 @@
 
    - Type "/skills" or "/skillmenu" or "/selectskills" to display the skills menu, to view and purchase skills with skillpoints from leveling.
 
+   - Type "/rank", "/rp" or "/rankmenu" to spend or refund Rank Points on shared Rank Skills.
+
    - Type "useability" to use your class ability. It's advised to bind this to a button. Help command will explain how.
 
    - Type "/info" to display a window with brief information on current selected class.
@@ -50,25 +52,34 @@
 
    - Still earn XP even whilst dead or spectating.
 
- - Ranks - After earning enough XP, your rank will increase by +1.
+ # Ranks
+   - After earning enough XP, your rank will increase by +1.
 
-   - Rank increases the maximum skill level cap of Basic Skills by +1 (except for ammo regen), allowing you to spend more skillpoints in those skills.
+   - Each rank earns 1 Rank Point (RP) by default. RP can be spent inside the Rank Menu to increase the level cap, basic skill caps, or class skill caps by +1.
 
-   - Rank also increases XP per score by +1 per Rank.
+   - Skill cap purchases apply to all classes but do not grant skill levels; spend class skillpoints separately. Basic and class skill caps are purchased separately.
 
-   - Default Max Rank is 10.
+   - Rank Points can be refunded in the rank menu.
 
-   - Ammo Regen resupplies every 30 seconds by default, restoring 2% of each ammo pool's base maximum per Ammo Regen skill level. The interval is configurable in `AmmoRegen.as`; map balance rules can adjust it.
+   - Existing saves retain rank and receive Rank Points retroactively. Old automatic skill-cap bonuses are removed, and skill levels above the new caps are refunded. Invalid allocations are corrected and saved on load.
 
-   - Custom ammo pools from the INS2 weapons pack are supported when registered; indexes are looked up by ammo name at runtime.
+   - Skills above their default maximum will recieve diminishing returns: each extra level contributes a portion of the previous level.
+
+   - Rank increases XP per score by `g_iScorePerRebirthRank` (default 1) for every `g_iScorePerRebirthRankAmount` ranks (default 10; minimum 1).
+
+   - Default Max Rank is 100.
 
 
 # Skills
  - Skills can be purchased and increased with Skillpoints via a menu.
 
+   - The bracketed value shows the current total bonus; the description shows the next level's bonus, or the last level's bonus when maxed.
+
    - There are two types of skills, Basic Skills and Class Skills.
 
    - Basic Skills are available to every class, are passive and always enabled.
+
+   - Taking damage pauses that player's passive health and armor regeneration for 2 seconds by default; further hits restart the delay. Map balance rules can adjust the delay.
 
    - Class Skills only affect your Class Ability and are only available to the chosen class.
 
@@ -100,7 +111,11 @@
 # Vampire
   - Bloodlust doubles all lifesteal bonuses whilst active.
 
-  - Can restore health by dealing damage.
+  - Bloodlust drain and heartbeat pitch increase while active; their growth and pitch cap can be adjusted in `m_flBloodlustDrainGrowth` and `m_iBloodlustMaxHeartbeatPitch`.
+
+  - Dealing damage restores health and Bloodlust charge. Damage Charge increases the base conversion rate by a percentage per skill level.
+
+  - Damage Reduction is passive and increases per 10 missing HP, up to 90%.
 
 
 # Engineer

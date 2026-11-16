@@ -119,7 +119,7 @@ float GetAmmoResupplyInterval()
     return Math.max(g_flAmmoRegenTickInterval, g_flAmmoResupplyInterval * mapMultiplier);
 }
 
-int GetAmmoRegenAmount(AmmoType@ ammoType, int maxAmmo, int skillLevel, const string& in steamID)
+int GetAmmoRegenAmount(AmmoType@ ammoType, int maxAmmo, float skillLevel, const string& in steamID)
 {
     if(ammoType is null || maxAmmo <= 0 || skillLevel < 1 || steamID.IsEmpty())
         return 0;
@@ -191,7 +191,7 @@ void AmmoTimerTick()
             if(rpgData is null)
                 continue;
 
-            int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_BASIC_AMMOREGEN);
+            float skillLevel = rpgData.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_AMMOREGEN);
             if(skillLevel < 1)
                 continue;
 
