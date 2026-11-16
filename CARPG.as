@@ -60,12 +60,19 @@ void PluginInit()
 {
     g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
     g_Module.ScriptInfo.SetContactInfo("Discord: chaoticakantor");
+
+    if(g_iScorePerRebirthRankAmount < 1)
+    {
+        g_Game.AlertMessage(at_console, "CARPG: g_iScorePerRebirthRankAmount must be at least 1; using 10.\n");
+        g_iScorePerRebirthRankAmount = 10;
+    }
     
     PluginReset(); // Call a full reset whenever plugin is initialised or reloaded.
 }
 
 void MapInit() // When a new map is started, all scripts are initialized by calling their MapInit function.
 {
+    g_PlayerRecoveryData.deleteAll();
     RefreshCurrentCARPGMapSettings();
     InitializeAmmoRegen();
     InitializeRecovery();
@@ -135,6 +142,7 @@ void ResetData()
 {
     // Clear all dictionaries.
     g_PlayerRPGData.deleteAll();
+    g_PlayerRecoveryData.deleteAll();
     g_PlayerMinions.deleteAll();
     g_XenologistMinions.deleteAll();
     g_NecromancerMinions.deleteAll();
@@ -180,9 +188,6 @@ void SetupTimers()
 
     // Ammo Recovery System.
     g_Scheduler.SetInterval("AmmoTimerTick", g_flAmmoRegenTickInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Ammo recovery (interval in AmmoRegen.as).
-
-    // HP/AP Recovery System.
-    g_Scheduler.SetInterval("HurtDelayTick", flHurtDelayTick, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for hurt delay.
 
     // Resource System.
     g_Scheduler.SetInterval("UpdateClassResource", g_flClassResourceHUDInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for class resource display.
@@ -1021,6 +1026,8 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     if(pPlayer is null || pDamageInfo.flDamage <= 0) 
         return HOOK_CONTINUE;
 
+    StopPlayerRegen(pPlayer);
+
     // Get attacker before any damage calculations.
     CBaseEntity@ attacker = pDamageInfo.pAttacker;
 
@@ -1058,22 +1065,25 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     {
         CBaseEntity@ barrierAttacker = (attacker !is null) ? attacker : cast<CBaseEntity@>(pPlayer);
         linkedBarrier.HandleBarrier(linkedOwner, barrierAttacker, pDamageInfo.flDamage, pDamageInfo.flDamage, pPlayer, linkedBarrier.GetLinkedDamageReduction());
-        return HOOK_CONTINUE;
     }
 
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     
-    // Add hurt delay when player takes damage.
-    if(g_PlayerRecoveryData.exists(steamID))
+    // Vampire damage reduction is passive, including when Bloodlust is inactive.
+    if(g_PlayerRPGData.exists(steamID) && g_PlayerBloodlusts.exists(steamID))
     {
-        RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
-        if(data !is null)
+        PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
+        if(data !is null && bloodlust !is null && data.GetCurrentClass() == PlayerClass::CLASS_VAMPIRE)
         {
-            data.isRegenerating = false;
-            data.hurtDelayCounter = flHurtDelay;
-            data.lastHurtTime = g_Engine.time;
+            float reducedDamage = 0.0f;
+            bloodlust.HandleDamageReduction(pPlayer, pDamageInfo.flDamage, reducedDamage);
+            pDamageInfo.flDamage = reducedDamage;
         }
     }
+
+    if(linkedBarrier !is null && linkedOwner !is null)
+        return HOOK_CONTINUE;
 
     if(g_PlayerRPGData.exists(steamID)) // Barrier damage checks.
     {
@@ -1116,22 +1126,6 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
         MinionData@ roboMinions = cast<MinionData@>(g_PlayerMinions[steamID]);
         if(roboData !is null && roboMinions !is null && roboData.GetCurrentClass() == PlayerClass::CLASS_ROBOMANCER)
             pDamageInfo.flDamage *= (1.0f - roboMinions.GetDamageReduction(pPlayer));
-    }
-
-    // Vampire damage reduction.
-    if(g_PlayerRPGData.exists(steamID))
-    {
-        BloodlustData@ bloodlust = cast<BloodlustData@>(g_PlayerBloodlusts[steamID]);
-        if(bloodlust !is null)
-        {
-            PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-            if(data !is null && data.GetCurrentClass() == PlayerClass::CLASS_VAMPIRE)
-            {
-                float reducedDamage = 0.0f;
-                bloodlust.HandleDamageReduction(pPlayer, pDamageInfo.flDamage, reducedDamage);
-                pDamageInfo.flDamage = reducedDamage;
-            }
-        }
     }
 
     return HOOK_CONTINUE;
@@ -1204,6 +1198,7 @@ HookReturnCode PlayerRespawn(CBasePlayer@ pPlayer)
 
 HookReturnCode ClientDisconnect(CBasePlayer@ pPlayer)
 {
+    g_PlayerRecoveryData.delete(string(pPlayer.entindex()));
     string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
     if(g_PlayerRPGData.exists(steamID))
     {
@@ -1321,6 +1316,20 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                         g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Select a class first (type 'class').\n");
                     else
                         data.ShowSkillsMenu(pPlayer);
+                    pParams.ShouldHide = true;
+                    return HOOK_HANDLED;
+                }
+            }
+        }
+        else if((command == "/rank" || command == "/rp" || command == "/rankmenu") && args.ArgC() == 1)
+        {
+            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
+            if(g_PlayerRPGData.exists(steamID))
+            {
+                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
+                if(data !is null)
+                {
+                    data.ShowRankMenu(pPlayer);
                     pParams.ShouldHide = true;
                     return HOOK_HANDLED;
                 }
@@ -1849,6 +1858,7 @@ bool IsCARPGFeatureChatCommand(const string& in command)
 {
     return command == "class" || command == "useability"
         || command == "/skills" || command == "/skillmenu" || command == "/selectskills" || command == "/spendskills"
+        || command == "/rank" || command == "/rp" || command == "/rankmenu"
         || command == "/info" || command == "/difficulty" || command == "/scaling"
         || command == "/hudsettings" || command == "/hud"
         || command == "/hints" || command == "/help" || command == "/debug";
@@ -1871,6 +1881,7 @@ void PrintHints(CBasePlayer@ pPlayer)
 {
     PrintHintLine(pPlayer, "Commands: Type 'Class' to select your class. Bind mouse3 \"say UseAbility\" to use your class ability.");
     PrintHintLine(pPlayer, "Type '/skills' to spend skillpoints.");
+    PrintHintLine(pPlayer, "Type '/rank' to spend or refund Rank Points.");
     PrintHintLine(pPlayer, "Type '/info' to see a summary of your class.");
     PrintHintLine(pPlayer, "Type '/difficulty' or '/scaling' to see player damage scaling.");
     PrintHintLine(pPlayer, "Type '/hudsettings' to customize HUD colors and positions.");

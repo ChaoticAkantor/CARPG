@@ -67,7 +67,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
         params.g2 = 255;
         params.b2 = 255;
 
-        string resourceName = "Ability Charge"; // Rename our energy to class specific resource name.
+        string resourceName = "Ability Charge"; // Rename our ability charge to class specific resource name.
         string resourceInfo = "";
 
         PlayerClass currentClass = data.GetCurrentClass();
@@ -118,8 +118,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION) > 0)
                             resourceInfo += "[DMG Reduction: " +  formatFloat(bloodlust.GetDamageReduction(pPlayer) * 100, "f", 0, 2) + "%]\n";
 
-                        if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE) > 0)
-                            resourceInfo += "[Ability Charge: " +  formatFloat(bloodlust.GetScaledDamageAbilityCharge() * 100, "f", 0, 2) + "%]\n";
+                        resourceInfo += "[Ability Charge: " +  formatFloat(bloodlust.GetScaledDamageAbilityCharge() * 100, "f", 0, 2) + "%]\n";
 
                         if (stats !is null && stats.GetSkillLevel(SkillID::SKILL_VAMPIRE_OVERHEAL) > 0)
                             resourceInfo += "[Overheal Limit: " + formatFloat(pPlayer.pev.max_health * bloodlust.GetScaledOverhealPercent(), "f", 0, 0) + " HP]";

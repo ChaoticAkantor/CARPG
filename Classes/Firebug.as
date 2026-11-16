@@ -140,7 +140,7 @@ class DragonsBreathData
         if (m_pStats is null)
             return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
@@ -249,9 +249,9 @@ class DragonsBreathData
 
     float GetScaledExplosionDamagePercent()
     {
-        int skillLevel = 0;
+        float skillLevel = 0.0f;
         if(m_pStats !is null)
-            skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FIREBUG_EXPLOSIVEDAMAGE);
+            skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_FIREBUG_EXPLOSIVEDAMAGE);
 
         return m_flDragonsBreathExplosionDamageBase * (1.0f + SKILL_FIREBUG_EXPLOSIVEDAMAGE * skillLevel);
     }
@@ -263,9 +263,9 @@ class DragonsBreathData
 
     float GetScaledFireDamagePercent()
     {
-        int skillLevel = 0;
+        float skillLevel = 0.0f;
         if(m_pStats !is null)
-            skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FIREBUG_FIREDAMAGE);
+            skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_FIREBUG_FIREDAMAGE);
 
         float fireDamagePercent = m_flDragonsBreathFireDamageBase * (1.0f +SKILL_FIREBUG_FIREDAMAGE * skillLevel);
         //return fireDamagePercent * GetDragonsBreathAmmoMultiplier(m_strCurrentAmmoName);
@@ -282,7 +282,7 @@ class DragonsBreathData
         if(m_pStats is null)
             return m_iDragonsBreathFireTicks * m_flDragonsBreathFireInterval; // Return base duration if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FIREBUG_FIREDURATION);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_FIREBUG_FIREDURATION);
         float modifier = 1.0f + (SKILL_FIREBUG_FIREDURATION * skillLevel);
         float baseDuration = m_iDragonsBreathFireTicks * m_flDragonsBreathFireInterval;
 
@@ -373,7 +373,7 @@ class DragonsBreathData
         if(m_pStats is null)
             return m_iDragonsBreathPoolBase;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_FIREBUG_AMMOPOOL);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_FIREBUG_AMMOPOOL);
         float skillPower = SKILL_FIREBUG_AMMOPOOL;
         float modifier = m_iDragonsBreathPoolBase * (1.0f + skillPower * skillLevel); // Ammo pool size increase based on skill level.
 

@@ -17,11 +17,11 @@ void ApplyBasicMaxStats(CBasePlayer@ pPlayer, ClassStats@ stats, ClassDefinition
         return;
 
     // Base HP/AP + SKILL_BASIC_MAXHP / SKILL_BASIC_MAXAP bonuses.
-    float maxHealth = def.baseHP * (1.0f + SKILL_BASIC_MAXHP * stats.GetSkillLevel(SkillID::SKILL_BASIC_MAXHP));
-    float maxArmor = def.baseAP * (1.0f + SKILL_BASIC_MAXAP * stats.GetSkillLevel(SkillID::SKILL_BASIC_MAXAP));
+    float maxHealth = def.baseHP * (1.0f + SKILL_BASIC_MAXHP * stats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_MAXHP));
+    float maxArmor = def.baseAP * (1.0f + SKILL_BASIC_MAXAP * stats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_MAXAP));
 
     // Basic HP -> AP conversion skill.
-    float hpConversionBonus = SKILL_BASIC_HPCONVERSION * stats.GetSkillLevel(SkillID::SKILL_BASIC_HPCONVERSION);
+    float hpConversionBonus = SKILL_BASIC_HPCONVERSION * stats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_HPCONVERSION);
     float hpToConvert = maxHealth * hpConversionBonus; // HP amount converted to AP.
 
     pPlayer.pev.max_health = maxHealth - hpToConvert;
@@ -38,7 +38,7 @@ void ApplyHPRegen(CBasePlayer@ pPlayer, PlayerData@ rpgData)
     if (!bAllowHPRegen || pPlayer is null || rpgData is null || !pPlayer.IsAlive())
         return;
 
-    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_BASIC_REGENHP);
+    float skillLevel = rpgData.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_REGENHP);
     if (skillLevel <= 0 || pPlayer.pev.health >= pPlayer.pev.max_health)
         return;
 
@@ -52,7 +52,7 @@ void ApplyAPRegen(CBasePlayer@ pPlayer, PlayerData@ rpgData)
     if (!bAllowAPRegen || pPlayer is null || rpgData is null || !pPlayer.IsAlive())
         return;
 
-    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_BASIC_REGENAP);
+    float skillLevel = rpgData.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_REGENAP);
     if (skillLevel <= 0 || pPlayer.pev.armorvalue >= pPlayer.pev.armortype)
         return;
 
@@ -68,7 +68,7 @@ float GetScaledMedkitCapacity(PlayerData@ rpgData)
     if (rpgData is null)
         return flMedkitBaseCapacity;
 
-    int skillLevel = rpgData.GetSkillLevel(SkillID::SKILL_BASIC_MEDKITCAPACITY);
+    float skillLevel = rpgData.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_MEDKITCAPACITY);
 
     return flMedkitBaseCapacity * (1.0f + SKILL_BASIC_MEDKITCAPACITY * skillLevel);
 }
@@ -157,7 +157,7 @@ float GetScaledBasicLifesteal(PlayerData@ data)
     if(data is null)
         return 0.0f; // No lifesteal if no stats.
 
-    int skillLevel = data.GetSkillLevel(SkillID::SKILL_BASIC_LIFESTEAL);
+    float skillLevel = data.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_LIFESTEAL);
     float skillPower = SKILL_BASIC_LIFESTEAL;
     float modifier = skillPower * skillLevel; // Scaled from lifesteal skill.
 
@@ -169,7 +169,7 @@ float GetScaledBasicArmorsteal(PlayerData@ data)
     if(data is null)
         return 0.0f; // No armorsteal if no stats.
 
-    int skillLevel = data.GetSkillLevel(SkillID::SKILL_BASIC_ARMORSTEAL);
+    float skillLevel = data.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ARMORSTEAL);
     float skillPower = SKILL_BASIC_ARMORSTEAL;
     float modifier = skillPower * skillLevel; // Scaled from armorsteal skill.
 
@@ -274,7 +274,7 @@ void UpdateBasicSkills() // Update basic skills.
         ApplyMedkitCapacity(pPlayer, rpgData);
 
         // Regen is paused while the player is in their hurt delay (see Recovery.as).
-        if (CanPlayerRegen(steamID))
+        if (CanPlayerRegen(pPlayer))
         {
             ApplyHPRegen(pPlayer, rpgData);
             ApplyAPRegen(pPlayer, rpgData);

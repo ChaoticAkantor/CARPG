@@ -76,7 +76,7 @@ class SnarkNestData
 
         float baseCount = m_iBaseSnarkCount; // Default number of snarks.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKCOUNT);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SWARMER_SNARKCOUNT);
         float skillPower = SKILL_SWARMER_SNARKCOUNT;
         float modifier = 1.0f + (skillPower * skillLevel); // Scale with skill level.
         float snarkGrowthMult = (GetScaledSnarkGrowth() * 0.5f); // Reduce swarm count by half the snark growth modifier.
@@ -89,7 +89,7 @@ class SnarkNestData
         if(m_pStats is null)
             return 1.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKDAMAGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SWARMER_SNARKDAMAGE);
         float skillPower = SKILL_SWARMER_SNARKDAMAGE;
         float modifier = 1.0f + (skillPower * skillLevel);
 
@@ -101,7 +101,7 @@ class SnarkNestData
         if(m_pStats is null)
             return 1.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKCHARGES);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SWARMER_SNARKCHARGES);
         float skillPower = SKILL_SWARMER_SNARKCHARGES;
         float modifier = 1.0f + (skillPower * skillLevel);
 
@@ -113,7 +113,7 @@ class SnarkNestData
         if(m_pStats is null)
             return 1.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SWARMER_SNARKGROWTH);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SWARMER_SNARKGROWTH);
         float skillPower = SKILL_SWARMER_SNARKGROWTH;
         float modifier = 1.0f + (skillPower * skillLevel);
 
@@ -125,7 +125,7 @@ class SnarkNestData
         if (m_pStats is null)
             return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;

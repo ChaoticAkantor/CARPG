@@ -48,7 +48,7 @@ class ShockRifleData
         if (m_pStats is null)
             return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
@@ -88,7 +88,7 @@ class ShockRifleData
 
         float shockrifleDamage = 1.0f; // Default damage multiplier.
             
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_DAMAGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SHOCK_DAMAGE);
         float skillPower = SKILL_SHOCK_DAMAGE; // Bonus damage based on skill level.
         float modifier = 1.0f + (skillPower * skillLevel);
 
@@ -102,7 +102,7 @@ class ShockRifleData
 
         float maxAmmo = 100.0f; // Default max ammo.
             
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_CAPACITY);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SHOCK_CAPACITY);
         float skillPower = SKILL_SHOCK_CAPACITY; // Bonus capacity based on skill level.
         float modifier = maxAmmo * (1.0f + skillPower * skillLevel);
 
@@ -116,7 +116,7 @@ class ShockRifleData
 
         float lightningDamage = 1.0f; // Default damage multiplier.
             
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_LIGHTNING);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SHOCK_LIGHTNING);
         float skillPower = SKILL_SHOCK_LIGHTNING; // Bonus damage based on skill level.
         float modifier = skillPower * skillLevel;
 
@@ -129,7 +129,7 @@ class ShockRifleData
 
         if(m_pStats !is null)
         {
-            int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_DISPLACER);
+            float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SHOCK_DISPLACER);
             cooldown *= Math.max(0.05f, 1.0f - (SKILL_SHOCK_DISPLACER * skillLevel));
         }
 
@@ -162,7 +162,7 @@ class ShockRifleData
         if(pPlayer is null || m_pStats is null)
             return;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_SHOCK_DISPLACER);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_SHOCK_DISPLACER);
         if(skillLevel <= 0)
             return;
 

@@ -162,7 +162,7 @@ namespace Menu
             }
             else if(choice == 1 && stats !is null)
             {
-                stats.SetLevel(g_iMaxLevel);
+                stats.SetLevel(stats.GetMaxLevel());
                 data.CalculateStats(target);
                 data.SaveToFile();
                 result = "Set current class to maximum level.";

@@ -76,7 +76,7 @@ void ShowInfo(CBasePlayer@ pPlayer)
         string szDesc = "[XP]\n"
         + "Gain score to earn XP and increase your Class Level, awarding you with Skillpoints and also contributing towards your Rank.\n\n"
         + "[Rank]\n"
-        + "Rank increases maximum level of all skills, but less for Class Skills.\n\n"
+        + "Spend Rank Points with /rank to increase class and skill level caps.\n\n"
         + "[Skills]\n"
         + "Type 'skills' to view your current skills and spend skillpoints.\n\n"
         + "[Class Ability]\n";
@@ -105,7 +105,8 @@ string GetClassDescription(PlayerClass pClass)
                 "{Bloodlust}.\n\n"
                 "Starts with passive life steal.\n"
                 "All bonuses are counted as passives.\n"
-                "Activating Bloodlust doubles all HP and healing related bonuses (except for AP conversion).\n"
+                "Activating Bloodlust doubles lifesteal; its charge drains faster over time.\n"
+                "Damage restores charge, and damage reduction scales with missing health.\n"
                 "More skills can be unlocked to add extra effects to this ability.\n"
                 "Type skills to spend skillpoints.\n"
                 "Type in console: Bind mouse3 \"say UseAbility\" to use your Class Ability.\n";

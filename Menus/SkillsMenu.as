@@ -114,19 +114,18 @@ namespace Menu
             if(def is null) return;
 
             int curLevel = (stats !is null) ? stats.GetSkillLevel(id) : 0; // Get current level.
-            int rebirthRank = m_pOwner.GetRebirthRank(); // Get rank.
-            int effectiveMax = def.GetEffectiveMaxLevel(rebirthRank); // Use int function to get effective max level based on rank.
+            int effectiveMax = (stats !is null) ? stats.GetSkillMaxLevel(id) : def.baseMaxLevel;
 
             string levelTag = (curLevel >= effectiveMax) ? "(MAX)" : ("(" + curLevel + "/" + effectiveMax + ")");
 
             string bonusStr = "";
             if(def.strength > 0.0f && curLevel > 0)
             {
-                float total = curLevel * def.strength;
-                bonusStr = " [" + formatFloat(total, "f", 0, 2) + def.unit + "]";
+                float total = def.GetEffectiveLevel(curLevel) * def.strength;
+                bonusStr = " [" + formatFloat(total, "f", 0, 3) + def.unit + "]";
             }
-
-            menu.AddItem(def.name + " " + levelTag + bonusStr + " " + def.description + "\n", any(int(id)));
+            int describedLevel = curLevel < effectiveMax ? curLevel + 1 : Math.max(curLevel, 1);
+            menu.AddItem(def.name + " " + levelTag + bonusStr + " " + def.GetDescription(describedLevel) + "\n", any(int(id)));
         }
     }
 }

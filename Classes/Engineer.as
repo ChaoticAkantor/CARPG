@@ -104,7 +104,7 @@ class SentryData
         if (m_pStats is null)
             return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
@@ -115,7 +115,7 @@ class SentryData
         if(m_pStats is null)
             return m_flAbilityMax; // Return base duration if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_SENTRYDURATION);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_ENGINEER_SENTRYDURATION);
         float skillPower = SKILL_ENGINEER_SENTRYDURATION;
         float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
 
@@ -129,7 +129,7 @@ class SentryData
 
         float sentryScaledDamage = 1.0f; // Default multiplier, must be 1.0f to not alter base damage.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_SENTRYDAMAGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_ENGINEER_SENTRYDAMAGE);
         float skillPower = SKILL_ENGINEER_SENTRYDAMAGE;
         float modifier = 1.0f + (skillPower * skillLevel); // This is just adding to the default modifier of 1.0.
 
@@ -141,7 +141,7 @@ class SentryData
         if(m_pStats is null)
             return 0.0f; // Return default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_ENGINEER_MINIHEALAURA);
         float skillPower = SKILL_ENGINEER_MINIHEALAURA;
         float modifier = skillPower * skillLevel;
 
@@ -153,7 +153,7 @@ class SentryData
         if(m_pStats is null)
             return 1.0f; // Return default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_SENTRYSPEED);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_ENGINEER_SENTRYSPEED);
         float skillPower = SKILL_ENGINEER_SENTRYSPEED;
         float modifier = 1.0f + (skillPower * skillLevel);
 
@@ -165,7 +165,7 @@ class SentryData
         if(m_pStats is null)
             return m_flBaseRocketInterval;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_ENGINEER_ROCKETS);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_ENGINEER_ROCKETS);
         float interval = m_flBaseRocketInterval * (1.0f - (SKILL_ENGINEER_ROCKETS * skillLevel));
 
         return Math.max(m_flBaseRocketInterval * 0.05f, interval);

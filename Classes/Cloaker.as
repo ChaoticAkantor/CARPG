@@ -76,7 +76,7 @@ class CloakData
         // Scale nova damage.
         float novaDamage = 0.0f; // Initialise.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE);
         float skillPower = SKILL_CLOAKER_CLOAKNOVADAMAGE;
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
@@ -95,7 +95,7 @@ class CloakData
         if(m_pStats is null) // Normal damage if no stats.
             return 1.0f;
                 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDAMAGE);
         float skillPower = SKILL_CLOAKER_CLOAKDAMAGE;
         float modifier = m_flCloakDamageMultiplier * (1.0f + skillLevel * skillPower); // Calculate modifier based on skill level.
 
@@ -107,7 +107,7 @@ class CloakData
         if(m_pStats is null)
             return m_flAbilityMax; // Return base duration if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDURATION);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_CLOAKER_CLOAKDURATION);
         float skillPower = SKILL_CLOAKER_CLOAKDURATION;
         float modifier = 1.0f + (skillLevel * skillPower); // Fire duration increase scales from skill level.
 
@@ -119,7 +119,7 @@ class CloakData
         if(m_pStats is null)
             return 1.0f; // Return base speed if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_SPEED);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_CLOAKER_SPEED);
         float skillPower = SKILL_CLOAKER_SPEED;
         float modifier = 1.0f + (skillLevel * skillPower); // Speed increase scales with skill level.
 
@@ -131,7 +131,7 @@ class CloakData
         if(m_pStats is null)
             return m_flCloakBaseDrainRate;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_CLOAKER_DRAINREDUCTION);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_CLOAKER_DRAINREDUCTION);
         float skillPower = SKILL_CLOAKER_DRAINREDUCTION;
         
         // Calculate the remaining percentage.
@@ -241,7 +241,7 @@ class CloakData
         if (m_pStats is null)
             return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;

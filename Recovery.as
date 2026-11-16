@@ -3,13 +3,8 @@
 
 // Configurable variables for recovery system.
 
-// Timer intervals.
 // HP/AP regen skills are handled in BasicSkills.as. This file keeps the hurt delay that pauses them.
-const float flHurtDelayTick = 1.0f; // Time between hurt delay ticks (in seconds).
-const float flHurtDelay = 2.0f; // Total time to stay "hurt" before regen starts again (in seconds).
-
-// Sprite on hud for icon when hurt delay is active.
-const string strHurtDelaySprite = "tfchud06.spr";
+const float flHurtDelay = 3.0f; // Total time to stay "hurt" before regen starts again (in seconds).
 
 dictionary g_PlayerRecoveryData; // Dictionary for recovery data.
 
@@ -21,9 +16,7 @@ string g_RecoveryPrefixMessage = ""; // Store prefix message to display to conne
 
 class RecoveryData
 {
-    bool isRegenerating = true;
-    float hurtDelayCounter = 0.0f;
-    float lastHurtTime = 0.0f;
+    float regenResumeTime = 0.0f;
 }
 
 void InitializeRecovery() // Called in PluginInit().
@@ -42,61 +35,39 @@ void InitializeRecovery() // Called in PluginInit().
     }
 }
 
-bool CanPlayerRegen(const string& in steamID) // True unless the player is currently in their hurt delay.
+bool CanPlayerRegen(CBasePlayer@ pPlayer) // True unless the player is currently in their hurt delay.
 {
-    if(!g_PlayerRecoveryData.exists(steamID))
+    if(pPlayer is null)
+        return false;
+
+    string playerKey = string(pPlayer.entindex());
+    if(!g_PlayerRecoveryData.exists(playerKey))
         return true;
 
-    RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
-    return data is null || data.isRegenerating;
-}
-
-void HurtDelayTick() // Think.
-{
-    if(IsCARPGDisabledOnCurrentMap())
-        return;
-
-    const int iMaxPlayers = g_Engine.maxClients;
-    for (int i = 1; i <= iMaxPlayers; ++i)
+    RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[playerKey]);
+    if(data is null)
     {
-        CBasePlayer@ pPlayer = g_PlayerFuncs.FindPlayerByIndex(i);
-        if (pPlayer !is null && pPlayer.IsConnected())
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(!g_PlayerRecoveryData.exists(steamID))
-                continue;
-
-            RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
-            if(data !is null && !data.isRegenerating)
-            {
-                data.hurtDelayCounter -= flHurtDelayTick;
-                if(data.hurtDelayCounter <= 0)
-                {
-                    data.hurtDelayCounter = flHurtDelay * g_CurrentHurtDelayMapMultiplier;
-                    data.isRegenerating = true;
-                }
-            }
-        }
+        g_Game.AlertMessage(at_console, "CARPG: Invalid recovery data for player " + playerKey + ".\n");
+        return false;
     }
+    return g_Engine.time >= data.regenResumeTime;
 }
 
-void StopPlayerRegen(CBasePlayer@ pPlayer) // Stop Player Regen when hurt, called in OnTakeDamage Hook.
+void StopPlayerRegen(CBasePlayer@ pPlayer)
 {
     if(IsCARPGDisabledOnCurrentMap() || pPlayer is null)
         return;
         
-    string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-    if(!g_PlayerRecoveryData.exists(steamID))
+    string playerKey = string(pPlayer.entindex());
+    if(!g_PlayerRecoveryData.exists(playerKey))
     {
-        RecoveryData data;
-        @g_PlayerRecoveryData[steamID] = data;
+        RecoveryData newData;
+        @g_PlayerRecoveryData[playerKey] = newData;
     }
 
-    RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[steamID]);
+    RecoveryData@ data = cast<RecoveryData@>(g_PlayerRecoveryData[playerKey]);
     if(data !is null)
-    {
-        data.isRegenerating = false;
-        data.hurtDelayCounter = flHurtDelay * g_CurrentHurtDelayMapMultiplier;
-        data.lastHurtTime = g_Engine.time;
-    }
+        data.regenResumeTime = g_Engine.time + flHurtDelay * g_CurrentHurtDelayMapMultiplier;
+    else
+        g_Game.AlertMessage(at_console, "CARPG: Invalid recovery data for player " + playerKey + ".\n");
 }

@@ -336,7 +336,7 @@ class XenMinionData
 
         float minionPoints = m_flMinionPointMax;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_POINT);
         float skillPower = SKILL_MINION_POINT;
 
         return minionPoints * (skillPower * skillLevel); // Bonus only; the base is added in GetAbilityMax.
@@ -356,7 +356,7 @@ class XenMinionData
         if (m_pStats is null)
             return 1.0f; // Use the base recharge rate if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
@@ -405,7 +405,7 @@ class XenMinionData
 
         float minionScaledHealth = XEN_HP_BASE[minionType]; // Start with base health for each type.
 
-        float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_HP);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_HP);
         float skillPower = SKILL_MINION_HP;
         
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
@@ -420,7 +420,7 @@ class XenMinionData
         if(m_pStats is null)
             return XEN_DAMAGE_MODIFIERS[minionType]; // Return type modifier only if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_DAMAGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_DAMAGE);
         float skillPower = SKILL_MINION_DAMAGE;
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
@@ -443,7 +443,7 @@ class XenMinionData
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_REGEN);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_REGEN);
         float skillPower = SKILL_MINION_REGEN;
         float modifier = skillLevel * skillPower; // Scale from skill.
         
@@ -455,7 +455,7 @@ class XenMinionData
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_LIFESTEAL);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_LIFESTEAL);
         float skillPower = SKILL_MINION_LIFESTEAL;
         float modifier = skillLevel * skillPower; // Scale from skill.
 

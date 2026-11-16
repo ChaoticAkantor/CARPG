@@ -32,8 +32,8 @@ const float SKILL_MEDIC_HEALAP = 1.50f; // Percent of max AP to heal per level (
 
 // Vampire.
 const float SKILL_VAMPIRE_LIFESTEAL = 0.06f; // Percent increase to ALL lifesteal per level.
-const float SKILL_VAMPIRE_DAMAGEABILITYCHARGE = 0.005f; // Percent of damage dealt converted to ability charge per level.
-const float SKILL_VAMPIRE_DAMAGEREDUCTION = 0.06f; // Damage reduction per level.
+const float SKILL_VAMPIRE_DAMAGEABILITYCHARGE = 0.30f; // Percent increase to base damage-to-charge conversion per level.
+const float SKILL_VAMPIRE_DAMAGEREDUCTION = 0.01f; // Damage reduction per level for each 10 missing HP.
 const float SKILL_VAMPIRE_OVERHEAL = 0.10f; // Percent of max HP to overheal from lifesteal per level.
 const float SKILL_VAMPIRE_APCONVERSION = 0.15f; // Percent of Max AP converted into Max HP.
 const float SKILL_VAMPIRE_DURATION = 0.20f; // Percent increase to Bloodlust duration per level.
@@ -88,7 +88,36 @@ const float SKILL_SWARMER_SNARKCOUNT = 0.20f; // Percent of extra snarks per lev
 const float SKILL_SWARMER_SNARKCHARGES = 1.00f; // Snark charges per level (internally just an ability max increase).
 const float SKILL_SWARMER_SNARKGROWTH = 0.20f; // Increases snark damage & health per level but reduces swarm count by HALF the modifier value.
 
+// Rank system settings.
+bool g_bSkillDiminishingReturns = true; // Disables diminishing returns for skill's over default max level, but locks rank to maximum defined below.
+int g_iHardLimitMaxRank = 10; // Determines the max rank if above is enabled.
+
+
 // formatFloat is for display strings only, strength (4th ctor arg) must stay a raw float for math.
+enum RankSkillID
+{
+    RANK_SKILL_LEVEL_CAP = 0,
+    RANK_SKILL_BASIC_CAP,
+    RANK_SKILL_CLASS_CAP,
+    RANK_SKILL_COUNT
+}
+
+class RankSkillDefinition
+{
+    string name;
+    string description;
+    float increase;
+
+    RankSkillDefinition(const string& in _name, const string& in _description, float _increase)
+    {
+        name = _name;
+        description = _description;
+        increase = _increase;
+    }
+}
+
+array<RankSkillDefinition@> g_RankSkillDefs;
+
 string FormatSkillPerLevelText(float perLevelValue)
 {
     return formatFloat(perLevelValue, "f", 0, 2);
@@ -194,26 +223,50 @@ enum SkillID
 class SkillDefinition
 {
     string name; // Name.
-    string description; // Description.
+    string description; // Description template; {amount} and {half} are per-level bonuses.
     int baseMaxLevel; // Base max level (without rank bonus).
     float strength; // Per-level bonus.
     string unit;    // Suffix appended to the computed bonus (e.g. "%" or "s").
-    float rankBonusMultiplier;  // Multiplier for max levels to be added from rank.
+    float diminishRate; // Each level above baseMaxLevel contributes this fraction of the previous level.
 
     SkillDefinition(const string& in _name, const string& in _desc, int _baseMaxLevel,
-                    float _strength = 0.0f, const string& in _unit = "%", float _rankBonusMultiplier = 0.0f)
+                    float _strength = 0.0f, const string& in _unit = "%", float _diminishRate = 0.9f)
     {
         name        = _name;
         description = _desc;
         baseMaxLevel = _baseMaxLevel;
         strength    = _strength;
         unit        = _unit;
-        rankBonusMultiplier = _rankBonusMultiplier;
+        diminishRate = _diminishRate;
     }
 
-    int GetEffectiveMaxLevel(int rebirthRank) const
+    int GetEffectiveMaxLevel(int purchasedBonus) const
     {
-        return baseMaxLevel + int(rebirthRank * rankBonusMultiplier);
+        return baseMaxLevel + purchasedBonus;
+    }
+
+    float GetEffectiveLevel(int level) const
+    {
+        if(!g_bSkillDiminishingReturns || level <= baseMaxLevel)
+            return float(level);
+
+        float result = float(baseMaxLevel);
+        float contribution = 1.0f;
+        float rate = Math.max(0.0f, Math.min(1.0f, diminishRate));
+        for(int i = baseMaxLevel; i < level; i++)
+        {
+            contribution *= rate;
+            result += contribution;
+        }
+        return result;
+    }
+
+    string GetDescription(int level) const
+    {
+        float amount = (GetEffectiveLevel(level) - GetEffectiveLevel(level - 1)) * strength;
+        string result = description;
+        result = result.Replace("{amount}", formatFloat(amount, "f", 0, 3));
+        return result.Replace("{half}", formatFloat(amount * 0.5f, "f", 0, 3));
     }
 }
 
@@ -221,90 +274,94 @@ array<SkillDefinition@> g_SkillDefs;
 
 void InitializeSkillDefinitions()
 {
+    g_RankSkillDefs.resize(int(RankSkillID::RANK_SKILL_COUNT));
+    @g_RankSkillDefs[int(RankSkillID::RANK_SKILL_LEVEL_CAP)] = RankSkillDefinition("Level Cap", "Max", 1.0f);
+    @g_RankSkillDefs[int(RankSkillID::RANK_SKILL_BASIC_CAP)] = RankSkillDefinition("Basic Skill Cap", "Max", 1.0f);
+    @g_RankSkillDefs[int(RankSkillID::RANK_SKILL_CLASS_CAP)] = RankSkillDefinition("Class Skill Cap", "Max", 1.0f);
     g_SkillDefs.resize(int(SkillID::SKILL_MAX_COUNT));
 
-    // Standard/Basic skills (last value is for rank bonus multiplier).
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_MAXHP)] = SkillDefinition("Max Health", "+" + int(SKILL_BASIC_MAXHP * 100) + "% Max HP.", 10, int(SKILL_BASIC_MAXHP * 100.0f), "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_MAXAP)] = SkillDefinition("Max Armor", "+" + int(SKILL_BASIC_MAXAP * 100) + "% Max AP.", 10, int(SKILL_BASIC_MAXAP * 100.0f), "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENHP)] = SkillDefinition("Health Regen", "+" + formatFloat(SKILL_BASIC_REGENHP * 100.0f, "f", 0, 2) + "% HP/s.", 10, SKILL_BASIC_REGENHP * 100.0f, "% HP/s", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENAP)] = SkillDefinition("Armor Regen", "+" + formatFloat(SKILL_BASIC_REGENAP * 100.0f, "f", 0, 2) + "% AP/s.", 10, SKILL_BASIC_REGENAP * 100.0f, "% AP/s", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_ABILITYRECHARGE)] = SkillDefinition("Ability Recharge", "+" + formatFloat(SKILL_BASIC_ABILITYRECHARGE * 100, "f", 0, 2) + "% ability recharge.", 10, SKILL_BASIC_ABILITYRECHARGE * 100.0f, "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_AMMOREGEN)] = SkillDefinition("Ammo Resupply", "+" + formatFloat(SKILL_BASIC_AMMOREGEN * 100.0f, "f", 0, 2) + "% of max ammo resupplied.", 10, SKILL_BASIC_AMMOREGEN * 100.0f, "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_LIFESTEAL)] = SkillDefinition("Lifesteal", "+" + formatFloat(SKILL_BASIC_LIFESTEAL * 100.0f, "f", 0, 2) + "% lifesteal.", 10, SKILL_BASIC_LIFESTEAL * 100.0f, "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_ARMORSTEAL)] = SkillDefinition("Armorsteal", "+" + formatFloat(SKILL_BASIC_ARMORSTEAL * 100.0f, "f", 0, 2) + "% armorsteal.", 10, SKILL_BASIC_ARMORSTEAL * 100.0f, "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+" + formatFloat(SKILL_BASIC_HPCONVERSION * 100.0f, "f", 0, 2) + "% of Max HP converted to AP.", 10, SKILL_BASIC_HPCONVERSION * 100.0f, "%", 1.0f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_MEDKITCAPACITY)] = SkillDefinition("Medkit Capacity", "+" + formatFloat(SKILL_BASIC_MEDKITCAPACITY * 100.0f, "f", 0, 2) + "% medkit capacity.", 10, SKILL_BASIC_MEDKITCAPACITY * 100.0f, "%", 1.0f);
+    // The final value on each skill is its diminishing-return rate.
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_MAXHP)] = SkillDefinition("Max Health", "+{amount}% Max HP.", 10, int(SKILL_BASIC_MAXHP * 100.0f), "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_MAXAP)] = SkillDefinition("Max Armor", "+{amount}% Max AP.", 10, int(SKILL_BASIC_MAXAP * 100.0f), "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENHP)] = SkillDefinition("Health Regen", "+{amount}% HP/s.", 10, SKILL_BASIC_REGENHP * 100.0f, "% HP/s", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENAP)] = SkillDefinition("Armor Regen", "+{amount}% AP/s.", 10, SKILL_BASIC_REGENAP * 100.0f, "% AP/s", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_ABILITYRECHARGE)] = SkillDefinition("Ability Recharge", "+{amount}% ability recharge.", 10, SKILL_BASIC_ABILITYRECHARGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_AMMOREGEN)] = SkillDefinition("Ammo Resupply", "+{amount}% max ammo resupplied.", 10, SKILL_BASIC_AMMOREGEN * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_LIFESTEAL)] = SkillDefinition("Lifesteal", "+{amount}% lifesteal.", 10, SKILL_BASIC_LIFESTEAL * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_ARMORSTEAL)] = SkillDefinition("Armorsteal", "+{amount}% armorsteal.", 10, SKILL_BASIC_ARMORSTEAL * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+{amount}% Max HP converted to AP.", 10, SKILL_BASIC_HPCONVERSION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_MEDKITCAPACITY)] = SkillDefinition("Medkit Capacity", "+{amount}% medkit capacity.", 10, SKILL_BASIC_MEDKITCAPACITY * 100.0f, "%", 0.9f);
 
     // Minion Class exclusive.
-    @g_SkillDefs[int(SkillID::SKILL_MINION_POINT)] = SkillDefinition("Minion: Max Reserve", "+" + SKILL_MINION_POINT * 100.0f + "% max reserve.", 5, SKILL_MINION_POINT * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MINION_HP)] = SkillDefinition("Minion: Max HP", "+" + int(SKILL_MINION_HP * 100) + "% minion HP.", 5, int(SKILL_MINION_HP * 100.0f), "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MINION_REGEN)] = SkillDefinition("Minion: HP Regen", "+" + formatFloat(SKILL_MINION_REGEN * 100.0f, "f", 0, 2) + "% minion HP/s.", 5, SKILL_MINION_REGEN * 100.0f, "% HP/s", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MINION_DAMAGE)] = SkillDefinition("Minion: Damage", "+" + formatFloat(SKILL_MINION_DAMAGE * 100.0f, "f", 0, 2) + "% minion damage.", 5, SKILL_MINION_DAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MINION_LIFESTEAL)] = SkillDefinition("Minion: Lifesteal", "+" + formatFloat(SKILL_MINION_LIFESTEAL * 100.0f, "f", 0, 2) + "% minion lifesteal to team.", 5, SKILL_MINION_LIFESTEAL * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_POINT)] = SkillDefinition("Minion: Max Reserve", "+{amount}% max reserve.", 5, SKILL_MINION_POINT * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_HP)] = SkillDefinition("Minion: Max HP", "+{amount}% minion HP.", 5, int(SKILL_MINION_HP * 100.0f), "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_REGEN)] = SkillDefinition("Minion: HP Regen", "+{amount}% minion HP/s.", 5, SKILL_MINION_REGEN * 100.0f, "% HP/s", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_DAMAGE)] = SkillDefinition("Minion: Damage", "+{amount}% minion damage.", 5, SKILL_MINION_DAMAGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_LIFESTEAL)] = SkillDefinition("Minion: Lifesteal", "+{amount}% minion lifesteal to team.", 5, SKILL_MINION_LIFESTEAL * 100.0f, "%", 0.9f);
 
     // Medic.
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal: Healing", "+" + formatFloat(SKILL_MEDIC_HEALPERCENT * 100.0f, "f", 0, 2) + "% Healed.", 5, SKILL_MEDIC_HEALPERCENT * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALREGEN)] = SkillDefinition("Heal: Regeneration", "+" + formatFloat(SKILL_MEDIC_HEALREGEN, "f", 0, 2) + "% HP/s for 10s.", 5, SKILL_MEDIC_HEALREGEN, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal: Acid", "+" + formatFloat(SKILL_MEDIC_POISON * 100.0f, "f", 0, 2) + "% acid damage.", 5, SKILL_MEDIC_POISON * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal: Revive", "-" + formatFloat(SKILL_MEDIC_REVIVE, "f", 0, 2) + "s revive cooldown.", 5, SKILL_MEDIC_REVIVE, "s", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal: AP Restore", "+" + formatFloat(SKILL_MEDIC_HEALAP, "f", 0, 2) + "% of heals to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal: Healing", "+{amount}% Healed.", 5, SKILL_MEDIC_HEALPERCENT * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALREGEN)] = SkillDefinition("Heal: Regeneration", "+{amount}% HP/s for 10s.", 5, SKILL_MEDIC_HEALREGEN, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal: Acid", "+{amount}% acid damage.", 5, SKILL_MEDIC_POISON * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal: Revive", "-{amount}s revive cooldown.", 5, SKILL_MEDIC_REVIVE, "s", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal: AP Restore", "+{amount}% of heals to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.9f);
 
     // Vampire.
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_LIFESTEAL)] = SkillDefinition("Bloodlust: Lifesteal", "+" + formatFloat(SKILL_VAMPIRE_LIFESTEAL * 100.0f, "f", 0, 2) + "% all lifesteal.", 5, SKILL_VAMPIRE_LIFESTEAL * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE)] = SkillDefinition("Bloodlust: Damage Charge", "+" + formatFloat(SKILL_VAMPIRE_DAMAGEABILITYCHARGE * 100.0f, "f", 0, 2) + "% of damage charge.", 5, SKILL_VAMPIRE_DAMAGEABILITYCHARGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION)] = SkillDefinition("Bloodlust: Damage Reduction", "+" + formatFloat(SKILL_VAMPIRE_DAMAGEREDUCTION * 100.0f, "f", 0, 2) + "% damage reduction.", 5, SKILL_VAMPIRE_DAMAGEREDUCTION * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_OVERHEAL)] = SkillDefinition("Bloodlust: Overheal", "+" + formatFloat(SKILL_VAMPIRE_OVERHEAL * 100.0f, "f", 0, 2) + "% Overheal per level.", 5, SKILL_VAMPIRE_OVERHEAL * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_APCONVERSION)] = SkillDefinition("Bloodlust: Convert AP -> HP", "+" + formatFloat(SKILL_VAMPIRE_APCONVERSION * 100.0f, "f", 0, 2) + "% of Max AP -> HP.", 5, SKILL_VAMPIRE_APCONVERSION * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DURATION)] = SkillDefinition("Bloodlust: Duration", "+" + formatFloat(SKILL_VAMPIRE_DURATION * 100.0f, "f", 0, 2) + "% Bloodlust duration.", 5, SKILL_VAMPIRE_DURATION * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_LIFESTEAL)] = SkillDefinition("Bloodlust: Lifesteal", "+{amount}% all lifesteal.", 5, SKILL_VAMPIRE_LIFESTEAL * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE)] = SkillDefinition("Bloodlust: Damage Charge", "+{amount}% damage charge.", 5, SKILL_VAMPIRE_DAMAGEABILITYCHARGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION)] = SkillDefinition("Vampire: Damage Reduction", "+{amount}% (max 80%) per missing 10HP.", 5, SKILL_VAMPIRE_DAMAGEREDUCTION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_OVERHEAL)] = SkillDefinition("Bloodlust: Overheal", "+{amount}% Overheal per level.", 5, SKILL_VAMPIRE_OVERHEAL * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_APCONVERSION)] = SkillDefinition("Bloodlust: Convert AP -> HP", "+{amount}% of Max AP -> HP.", 5, SKILL_VAMPIRE_APCONVERSION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DURATION)] = SkillDefinition("Bloodlust: Duration", "+{amount}% duration.", 5, SKILL_VAMPIRE_DURATION * 100.0f, "%", 0.9f);
 
     // Engineer.
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+" + formatFloat(SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "f", 0, 2) + "% damage.", 5, SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYSPEED)] = SkillDefinition("Sentry: Speed", "+" + formatFloat(SKILL_ENGINEER_SENTRYSPEED * 100.0f, "f", 0, 2) + "% attack speed.", 5, SKILL_ENGINEER_SENTRYSPEED * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Sentry: Heal Aura", "+" + formatFloat(SKILL_ENGINEER_MINIHEALAURA, "f", 0, 2) + "% HP/s.", 5, SKILL_ENGINEER_MINIHEALAURA, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_ROCKETS)] = SkillDefinition("Sentry: Rockets", "-" + formatFloat(SKILL_ENGINEER_ROCKETS * 100.0f, "f", 0, 2) + "% rocket cooldown.", 5, SKILL_ENGINEER_ROCKETS * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDURATION)] = SkillDefinition("Sentry: Duration", "+" + formatFloat(SKILL_ENGINEER_SENTRYDURATION * 100.0f, "f", 0, 2) + "% sentry duration.", 5, SKILL_ENGINEER_SENTRYDURATION * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDAMAGE)] = SkillDefinition("Sentry: Damage", "+{amount}% damage.", 5, SKILL_ENGINEER_SENTRYDAMAGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYSPEED)] = SkillDefinition("Sentry: Speed", "+{amount}% attack speed.", 5, SKILL_ENGINEER_SENTRYSPEED * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_MINIHEALAURA)] = SkillDefinition("Sentry: Heal Aura", "+{amount}% HP/s.", 5, SKILL_ENGINEER_MINIHEALAURA, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_ROCKETS)] = SkillDefinition("Sentry: Rockets", "-{amount}% rocket cooldown.", 5, SKILL_ENGINEER_ROCKETS * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_ENGINEER_SENTRYDURATION)] = SkillDefinition("Sentry: Duration", "+{amount}% sentry duration.", 5, SKILL_ENGINEER_SENTRYDURATION * 100.0f, "%", 0.9f);
 
     // Robomancer.
-    @g_SkillDefs[int(SkillID::SKILL_ROBOMANCER_DAMAGEREDUCTION)] = SkillDefinition("Robo: Damage Reduction", "+" + formatFloat(SKILL_ROBOMANCER_DAMAGEREDUCTION * 100.0f, "f", 0, 2) + "% damage reduction per robot for self and minion.", 5, SKILL_ROBOMANCER_DAMAGEREDUCTION * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_ROBOMANCER_FABRICATIONSTRENGTH)] = SkillDefinition("Robo: Fabrication Strength", "+" + formatFloat(SKILL_ROBOMANCER_FABRICATIONSTRENGTH * 100.0f, "f", 0, 2) + "% strength for Fabricated items.", 5, SKILL_ROBOMANCER_FABRICATIONSTRENGTH * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_ROBOMANCER_DAMAGEREDUCTION)] = SkillDefinition("Robo: Damage Reduction", "+{amount}% damage reduction per robot for self and minion.", 5, SKILL_ROBOMANCER_DAMAGEREDUCTION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_ROBOMANCER_FABRICATIONSTRENGTH)] = SkillDefinition("Robo: Fabrication Strength", "+{amount}% strength for Fabricated items.", 5, SKILL_ROBOMANCER_FABRICATIONSTRENGTH * 100.0f, "%", 0.9f);
 
     // Xenomancer.
 
     // Necromancer.
-    @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Necro: Zombie Rats", "-" + formatFloat(SKILL_NECROMANCER_RATS * 100.0f, "f", 0, 2) + "% Zombie Rat cooldown.", 5, SKILL_NECROMANCER_RATS * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_MIASMA)] = SkillDefinition("Necro: Miasma", "+" + formatFloat(SKILL_NECROMANCER_MIASMA * 100.0f, "f", 0, 2) + "% miasma damage around minions.", 5, SKILL_NECROMANCER_MIASMA * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_RATS)] = SkillDefinition("Necro: Zombie Rats", "-{amount}% Zombie Rat cooldown.", 5, SKILL_NECROMANCER_RATS * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_NECROMANCER_MIASMA)] = SkillDefinition("Necro: Miasma", "+{amount}% minion miasma damage.", 5, SKILL_NECROMANCER_MIASMA * 100.0f, "%", 0.9f);
 
     // Frostguard.
-    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_SHIELDHP)] = SkillDefinition("Iceshield: Shield HP", "+" + formatFloat(SKILL_FROSTGUARD_SHIELDHP * 100.0f, "f", 0, 2) + "% shield HP.", 5, SKILL_FROSTGUARD_SHIELDHP * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_DAMAGEREFLECT)] = SkillDefinition("Iceshield: Damage Reflect", "+" + formatFloat(SKILL_FROSTGUARD_DAMAGEREFLECT * 100.0f, "f", 0, 2) + "% shield damage reflect.", 5, SKILL_FROSTGUARD_DAMAGEREFLECT * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_ACTIVERECHARGE)] = SkillDefinition("Iceshield: Active Recharge", "+" + formatFloat(SKILL_FROSTGUARD_ACTIVERECHARGE * 100.0f, "f", 0, 2) + "% shield recharge.", 5, SKILL_FROSTGUARD_ACTIVERECHARGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_HPABSORB)] = SkillDefinition("Iceshield: HP Absorb", "+" + formatFloat(SKILL_FROSTGUARD_HPABSORB * 100.0f, "f", 0, 2) + "% shield HP absorb.", 5, SKILL_FROSTGUARD_HPABSORB * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_TEAMLINK)] = SkillDefinition("Iceshield: Share Shield", "+" + formatFloat(SKILL_FROSTGUARD_TEAMLINK * 100.0f, "f", 0, 2) + "% DR per protected player.", 5, SKILL_FROSTGUARD_TEAMLINK * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_SHIELDHP)] = SkillDefinition("Iceshield: Shield HP", "+{amount}% shield HP.", 5, SKILL_FROSTGUARD_SHIELDHP * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_DAMAGEREFLECT)] = SkillDefinition("Iceshield: Damage Reflect", "+{amount}% shield damage reflect.", 5, SKILL_FROSTGUARD_DAMAGEREFLECT * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_ACTIVERECHARGE)] = SkillDefinition("Iceshield: Active Recharge", "+{amount}% shield recharge.", 5, SKILL_FROSTGUARD_ACTIVERECHARGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_HPABSORB)] = SkillDefinition("Iceshield: HP Absorb", "+{amount}% shield HP absorb.", 5, SKILL_FROSTGUARD_HPABSORB * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_FROSTGUARD_TEAMLINK)] = SkillDefinition("Iceshield: Share Shield", "+{amount}% DR per protected player.", 5, SKILL_FROSTGUARD_TEAMLINK * 100.0f, "%", 0.9f);
 
     // Shocktrooper.
-    @g_SkillDefs[int(SkillID::SKILL_SHOCK_CAPACITY)] = SkillDefinition("Shockroach: Capacity", "+" + formatFloat(SKILL_SHOCK_CAPACITY * 100.0f, "f", 0, 2) + "% shockrifle capacity.", 5, SKILL_SHOCK_CAPACITY * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_SHOCK_DAMAGE)] = SkillDefinition("Shockroach: Damage", "+" + formatFloat(SKILL_SHOCK_DAMAGE * 100.0f, "f", 0, 2) + "% shockrifle damage.", 5, SKILL_SHOCK_DAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_SHOCK_LIGHTNING)] = SkillDefinition("Shockroach: Lightning Strike", "+" + formatFloat(SKILL_SHOCK_LIGHTNING * 100.0f, "f", 0, 2) + "% lightning strike damage.", 5, SKILL_SHOCK_LIGHTNING * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_SHOCK_DISPLACER)] = SkillDefinition("Shockroach: Displacer Orb", "-" + formatFloat(SKILL_SHOCK_DISPLACER * 100.0f, "f", 0, 2) + "% orb cooldown.", 5, SKILL_SHOCK_DISPLACER * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_CAPACITY)] = SkillDefinition("Shockroach: Capacity", "+{amount}% shockrifle capacity.", 5, SKILL_SHOCK_CAPACITY * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_DAMAGE)] = SkillDefinition("Shockroach: Damage", "+{amount}% shockrifle damage.", 5, SKILL_SHOCK_DAMAGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_LIGHTNING)] = SkillDefinition("Shockroach: Lightning Strike", "+{amount}% lightning strike damage.", 5, SKILL_SHOCK_LIGHTNING * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_SHOCK_DISPLACER)] = SkillDefinition("Shockroach: Displacer Orb", "-{amount}% orb cooldown.", 5, SKILL_SHOCK_DISPLACER * 100.0f, "%", 0.9f);
 
     // Cloaker.
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Cloak: Damage Multiplier", "+" + formatFloat(SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "f", 0, 2) + "% damage multiplier.", 5, SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+" + formatFloat(SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "f", 0, 2) + "% nova damage.", 5, SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+" + formatFloat(SKILL_CLOAKER_CLOAKDURATION * 100.0f, "f", 0, 2) + "% cloak duration.", 5, SKILL_CLOAKER_CLOAKDURATION * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_DRAINREDUCTION)] = SkillDefinition("Cloak: Drain Reduction", "-" + formatFloat(SKILL_CLOAKER_DRAINREDUCTION * 100.0f, "f", 0, 2) + "% reduced drain.", 5, SKILL_CLOAKER_DRAINREDUCTION * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_SPEED)] = SkillDefinition("Cloak: Speed Boost", "+" + formatFloat(SKILL_CLOAKER_SPEED * 100.0f, "f", 0, 2) + "% speed whilst cloaked.", 5, SKILL_CLOAKER_SPEED * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDAMAGE)] = SkillDefinition("Cloak: Damage Multiplier", "+{amount}% damage multiplier.", 5, SKILL_CLOAKER_CLOAKDAMAGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKNOVADAMAGE)] = SkillDefinition("Cloak: Nova Damage", "+{amount}% nova damage.", 5, SKILL_CLOAKER_CLOAKNOVADAMAGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_CLOAKDURATION)] = SkillDefinition("Cloak: Duration", "+{amount}% cloak duration.", 5, SKILL_CLOAKER_CLOAKDURATION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_DRAINREDUCTION)] = SkillDefinition("Cloak: Drain Reduction", "-{amount}% reduced drain.", 5, SKILL_CLOAKER_DRAINREDUCTION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_CLOAKER_SPEED)] = SkillDefinition("Cloak: Speed Boost", "+{amount}% speed whilst cloaked.", 5, SKILL_CLOAKER_SPEED * 100.0f, "%", 0.9f);
 
     // Firebug.
-    @g_SkillDefs[int(SkillID::SKILL_FIREBUG_AMMOPOOL)] = SkillDefinition("Dragons Breath: Ammo", "+" + formatFloat(SKILL_FIREBUG_AMMOPOOL * 100.0f, "f", 0, 2) + "% ammo pool.", 5, SKILL_FIREBUG_AMMOPOOL * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_FIREBUG_EXPLOSIVEDAMAGE)] = SkillDefinition("Dragons Breath: Area Damage", "+" + formatFloat(SKILL_FIREBUG_EXPLOSIVEDAMAGE * 100.0f, "f", 0, 2) + "% weapon damage in a radius.", 5, SKILL_FIREBUG_EXPLOSIVEDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_FIREBUG_FIREDAMAGE)] = SkillDefinition("Dragons Breath: Fire Damage", "+" + formatFloat(SKILL_FIREBUG_FIREDAMAGE * 100.0f, "f", 0, 2) + "% weapon damage as fire per tick.", 5, SKILL_FIREBUG_FIREDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_FIREBUG_FIREDURATION)] = SkillDefinition("Dragons Breath: Fire Duration", "+" + formatFloat(SKILL_FIREBUG_FIREDURATION * 100.0f, "f", 0, 2) + "% fire duration.", 5, SKILL_FIREBUG_FIREDURATION * 100.0f, "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_FIREBUG_AMMOPOOL)] = SkillDefinition("Dragons Breath: Ammo", "+{amount}% ammo pool.", 5, SKILL_FIREBUG_AMMOPOOL * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_FIREBUG_EXPLOSIVEDAMAGE)] = SkillDefinition("Dragons Breath: Area Damage", "+{amount}% weapon damage in a radius.", 5, SKILL_FIREBUG_EXPLOSIVEDAMAGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_FIREBUG_FIREDAMAGE)] = SkillDefinition("Dragons Breath: Fire Damage", "+{amount}% weapon damage as fire per tick.", 5, SKILL_FIREBUG_FIREDAMAGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_FIREBUG_FIREDURATION)] = SkillDefinition("Dragons Breath: Fire Duration", "+{amount}% fire duration.", 5, SKILL_FIREBUG_FIREDURATION * 100.0f, "%", 0.9f);
 
     // Swarmer.
-    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKDAMAGE)] = SkillDefinition("Snarks: Damage", "+" + formatFloat(SKILL_SWARMER_SNARKDAMAGE * 100.0f, "f", 0, 2) + "% snark damage.", 5, SKILL_SWARMER_SNARKDAMAGE * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCOUNT)] = SkillDefinition("Snarks: Swarm Size", "+" + formatFloat(SKILL_SWARMER_SNARKCOUNT * 100.0f, "f", 0, 2) + "% swarm size.", 5, SKILL_SWARMER_SNARKCOUNT * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCHARGES)] = SkillDefinition("Snarks: Ability Uses", "+" + formatFloat(SKILL_SWARMER_SNARKCHARGES * 100.0f, "f", 0, 2) + "% max uses.", 3, SKILL_SWARMER_SNARKCHARGES * 100.0f, "%", 0.5f);
-    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKGROWTH)] = SkillDefinition("Snarks: Snark Growth", "+" + formatFloat(SKILL_SWARMER_SNARKGROWTH * 100.0f, "f", 0, 2) + "% DMG & HP -"+ (SKILL_SWARMER_SNARKGROWTH * 100.0f * 0.5f) + "% swarm size.", 5, int(SKILL_SWARMER_SNARKGROWTH * 100.0f), "%", 0.5f);
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKDAMAGE)] = SkillDefinition("Snarks: Damage", "+{amount}% snark damage.", 5, SKILL_SWARMER_SNARKDAMAGE * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCOUNT)] = SkillDefinition("Snarks: Swarm Size", "+{amount}% swarm size.", 5, SKILL_SWARMER_SNARKCOUNT * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKCHARGES)] = SkillDefinition("Snarks: Ability Uses", "+{amount}% max uses.", 3, SKILL_SWARMER_SNARKCHARGES * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_SWARMER_SNARKGROWTH)] = SkillDefinition("Snarks: Snark Growth", "+{amount}% DMG & HP -{half}% swarm size.", 5, int(SKILL_SWARMER_SNARKGROWTH * 100.0f), "%", 0.9f);
 }
 
 // Returns the standard skill IDs (shared across all classes).

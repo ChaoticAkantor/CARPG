@@ -257,7 +257,7 @@ class NecroMinionData
 
         float minionPoints = m_flMinionPointMax; // Start with base minion points.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_POINT);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_POINT);
         float skillPower = SKILL_MINION_POINT;
         float pointBonus = skillPower * skillLevel;
 
@@ -288,7 +288,7 @@ class NecroMinionData
         if (m_pStats is null)
             return 1.0f; // Use the base recharge rate if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
@@ -337,7 +337,7 @@ class NecroMinionData
 
         float minionScaledHealth = NECRO_HP_BASE[minionType]; // Start with base health based on type.
 
-        float skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_HP);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_HP);
         float skillPower = SKILL_MINION_HP;
 
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
@@ -352,7 +352,7 @@ class NecroMinionData
         if(m_pStats is null)
             return NECRO_DAMAGE_MODIFIERS[minionType]; // Return type modifier only if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_DAMAGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_DAMAGE);
         float skillPower = SKILL_MINION_DAMAGE;
         float modifier = 1.0f + (skillLevel * skillPower); // Calculate modifier based on skill level.
 
@@ -375,7 +375,7 @@ class NecroMinionData
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_REGEN);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_REGEN);
         float skillPower = SKILL_MINION_REGEN;
         float modifier = skillLevel * skillPower; // Regen is zero with no skill points spent.
 
@@ -387,7 +387,7 @@ class NecroMinionData
         if(m_pStats is null)
             return 0.0f; // Default if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MINION_LIFESTEAL);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MINION_LIFESTEAL);
         float skillPower = SKILL_MINION_LIFESTEAL;
         float modifier = skillLevel * skillPower; // Scale from skill.
 
@@ -401,7 +401,7 @@ class NecroMinionData
 
         float defaultCooldown = m_flRatSpawnCooldown;
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_RATS);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_NECROMANCER_RATS);
         float skillPower = SKILL_NECROMANCER_RATS;
         float modifier = skillLevel * skillPower;
 
@@ -429,7 +429,7 @@ class NecroMinionData
         if(m_pStats is null)
             return 0.0f; // No miasma without the skill.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_NECROMANCER_MIASMA);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_NECROMANCER_MIASMA);
         if(skillLevel <= 0)
             return 0.0f;
 

@@ -128,7 +128,7 @@ class HealingAura
         if (m_pStats is null)
             return SKILL_BASIC_ABILITYRECHARGE; // Return base if no stats.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_BASIC_ABILITYRECHARGE);
         float rechargeBonus = SKILL_BASIC_ABILITYRECHARGE * skillLevel; // Bonus ability recharge speed based on skill level.
 
         return rechargeBonus + 1.0f;
@@ -141,7 +141,7 @@ class HealingAura
 
         float cooldown = m_flHealAuraReviveCooldown; // Start at minimum.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_REVIVE);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MEDIC_REVIVE);
         float skillPower = SKILL_MEDIC_REVIVE;
 
         return cooldown -= skillPower * skillLevel; // Reduce cooldown based on skill level and power.
@@ -162,7 +162,7 @@ class HealingAura
         if (m_pStats is null)
             return 0; // Return 0 if no stats, meaning no poison damage without the skill.
 
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_POISON); // Get player skill level for this skill.
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MEDIC_POISON); // Get player skill level for this skill.
         float skillPower = SKILL_MEDIC_POISON;
         if (skillLevel <= 0)
             return 0.0f; // No acid damage without the skill.
@@ -179,7 +179,7 @@ class HealingAura
 
         float healAmount = m_flBaseHealAmount; // Set base heal amount.
             
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALPERCENT);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MEDIC_HEALPERCENT);
         float skillPower = SKILL_MEDIC_HEALPERCENT;
         float modifier = skillPower * skillLevel; // Heal amount scales from skill level.
 
@@ -193,7 +193,7 @@ class HealingAura
 
         float regenAmount = 0.0f; // Set base heal amount.
             
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALREGEN);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MEDIC_HEALREGEN);
         float skillPower = SKILL_MEDIC_HEALREGEN;
         regenAmount = skillPower * skillLevel; // Heal amount scales from skill level.
 
@@ -205,7 +205,7 @@ class HealingAura
         if (m_pStats is null)
             return 0.0f; // Return base if no stats.
                     
-        int skillLevel = m_pStats.GetSkillLevel(SkillID::SKILL_MEDIC_HEALAP);
+        float skillLevel = m_pStats.GetEffectiveSkillLevel(SkillID::SKILL_MEDIC_HEALAP);
         float skillPower = SKILL_MEDIC_HEALAP;
         float modifier = skillPower * skillLevel; // Heal amount scales from skill level.
 
@@ -268,9 +268,6 @@ class HealingAura
 
         RemoveGlow(pPlayer);
         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_STATIC, strHealAuraActiveSound, 0.0f, ATTN_NORM, SND_STOP);
-        
-        // Clear any pending regen effects.
-        //m_RegenEffects.clear();
     }
     
     void ResetHeal(CBasePlayer@ pPlayer)
