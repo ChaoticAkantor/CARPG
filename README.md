@@ -55,29 +55,27 @@
    - Still earn XP even whilst dead or spectating.
 
  # Ranks
+ - Skills can be purchased and increased with Skillpoints via a menu (/rank or /rankmenu).
+
    - After earning enough XP, your rank will increase by +1.
 
-   - Each rank automatically increases every class's level cap by `g_iClassLevelsPerRank` (default 1; minimum 0). This raises the cap, not the class's current level.
+   - Each rank earned increases the level cap for all classes by +1.
 
-   - Each rank earns 1 Rank Point (RP) by default. RP can be spent inside the Rank Menu to increase basic skill caps or class skill caps by +1.
+   - Each rank earns 1 Rank Point (RP) by default. RP can be spent inside the Rank Menu to increase Basic Skill or class skill max levels by +1 individually.
 
-   - Skill cap purchases apply to all classes but do not grant skill levels; spend class skillpoints separately. Basic and class skill caps are purchased separately.
+   - Rank Points can be refunded for free in the rank menu.
 
-   - Rank Points can be refunded in the rank menu.
+   - Existing saves retain rank and receive Rank Points retroactively.
 
-   - Existing saves retain rank and receive Rank Points retroactively. Previous level-cap purchases are refunded on load. If the automatic cap is lower than a saved class level, that level is reduced and the class's skillpoints are refunded. Invalid allocations are corrected and saved on load.
+   - Skills increased above their default maximum will recieve diminishing returns. Each extra level contributes a portion of the previous level.
 
-   - Skills above their default maximum will recieve diminishing returns: each extra level contributes a portion of the previous level.
+   - Default Max Rank is 450. Allowing you to earn up to 500 RP and a final max level of 500.
 
-   - Rank increases XP per score by `g_iScorePerRebirthRank` (default 1) for every `g_iScorePerRebirthRankAmount` ranks (default 10; minimum 1).
-
-   - Default Max Rank is 100.
+   - Ranks require a significant amount more XP earned than Levels, but will be earned quickly at first.
 
 
 # Skills
- - Skills can be purchased and increased with Skillpoints via a menu.
-
-   - The bracketed value shows the current total bonus; the description shows the next level's bonus, or the last level's bonus when maxed.
+ - Skills can be purchased and increased with Skillpoints via a menu (/skills or skillmenu).
 
    - There are two types of skills, Basic Skills and Class Skills.
 
@@ -85,9 +83,11 @@
 
    - Taking damage pauses that player's passive health and armor regeneration for 2 seconds by default; further hits restart the delay. Map balance rules can adjust the delay.
 
-   - Class Skills only affect your Class Ability and are only available to the chosen class.
+   - Class Skills only affect your Class Ability, or are exclusively available to that class.
 
    - Type "skills" to see skills menu and spend skillpoints.
+
+   - Skills increased above their default maximum will recieve diminishing returns. Each extra level contributes a portion of the previous level.
 
 
 # Difficulty
