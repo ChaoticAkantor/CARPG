@@ -106,7 +106,7 @@ float GetCARPGHUDPositionY(int hudType, int position)
 int g_iMaxLevel = 50; // Max player level, skill points are given per level, increasing this will increase skill points available.
 int g_iScoreToXP = 1; // Amount of XP each score point is worth, 1 = 1 score is 1 XP.
 int g_iXPPerScorePerClassAboveBaseMax = 1; // XP per score for each class above the base level cap.
-int g_iMaxRebirthRank = (450 - g_iMaxLevel); // Max rank, reduced by default max player level.
+int g_iMaxRebirthRank = (500 - g_iMaxLevel); // Max rank, reduced by default max player level.
 int g_iRankPointsPerRank = 1; // Rank points awarded per rank.
 int g_iClassLevelsPerRank = 1; // Level cap increase per rank.
 int g_iRankXPBase = 48; // Base XP needed to reach rank 1.
