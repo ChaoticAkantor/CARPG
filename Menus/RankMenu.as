@@ -20,7 +20,7 @@ namespace Menu
             CTextMenu@ newMenu = CTextMenu(TextMenuPlayerSlotCallback(this.MenuCallback));
             newMenu.SetTitle("=== Rank Skills ===\nRank: " + m_pOwner.GetRebirthRank()
                 + " | Rank Points (RP): " + m_pOwner.GetRankPoints() + "/" + m_pOwner.GetTotalRankPoints() + "\n\n");
-            for(int i = 0; i < int(RankSkillID::RANK_SKILL_COUNT); i++)
+            for(int i = int(RankSkillID::RANK_SKILL_BASIC_CAP); i < int(RankSkillID::RANK_SKILL_COUNT); i++)
             {
                 RankSkillDefinition@ def = g_RankSkillDefs[i];
                 RankSkillID id = RankSkillID(i);

@@ -105,12 +105,12 @@ float GetCARPGHUDPositionY(int hudType, int position)
 // Max level and XP multiplier.
 int g_iMaxLevel = 50; // Max player level, skill points are given per level, increasing this will increase skill points available.
 int g_iScoreToXP = 1; // Amount of XP each score point is worth, 1 = 1 score is 1 XP.
-int g_iScorePerRebirthRank = 1; // Amount of extra XP per score awarded for each rank threshold.
-int g_iScorePerRebirthRankAmount = 10; // Ranks required for each extra XP-per-score bonus; minimum 1.
-int g_iMaxRebirthRank = 100; // Max rank.
+int g_iXPPerScorePerClassAboveBaseMax = 1; // XP per score for each class above the base level cap.
+int g_iMaxRebirthRank = (450 - g_iMaxLevel); // Max rank, reduced by default max player level.
 int g_iRankPointsPerRank = 1; // Rank points awarded per rank.
+int g_iClassLevelsPerRank = 1; // Level cap increase per rank.
 int g_iRankXPBase = 48; // Base XP needed to reach rank 1.
-float g_flRankXPMultiplier = 1.5f; // Rank XP requirement multiplier.
+float g_flRankXPMultiplier = 2.0f; // Rank XP requirement multiplier.
 float g_flPlayerHUDInterval = 0.2f; // How often the player HUD updates.
 
 int GetXPRequirement(int level, int baseXP, float multiplier)
@@ -481,7 +481,6 @@ class PlayerData
     // Rebirth Rank tracking (player-wide, not per-class).
     private int m_iRebirthRank = 0;
     private int m_iCurrentRebirthRankXP = 0;
-    private int m_iScorePerRebirthRank = g_iScorePerRebirthRank; // Extra XP per score for each rank.
     private int m_iMaxRebirthRank = g_iMaxRebirthRank;
     private array<int> m_RankSkillLevels(int(RankSkillID::RANK_SKILL_COUNT), 0);
     private bool m_bSaveBlocked = false;
@@ -563,7 +562,17 @@ class PlayerData
     
     // Rebirth getters.
     int GetRebirthRank() { return m_iRebirthRank; }
-    int GetCurrentXPMultiplier() { return g_iScoreToXP + ((m_iRebirthRank / g_iScorePerRebirthRankAmount) * m_iScorePerRebirthRank); }
+    int GetCurrentXPMultiplier()
+    {
+        int bonus = 0;
+        for(uint i = 0; i < g_ClassList.length(); i++)
+        {
+            ClassStats@ stats = GetClassStats(g_ClassList[i]);
+            if(stats !is null && stats.GetLevel() > g_iMaxLevel)
+                bonus += g_iXPPerScorePerClassAboveBaseMax;
+        }
+        return g_iScoreToXP + bonus;
+    }
     int GetCurrentRebirthRankXP() { return m_iCurrentRebirthRankXP; }
     int GetNeededRebirthXP() { return GetXPForRank(m_iRebirthRank); }
     int GetMaxRebirthRank()
@@ -587,7 +596,7 @@ class PlayerData
 
     private bool ApplyRankCaps()
     {
-        int levelBonus = int(GetRankSkillBonus(RankSkillID::RANK_SKILL_LEVEL_CAP));
+        int levelBonus = m_iRebirthRank * Math.max(0, g_iClassLevelsPerRank);
         int basicBonus = int(GetRankSkillBonus(RankSkillID::RANK_SKILL_BASIC_CAP));
         int classBonus = int(GetRankSkillBonus(RankSkillID::RANK_SKILL_CLASS_CAP));
         bool corrected = false;
@@ -602,10 +611,18 @@ class PlayerData
 
     private bool ValidateRankPoints()
     {
+        bool corrected = false;
+        int legacyIndex = int(RankSkillID::RANK_SKILL_LEGACY_LEVEL_CAP);
+        if(m_RankSkillLevels[legacyIndex] > 0)
+        {
+            g_Game.AlertMessage(at_console, "CARPG: Refunding " + m_RankSkillLevels[legacyIndex] + " obsolete level cap rank purchases.\n");
+            m_RankSkillLevels[legacyIndex] = 0;
+            corrected = true;
+        }
         int excess = -GetRankPoints();
-        bool corrected = excess > 0;
         if(excess > 0)
         {
+            corrected = true;
             g_Game.AlertMessage(at_console, "CARPG: Rank skill spending exceeds available RP; refunding excess purchases.\n");
             for(int i = int(m_RankSkillLevels.length()) - 1; i >= 0 && excess > 0; i--)
             {
@@ -622,7 +639,7 @@ class PlayerData
     bool TrySpendRankPoint(RankSkillID id, CBasePlayer@ pPlayer)
     {
         int idx = int(id);
-        if(idx < 0 || idx >= int(m_RankSkillLevels.length()) || GetRankPoints() < 1)
+        if(idx <= int(RankSkillID::RANK_SKILL_LEGACY_LEVEL_CAP) || idx >= int(m_RankSkillLevels.length()) || GetRankPoints() < 1)
             return false;
         m_RankSkillLevels[idx]++;
         ApplyRankCaps();
@@ -664,6 +681,7 @@ class PlayerData
             {
                 m_iCurrentRebirthRankXP -= needed;
                 m_iRebirthRank++;
+                ApplyRankCaps();
                 if(pPlayer !is null)
                 {
                     g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Your rank is now " + m_iRebirthRank + "!\n");
@@ -1522,7 +1540,7 @@ class PlayerData
         RPGHudText += "Rank: " + m_iRebirthRank + " | "; // Rank.
         RPGHudText += "XP: " + (IsMaxRebirthRank() ? "(--/--)" : "(" + m_iCurrentRebirthRankXP + "/" + GetNeededRebirthXP() + ")") + "\n\n"; // Rank XP.
 
-        if(m_iRebirthRank > 0)
+        if(GetCurrentXPMultiplier() > g_iScoreToXP)
             RPGHudText += "XP Bonus: " + "(+" + (GetCurrentXPMultiplier() - g_iScoreToXP) + ")" + "\n\n"; // XP per score bonus.
 
         if(GetRankPoints() > 0)

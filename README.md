@@ -50,18 +50,22 @@
    
    - XP is shared and all players will recieve the XP that another player earns (even from minions!).
 
+   - Each class leveled above `g_iMaxLevel` adds `g_iXPPerScorePerClassAboveBaseMax` XP per score (default 1; minimum 0) to that player's XP, including shared XP. Reaching the base cap exactly does not qualify.
+
    - Still earn XP even whilst dead or spectating.
 
  # Ranks
    - After earning enough XP, your rank will increase by +1.
 
-   - Each rank earns 1 Rank Point (RP) by default. RP can be spent inside the Rank Menu to increase the level cap, basic skill caps, or class skill caps by +1.
+   - Each rank automatically increases every class's level cap by `g_iClassLevelsPerRank` (default 1; minimum 0). This raises the cap, not the class's current level.
+
+   - Each rank earns 1 Rank Point (RP) by default. RP can be spent inside the Rank Menu to increase basic skill caps or class skill caps by +1.
 
    - Skill cap purchases apply to all classes but do not grant skill levels; spend class skillpoints separately. Basic and class skill caps are purchased separately.
 
    - Rank Points can be refunded in the rank menu.
 
-   - Existing saves retain rank and receive Rank Points retroactively. Old automatic skill-cap bonuses are removed, and skill levels above the new caps are refunded. Invalid allocations are corrected and saved on load.
+   - Existing saves retain rank and receive Rank Points retroactively. Previous level-cap purchases are refunded on load. If the automatic cap is lower than a saved class level, that level is reduced and the class's skillpoints are refunded. Invalid allocations are corrected and saved on load.
 
    - Skills above their default maximum will recieve diminishing returns: each extra level contributes a portion of the previous level.
 

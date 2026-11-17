@@ -96,7 +96,7 @@ int g_iHardLimitMaxRank = 10; // Determines the max rank if above is enabled.
 // formatFloat is for display strings only, strength (4th ctor arg) must stay a raw float for math.
 enum RankSkillID
 {
-    RANK_SKILL_LEVEL_CAP = 0,
+    RANK_SKILL_LEGACY_LEVEL_CAP = 0, // Retained for v8 save compatibility.
     RANK_SKILL_BASIC_CAP,
     RANK_SKILL_CLASS_CAP,
     RANK_SKILL_COUNT
@@ -275,7 +275,6 @@ array<SkillDefinition@> g_SkillDefs;
 void InitializeSkillDefinitions()
 {
     g_RankSkillDefs.resize(int(RankSkillID::RANK_SKILL_COUNT));
-    @g_RankSkillDefs[int(RankSkillID::RANK_SKILL_LEVEL_CAP)] = RankSkillDefinition("Level Cap", "Max", 1.0f);
     @g_RankSkillDefs[int(RankSkillID::RANK_SKILL_BASIC_CAP)] = RankSkillDefinition("Basic Skill Cap", "Max", 1.0f);
     @g_RankSkillDefs[int(RankSkillID::RANK_SKILL_CLASS_CAP)] = RankSkillDefinition("Class Skill Cap", "Max", 1.0f);
     g_SkillDefs.resize(int(SkillID::SKILL_MAX_COUNT));
@@ -283,25 +282,25 @@ void InitializeSkillDefinitions()
     // The final value on each skill is its diminishing-return rate.
     @g_SkillDefs[int(SkillID::SKILL_BASIC_MAXHP)] = SkillDefinition("Max Health", "+{amount}% Max HP.", 10, int(SKILL_BASIC_MAXHP * 100.0f), "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_BASIC_MAXAP)] = SkillDefinition("Max Armor", "+{amount}% Max AP.", 10, int(SKILL_BASIC_MAXAP * 100.0f), "%", 0.9f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENHP)] = SkillDefinition("Health Regen", "+{amount}% HP/s.", 10, SKILL_BASIC_REGENHP * 100.0f, "% HP/s", 0.9f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENAP)] = SkillDefinition("Armor Regen", "+{amount}% AP/s.", 10, SKILL_BASIC_REGENAP * 100.0f, "% AP/s", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENHP)] = SkillDefinition("Health Regen", "+{amount}% HP/s.", 10, SKILL_BASIC_REGENHP * 100.0f, "% HP/s", 0.85f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_REGENAP)] = SkillDefinition("Armor Regen", "+{amount}% AP/s.", 10, SKILL_BASIC_REGENAP * 100.0f, "% AP/s", 0.85f);
     @g_SkillDefs[int(SkillID::SKILL_BASIC_ABILITYRECHARGE)] = SkillDefinition("Ability Recharge", "+{amount}% ability recharge.", 10, SKILL_BASIC_ABILITYRECHARGE * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_BASIC_AMMOREGEN)] = SkillDefinition("Ammo Resupply", "+{amount}% max ammo resupplied.", 10, SKILL_BASIC_AMMOREGEN * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_BASIC_LIFESTEAL)] = SkillDefinition("Lifesteal", "+{amount}% lifesteal.", 10, SKILL_BASIC_LIFESTEAL * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_BASIC_ARMORSTEAL)] = SkillDefinition("Armorsteal", "+{amount}% armorsteal.", 10, SKILL_BASIC_ARMORSTEAL * 100.0f, "%", 0.9f);
-    @g_SkillDefs[int(SkillID::SKILL_BASIC_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+{amount}% Max HP converted to AP.", 10, SKILL_BASIC_HPCONVERSION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_BASIC_HPCONVERSION)] = SkillDefinition("Convert HP -> AP", "+{amount}% Max HP converted to AP.", 10, SKILL_BASIC_HPCONVERSION * 100.0f, "%", 0.85f);
     @g_SkillDefs[int(SkillID::SKILL_BASIC_MEDKITCAPACITY)] = SkillDefinition("Medkit Capacity", "+{amount}% medkit capacity.", 10, SKILL_BASIC_MEDKITCAPACITY * 100.0f, "%", 0.9f);
 
     // Minion Class exclusive.
-    @g_SkillDefs[int(SkillID::SKILL_MINION_POINT)] = SkillDefinition("Minion: Max Reserve", "+{amount}% max reserve.", 5, SKILL_MINION_POINT * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_POINT)] = SkillDefinition("Minion: Max Reserve", "+{amount}% max reserve.", 5, SKILL_MINION_POINT * 100.0f, "%", 0.8f);
     @g_SkillDefs[int(SkillID::SKILL_MINION_HP)] = SkillDefinition("Minion: Max HP", "+{amount}% minion HP.", 5, int(SKILL_MINION_HP * 100.0f), "%", 0.9f);
-    @g_SkillDefs[int(SkillID::SKILL_MINION_REGEN)] = SkillDefinition("Minion: HP Regen", "+{amount}% minion HP/s.", 5, SKILL_MINION_REGEN * 100.0f, "% HP/s", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MINION_REGEN)] = SkillDefinition("Minion: HP Regen", "+{amount}% minion HP/s.", 5, SKILL_MINION_REGEN * 100.0f, "% HP/s", 0.85f);
     @g_SkillDefs[int(SkillID::SKILL_MINION_DAMAGE)] = SkillDefinition("Minion: Damage", "+{amount}% minion damage.", 5, SKILL_MINION_DAMAGE * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_MINION_LIFESTEAL)] = SkillDefinition("Minion: Lifesteal", "+{amount}% minion lifesteal to team.", 5, SKILL_MINION_LIFESTEAL * 100.0f, "%", 0.9f);
 
     // Medic.
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALPERCENT)] = SkillDefinition("Heal: Healing", "+{amount}% Healed.", 5, SKILL_MEDIC_HEALPERCENT * 100.0f, "%", 0.9f);
-    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALREGEN)] = SkillDefinition("Heal: Regeneration", "+{amount}% HP/s for 10s.", 5, SKILL_MEDIC_HEALREGEN, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALREGEN)] = SkillDefinition("Heal: Regeneration", "+{amount}% HP/s for 10s.", 5, SKILL_MEDIC_HEALREGEN, "%", 0.85f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_POISON)] = SkillDefinition("Heal: Acid", "+{amount}% acid damage.", 5, SKILL_MEDIC_POISON * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_REVIVE)] = SkillDefinition("Heal: Revive", "-{amount}s revive cooldown.", 5, SKILL_MEDIC_REVIVE, "s", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_MEDIC_HEALAP)] = SkillDefinition("Heal: AP Restore", "+{amount}% of heals to AP.", 5, SKILL_MEDIC_HEALAP, "%", 0.9f);
@@ -311,7 +310,7 @@ void InitializeSkillDefinitions()
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEABILITYCHARGE)] = SkillDefinition("Bloodlust: Damage Charge", "+{amount}% damage charge.", 5, SKILL_VAMPIRE_DAMAGEABILITYCHARGE * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DAMAGEREDUCTION)] = SkillDefinition("Vampire: Damage Reduction", "+{amount}% (max 80%) per 10% missing HP.", 5, SKILL_VAMPIRE_DAMAGEREDUCTION * 100.0f, "%", 0.9f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_OVERHEAL)] = SkillDefinition("Bloodlust: Overheal", "+{amount}% Overheal per level.", 5, SKILL_VAMPIRE_OVERHEAL * 100.0f, "%", 0.9f);
-    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_APCONVERSION)] = SkillDefinition("Bloodlust: Convert AP -> HP", "+{amount}% of Max AP -> HP.", 5, SKILL_VAMPIRE_APCONVERSION * 100.0f, "%", 0.9f);
+    @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_APCONVERSION)] = SkillDefinition("Bloodlust: Convert AP -> HP", "+{amount}% of Max AP -> HP.", 5, SKILL_VAMPIRE_APCONVERSION * 100.0f, "%", 0.85f);
     @g_SkillDefs[int(SkillID::SKILL_VAMPIRE_DURATION)] = SkillDefinition("Bloodlust: Duration", "+{amount}% duration.", 5, SKILL_VAMPIRE_DURATION * 100.0f, "%", 0.9f);
 
     // Engineer.

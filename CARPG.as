@@ -61,10 +61,15 @@ void PluginInit()
     g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
     g_Module.ScriptInfo.SetContactInfo("Discord: chaoticakantor");
 
-    if(g_iScorePerRebirthRankAmount < 1)
+    if(g_iClassLevelsPerRank < 0)
     {
-        g_Game.AlertMessage(at_console, "CARPG: g_iScorePerRebirthRankAmount must be at least 1; using 10.\n");
-        g_iScorePerRebirthRankAmount = 10;
+        g_Game.AlertMessage(at_console, "CARPG: g_iClassLevelsPerRank must be non-negative; using 0.\n");
+        g_iClassLevelsPerRank = 0;
+    }
+    if(g_iXPPerScorePerClassAboveBaseMax < 0)
+    {
+        g_Game.AlertMessage(at_console, "CARPG: g_iXPPerScorePerClassAboveBaseMax must be non-negative; using 0.\n");
+        g_iXPPerScorePerClassAboveBaseMax = 0;
     }
     
     PluginReset(); // Call a full reset whenever plugin is initialised or reloaded.
