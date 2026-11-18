@@ -93,9 +93,9 @@ namespace Menu
             newMenu.SetTitle("=== Debug: " + string(target.pev.netname) + " ===\n");
             newMenu.AddItem("Add 1000 XP", any(0));
             newMenu.AddItem("Set Max Level", any(1));
-            newMenu.AddItem("Set Max Rank", any(2));
+            newMenu.AddItem("Set Max Prestige", any(2));
             newMenu.AddItem("Reset Level", any(3));
-            newMenu.AddItem("Reset Rank", any(4));
+            newMenu.AddItem("Reset Prestige", any(4));
             newMenu.AddItem("Fill Class Resource", any(5));
             newMenu.AddItem("Toggle God Mode", any(6));
             newMenu.AddItem("Choose Another Player", any(7));
@@ -169,10 +169,11 @@ namespace Menu
             }
             else if(choice == 2)
             {
-                data.SetRebirthRank(g_iMaxRebirthRank);
+                int debugRank = Math.min(data.GetMaxRebirthRank(), 100); // Max rank is effectively unlimited by default.
+                data.SetRebirthRank(debugRank);
                 data.CalculateStats(target);
                 data.SaveToFile();
-                result = "Set rank to maximum.";
+                result = "Set prestige to " + debugRank + ".";
             }
             else if(choice == 3 && stats !is null)
             {
@@ -186,7 +187,7 @@ namespace Menu
                 data.SetRebirthRank(0);
                 data.CalculateStats(target);
                 data.SaveToFile();
-                result = "Reset rank to 0.";
+                result = "Reset prestige to 0.";
             }
             else if(choice == 5)
             {

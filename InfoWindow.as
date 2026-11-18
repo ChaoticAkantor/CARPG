@@ -74,15 +74,37 @@ void ShowInfo(CBasePlayer@ pPlayer)
 
     string szTitle = "CARPG Info - " + data.GetClassName(data.GetCurrentClass());
         string szDesc = "[XP]\n"
-        + "Gain score to earn XP and increase your Class Level, awarding you with Skillpoints and also contributing towards your Rank.\n\n"
-        + "[Rank]\n"
-        + "Rank can automatically increase the class level cap, depending on server settings. Spend Rank Points with /rank to increase skill level caps.\n\n"
+        + "Gain score to earn XP and increase your Class Level, awarding you with +1 Skillpoint and         also contributing towards your Prestige.\n\n"
+                + "[Prestige]\n"
+                + "Each prestige level grants skillpoints to every class and increases the XP you earn per score.\n\n"
         + "[Skills]\n"
-        + "Type 'skills' to view your current skills and spend skillpoints.\n\n"
+        + "Type 'skills' to spend skillpoints. Skills have no level cap, but gain diminishing returns after their base level.\n\n"
+
+        + GetSkillDescriptions(data.GetCurrentClass()) + "\n"
+
         + "[Class Ability]\n";
-                szDesc += GetClassDescription(data.GetCurrentClass());
+            szDesc += GetClassDescription(data.GetCurrentClass());
 
     ShowInfoMOTD(pPlayer, szTitle, szDesc);
+}
+
+// Lists every skill available to the class with its per-level effect.
+string GetSkillDescriptions(PlayerClass pClass)
+{
+    string result = "";
+    array<SkillID> skills = GetStandardSkillIDs();
+    array<SkillID> classSkills = GetClassSkillIDs(pClass);
+    for(uint i = 0; i < classSkills.length(); i++)
+        skills.insertLast(classSkills[i]);
+
+    for(uint i = 0; i < skills.length(); i++)
+    {
+        int idx = int(skills[i]);
+        if(idx < 0 || idx >= int(g_SkillDefs.length()) || g_SkillDefs[idx] is null)
+            continue;
+        result += g_SkillDefs[idx].name + ": " + g_SkillDefs[idx].GetDescription(1) + "\n";
+    }
+    return result;
 }
 
 // Returns the description string for the given class.

@@ -6,7 +6,6 @@ namespace Menu
 {
 	const int HUD_SETTINGS_MAIN_RPG = 1000;
 	const int HUD_SETTINGS_MAIN_RESOURCE = 1001;
-	const int HUD_SETTINGS_MAIN_AMMO = 1002;
 	const int OPTIONS_MAIN_HUD = 6000;
 	const int OPTIONS_MAIN_MINION_GLOW = 6001;
 	const int OPTIONS_MINION_GLOW_COLOR = 7000;
@@ -67,7 +66,6 @@ namespace Menu
 			newMenu.SetTitle("=== HUD Settings ===\nChoose a display to customise.\n");
 			newMenu.AddItem("Class/XP", any(HUD_SETTINGS_MAIN_RPG));
 			newMenu.AddItem("Class Resource", any(HUD_SETTINGS_MAIN_RESOURCE));
-			newMenu.AddItem("Ammo Regen Counter", any(HUD_SETTINGS_MAIN_AMMO));
 			newMenu.AddItem("Back", any(OPTIONS_MINION_GLOW_BACK));
 			newMenu.Register();
 			newMenu.Open(0, 0, pPlayer);
@@ -127,7 +125,6 @@ namespace Menu
 		private string GetHUDName(int hudType)
 		{
 			if(hudType == CARPG_HUD_RESOURCE) return "Resource Display";
-			if(hudType == CARPG_HUD_AMMO) return "Ammo Regen Counter";
 			return "RPG HUD";
 		}
 
@@ -155,15 +152,15 @@ namespace Menu
 			{
 				ShowMain(pPlayer);
 			}
-			else if(choice >= HUD_SETTINGS_MAIN_RPG && choice <= HUD_SETTINGS_MAIN_AMMO)
+			else if(choice >= HUD_SETTINGS_MAIN_RPG && choice <= HUD_SETTINGS_MAIN_RESOURCE)
 			{
 				ShowHUD(pPlayer, choice - HUD_SETTINGS_MAIN_RPG);
 			}
-			else if(choice >= HUD_SETTINGS_EDIT_COLOR && choice < HUD_SETTINGS_EDIT_COLOR + 3)
+			else if(choice >= HUD_SETTINGS_EDIT_COLOR && choice < HUD_SETTINGS_EDIT_COLOR + 2)
 			{
 				ShowColors(pPlayer, choice - HUD_SETTINGS_EDIT_COLOR);
 			}
-			else if(choice >= HUD_SETTINGS_EDIT_POSITION && choice < HUD_SETTINGS_EDIT_POSITION + 3)
+			else if(choice >= HUD_SETTINGS_EDIT_POSITION && choice < HUD_SETTINGS_EDIT_POSITION + 2)
 			{
 				ShowPositions(pPlayer, choice - HUD_SETTINGS_EDIT_POSITION);
 			}

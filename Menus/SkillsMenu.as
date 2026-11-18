@@ -88,8 +88,6 @@ namespace Menu
                 {
                     SkillDefinition@ def = g_SkillDefs[choice];
                     g_SoundSystem.PlaySound(pPlayer.edict(), CHAN_ITEM, strSkillSpendSound, VOL_NORM, ATTN_NORM); // Play skill spend sound.
-                    //g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK,
-                        //"[CARPG] Invested in " + ((def !is null) ? def.name : "Unknown") + " (Lv " + m_pOwner.GetSkillLevel(id) + ").\n");
                 }
                 else
                 {
@@ -114,18 +112,22 @@ namespace Menu
             if(def is null) return;
 
             int curLevel = (stats !is null) ? stats.GetSkillLevel(id) : 0; // Get current level.
-            int effectiveMax = (stats !is null) ? stats.GetSkillMaxLevel(id) : def.baseMaxLevel;
-
-            string levelTag = (curLevel >= effectiveMax) ? "(MAX)" : ("(" + curLevel + "/" + effectiveMax + ")");
+            string levelTag = "(Lv. " + curLevel + ")";
 
             string bonusStr = "";
-            if(def.strength > 0.0f && curLevel > 0)
+            if(def.strength > 0.0f)
             {
+                // The sign is defined by the first character of the skill's description (e.g. "-{amount}s").
+                string sign = def.description.SubString(0, 1) == "-" ? "-" : "+";
                 float total = def.GetEffectiveLevel(curLevel) * def.strength;
-                bonusStr = " [" + formatFloat(total, "f", 0, 3) + def.unit + "]";
+                float next = (def.GetEffectiveLevel(curLevel + 1) - def.GetEffectiveLevel(curLevel)) * def.strength;
+                string nextStr = "" + sign + formatFloat(next, "f", 0, 3) + def.unit + " ";
+                if(curLevel > 0)
+                    bonusStr = " [" + sign + formatFloat(total, "f", 0, 3) + def.unit + "] " + nextStr;
+                else
+                   bonusStr = " " + nextStr;
             }
-            int describedLevel = curLevel < effectiveMax ? curLevel + 1 : Math.max(curLevel, 1);
-            menu.AddItem(def.name + " " + levelTag + bonusStr + " " + def.GetDescription(describedLevel) + "\n", any(int(id)));
+            menu.AddItem(def.name + " " + levelTag + bonusStr, any(int(id)));
         }
     }
 }

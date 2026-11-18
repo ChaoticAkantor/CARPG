@@ -46,11 +46,11 @@
 
    - Gain +1 Skillpoint per level by default. Can be spent on Basic or Class skills (dependent on Class).
 
-   - Default Max Level is 60.
+   - Default Max Level is 50.
    
    - XP is shared and all players will recieve the XP that another player earns (even from minions!).
 
-   - Each class leveled above `g_iMaxLevel` adds `g_iXPPerScorePerClassAboveBaseMax` XP per score (default 1; minimum 0) to that player's XP, including shared XP. Reaching the base cap exactly does not qualify.
+   - Each class at the level cap adds `g_iXPPerScorePerMaxedClass` XP per score (default 1; minimum 0) to that player's XP, including shared XP.
 
    - Still earn XP even whilst dead or spectating.
 
@@ -59,17 +59,17 @@
 
    - After earning enough XP, your rank will increase by +1.
 
-   - Each rank earned increases the level cap for all classes by +1.
+   - Each rank grants `g_iSkillPointsPerRank` skillpoints (default 1; minimum 0) to every class, without increasing the level cap.
 
    - Each rank earns 1 Rank Point (RP) by default. RP can be spent inside the Rank Menu to increase Basic Skill or class skill max levels by +1 individually.
 
    - Rank Points can be refunded for free in the rank menu.
 
-   - Existing saves retain rank and receive Rank Points retroactively.
+   - Existing saves retain rank and receive rank skillpoints retroactively. Class levels above the base cap are reduced to the cap, and skill allocations exceeding the new total are refunded.
 
    - Skills increased above their default maximum will recieve diminishing returns. Each extra level contributes a portion of the previous level.
 
-   - Default Max Rank is 450. Allowing you to earn up to 500 RP and a final max level of 500.
+   - Default Max Rank is 450, allowing up to 450 RP and 500 skillpoints per max-level class with the default settings.
 
    - Ranks require a significant amount more XP earned than Levels, but will be earned quickly at first.
 

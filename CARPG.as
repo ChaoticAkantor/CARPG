@@ -61,15 +61,20 @@ void PluginInit()
     g_Module.ScriptInfo.SetAuthor("ChaoticAkantor");
     g_Module.ScriptInfo.SetContactInfo("Discord: chaoticakantor");
 
-    if(g_iClassLevelsPerRank < 0)
+    if(g_iSkillPointsPerRank < 0)
     {
-        g_Game.AlertMessage(at_console, "CARPG: g_iClassLevelsPerRank must be non-negative; using 0.\n");
-        g_iClassLevelsPerRank = 0;
+        g_Game.AlertMessage(at_console, "CARPG: g_iSkillPointsPerRank must be non-negative; using 0.\n");
+        g_iSkillPointsPerRank = 0;
     }
-    if(g_iXPPerScorePerClassAboveBaseMax < 0)
+    if(g_iXPPerScorePerMaxedClass < 0)
     {
-        g_Game.AlertMessage(at_console, "CARPG: g_iXPPerScorePerClassAboveBaseMax must be non-negative; using 0.\n");
-        g_iXPPerScorePerClassAboveBaseMax = 0;
+        g_Game.AlertMessage(at_console, "CARPG: g_iXPPerScorePerMaxedClass must be non-negative; using 0.\n");
+        g_iXPPerScorePerMaxedClass = 0;
+    }
+    if(g_iXPPerScorePerRank < 0)
+    {
+        g_Game.AlertMessage(at_console, "CARPG: g_iXPPerScorePerRank must be non-negative; using 0.\n");
+        g_iXPPerScorePerRank = 0;
     }
     
     PluginReset(); // Call a full reset whenever plugin is initialised or reloaded.
@@ -199,7 +204,6 @@ void SetupTimers()
 
     // RPG/Class System.
     g_Scheduler.SetInterval("UpdatePlayerHUDs", g_flPlayerHUDInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating RPG HUD.
-    g_Scheduler.SetInterval("UpdateAllAmmoRegenHUDs", g_flAmmoRegenHUDUpdateInterval, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for updating ammo regen HUD.
     g_Scheduler.SetInterval("CheckAllPlayerScores", 0.1f, g_Scheduler.REPEAT_INFINITE_TIMES); // Timer for XP system.
 
     // Basic Skills.
@@ -280,9 +284,6 @@ void PrecacheAll()
         g_SoundSystem.PrecacheSound(strLevelUpSound);
         g_SoundSystem.PrecacheSound(strClassChangeSound);
         g_SoundSystem.PrecacheSound(strSkillSpendSound);
-
-        // Models/Sprites.
-        //PrecacheModelIndexed(AMMO_SPRITE_SHEET); // Should already be in global precache.
 
     // Medic Ability Precache.
         // Models/Sprites.
@@ -1326,20 +1327,6 @@ HookReturnCode ClientSay(SayParameters@ pParams)
                 }
             }
         }
-        else if((command == "/rank" || command == "/rp" || command == "/rankmenu") && args.ArgC() == 1)
-        {
-            string steamID = g_EngineFuncs.GetPlayerAuthId(pPlayer.edict());
-            if(g_PlayerRPGData.exists(steamID))
-            {
-                PlayerData@ data = cast<PlayerData@>(g_PlayerRPGData[steamID]);
-                if(data !is null)
-                {
-                    data.ShowRankMenu(pPlayer);
-                    pParams.ShouldHide = true;
-                    return HOOK_HANDLED;
-                }
-            }
-        }
         // USEABILITY command (no arguments).
         else if(command == "useability" && args.ArgC() == 1)
         {
@@ -1863,7 +1850,6 @@ bool IsCARPGFeatureChatCommand(const string& in command)
 {
     return command == "class" || command == "useability"
         || command == "/skills" || command == "/skillmenu" || command == "/selectskills" || command == "/spendskills"
-        || command == "/rank" || command == "/rp" || command == "/rankmenu"
         || command == "/info" || command == "/difficulty" || command == "/scaling"
         || command == "/hudsettings" || command == "/hud"
         || command == "/hints" || command == "/help" || command == "/debug";
@@ -1886,7 +1872,6 @@ void PrintHints(CBasePlayer@ pPlayer)
 {
     PrintHintLine(pPlayer, "Commands: Type 'Class' to select your class. Bind mouse3 \"say UseAbility\" to use your class ability.");
     PrintHintLine(pPlayer, "Type '/skills' to spend skillpoints.");
-    PrintHintLine(pPlayer, "Type '/rank' to spend or refund Rank Points.");
     PrintHintLine(pPlayer, "Type '/info' to see a summary of your class.");
     PrintHintLine(pPlayer, "Type '/difficulty' or '/scaling' to see player damage scaling.");
     PrintHintLine(pPlayer, "Type '/hudsettings' to customize HUD colors and positions.");

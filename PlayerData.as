@@ -7,8 +7,7 @@ dictionary g_PlayerRPGData;
 enum CARPGHUDType
 {
     CARPG_HUD_RPG = 0,
-    CARPG_HUD_RESOURCE,
-    CARPG_HUD_AMMO
+    CARPG_HUD_RESOURCE
 }
 
 enum CARPGHUDPosition
@@ -91,7 +90,7 @@ float GetCARPGHUDPositionX(int hudType, int position)
     if(hudType == CARPG_HUD_RESOURCE && position == CARPG_HUD_BOTTOM_MIDDLE)
         return -1.0f;
     if(position == CARPG_HUD_TOP_LEFT || position == CARPG_HUD_BOTTOM_LEFT)
-        return hudType == CARPG_HUD_AMMO ? 0.0f : 0.02f;
+        return 0.02f;
     return 1.0f;
 }
 
@@ -99,23 +98,35 @@ float GetCARPGHUDPositionY(int hudType, int position)
 {
     if(position == CARPG_HUD_TOP_LEFT || position == CARPG_HUD_TOP_RIGHT)
         return 0.1f;
-    return hudType == CARPG_HUD_AMMO ? 0.92f : 0.9f;
+    return 0.9f;
 }
 
 // Max level and XP multiplier.
 int g_iMaxLevel = 50; // Max player level, skill points are given per level, increasing this will increase skill points available.
 int g_iScoreToXP = 1; // Amount of XP each score point is worth, 1 = 1 score is 1 XP.
-int g_iXPPerScorePerClassAboveBaseMax = 1; // XP per score for each class above the base level cap.
-int g_iMaxRebirthRank = (500 - g_iMaxLevel); // Max rank, reduced by default max player level.
-int g_iRankPointsPerRank = 1; // Rank points awarded per rank.
-int g_iClassLevelsPerRank = 1; // Level cap increase per rank.
-int g_iRankXPBase = 48; // Base XP needed to reach rank 1.
-float g_flRankXPMultiplier = 2.0f; // Rank XP requirement multiplier.
+int g_iXPPerScorePerMaxedClass = 1; // Extra XP per score for each class at the level cap.
+int g_iXPPerScorePerRank = 1; // Extra XP per score for each rank level (fractions are truncated after multiplying by rank).
+int g_iMaxRankXPBonus = 50; // Maximum possible bonus that can be gained from ranks. Negative = no cap.
+int g_iMaxRebirthRank = 9999; // Rank ceiling; effectively unlimited. To impose a real limit, enable g_bLimitMaxRank in SkillDefs.as.
+int g_iSkillPointsPerRank = 1; // Skillpoints awarded per rank.
+int g_iClassXPBase = 40;// Base XP needed for a class's first level up.
+float g_flClassXPMult = 1.5f; // Multiply XP needed by this factor for each level.
+int g_iRankXPBase = GetTotalXPToMaxLevel(); // XP needed for every rank up (flat); equals the total XP to level a class from 1 to max level.
 float g_flPlayerHUDInterval = 0.2f; // How often the player HUD updates.
 
 int GetXPRequirement(int level, int baseXP, float multiplier)
 {
-    return int(baseXP * level * multiplier);
+    // Level 1 costs exactly baseXP; each level after adds baseXP * multiplier.
+    return int(baseXP * (1.0f + (level - 1) * multiplier));
+}
+
+// Total XP to take a class from level 1 to the default max level.
+int GetTotalXPToMaxLevel()
+{
+    int total = 0;
+    for(int lvl = 1; lvl < g_iMaxLevel; lvl++)
+        total += GetXPRequirement(lvl, g_iClassXPBase, g_flClassXPMult);
+    return total;
 }
 
 dictionary g_ClassNames = 
@@ -202,6 +213,7 @@ class ClassStats
     // Skillpoint Handling.
     private int m_iSkillPointsPerLevel = 1; // Skill points gained per level.
     private int m_iSkillPoints = 1; // Total skill points earned (also level 1 start amount).
+    private int m_iRankSkillPoints = 0;
 
     // Skill levels: one entry per SkillID.
     private array<int> m_SkillLevels(int(SkillID::SKILL_MAX_COUNT), 0);
@@ -209,11 +221,9 @@ class ClassStats
     // XP / Level tracking.
     private int m_iLevel = 1; // Current level.
     private int m_iCurrentLevelXP = 0; // XP accumulated within the current level.
-    private int m_iXPNeededBase = 24; // Base XP needed for first level up.
-    private float m_fXPNeededMult = 2.0f; // Multiply XP needed by this factor for each level.
+    private int m_iXPNeededBase = g_iClassXPBase; // Base XP needed for first level up.
+    private float m_fXPNeededMult = g_flClassXPMult; // Multiply XP needed by this factor for each level.
     private int m_iMaxLevel = g_iMaxLevel; // Set default max level from global setting.
-    private int m_iBasicSkillCapBonus = 0;
-    private int m_iClassSkillCapBonus = 0;
     private string m_szSteamID;
 
     int GetSkillPointsPerLevel() { return m_iSkillPointsPerLevel; }
@@ -249,8 +259,7 @@ class ClassStats
         int idx = int(id);
         if(idx < 0 || idx >= int(g_SkillDefs.length()) || g_SkillDefs[idx] is null)
             return 0;
-        int bonus = idx <= int(SkillID::SKILL_BASIC_MEDKITCAPACITY) ? m_iBasicSkillCapBonus : m_iClassSkillCapBonus;
-        return g_SkillDefs[idx].GetEffectiveMaxLevel(bonus);
+        return SKILL_UNLIMITED_MAX_LEVEL;
     }
 
     int GetSpentSkillPoints()
@@ -304,8 +313,7 @@ class ClassStats
         for(uint i = 0; i < parts.length() && i < uint(SkillID::SKILL_MAX_COUNT); i++)
         {
             int val = atoi(parts[i]);
-            if(val < 0) val = 0;
-            m_SkillLevels[i] = val;
+            m_SkillLevels[i] = val; // Out-of-range values are caught by the respec sanity check.
         }
     }
     
@@ -322,14 +330,14 @@ class ClassStats
         if(level > m_iMaxLevel) level = m_iMaxLevel;
         m_iLevel = level;
         m_iCurrentLevelXP = 0;
-        m_iSkillPoints = m_iLevel * m_iSkillPointsPerLevel;
+        m_iSkillPoints = m_iLevel * m_iSkillPointsPerLevel + m_iRankSkillPoints;
     }
 
-    // Load before rank skills are known; their caps are applied after the whole save is read.
+    // Load before rank is known; rank skillpoints are applied after the whole save is read.
     void SetLoadedLevel(int level)
     {
         m_iLevel = level < 1 ? 1 : level;
-        m_iSkillPoints = m_iLevel * m_iSkillPointsPerLevel;
+        m_iSkillPoints = m_iLevel * m_iSkillPointsPerLevel + m_iRankSkillPoints;
     }
 
     void SetLoadedCurrentLevelXP(int xp)
@@ -337,17 +345,16 @@ class ClassStats
         m_iCurrentLevelXP = xp < 0 ? 0 : xp;
     }
 
-    bool SetRankCaps(int levelBonus, int basicBonus, int classBonus)
+    bool SetRankBonuses(int rankSkillPoints)
     {
-        m_iMaxLevel = Math.max(1, g_iMaxLevel + levelBonus);
-        m_iBasicSkillCapBonus = basicBonus;
-        m_iClassSkillCapBonus = classBonus;
+        m_iMaxLevel = Math.max(1, g_iMaxLevel);
+        m_iRankSkillPoints = rankSkillPoints;
+        m_iSkillPoints = m_iLevel * m_iSkillPointsPerLevel + m_iRankSkillPoints;
         bool corrected = false;
         if(m_iLevel > m_iMaxLevel)
         {
-            g_Game.AlertMessage(at_console, "CARPG: Reducing class level from " + m_iLevel + " to " + m_iMaxLevel + " and refunding all class skillpoints.\n");
+            g_Game.AlertMessage(at_console, "CARPG: Reducing class level from " + m_iLevel + " to " + m_iMaxLevel + ".\n");
             SetLevel(m_iMaxLevel);
-            ResetSkills();
             corrected = true;
         }
         if(IsMaxLevel() && m_iCurrentLevelXP != 0)
@@ -355,35 +362,32 @@ class ClassStats
             m_iCurrentLevelXP = 0;
             corrected = true;
         }
-        for(int i = 0; i < int(SkillID::SKILL_MAX_COUNT); i++)
-        {
-            if(g_SkillDefs[i] is null) continue;
-            int cap = GetSkillMaxLevel(SkillID(i));
-            if(m_SkillLevels[i] > cap)
-            {
-                g_Game.AlertMessage(at_console, "CARPG: Refunding " + (m_SkillLevels[i] - cap) + " points from " + g_SkillDefs[i].name + " after rank cap change.\n");
-                m_SkillLevels[i] = cap;
-                corrected = true;
-            }
-        }
         if(RefundExcessSkillPoints())
             corrected = true;
         return corrected;
     }
 
+    // Sanity check: if skills are outside what the player could legitimately own (more points spent than
+    // earned, or a level beyond the skill limit), forcibly respec every skill for this class.
     private bool RefundExcessSkillPoints()
     {
-        int excess = GetSpentSkillPoints() - m_iSkillPoints;
-        if(excess <= 0)
+        int spent = GetSpentSkillPoints();
+        bool invalidLevel = false;
+        for(int i = 0; i < int(SkillID::SKILL_MAX_COUNT); i++)
+        {
+            if(m_SkillLevels[i] < 0 || m_SkillLevels[i] > SKILL_UNLIMITED_MAX_LEVEL)
+            {
+                invalidLevel = true;
+                break;
+            }
+        }
+
+        if(spent <= m_iSkillPoints && !invalidLevel)
             return false;
 
-        g_Game.AlertMessage(at_console, "CARPG: Refunding " + excess + " skillpoints exceeding the class total.\n");
-        for(int i = int(SkillID::SKILL_MAX_COUNT) - 1; i >= 0 && excess > 0; i--)
-        {
-            int removed = Math.min(excess, m_SkillLevels[i]);
-            m_SkillLevels[i] -= removed;
-            excess -= removed;
-        }
+        g_Game.AlertMessage(at_console, "CARPG: Invalid skills detected (spent " + spent + " of " + m_iSkillPoints
+            + " skillpoints); forcing a full respec.\n");
+        ResetSkills();
         return true;
     }
 
@@ -447,11 +451,11 @@ class ClassStats
 
     void SetSteamID(string steamID) { m_szSteamID = steamID; }
 
-    // Validates that total skillpoints match the expected amount for the current level.
+    // Validates that total skillpoints match the current level and rank.
     bool ValidateSkillPoints()
     {
         bool corrected = false;
-        int expected = m_iLevel * m_iSkillPointsPerLevel;
+        int expected = m_iLevel * m_iSkillPointsPerLevel + m_iRankSkillPoints;
         if(m_iSkillPoints != expected)
         {
             g_Game.AlertMessage(at_console, "CARPG: Correcting skillpoint total from " + m_iSkillPoints + " to " + expected + " (level " + m_iLevel + ").\n");
@@ -482,15 +486,12 @@ class PlayerData
     private int m_iRebirthRank = 0;
     private int m_iCurrentRebirthRankXP = 0;
     private int m_iMaxRebirthRank = g_iMaxRebirthRank;
-    private array<int> m_RankSkillLevels(int(RankSkillID::RANK_SKILL_COUNT), 0);
     private bool m_bSaveBlocked = false;
 
     private int m_iRPGHUDColor = 0;
     private int m_iRPGHUDPosition = CARPG_HUD_TOP_RIGHT;
     private int m_iResourceHUDColor = 0;
     private int m_iResourceHUDPosition = CARPG_HUD_BOTTOM_MIDDLE;
-    private int m_iAmmoHUDColor = 0;
-    private int m_iAmmoHUDPosition = CARPG_HUD_BOTTOM_RIGHT;
 
     private int m_iMinionGlowColor = -1; // -1 uses each class's default glow colour.
 
@@ -511,14 +512,12 @@ class PlayerData
     int GetHUDColorIndex(int hudType)
     {
         if(hudType == CARPG_HUD_RESOURCE) return m_iResourceHUDColor;
-        if(hudType == CARPG_HUD_AMMO) return m_iAmmoHUDColor;
         return m_iRPGHUDColor;
     }
 
     int GetHUDPositionIndex(int hudType)
     {
         if(hudType == CARPG_HUD_RESOURCE) return m_iResourceHUDPosition;
-        if(hudType == CARPG_HUD_AMMO) return m_iAmmoHUDPosition;
         return m_iRPGHUDPosition;
     }
 
@@ -529,8 +528,6 @@ class PlayerData
 
         if(hudType == CARPG_HUD_RESOURCE)
             m_iResourceHUDColor = colorIndex;
-        else if(hudType == CARPG_HUD_AMMO)
-            m_iAmmoHUDColor = colorIndex;
         else
             m_iRPGHUDColor = colorIndex;
         SaveToFile();
@@ -544,8 +541,6 @@ class PlayerData
 
         if(hudType == CARPG_HUD_RESOURCE)
             m_iResourceHUDPosition = positionIndex;
-        else if(hudType == CARPG_HUD_AMMO)
-            m_iAmmoHUDPosition = positionIndex;
         else
             m_iRPGHUDPosition = positionIndex;
         SaveToFile();
@@ -553,7 +548,6 @@ class PlayerData
 
     private Menu::ClassMenu@ m_ClassMenu = null;
     private Menu::SkillsMenu@ m_SkillsMenu = null;
-    private Menu::RankMenu@ m_RankMenu = null;
 
     ClassStats@ GetClassStats(PlayerClass pClass)
     {
@@ -568,102 +562,39 @@ class PlayerData
         for(uint i = 0; i < g_ClassList.length(); i++)
         {
             ClassStats@ stats = GetClassStats(g_ClassList[i]);
-            if(stats !is null && stats.GetLevel() > g_iMaxLevel)
-                bonus += g_iXPPerScorePerClassAboveBaseMax;
+            if(stats !is null && stats.GetLevel() >= stats.GetMaxLevel())
+                bonus += g_iXPPerScorePerMaxedClass;
         }
-        return g_iScoreToXP + bonus;
+        // The maxed-class bonus can never exceed the total number of classes.
+        bonus = Math.min(bonus, int(g_ClassList.length()));
+        return g_iScoreToXP + bonus + GetRankXPBonus();
+    }
+    // XP per score granted by rank, limited by g_iMaxRankXPBonus (negative = no cap).
+    int GetRankXPBonus()
+    {
+        int rankBonus = m_iRebirthRank * g_iXPPerScorePerRank;
+        if(g_iMaxRankXPBonus >= 0 && rankBonus > g_iMaxRankXPBonus)
+            rankBonus = g_iMaxRankXPBonus;
+        return rankBonus;
     }
     int GetCurrentRebirthRankXP() { return m_iCurrentRebirthRankXP; }
-    int GetNeededRebirthXP() { return GetXPForRank(m_iRebirthRank); }
+    int GetNeededRebirthXP() { return g_iRankXPBase; }
     int GetMaxRebirthRank()
     {
-        return g_bSkillDiminishingReturns ? m_iMaxRebirthRank : Math.min(m_iMaxRebirthRank, g_iHardLimitMaxRank);
+        return g_bLimitMaxRank ? Math.min(m_iMaxRebirthRank, g_iHardLimitMaxRank) : m_iMaxRebirthRank;
     }
 
-    int GetTotalRankPoints() { return m_iRebirthRank * Math.max(0, g_iRankPointsPerRank); }
-    int GetRankSkillLevel(RankSkillID id) { return m_RankSkillLevels[int(id)]; }
-    float GetRankSkillBonus(RankSkillID id)
+    private bool ApplyRankBonuses()
     {
-        return float(GetRankSkillLevel(id)) * g_RankSkillDefs[int(id)].increase;
-    }
-    int GetRankPoints()
-    {
-        int spent = 0;
-        for(uint i = 0; i < m_RankSkillLevels.length(); i++)
-            spent += m_RankSkillLevels[i];
-        return GetTotalRankPoints() - spent;
-    }
-
-    private bool ApplyRankCaps()
-    {
-        int levelBonus = m_iRebirthRank * Math.max(0, g_iClassLevelsPerRank);
-        int basicBonus = int(GetRankSkillBonus(RankSkillID::RANK_SKILL_BASIC_CAP));
-        int classBonus = int(GetRankSkillBonus(RankSkillID::RANK_SKILL_CLASS_CAP));
+        int rankSkillPoints = m_iRebirthRank * Math.max(0, g_iSkillPointsPerRank);
         bool corrected = false;
         for(uint i = 0; i < g_ClassList.length(); i++)
         {
             ClassStats@ stats = GetClassStats(g_ClassList[i]);
-            if(stats !is null && stats.SetRankCaps(levelBonus, basicBonus, classBonus))
+            if(stats !is null && stats.SetRankBonuses(rankSkillPoints))
                 corrected = true;
         }
         return corrected;
-    }
-
-    private bool ValidateRankPoints()
-    {
-        bool corrected = false;
-        int legacyIndex = int(RankSkillID::RANK_SKILL_LEGACY_LEVEL_CAP);
-        if(m_RankSkillLevels[legacyIndex] > 0)
-        {
-            g_Game.AlertMessage(at_console, "CARPG: Refunding " + m_RankSkillLevels[legacyIndex] + " obsolete level cap rank purchases.\n");
-            m_RankSkillLevels[legacyIndex] = 0;
-            corrected = true;
-        }
-        int excess = -GetRankPoints();
-        if(excess > 0)
-        {
-            corrected = true;
-            g_Game.AlertMessage(at_console, "CARPG: Rank skill spending exceeds available RP; refunding excess purchases.\n");
-            for(int i = int(m_RankSkillLevels.length()) - 1; i >= 0 && excess > 0; i--)
-            {
-                int removed = Math.min(excess, m_RankSkillLevels[i]);
-                m_RankSkillLevels[i] -= removed;
-                excess -= removed;
-            }
-        }
-        if(ApplyRankCaps())
-            corrected = true;
-        return corrected;
-    }
-
-    bool TrySpendRankPoint(RankSkillID id, CBasePlayer@ pPlayer)
-    {
-        int idx = int(id);
-        if(idx <= int(RankSkillID::RANK_SKILL_LEGACY_LEVEL_CAP) || idx >= int(m_RankSkillLevels.length()) || GetRankPoints() < 1)
-            return false;
-        m_RankSkillLevels[idx]++;
-        ApplyRankCaps();
-        if(pPlayer !is null) CalculateStats(pPlayer);
-        SaveToFile();
-        return true;
-    }
-
-    void ResetRankSkills(CBasePlayer@ pPlayer)
-    {
-        for(uint i = 0; i < m_RankSkillLevels.length(); i++)
-            m_RankSkillLevels[i] = 0;
-        ApplyRankCaps();
-        if(pPlayer !is null)
-        {
-            ResetPlayer(pPlayer);
-            CalculateStats(pPlayer);
-        }
-        SaveToFile();
-    }
-
-    private int GetXPForRank(int rank)
-    {
-        return GetXPRequirement(rank + 1, g_iRankXPBase, g_flRankXPMultiplier);
     }
 
     bool IsMaxRebirthRank() { return m_iRebirthRank >= GetMaxRebirthRank(); }
@@ -681,10 +612,11 @@ class PlayerData
             {
                 m_iCurrentRebirthRankXP -= needed;
                 m_iRebirthRank++;
-                ApplyRankCaps();
+                ApplyRankBonuses();
                 if(pPlayer !is null)
                 {
-                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Your rank is now " + m_iRebirthRank + "!\n");
+                    g_PlayerFuncs.ClientPrint(pPlayer, HUD_PRINTTALK, "[CARPG] Your prestige is now " + m_iRebirthRank + "!\n");
+                    g_PlayerFuncs.ClientPrintAll(HUD_PRINTTALK, "[CARPG] Congratulations to " + string(pPlayer.pev.netname) + " for reaching Prestige " + m_iRebirthRank + "!\n");
                         g_SoundSystem.EmitSoundDyn(pPlayer.edict(), CHAN_ITEM, strLevelUpSound, 1.0f, ATTN_NORM, 0, PITCH_NORM);
                 }
 
@@ -710,7 +642,7 @@ class PlayerData
         bool rankReduced = rank < m_iRebirthRank;
         m_iRebirthRank = rank;
         m_iCurrentRebirthRankXP = 0; // Reset accumulated XP for the new rank.
-        ValidateRankPoints();
+        ApplyRankBonuses();
 
         CBasePlayer@ pPlayer = FindOwnPlayer();
         if(pPlayer !is null)
@@ -739,14 +671,6 @@ class PlayerData
             @m_SkillsMenu = Menu::SkillsMenu(this);
 
         m_SkillsMenu.ShowMain(pPlayer);
-    }
-
-    void ShowRankMenu(CBasePlayer@ pPlayer)
-    {
-        if(pPlayer is null) return;
-        if(m_RankMenu is null)
-            @m_RankMenu = Menu::RankMenu(this);
-        m_RankMenu.ShowMain(pPlayer);
     }
 
     // Returns unspent skill points for the current class.
@@ -1307,17 +1231,11 @@ class PlayerData
             file.Write("HUD\n");
             file.Write(string(m_iRPGHUDColor) + " " + string(m_iRPGHUDPosition) + " "
                 + string(m_iResourceHUDColor) + " " + string(m_iResourceHUDPosition) + " "
-                + string(m_iAmmoHUDColor) + " " + string(m_iAmmoHUDPosition) + " "
+                + "0 3 " // Unused legacy ammo HUD slots, kept for save format compatibility.
                 + string(m_iMinionGlowColor) + "\n");
 
             file.Write("RANKSKILLS\n");
-            string rankSkills = "";
-            for(uint i = 0; i < m_RankSkillLevels.length(); i++)
-            {
-                if(i > 0) rankSkills += ",";
-                rankSkills += string(m_RankSkillLevels[i]);
-            }
-            file.Write(string(GetTotalRankPoints()) + " " + rankSkills + "\n");
+            file.Write("0 0\n"); // Legacy rank skill slots, kept for save format compatibility.
 
             file.Close();
         }
@@ -1353,6 +1271,7 @@ class PlayerData
 
             // Load each class line, keyed by class ID.
             bool bNeedsResave = saveVersion != "v8";
+            dictionary savedClassSkillPoints;
             while(!file.EOFReached())
             {
                 line = "";
@@ -1379,14 +1298,7 @@ class PlayerData
                 stats.SetLoadedCurrentLevelXP(savedCurrentXP);
                 stats.SetSkillLevelsFromString(savedSkills);
 
-                // Recompute the available total; caps and excess spending are validated after rank skills load.
-                if(savedTotalSP != stats.GetTotalSkillPoints())
-                {
-                    g_Game.AlertMessage(at_console, "CARPG: Skillpoint total changed for class "
-                        + parts[0] + " (saved " + savedTotalSP + ", now "
-                        + stats.GetTotalSkillPoints() + "). Validating allocations.\n");
-                    bNeedsResave = true;
-                }
+                savedClassSkillPoints[pClass] = savedTotalSP;
             }
 
             // If we stopped because of REBIRTH marker, load rebirth data.
@@ -1425,15 +1337,11 @@ class PlayerData
                             int savedRPGPosition = atoi(hudParts[1]);
                             int savedResourceColor = atoi(hudParts[2]);
                             int savedResourcePosition = atoi(hudParts[3]);
-                            int savedAmmoColor = atoi(hudParts[4]);
-                            int savedAmmoPosition = atoi(hudParts[5]);
 
                             if(savedRPGColor >= 0 && uint(savedRPGColor) < g_CARPGHUDColorNames.length()) m_iRPGHUDColor = savedRPGColor;
                             if(savedRPGPosition >= 0 && savedRPGPosition < 4) m_iRPGHUDPosition = savedRPGPosition;
                             if(savedResourceColor >= 0 && uint(savedResourceColor) < g_CARPGHUDColorNames.length()) m_iResourceHUDColor = savedResourceColor;
                             if(savedResourcePosition >= 0 && savedResourcePosition < 5) m_iResourceHUDPosition = savedResourcePosition;
-                            if(savedAmmoColor >= 0 && uint(savedAmmoColor) < g_CARPGHUDColorNames.length()) m_iAmmoHUDColor = savedAmmoColor;
-                            if(savedAmmoPosition >= 0 && savedAmmoPosition < 4) m_iAmmoHUDPosition = savedAmmoPosition;
 
                             if(hudParts.length() >= 7)
                             {
@@ -1453,15 +1361,7 @@ class PlayerData
                             string rankLine;
                             file.ReadLine(rankLine);
                             array<string>@ rankParts = rankLine.Split(" ");
-                            if(rankParts.length() >= 2)
-                            {
-                                array<string>@ levels = rankParts[1].Split(",");
-                                for(uint i = 0; i < levels.length() && i < m_RankSkillLevels.length(); i++)
-                                    m_RankSkillLevels[i] = Math.max(0, atoi(levels[i]));
-                                if(atoi(rankParts[0]) != GetTotalRankPoints())
-                                    bNeedsResave = true;
-                            }
-                            else
+                            if(rankParts.length() < 2)
                             {
                                 g_Game.AlertMessage(at_console, "CARPG: Invalid rank skills data in " + filePath + ".\n");
                                 m_bSaveBlocked = true;
@@ -1492,13 +1392,22 @@ class PlayerData
             file.Close();
             if(m_bSaveBlocked)
                 return;
-            if(ValidateRankPoints())
+            if(ApplyRankBonuses())
                 bNeedsResave = true;
             for(uint i = 0; i < g_ClassList.length(); i++)
             {
                 ClassStats@ stats = GetClassStats(g_ClassList[i]);
                 if(stats !is null && stats.ValidateSkillPoints())
                     bNeedsResave = true;
+                PlayerClass pClass = g_ClassList[i];
+                if(stats !is null && savedClassSkillPoints.exists(pClass)
+                    && int(savedClassSkillPoints[pClass]) != stats.GetTotalSkillPoints())
+                {
+                    g_Game.AlertMessage(at_console, "CARPG: Skillpoint total changed for class "
+                        + int(pClass) + " (saved " + int(savedClassSkillPoints[pClass]) + ", now "
+                        + stats.GetTotalSkillPoints() + ").\n");
+                    bNeedsResave = true;
+                }
             }
             g_Game.AlertMessage(at_console, "CARPG: Loaded data from " + filePath + "\n");
 
@@ -1537,17 +1446,17 @@ class PlayerData
         RPGHudText += "Level: " + stats.GetLevel() + "/" + stats.GetMaxLevel() + " | ";
         RPGHudText += "XP: " + (stats.IsMaxLevel() ? "(--/--)" : "(" + stats.GetCurrentLevelXP() + "/" + stats.GetNeededXP() + ")") + "\n\n"; // XP.
 
-        RPGHudText += "Rank: " + m_iRebirthRank + " | "; // Rank.
+        RPGHudText += "Prestige: " + m_iRebirthRank + " | "; // Prestige.
         RPGHudText += "XP: " + (IsMaxRebirthRank() ? "(--/--)" : "(" + m_iCurrentRebirthRankXP + "/" + GetNeededRebirthXP() + ")") + "\n\n"; // Rank XP.
 
         if(GetCurrentXPMultiplier() > g_iScoreToXP)
             RPGHudText += "XP Bonus: " + "(+" + (GetCurrentXPMultiplier() - g_iScoreToXP) + ")" + "\n\n"; // XP per score bonus.
 
-        if(GetRankPoints() > 0)
-            RPGHudText += "RP: " + GetRankPoints() + "\n";
-
         if(stats.GetSkillPoints() > 0) 
-            RPGHudText += "SP: " + stats.GetSkillPoints() + "\n"; // Current skillpoints.
+            RPGHudText += "SP: " + stats.GetSkillPoints() + "\n\n"; // Current skillpoints.
+
+        if (stats.GetSkillLevel(SkillID::SKILL_BASIC_AMMOREGEN) > 0)
+            RPGHudText += "Ammo Resupply: " + int(g_flAmmoResupplyTimer);
         
         g_PlayerFuncs.HudMessage(pPlayer, RPGHudParams, RPGHudText);
     }
