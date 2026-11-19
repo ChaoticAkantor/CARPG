@@ -20,8 +20,6 @@
 
    - Type "/skills" or "/skillmenu" or "/selectskills" to display the skills menu, to view and purchase skills with skillpoints from leveling.
 
-   - Type "/rank", "/rp" or "/rankmenu" to spend or refund Rank Points on shared Rank Skills.
-
    - Type "useability" to use your class ability. It's advised to bind this to a button. Help command will explain how.
 
    - Type "/info" to display a window with brief information on current selected class.
@@ -40,7 +38,7 @@
 # Leveling
  - Gaining score will award you with XP, by default you will gain 1XP per score point. 
 
-   - Earning enough XP will increase your Class level and also contribute towards your Rank.
+   - Earning enough XP will increase your Class level and also contribute towards your next Prestige.
 
    - Each class has it's own max level and skills saved individually.
 
@@ -50,28 +48,16 @@
    
    - XP is shared and all players will recieve the XP that another player earns (even from minions!).
 
-   - Each class at the level cap adds `g_iXPPerScorePerMaxedClass` XP per score (default 1; minimum 0) to that player's XP, including shared XP.
-
    - Still earn XP even whilst dead or spectating.
 
- # Ranks
- - Skills can be purchased and increased with Skillpoints via a menu (/rank or /rankmenu).
+ # Prestige
+ - Prestige can be slowly earned to permanently increase your power potential.
 
-   - After earning enough XP, your rank will increase by +1.
+   - After earning enough XP, your Prestige will increase by 1 and you will be granted +1 skillpoint permanently.
 
-   - Each rank grants `g_iSkillPointsPerRank` skillpoints (default 1; minimum 0) to every class, without increasing the level cap.
+   - Max Prestige is 9999.
 
-   - Each rank earns 1 Rank Point (RP) by default. RP can be spent inside the Rank Menu to increase Basic Skill or class skill max levels by +1 individually.
-
-   - Rank Points can be refunded for free in the rank menu.
-
-   - Existing saves retain rank and receive rank skillpoints retroactively. Class levels above the base cap are reduced to the cap, and skill allocations exceeding the new total are refunded.
-
-   - Skills increased above their default maximum will recieve diminishing returns. Each extra level contributes a portion of the previous level.
-
-   - Default Max Rank is 450, allowing up to 450 RP and 500 skillpoints per max-level class with the default settings.
-
-   - Ranks require a significant amount more XP earned than Levels, but will be earned quickly at first.
+   - A single Prestige requires 50 levels worth of XP.
 
 
 # Skills
@@ -87,7 +73,7 @@
 
    - Type "skills" to see skills menu and spend skillpoints.
 
-   - Skills increased above their default maximum will recieve diminishing returns. Each extra level contributes a portion of the previous level.
+   - Skills receive diminishing returns after a set number of levels. Each extra level contributes a portion of the previous level, down to a minimum.
 
 
 # Difficulty
