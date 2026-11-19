@@ -169,7 +169,7 @@ namespace Menu
             }
             else if(choice == 2)
             {
-                int debugRank = Math.min(data.GetMaxRebirthRank(), 100); // Max rank is effectively unlimited by default.
+                int debugRank = Math.min(data.GetMaxRebirthRank(), g_iMaxRebirthRank);
                 data.SetRebirthRank(debugRank);
                 data.CalculateStats(target);
                 data.SaveToFile();
