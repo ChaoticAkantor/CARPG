@@ -109,7 +109,7 @@ int g_iXPPerScorePerRank = 1; // Extra XP per score for each rank level (fractio
 int g_iMaxRankXPBonus = 50; // Maximum possible bonus that can be gained from ranks. Negative = no cap.
 int g_iMaxRebirthRank = 9999; // Rank ceiling; effectively unlimited. To impose a real limit, enable g_bLimitMaxRank in SkillDefs.as.
 int g_iSkillPointsPerRank = 1; // Skillpoints awarded per rank.
-int g_iClassXPBase = 40;// Base XP needed for a class's first level up.
+int g_iClassXPBase = 30;// Base XP needed for a class's first level up.
 float g_flClassXPMult = 1.5f; // Multiply XP needed by this factor for each level.
 int g_iRankXPBase = GetTotalXPToMaxLevel(); // XP needed for every rank up (flat); equals the total XP to level a class from 1 to max level.
 float g_flPlayerHUDInterval = 0.2f; // How often the player HUD updates.
