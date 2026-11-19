@@ -46,7 +46,7 @@ void UpdateClassResource() // Update the class resource HUD display for all play
         float maximum = 1.0f;
 
         HUDTextParams params;
-        params.channel = 5;
+        params.channel = 6;
         int resourcePosition = data.GetHUDPositionIndex(CARPG_HUD_RESOURCE);
         params.x = GetCARPGHUDPositionX(CARPG_HUD_RESOURCE, resourcePosition);
         params.y = GetCARPGHUDPositionY(CARPG_HUD_RESOURCE, resourcePosition);
