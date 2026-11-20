@@ -382,6 +382,7 @@ class MinionData
         keys["origin"] = vecSrc.ToString();
         keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
         keys["health"] = "" + int(scaledHealth);
+        keys["healthcap"] = "0"; // Maximum heal limit, will overheal to this value if it's higher than your max!
         keys["scale"] = "1"; // Size
         keys["spawnflags"] = "" + spawnFlags;
         keys["movetype"] = "0";
@@ -446,6 +447,7 @@ class MinionData
         keys["origin"] = vecSrc.ToString();
         keys["angles"] = Vector(0, pPlayer.pev.angles.y, 0).ToString();
         keys["health"] = "" + int(scaledRestore);
+        keys["healthcap"] = "0"; // Maximum heal limit, will overheal to this value if it's higher than your max!
         keys["scale"] = "1"; // Size
         keys["spawnflags"] = "" + spawnFlags;
         keys["movetype"] = "0";
