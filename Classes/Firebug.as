@@ -558,21 +558,22 @@ void ShowDragonsBreathBurn(CBaseEntity@ pTarget)
     if(pTarget is null)
         return;
 
-    Vector targetMins = pTarget.pev.origin + pTarget.pev.mins;
-    Vector targetMaxs = pTarget.pev.origin + pTarget.pev.maxs;
-    NetworkMessage bubbles(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, pTarget.pev.origin);
-        bubbles.WriteByte(TE_BUBBLES);
-        bubbles.WriteCoord(targetMins.x);
-        bubbles.WriteCoord(targetMins.y);
-        bubbles.WriteCoord(targetMins.z);
-        bubbles.WriteCoord(targetMaxs.x);
-        bubbles.WriteCoord(targetMaxs.y);
-        bubbles.WriteCoord(targetMaxs.z);
-        bubbles.WriteCoord(80.0f); // Height of bubble effect.
-        bubbles.WriteShort(GetModelIndex(strDragonsBreathFireSprite));
-        bubbles.WriteByte(10); // Count.
-        bubbles.WriteCoord(6.0f); // Speed.
-    bubbles.End();
+    Vector burnPoint = pTarget.Center();
+    NetworkMessage msgFireArea(MSG_PVS, NetworkMessages::SVC_TEMPENTITY, burnPoint);
+        msgFireArea.WriteByte(TE_SPRITETRAIL);
+        msgFireArea.WriteCoord(burnPoint.x);
+        msgFireArea.WriteCoord(burnPoint.y);
+        msgFireArea.WriteCoord(burnPoint.z);
+        msgFireArea.WriteCoord(burnPoint.x);
+        msgFireArea.WriteCoord(burnPoint.y);
+        msgFireArea.WriteCoord(burnPoint.z);
+        msgFireArea.WriteShort(GetModelIndex(strDragonsBreathFireSprite));
+        msgFireArea.WriteByte(3); // Count
+        msgFireArea.WriteByte(1); // Life in 0.1's.
+        msgFireArea.WriteByte(3); // Scale in 0.1's.
+        msgFireArea.WriteByte(15); // Velocity along vector in 10's.
+        msgFireArea.WriteByte(20); // Random velocity in 10's.
+    msgFireArea.End();
 }
 
 void UpdateDragonsBreathBurns()
