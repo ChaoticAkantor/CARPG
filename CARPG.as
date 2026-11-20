@@ -1040,7 +1040,12 @@ HookReturnCode PlayerTakeDamage(DamageInfo@ pDamageInfo)
     BarrierData@ linkedBarrier = null;
     CBasePlayer@ linkedOwner = null;
     float nearestBarrierDistance = BARRIER_LINK_RANGE;
-    for(int i = 1; i <= g_Engine.maxClients; ++i)
+
+    // Shared shields don't absorb friendly fire from other players (including the shield owner). Self and environmental damage (e.g. falling) still does.
+    CBasePlayer@ pLinkedAttackerPlayer = cast<CBasePlayer@>(attacker);
+    bool isLinkedFriendlyFire = pLinkedAttackerPlayer !is null && pLinkedAttackerPlayer !is pPlayer;
+
+    for(int i = 1; i <= g_Engine.maxClients && !isLinkedFriendlyFire; ++i)
     {
         CBasePlayer@ pOwner = g_PlayerFuncs.FindPlayerByIndex(i);
         if(pOwner is null || !pOwner.IsConnected() || !pOwner.IsAlive() || pOwner is pPlayer)
