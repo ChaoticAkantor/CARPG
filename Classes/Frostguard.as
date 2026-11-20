@@ -215,13 +215,13 @@ class BarrierData
         float shieldDamage = blockedDamage * (1.0f - Math.min(Math.max(flChargeDamageReduction, 0.0f), 1.0f));
         DrainEnergy(pPlayer, shieldDamage);
 
-        // Absorb a portion of the damage as health.
-        if(pProtectedPlayer.pev.health < pProtectedPlayer.pev.max_health) // Only absorb if not at full health.
+        // Absorb a portion of the damage as health, to the shield owner only.
+        float healthAbsorb = incomingDamage * GetScaledHealthAbsorb();
+        if(healthAbsorb > 0.0f && pPlayer.pev.health < pPlayer.pev.max_health) // Only absorb if not at full health.
         {
-            float healthAbsorb = incomingDamage * GetScaledHealthAbsorb();
-            pProtectedPlayer.pev.health = Math.min(pProtectedPlayer.pev.health + healthAbsorb, pProtectedPlayer.pev.max_health); // Add the modified absorbed damage to health, capped at max.
+            pPlayer.pev.health = Math.min(pPlayer.pev.health + healthAbsorb, pPlayer.pev.max_health); // Add the modified absorbed damage to health, capped at max.
 
-            Vector pos = pProtectedPlayer.pev.origin;
+            Vector pos = pPlayer.pev.origin;
             Vector mins = pos - Vector(16, 16, 0);
             Vector maxs = pos + Vector(16, 16, 64);
 
